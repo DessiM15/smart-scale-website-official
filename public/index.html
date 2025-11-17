@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FinanceFlow — Smart Budget Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./assets/css/styles.css">
+    <meta name="disabled-font-classes" content="font-roboto,font-montserrat,font-poppins,font-playfair,font-instrument-serif,font-merriweather,font-bricolage,font-jakarta,font-manrope,font-space-grotesk,font-work-sans,font-pt-serif,font-geist-mono,font-space-mono,font-quicksand,font-nunito">
+    <link id="all-fonts-link-font-geist" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap">
+    <style id="all-fonts-style-font-geist">
+      .font-geist { font-family: 'Geist', sans-serif !important; }
+    </style>
+    <style id="border-gradient-shared-style">
+      [style*="--border-gradient"]::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        padding: 1px;
+        border-radius: var(--border-radius-before, inherit);
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        background: var(--border-gradient);
+        pointer-events: none;
+      }
+    </style>
+    <style>
+      /* Keyframe used by scroll animations. Add class: animate-on-scroll and Tailwind animation utility: [animation:fadeSlideIn_0.8s_ease-out_0.1s_both] */
+      @keyframes fadeSlideIn {
+        0% {
+          opacity: 0;
+          transform: translateY(30px);
+          filter: blur(8px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+          filter: blur(0px);
+        }
+      }
+    </style>
+    <script>
+      /* Scroll-into-view animation controller (no external deps) */
+      (function () {
+        const style = document.createElement("style");
+        style.textContent = `
+          .animate-on-scroll { animation-play-state: paused !important; }
+          .animate-on-scroll.animate { animation-play-state: running !important; }
+        `;
+        document.head.appendChild(style);
+        const once = true;
+        if (!window.__inViewIO) {
+          window.__inViewIO = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("animate");
+                if (once) window.__inViewIO.unobserve(entry.target);
+              }
+            });
+          }, { threshold: 0.2, rootMargin: "0px 0px -10% 0px" });
+        }
+        window.initInViewAnimations = function (selector = ".animate-on-scroll") {
+          document.querySelectorAll(selector).forEach((el) => {
+            window.__inViewIO.observe(el);
+          });
+        };
+        document.addEventListener("DOMContentLoaded", () => initInViewAnimations());
+      })();
+    </script>
+    <!-- Optional Unicorn studio background (kept for design parity). You can remove if not needed. -->
+    <script>
+      !function(){if(!window.UnicornStudio){window.UnicornStudio={isInitialized:!1};var i=document.createElement("script");i.src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v1.4.29/dist/unicornStudio.umd.js",i.onload=function(){window.UnicornStudio.isInitialized||(UnicornStudio.init(),window.UnicornStudio.isInitialized=!0)},(document.head || document.body).appendChild(i)}}();
+    </script>
+  </head>
+  <body class="antialiased text-white bg-[#000000]" style="font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji;">
+    <!-- Background (Unicorn Studio) -->
+    <div class="absolute top-0 left-0 -z-10 w-full h-full" data-us-project="BhoqrigscYbD7NN1fwcp"></div>
+    <div data-us-project="BhoqrigscYbD7NN1fwcp" class="absolute top-0 left-0 -z-10 w-full h-full"></div>
+
+    <main class="min-h-screen overflow-hidden relative">
+      <!-- Hero -->
+      <section class="min-h-screen overflow-hidden z-10 relative">
+        <div style="mask-image: linear-gradient(black 0%, black 60%, transparent 100%);">
+          <div class="absolute top-0 left-0 -z-10 w-full h-full" data-us-project="BhoqrigscYbD7NN1fwcp"></div>
+        </div>
+
+        <!-- Top Navigation -->
+        <header class="[animation:fadeSlideIn_0.8s_ease-out_0.1s_both] z-10 relative">
+          <div class="sm:px-6 lg:px-8 max-w-7xl mr-auto ml-auto pr-4 pl-4">
+            <div class="flex items-center justify-between py-6">
+              <!-- Logo: replace href and background image -->
+              <a href="#" aria-label="Brand home" class="inline-flex items-center justify-center bg-center w-[100px] h-[40px] bg-[url(https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/46c13ea9-07a0-49a5-adef-0c501a634106_320w.png)] bg-cover rounded"></a>
+
+              <!-- Nav pill -->
+              <nav class="hidden md:flex" aria-label="Primary">
+                <div class="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1.5 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)]">
+                  <a class="px-4 py-2 rounded-full text-sm font-medium bg-white/10 text-white shadow hover:bg-white/15 transition tracking-tight font-geist" href="#">
+                    Home
+                  </a>
+                  <a class="px-4 py-2 rounded-full text-sm font-medium text-white/80 hover:text-white hover:bg-white/5 transition tracking-tight font-geist" href="#features">
+                    Features
+                  </a>
+                  <a class="px-4 py-2 rounded-full text-sm font-medium text-white/80 hover:text-white hover:bg-white/5 transition tracking-tight font-geist" href="#pricing">
+                    Pricing
+                  </a>
+                  <a class="px-4 py-2 rounded-full text-sm font-medium text-white/80 hover:text-white hover:bg-white/5 transition tracking-tight font-geist" href="#resources">
+                    Resources
+                  </a>
+                  <a class="px-4 py-2 rounded-full text-sm font-medium text-white/80 hover:text-white hover:bg-white/5 transition tracking-tight font-geist" href="#about">
+                    About
+                  </a>
+                </div>
+              </nav>
+
+              <!-- CTA -->
+              <div class="hidden sm:flex">
+                <button class="group hover:shadow-sky-500/30 hover:shadow-2xl hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all duration-500 ease-out cursor-pointer hover:border-sky-400/60 overflow-hidden bg-gradient-to-br from-sky-900/40 via-black-900/60 to-black/80 border-sky-500/30 border-2 rounded-full pt-2.5 pr-4 pb-2.5 pl-5 relative shadow-2xl backdrop-blur-xl">
+                  <div class="absolute inset-0 bg-gradient-to-r from-transparent via-sky-400/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>
+                  <div class="group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-sky-500/10 via-sky-400/20 to-sky-500/10 opacity-0 rounded-2xl absolute top-0 right-0 bottom-0 left-0"></div>
+                  <div class="relative z-10 flex items-center gap-3">
+                    <div class="flex-1 text-left">
+                      <p class="group-hover:text-white transition-colors duration-300 text-sm font-bold text-white font-geist drop-shadow-sm">
+                        Start Free Trial
+                      </p>
+                    </div>
+                    <div class="opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300">
+                      <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" class="w-4 h-4 text-white">
+                        <path d="M9 5l7 7-7 7" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
+                      </svg>
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              <!-- Mobile menu button (placeholder only) -->
+              <button class="md:hidden inline-flex items-center justify-center rounded-full p-2.5 bg-white/5 border border-white/10 hover:bg-white/10 transition" aria-label="Open menu">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="menu" class="lucide lucide-menu h-5 w-5 text-white/90"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <!-- Hero body -->
+        <div class="md:px-8 md:pt-0 md:pb-0 max-w-7xl mt-68 mr-auto mb-20 ml-auto pt-6 pr-6 pb-28 pl-6">
+          <div class="grid place-items-center relative">
+            <!-- Brand title: replace copy with your brand -->
+            <h1 class="md:mt-10 text-[14vw] leading-none md:text-[8rem] select-none [animation:fadeSlideIn_0.8s_ease-out_0.2s_both] font-semibold text-white/95 tracking-tight mt-10">
+              SOR<span class="text-sky-400">A</span>
+            </h1>
+            <p class="md:text-lg [animation:fadeSlideIn_0.8s_ease-out_0.3s_both] text-base text-white/70 text-center max-w-xl mt-4">
+              Take control of your money with smarter insights. Track spending, manage subscriptions, and reach your financial goals effortlessly.
+            </p>
+            <div class="flex flex-col gap-6 z-10 max-w-sm mt-6 mr-auto ml-auto relative">
+              <button class="group hover:shadow-sky-500/30 hover:shadow-2xl hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all duration-500 ease-out cursor-pointer hover:border-sky-400/60 overflow-hidden [animation:fadeSlideIn_0.8s_ease-out_0.4s_both] bg-gradient-to-br from-sky-900/40 via-black-900/60 to-black/80 border-sky-500/30 border-2 rounded-full pt-3 pr-4 pb-3 pl-6 relative shadow-2xl backdrop-blur-xl">
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-sky-400/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>
+                <div class="group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-sky-500/10 via-sky-400/20 to-sky-500/10 opacity-0 rounded-2xl absolute top-0 right-0 bottom-0 left-0"></div>
+                <div class="relative z-10 flex items-center gap-4">
+                  <div class="flex-1 text-left">
+                    <p class="group-hover:text-white transition-colors duration-300 text-base font-bold text-white font-geist drop-shadow-sm">
+                      Get Started
+                    </p>
+                  </div>
+                  <div class="opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300">
+                    <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" class="w-5 h-5 text-white">
+                      <path d="M9 5l7 7-7 7" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
+                    </svg>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard preview (kept as in template) -->
+        <!-- BEGIN Dashboard UI Container -->
+        <!-- For brevity, this retains structure; customize content later -->
+        <div class="[animation:fadeSlideIn_0.8s_ease-out_0.6s_both] sm:px-6 md:pt-6 lg:pt-12 lg:pl-0 lg:pr-0 text-neutral-100 font-geist max-w-6xl z-10 mr-auto ml-auto pt-6 pr-8 pl-8 relative">
+          <!-- ... Template dashboard content preserved from original ... -->
+          <!-- You can port/trim sections from smart-scale.md as needed -->
+        </div>
+        <!-- END Dashboard UI Container -->
+      </section>
+
+      <!-- Features Section -->
+      <section id="features" class="sm:pt-24 sm:pb-12 z-10 mx-8 pt-24 pb-24 relative">
+        <!-- Preserved structure of feature cards and tabs -->
+        <!-- Replace copy and hook up tabs via app.js -->
+        <section class="lg:p-8 [animation:fadeSlideIn_0.8s_ease-out_0.1s_both] animate-on-scroll bg-gradient-to-br from-white/0 via-white/10 to-white/0 max-w-7xl rounded-3xl mr-auto ml-auto pt-8 pr-8 pb-8 pl-8 relative">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-12 px-6">
+            <div class="text-left">
+              <h2 class="leading-7 text-base font-semibold text-sky-400 font-geist">Feature</h2>
+              <h2 class="sm:text-4xl [animation:fadeSlideIn_0.8s_ease-out_0.2s_both] animate-on-scroll text-3xl font-semibold text-white tracking-tight font-geist mt-3">
+                Powerful tools for modern budgeting
+              </h2>
+              <p class="leading-8 [animation:fadeSlideIn_0.8s_ease-out_0.3s_both] animate-on-scroll text-lg text-white/70 max-w-2xl mt-4">
+                Track spending, forecast savings, and stop surprise renewals—Sora keeps everything in one clear view.
+              </p>
+            </div>
+            <div class="md:mt-0 [animation:fadeSlideIn_0.8s_ease-out_0.4s_both] animate-on-scroll mt-8" role="tablist" aria-label="Feature categories" id="feature-tabs">
+              <div class="inline-flex border-white/10 border rounded-xl pt-1 pr-1 pb-1 pl-1 items-center">
+                <button type="button" role="tab" aria-selected="true" data-feature="overview" class="px-4 py-2 text-sm font-medium rounded-lg transition bg-sky-500/20 text-sky-200 ring-1 ring-inset ring-sky-500/30">
+                  Overview
+                </button>
+                <button type="button" role="tab" aria-selected="false" data-feature="automation" class="px-4 py-2 text-sm font-medium rounded-lg transition text-white/80 hover:text-white">
+                  Automation
+                </button>
+                <button type="button" role="tab" aria-selected="false" data-feature="security" class="px-4 py-2 text-sm font-medium rounded-lg transition text-white/80 hover:text-white">
+                  Security
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- Left/Right columns content preserved conceptually -->
+          <!-- ... -->
+        </section>
+      </section>
+
+      <!-- Pricing Section -->
+      <section id="pricing" class="sm:pt-12 sm:pb-12 z-10 mx-8 pt-24 pb-24 relative">
+        <div class="lg:pt-8 lg:pl-8 lg:pr-8 lg:pb-8 [animation:fadeSlideIn_0.8s_ease-out_0.1s_both] animate-on-scroll bg-gradient-to-br from-white/0 via-white/10 to-white/0 max-w-7xl rounded-3xl mr-auto ml-auto pt-8 pr-8 pb-8 pl-8">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between max-w-7xl mr-auto mb-16 ml-auto pr-6 pl-6">
+            <div class="[animation:fadeSlideIn_0.8s_ease-out_0.1s_both] animate-on-scroll text-left max-w-none">
+              <h2 class="leading-7 text-base font-semibold text-sky-400 font-geist">Pricing</h2>
+              <p class="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl font-geist">
+                Simple plans for every team
+              </p>
+              <p class="mt-6 text-lg leading-8 text-white/70">
+                Choose the plan that fits your workflow and scale as your business grows.
+              </p>
+            </div>
+            <div class="md:mt-0 [animation:fadeSlideIn_0.8s_ease-out_0.2s_both] animate-on-scroll mt-8">
+              <div class="inline-flex border-white/10 border rounded-xl pt-1 pr-1 pb-1 pl-1 items-center" role="tablist" aria-label="Billing period" id="billing-toggle">
+                <button type="button" role="tab" aria-selected="true" data-period="monthly" class="px-4 py-2 text-sm font-medium rounded-lg transition bg-sky-500/20 text-sky-200 ring-1 ring-inset ring-sky-500/30">
+                  Monthly
+                </button>
+                <button type="button" role="tab" aria-selected="false" data-period="annual" class="px-4 py-2 text-sm font-medium rounded-lg transition text-white/80 hover:text-white">
+                  Annual <span class="ml-1 text-xs text-sky-300/80">(save 20%)</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- Pricing cards placeholder (replace content later) -->
+          <div class="grid grid-cols-1 gap-8 lg:max-w-none lg:grid-cols-2 max-w-2xl mx-auto">
+            <!-- Card 1 -->
+            <div class="overflow-hidden [animation:fadeSlideIn_0.8s_ease-out_0.3s_both] animate-on-scroll border-white/10 border rounded-3xl pt-8 pr-8 pb-8 pl-8 relative backdrop-blur-xl">
+              <div class="flex items-start justify-between">
+                <div>
+                  <h3 class="text-3xl font-semibold tracking-tight text-white font-geist">Spending Intelligence</h3>
+                  <p class="mt-2 text-sky-400 font-medium text-sm">Starter Plan</p>
+                </div>
+                <button class="group hover:shadow-sky-500/30 hover:shadow-2xl hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all duration-500 ease-out cursor-pointer hover:border-sky-400/60 overflow-hidden bg-gradient-to-br from-sky-900/40 via-black-900/60 to-black/80 border-sky-500/30 border-2 rounded-full pt-2 pr-3 pb-2 pl-4 relative shadow-2xl backdrop-blur-xl">
+                  <div class="absolute inset-0 bg-gradient-to-r from-transparent via-sky-400/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>
+                  <div class="group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-sky-500/10 via-sky-400/20 to-sky-500/10 opacity-0 rounded-2xl absolute top-0 right-0 bottom-0 left-0"></div>
+                  <div class="relative z-10 flex items-center gap-2">
+                    <div class="flex-1 text-left">
+                      <p class="group-hover:text-white transition-colors duration-300 text-xs font-bold text-white font-geist drop-shadow-sm">
+                        Contact Us
+                      </p>
+                    </div>
+                    <div class="opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300">
+                      <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" class="w-4 h-4 text-white">
+                        <path d="M9 5l7 7-7 7" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
+                      </svg>
+                    </div>
+                  </div>
+                </button>
+              </div>
+              <div class="flex items-end gap-2 mt-6">
+                <div class="text-5xl font-bold tracking-tight text-white font-geist">$9</div>
+                <div class="pb-2 text-white/60 text-sm">/month</div>
+              </div>
+              <p class="mt-3 text-white/70 text-lg leading-8">
+                Make sense of every dollar. Sora classifies transactions, highlights trends, and surfaces insights you can act on.
+              </p>
+              <div class="h-px bg-white/10 my-6"></div>
+              <ul class="space-y-4">
+                <li class="flex items-start gap-3 text-base text-white/90"><span class="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sky-500/15"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m20 6-11 11-5-5"></path></svg></span>Real-time categorization with accuracy improvements over time.</li>
+                <li class="flex items-start gap-3 text-base text-white/90"><span class="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sky-500/15"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m20 6-11 11-5-5"></path></svg></span>Trend analysis with monthly deltas and seasonality highlights.</li>
+                <li class="flex items-start gap-3 text-base text-white/90"><span class="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sky-500/15"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m20 6-11 11-5-5"></path></svg></span>Subscription detection, duplicates cleanup, and price change alerts.</li>
+                <li class="flex items-start gap-3 text-base text-white/90"><span class="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sky-500/15"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m20 6-11 11-5-5"></path></svg></span>Anomaly alerts for unusual spend and merchant risk signals.</li>
+                <li class="flex items-start gap-3 text-base text-white/90"><span class="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sky-500/15"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m20 6-11 11-5-5"></path></svg></span>Exportable reports for taxes and budgeting.</li>
+              </ul>
+            </div>
+            <!-- Card 2 -->
+            <div class="overflow-hidden [animation:fadeSlideIn_0.8s_ease-out_0.4s_both] animate-on-scroll border-white/10 border rounded-3xl pt-8 pr-8 pb-8 pl-8 relative backdrop-blur-xl">
+              <div class="flex items-start justify-between">
+                <div>
+                  <h3 class="text-3xl font-semibold tracking-tight text-white font-geist">Automation &amp; Goals</h3>
+                  <p class="mt-2 text-sky-400 font-medium text-sm">Pro Plan</p>
+                </div>
+                <button class="group hover:shadow-sky-500/30 hover:shadow-2xl hover:scale-[1.02] hover:-translate-y-1 active:scale-95 transition-all duration-500 ease-out cursor-pointer hover:border-sky-400/60 overflow-hidden bg-gradient-to-br from-sky-900/40 via-black-900/60 to-black/80 border-sky-500/30 border-2 rounded-full pt-2 pr-3 pb-2 pl-4 relative shadow-2xl backdrop-blur-xl">
+                  <div class="absolute inset-0 bg-gradient-to-r from-transparent via-sky-400/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>
+                  <div class="group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-sky-500/10 via-sky-400/20 to-sky-500/10 opacity-0 rounded-2xl absolute top-0 right-0 bottom-0 left-0"></div>
+                  <div class="relative z-10 flex items-center gap-2">
+                    <div class="flex-1 text-left">
+                      <p class="group-hover:text-white transition-colors duration-300 text-xs font-bold text-white font-geist drop-shadow-sm">
+                        Contact Us
+                      </p>
+                    </div>
+                    <div class="opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300">
+                      <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" class="w-4 h-4 text-white">
+                        <path d="M9 5l7 7-7 7" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
+                      </svg>
+                    </div>
+                  </div>
+                </button>
+              </div>
+              <div class="flex items-end gap-2 mt-6">
+                <div class="text-5xl font-bold tracking-tight text-white font-geist">$19</div>
+                <div class="pb-2 text-white/60 text-sm">/month</div>
+              </div>
+              <p class="mt-3 text-white/70 text-lg leading-8">
+                Reach your targets faster. Set rules, schedule transfers, and let Sora automate the busywork.
+              </p>
+              <div class="h-px bg-white/10 my-6"></div>
+              <ul class="space-y-4">
+                <li class="flex items-start gap-3 text-base text-white/90"><span class="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sky-500/15"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m20 6-11 11-5-5"></path></svg></span>Auto-save rules by paycheck, merchant, or category.</li>
+                <li class="flex items-start gap-3 text-base text-white/90"><span class="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sky-500/15"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m20 6-11 11-5-5"></path></svg></span>Smart bill reminders, autopay tracking, and snooze.</li>
+                <li class="flex items-start gap-3 text-base text-white/90"><span class="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sky-500/15"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m20 6-11 11-5-5"></path></svg></span>Envelope-style budgets with rollover and guardrails.</li>
+                <li class="flex items-start gap-3 text-base text-white/90"><span class="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sky-500/15"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m20 6-11 11-5-5"></path></svg></span>Shared budgets and goals for partners or family.</li>
+                <li class="flex items-start gap-3 text-base text-white/90"><span class="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sky-500/15"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m20 6-11 11-5-5"></path></svg></span>Integrations and secure sync with your favorite banks.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Testimonials Section -->
+      <section id="testimonials" class="sm:pt-12 sm:pb-12 z-10 mx-8 pt-24 pb-24 relative">
+        <!-- Preserve base layout; plug in your own testimonials later -->
+        <!-- ... -->
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="[animation:fadeSlideIn_0.8s_ease-out_0.1s_both] animate-on-scroll bg-black/40 z-10 border-white/10 border-t relative backdrop-blur-xl">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+          <div class="col-span-2 md:col-span-1">
+            <a href="#" class="inline-flex items-center justify-center bg-center w-[100px] h-[40px] bg-[url(https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/46c13ea9-07a0-49a5-adef-0c501a634106_320w.png)] bg-cover rounded mb-4" aria-label="Brand home"></a>
+            <p class="text-sm text-white/60 leading-relaxed max-w-xs">
+              Take control of your finances with smarter insights and automated budgeting tools.
+            </p>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-white mb-4 font-geist">Product</h3>
+            <ul class="space-y-3">
+              <li><a href="#features" class="text-sm text-white/60 hover:text-white transition">Features</a></li>
+              <li><a href="#pricing" class="text-sm text-white/60 hover:text-white transition">Pricing</a></li>
+              <li><a href="#security" class="text-sm text-white/60 hover:text-white transition">Security</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-white mb-4 font-geist">Company</h3>
+            <ul class="space-y-3">
+              <li><a href="#about" class="text-sm text-white/60 hover:text-white transition">About</a></li>
+              <li><a href="#blog" class="text-sm text-white/60 hover:text-white transition">Blog</a></li>
+              <li><a href="#careers" class="text-sm text-white/60 hover:text-white transition">Careers</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-white mb-4 font-geist">Legal</h3>
+            <ul class="space-y-3">
+              <li><a href="#privacy" class="text-sm text-white/60 hover:text-white transition">Privacy</a></li>
+              <li><a href="#terms" class="text-sm text-white/60 hover:text-white transition">Terms</a></li>
+              <li><a href="#security" class="text-sm text-white/60 hover:text-white transition">Security</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p class="text-sm text-white/40">© 2024 Sora. All rights reserved.</p>
+          <div class="flex items-center gap-4">
+            <a href="#" aria-label="X/Twitter" class="text-white/40 hover:text-white transition">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path></svg>
+            </a>
+            <a href="#" aria-label="GitHub" class="text-white/40 hover:text-white transition">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>
+            </a>
+            <a href="#" aria-label="Dribbble" class="text-white/40 hover:text-white transition">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c5.51 0 10-4.48 10-10S17.51 2 12 2zm6.605 4.61a8.502 8.502 0 011.93 5.314c-.281-.054-3.101-.629-5.943-.271-.065-.141-.12-.293-.184-.445a25.416 25.416 0 00-.564-1.236c3.145-1.28 4.577-3.124 4.761-3.362zM12 3.475c2.17 0 4.154.813 5.662 2.148-.152.216-1.443 1.941-4.48 3.08-1.399-2.57-2.95-4.675-3.189-5A8.687 8.687 0 0112 3.475zm-3.633.803a53.896 53.896 0 013.167 4.935c-3.992 1.063-7.517 1.04-7.896 1.04a8.581 8.581 0 014.729-5.975zM3.453 12.01v-.26c.37.01 4.512.065 8.775-1.215.25.477.477.965.694 1.453-.109.033-.228.065-.336.098-4.404 1.42-6.747 5.303-6.942 5.629a8.522 8.522 0 01-2.19-5.705zM12 20.547a8.482 8.482 0 01-5.239-1.8c.152-.315 1.888-3.656 6.703-5.337.022-.01.033-.01.054-.022a35.318 35.318 0 011.823 6.475 8.4 8.4 0 01-3.341.684zm4.761-1.465c-.086-.52-.542-3.015-1.659-6.084 2.679-.423 5.022.271 5.314.369a8.468 8.468 0 01-3.655 5.715z" clip-rule="evenodd"></path></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./assets/js/app.js"></script>
+  </body>
+</html>
+
+
+
