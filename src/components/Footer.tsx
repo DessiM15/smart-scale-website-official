@@ -13,7 +13,7 @@ export default function Footer() {
                 alt="Smart Scale"
                 width={180}
                 height={72}
-                className="h-12 w-auto"
+                className="h-12 w-auto brightness-0 invert"
                 unoptimized
               />
             </Link>

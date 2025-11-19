@@ -12,8 +12,9 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const post = getBlogPost(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const post = getBlogPost(slug);
 
   if (!post) {
     return {
@@ -34,8 +35,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = getBlogPost(params.slug);
+export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const post = getBlogPost(slug);
 
   if (!post) {
     notFound();
@@ -43,90 +45,137 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 
   // Convert markdown-like content to HTML (simplified - in production, use a markdown parser)
   const formatContent = (content: string) => {
-    const lines = content.split("\n");
-    let html = "";
-    let inList = false;
+    if (!content) return "";
+    
+    // Simple escape function
+    const escapeHtml = (text: string): string => {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    };
+    
+    try {
+      const lines = content.split("\n");
+      let html = "";
+      let inList = false;
 
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      const trimmed = line.trim();
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const trimmed = line.trim();
 
-      // Headers
-      if (trimmed.startsWith("# ")) {
+        // Headers
+        if (trimmed.startsWith("# ")) {
+          if (inList) {
+            html += "</ul>";
+            inList = false;
+          }
+          let headerText = trimmed.substring(2);
+          headerText = headerText.replace(/\*\*([^\*]+)\*\*/g, '<strong class="text-black font-semibold">$1</strong>');
+          // Split by HTML tags and escape text parts
+          const headerParts = headerText.split(/(<[^>]+>)/);
+          headerText = headerParts.map(part => part.startsWith('<') ? part : escapeHtml(part)).join('');
+          html += `<h1 class="text-4xl font-bold mb-6 text-black mt-12 first:mt-0">${headerText}</h1>`;
+          continue;
+        }
+        if (trimmed.startsWith("## ")) {
+          if (inList) {
+            html += "</ul>";
+            inList = false;
+          }
+          let headerText = trimmed.substring(3);
+          headerText = headerText.replace(/\*\*([^\*]+)\*\*/g, '<strong class="text-black font-semibold">$1</strong>');
+          const headerParts = headerText.split(/(<[^>]+>)/);
+          headerText = headerParts.map(part => part.startsWith('<') ? part : escapeHtml(part)).join('');
+          html += `<h2 class="text-3xl font-bold mb-4 text-black mt-10">${headerText}</h2>`;
+          continue;
+        }
+        if (trimmed.startsWith("### ")) {
+          if (inList) {
+            html += "</ul>";
+            inList = false;
+          }
+          let headerText = trimmed.substring(4);
+          headerText = headerText.replace(/\*\*([^\*]+)\*\*/g, '<strong class="text-black font-semibold">$1</strong>');
+          const headerParts = headerText.split(/(<[^>]+>)/);
+          headerText = headerParts.map(part => part.startsWith('<') ? part : escapeHtml(part)).join('');
+          html += `<h3 class="text-2xl font-bold mb-3 text-black mt-8">${headerText}</h3>`;
+          continue;
+        }
+
+        // Lists
+        if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+          if (!inList) {
+            html += '<ul class="list-disc list-inside space-y-2 mb-6 text-[#6B7280] text-lg">';
+            inList = true;
+          }
+          let listItem = trimmed.substring(2);
+          // Process markdown first
+          listItem = listItem.replace(/\*\*([^\*]+)\*\*/g, '<strong class="text-black font-semibold">$1</strong>');
+          listItem = listItem.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
+            const safeText = escapeHtml(text);
+            const safeUrl = escapeHtml(url);
+            return `<a href="${safeUrl}" class="text-[#DC2626] hover:underline font-semibold" target="_blank" rel="noopener noreferrer">${safeText}</a>`;
+          });
+          // Split by HTML tags and escape text parts
+          const listParts = listItem.split(/(<[^>]+>)/);
+          listItem = listParts.map(part => part.startsWith('<') ? part : escapeHtml(part)).join('');
+          html += `<li class="ml-4">${listItem}</li>`;
+          continue;
+        }
+
+        // Close list if needed
+        if (inList && trimmed === "") {
+          html += "</ul>";
+          inList = false;
+          continue;
+        }
+
+        // Empty lines
+        if (trimmed === "") {
+          if (inList) {
+            html += "</ul>";
+            inList = false;
+          }
+          html += "<br />";
+          continue;
+        }
+
+        // Regular paragraphs with formatting
         if (inList) {
           html += "</ul>";
           inList = false;
         }
-        html += `<h1 class="text-4xl font-bold mb-6 text-black mt-12 first:mt-0">${trimmed.substring(2)}</h1>`;
-        continue;
-      }
-      if (trimmed.startsWith("## ")) {
-        if (inList) {
-          html += "</ul>";
-          inList = false;
-        }
-        html += `<h2 class="text-3xl font-bold mb-4 text-black mt-10">${trimmed.substring(3)}</h2>`;
-        continue;
-      }
-      if (trimmed.startsWith("### ")) {
-        if (inList) {
-          html += "</ul>";
-          inList = false;
-        }
-        html += `<h3 class="text-2xl font-bold mb-3 text-black mt-8">${trimmed.substring(4)}</h3>`;
-        continue;
+
+        let processedLine = trimmed;
+        
+        // Process markdown first
+        processedLine = processedLine.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
+          const safeText = escapeHtml(text);
+          const safeUrl = escapeHtml(url);
+          return `<a href="${safeUrl}" class="text-[#DC2626] hover:underline font-semibold" target="_blank" rel="noopener noreferrer">${safeText}</a>`;
+        });
+        
+        processedLine = processedLine.replace(/\*\*([^\*]+)\*\*/g, '<strong class="text-black font-semibold">$1</strong>');
+        
+        // Split by HTML tags and escape text parts
+        const lineParts = processedLine.split(/(<[^>]+>)/);
+        processedLine = lineParts.map(part => part.startsWith('<') ? part : escapeHtml(part)).join('');
+
+        html += `<p class="text-[#6B7280] leading-relaxed mb-4 text-lg">${processedLine}</p>`;
       }
 
-      // Lists
-      if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
-        if (!inList) {
-          html += '<ul class="list-disc list-inside space-y-2 mb-6 text-[#6B7280] text-lg">';
-          inList = true;
-        }
-        const listItem = trimmed.substring(2).replace(/\*\*/g, "<strong class='text-black font-semibold'>").replace(/\*\*/g, "</strong>");
-        html += `<li class="ml-4">${listItem}</li>`;
-        continue;
-      }
-
-      // Close list if needed
-      if (inList && trimmed === "") {
-        html += "</ul>";
-        inList = false;
-        continue;
-      }
-
-      // Empty lines
-      if (trimmed === "") {
-        if (inList) {
-          html += "</ul>";
-          inList = false;
-        }
-        html += "<br />";
-        continue;
-      }
-
-      // Regular paragraphs with formatting
       if (inList) {
         html += "</ul>";
-        inList = false;
       }
 
-      let processedLine = trimmed;
-      
-      // Bold text
-      processedLine = processedLine.replace(/\*\*([^\*]+)\*\*/g, '<strong class="text-black font-semibold">$1</strong>');
-      
-      // Links
-      processedLine = processedLine.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-[#DC2626] hover:underline font-semibold">$1</a>');
-
-      html += `<p class="text-[#6B7280] leading-relaxed mb-4 text-lg">${processedLine}</p>`;
+      return html;
+    } catch (error) {
+      console.error("Error formatting content:", error);
+      return `<p class="text-[#6B7280]">Error loading content.</p>`;
     }
-
-    if (inList) {
-      html += "</ul>";
-    }
-
-    return html;
   };
 
   const jsonLd = {
@@ -252,7 +301,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             {/* Content */}
             <div
               className="prose prose-lg max-w-none"
-              dangerouslySetInnerHTML={{ __html: formatContent(post.content) }}
+              dangerouslySetInnerHTML={{ __html: formatContent(post.content || "") }}
             />
 
             {/* CTA Section */}

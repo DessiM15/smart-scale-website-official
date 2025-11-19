@@ -44,44 +44,59 @@ export default function WhyChooseSmartScale() {
   const [counters, setCounters] = useState(metrics.map(() => 0));
   const [hasAnimated, setHasAnimated] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+  const timersRef = useRef<NodeJS.Timeout[]>([]);
+  const animationStartedRef = useRef(false);
 
   useEffect(() => {
-    if (hasAnimated) return; // Don't set up observer if already animated
+    const animateCounters = () => {
+      // Use ref to prevent duplicate animations
+      if (animationStartedRef.current) return;
+      animationStartedRef.current = true;
+      setHasAnimated(true);
+      
+      // Animate counters
+      metrics.forEach((metric, index) => {
+        // For "check" type, don't animate - just set to 1 immediately
+        if (metric.type === "check") {
+          setCounters((prev) => {
+            const newCounters = [...prev];
+            newCounters[index] = 1;
+            return newCounters;
+          });
+          return;
+        }
 
-    const timersRef: { current: NodeJS.Timeout[] } = { current: [] };
+        const duration = 2000; // 2 seconds
+        const steps = 60;
+        const increment = metric.value / steps;
+        const stepDuration = duration / steps;
+        
+        let currentStep = 0;
+        const timer = setInterval(() => {
+          currentStep++;
+          setCounters((prev) => {
+            const newCounters = [...prev];
+            const newValue = Math.min(
+              increment * currentStep,
+              metric.value
+            );
+            newCounters[index] = newValue;
+            return newCounters;
+          });
+          
+          if (currentStep >= steps) {
+            clearInterval(timer);
+          }
+        }, stepDuration);
+        timersRef.current.push(timer);
+      });
+    };
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && !hasAnimated) {
-            setHasAnimated(true);
-            
-            // Animate counters
-            metrics.forEach((metric, index) => {
-              const duration = 2000; // 2 seconds
-              const steps = 60;
-              const increment = metric.value / steps;
-              const stepDuration = duration / steps;
-              
-              let currentStep = 0;
-              const timer = setInterval(() => {
-                currentStep++;
-                setCounters((prev) => {
-                  const newCounters = [...prev];
-                  const newValue = Math.min(
-                    increment * currentStep,
-                    metric.value
-                  );
-                  newCounters[index] = newValue;
-                  return newCounters;
-                });
-                
-                if (currentStep >= steps) {
-                  clearInterval(timer);
-                }
-              }, stepDuration);
-              timersRef.current.push(timer);
-            });
+          if (entry.isIntersecting && !animationStartedRef.current) {
+            animateCounters();
           }
         });
       },
@@ -89,8 +104,18 @@ export default function WhyChooseSmartScale() {
     );
 
     const currentSection = sectionRef.current;
+    
+    // Check if section is already visible (for SSR/hydration issues)
     if (currentSection) {
-      observer.observe(currentSection);
+      const rect = currentSection.getBoundingClientRect();
+      const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+      
+      if (isVisible && !animationStartedRef.current) {
+        // Small delay to ensure component is fully mounted
+        setTimeout(animateCounters, 100);
+      } else {
+        observer.observe(currentSection);
+      }
     }
 
     return () => {
@@ -99,8 +124,9 @@ export default function WhyChooseSmartScale() {
       }
       // Cleanup all timers
       timersRef.current.forEach(timer => clearInterval(timer));
+      timersRef.current = [];
     };
-  }, [hasAnimated]);
+  }, []);
 
   return (
     <section ref={sectionRef} className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
@@ -171,7 +197,7 @@ export default function WhyChooseSmartScale() {
                   <div className="mb-2">
                     <span className="text-4xl md:text-5xl font-bold text-white">
                       {metric.type === "check" 
-                        ? counters[index] > 0 ? "Always" : ""
+                        ? "Always"
                         : metric.suffix === "%"
                         ? `${Math.round(counters[index])}${metric.suffix}`
                         : `${Math.round(counters[index])}${metric.suffix}`
