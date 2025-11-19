@@ -1,17 +1,19 @@
 import Hero from "@/components/sections/Hero";
-import ServicesOverview from "@/components/sections/ServicesOverview";
+import WhySmartScale from "@/components/sections/WhySmartScale";
+import ProcessVisualization from "@/components/sections/ProcessVisualization";
 import IndustriesWeServe from "@/components/sections/IndustriesWeServe";
 import OurClients from "@/components/sections/OurClients";
-import ContactStrip from "@/components/sections/ContactStrip";
+import UrgencyCTA from "@/components/sections/UrgencyCTA";
 
 export default function Home() {
   return (
     <>
       <Hero />
-      <ServicesOverview />
+      <WhySmartScale />
+      <ProcessVisualization />
       <IndustriesWeServe />
       <OurClients />
-      <ContactStrip />
+      <UrgencyCTA />
     </>
   );
 }

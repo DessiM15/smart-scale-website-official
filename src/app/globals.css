@@ -4,6 +4,9 @@
   --color-brand-red: #DC2626;
   --color-brand-black: #000000;
   --color-brand-white: #FFFFFF;
+  --color-gray-800: #1F2937;
+  --color-gray-500: #6B7280;
+  --color-gray-100: #F3F4F6;
 }
 
 @layer base {

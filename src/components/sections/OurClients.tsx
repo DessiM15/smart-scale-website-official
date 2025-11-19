@@ -25,11 +25,16 @@ const clients = [
 
 export default function OurClients() {
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
+    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#F3F4F6]">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-4xl sm:text-5xl font-bold mb-12 text-center text-black">
-          Our Clients
-        </h2>
+        <div className="text-center mb-16">
+          <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-black">
+            Trusted Partners
+          </h2>
+          <p className="text-lg text-[#6B7280] max-w-2xl mx-auto">
+            Companies that trust us to deliver enterprise-quality solutions.
+          </p>
+        </div>
         <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12 lg:gap-16">
           {clients.map((client, index) => (
             <div
@@ -43,7 +48,7 @@ export default function OurClients() {
                   className="object-contain h-full w-auto max-w-[200px] md:max-w-[240px] lg:max-w-[280px]"
                 />
               ) : (
-                <div className="text-xl md:text-2xl font-serif font-semibold text-gray-800 tracking-wide">
+                <div className="text-xl md:text-2xl font-serif font-semibold text-[#1F2937] tracking-wide">
                   {client.name}
                 </div>
               )}

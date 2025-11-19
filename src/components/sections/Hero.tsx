@@ -80,10 +80,10 @@ export default function Hero() {
         <div className="grid place-items-center relative">
           {/* Main headline */}
           <h1 className="md:mt-10 text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight select-none font-semibold text-white tracking-tight mt-10 text-center px-4">
-            Enterprise Software. AI Systems. Digital Transformation.
+            Enterprise Quality. AI-Accelerated. 7-Day MVPs.
           </h1>
           <p className="md:text-lg text-base text-white/70 text-center max-w-2xl mt-6">
-            Custom-built solutions for businesses requiring precision and performance.
+            Premium boutique development studio delivering enterprise-grade solutions without the agency bureaucracy. Direct founder involvement on every project.
           </p>
 
           {/* CTA Buttons */}

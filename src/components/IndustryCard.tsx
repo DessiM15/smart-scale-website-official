@@ -6,10 +6,18 @@ interface IndustryCardProps {
 
 export default function IndustryCard({ name, description, icon }: IndustryCardProps) {
   return (
-    <div className="p-6 border border-gray-200 rounded-lg hover:border-[#DC2626] hover:shadow-lg transition-all duration-300 bg-white">
-      {icon && <div className="mb-3 text-[#DC2626]">{icon}</div>}
-      <h3 className="text-lg font-semibold mb-2 text-black">{name}</h3>
-      <p className="text-sm text-gray-600">{description}</p>
+    <div className="group p-6 bg-[#F3F4F6] rounded-lg hover:bg-black hover:shadow-2xl transition-all duration-300">
+      {icon && (
+        <div className="mb-4 text-[#DC2626] group-hover:text-white transition-colors duration-300">
+          {icon}
+        </div>
+      )}
+      <h3 className="text-lg font-semibold mb-2 text-black group-hover:text-white transition-colors duration-300">
+        {name}
+      </h3>
+      <p className="text-sm text-[#6B7280] group-hover:text-white/80 transition-colors duration-300">
+        {description}
+      </p>
     </div>
   );
 }
