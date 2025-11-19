@@ -10,13 +10,14 @@ interface PortfolioItem {
   subtitle: string;
   industry: string;
   description: string;
-  logo?: string;
-  logoType: "image" | "text";
   backgroundImage?: string;
   backgroundColor: string;
   isConcept?: boolean;
   technologies?: string[];
   heroImage?: string;
+  screenshot?: string;
+  projectDetails?: string;
+  hidden?: boolean;
   caseStudy?: {
     challenge: string;
     solution: string;
@@ -36,11 +37,11 @@ const portfolioItems: PortfolioItem[] = [
     subtitle: "Casino Training Platform",
     industry: "ENTERPRISE SYSTEMS",
     description: "Comprehensive training and certification platform for casino dealers with real-time progress tracking and automated assessments.",
-    logoType: "text" as const,
     backgroundColor: "#000000",
-    backgroundImage: "linear-gradient(135deg, #1F2937 0%, #000000 100%)",
+    backgroundImage: "url(/assets/casino-ss-portfolio.jpg)",
     technologies: ["React", "Node.js", "PostgreSQL", "AWS", "WebRTC"],
-    heroImage: "linear-gradient(135deg, #1F2937 0%, #000000 100%)",
+    heroImage: "url(/assets/casino-ss-portfolio.jpg)",
+    hidden: true,
     caseStudy: {
       challenge: "Casino training programs required manual tracking, inconsistent certification processes, and lacked real-time performance analytics.",
       solution: "Built a comprehensive training platform with automated certification workflows, real-time progress tracking, interactive video lessons, and AI-powered assessment tools.",
@@ -63,11 +64,12 @@ const portfolioItems: PortfolioItem[] = [
     subtitle: "Legal Services Website",
     industry: "LEGAL",
     description: "Modern legal practice website with case management integration, client portal, and streamlined communication workflows.",
-    logoType: "text" as const,
     backgroundColor: "#1F2937",
-    backgroundImage: "linear-gradient(135deg, #1F2937 0%, #000000 100%)",
+    backgroundImage: "url(/assets/law-ss-portfolio.jpg)",
     technologies: ["Next.js", "TypeScript", "MongoDB", "Stripe", "Vercel"],
-    heroImage: "linear-gradient(135deg, #1F2937 0%, #000000 100%)",
+    heroImage: "url(/assets/law-ss-portfolio.jpg)",
+    screenshot: "/assets/sylvester-screenshot.png",
+    projectDetails: "We overhauled their website, creating a simple informational page that effectively communicates their legal services and expertise.",
     caseStudy: {
       challenge: "Streamline case management and client communication for a growing legal practice while maintaining professional online presence.",
       solution: "Developed a custom practice management system with case tracking, document management, client portal, and integrated website with modern design.",
@@ -85,12 +87,12 @@ const portfolioItems: PortfolioItem[] = [
     subtitle: "Restaurant Digital Presence",
     industry: "FOOD SERVICE",
     description: "Complete digital transformation including online ordering, POS integration, and delivery management for a growing restaurant chain.",
-    logo: "/assets/mex-taco-logo-ss.jpg",
-    logoType: "image" as const,
     backgroundColor: "#FFFFFF",
-    backgroundImage: "linear-gradient(135deg, #F3F4F6 0%, #FFFFFF 100%)",
+    backgroundImage: "url(/assets/mex-taco-ss-portfolio.webp)",
     technologies: ["React Native", "Node.js", "Firebase", "Stripe", "AWS"],
-    heroImage: "linear-gradient(135deg, #F3F4F6 0%, #FFFFFF 100%)",
+    heroImage: "url(/assets/mex-taco-ss-portfolio.webp)",
+    screenshot: "/assets/mex-taco-screenshot.png",
+    projectDetails: "We completed a full website overhaul, integrated Uber Eats and Grubhub so that customers can order from their website. Added analytics tracking to see the value of the website and usage.",
     caseStudy: {
       challenge: "Modernize ordering system and streamline restaurant operations across multiple locations with integrated payment and delivery tracking.",
       solution: "Built a mobile-first ordering platform with POS integration, real-time kitchen management, delivery tracking, and comprehensive analytics dashboard.",
@@ -113,12 +115,12 @@ const portfolioItems: PortfolioItem[] = [
     subtitle: "Houston's First Churrería",
     industry: "FOOD SERVICE",
     description: "E-commerce platform and ordering system for Houston's premier churrería, featuring custom ordering flows and inventory management.",
-    logo: "/assets/angels-churros-logo-ss.webp",
-    logoType: "image" as const,
     backgroundColor: "#DC2626",
-    backgroundImage: "linear-gradient(135deg, #DC2626 0%, #991B1B 100%)",
+    backgroundImage: "url(/assets/angels-churros-ss-portfolio.webp)",
     technologies: ["Next.js", "Shopify", "Stripe", "Vercel", "Sanity CMS"],
-    heroImage: "linear-gradient(135deg, #DC2626 0%, #991B1B 100%)",
+    heroImage: "url(/assets/angels-churros-ss-portfolio.webp)",
+    screenshot: "/assets/angels-screenshot.png",
+    projectDetails: "We completed a full website overhaul consistent with their branding. We integrated their social media and their POS so that customers can order from the website and their store directly.",
     caseStudy: {
       challenge: "Launch an online presence with e-commerce capabilities for a specialty dessert business, integrating online ordering with in-store operations.",
       solution: "Created a beautiful e-commerce platform with custom ordering system, inventory management, seamless payment processing, and mobile-optimized experience.",
@@ -141,12 +143,12 @@ const portfolioItems: PortfolioItem[] = [
     subtitle: "Enterprise Financial Dashboard",
     industry: "FINANCE",
     description: "AI-powered financial analytics platform with real-time reporting, predictive insights, and comprehensive data visualization across 50+ accounts.",
-    logoType: "text" as const,
     backgroundColor: "#1F2937",
-    backgroundImage: "linear-gradient(135deg, #1F2937 0%, #000000 100%)",
+    backgroundImage: "url(/assets/finance-ss-portfolio.jpg)",
     isConcept: true,
     technologies: ["React", "Node.js", "AWS", "TensorFlow", "PostgreSQL"],
-    heroImage: "linear-gradient(135deg, #1F2937 0%, #000000 100%)",
+    heroImage: "url(/assets/finance-ss-portfolio.jpg)",
+    hidden: true,
     caseStudy: {
       challenge: "Enterprise needed real-time financial monitoring across 50+ accounts with manual reporting processes causing delays and errors in decision-making.",
       solution: "AI-powered dashboard with predictive analytics and automated reporting, featuring real-time data integration, machine learning models for forecasting, and customizable KPI visualization with dark theme and red accent highlights.",
@@ -165,12 +167,12 @@ const portfolioItems: PortfolioItem[] = [
     subtitle: "Patient Portal System",
     industry: "HEALTHCARE",
     description: "HIPAA-compliant patient portal with telemedicine, scheduling, and billing integration for seamless healthcare management.",
-    logoType: "text" as const,
     backgroundColor: "#000000",
-    backgroundImage: "linear-gradient(135deg, #000000 0%, #1F2937 100%)",
+    backgroundImage: "url(/assets/doctors-office-ss-portfolio.jpg)",
     isConcept: true,
     technologies: ["Next.js", "Python", "Azure Health", "MongoDB", "Twilio"],
-    heroImage: "linear-gradient(135deg, #000000 0%, #1F2937 100%)",
+    heroImage: "url(/assets/doctors-office-ss-portfolio.jpg)",
+    hidden: true,
     caseStudy: {
       challenge: "Medical practice needed HIPAA-compliant patient management with integrated telemedicine, appointment scheduling, and billing workflows to improve patient experience and operational efficiency.",
       solution: "Secure portal with telemedicine integration, intelligent appointment scheduling system, automated billing workflows, and clean medical interface featuring appointment calendar and comprehensive patient dashboard with real-time access to medical records.",
@@ -189,12 +191,12 @@ const portfolioItems: PortfolioItem[] = [
     subtitle: "Supply Chain Management",
     industry: "SUPPLY CHAIN",
     description: "IoT-integrated supply chain system with predictive restocking, route optimization, and real-time inventory tracking across multiple warehouses.",
-    logoType: "text" as const,
     backgroundColor: "#DC2626",
-    backgroundImage: "linear-gradient(135deg, #DC2626 0%, #991B1B 100%)",
+    backgroundImage: "url(/assets/logistics-ss-portfolio.jpg)",
     isConcept: true,
     technologies: ["Vue.js", "Go", "AWS IoT", "Redis", "PostgreSQL"],
-    heroImage: "linear-gradient(135deg, #DC2626 0%, #991B1B 100%)",
+    heroImage: "url(/assets/logistics-ss-portfolio.jpg)",
+    hidden: true,
     caseStudy: {
       challenge: "Distributor needed real-time inventory tracking across warehouses with manual processes causing stockouts, overstocking, and inefficient route planning leading to increased logistics costs.",
       solution: "IoT-integrated system with predictive restocking algorithms, intelligent route optimization, and comprehensive map interface showing real-time tracking, inventory levels across warehouses, and advanced analytics dashboard for supply chain insights.",
@@ -214,8 +216,10 @@ export default function Portfolio() {
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
+  const visibleItems = portfolioItems.filter(item => !item.hidden);
+
   const openModal = (item: PortfolioItem) => {
-    const index = portfolioItems.findIndex((p) => p.id === item.id);
+    const index = visibleItems.findIndex((p) => p.id === item.id);
     setSelectedIndex(index);
     setSelectedItem(item);
     document.body.style.overflow = "hidden";
@@ -229,13 +233,13 @@ export default function Portfolio() {
   const navigateModal = (direction: "prev" | "next") => {
     let newIndex = selectedIndex;
     if (direction === "next") {
-      newIndex = (selectedIndex + 1) % portfolioItems.length;
+      newIndex = (selectedIndex + 1) % visibleItems.length;
     } else {
       newIndex = selectedIndex - 1;
-      if (newIndex < 0) newIndex = portfolioItems.length - 1;
+      if (newIndex < 0) newIndex = visibleItems.length - 1;
     }
     setSelectedIndex(newIndex);
-    setSelectedItem(portfolioItems[newIndex]);
+    setSelectedItem(visibleItems[newIndex]);
   };
 
   return (
@@ -259,7 +263,7 @@ export default function Portfolio() {
       <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {portfolioItems.map((item) => (
+            {visibleItems.map((item) => (
               <div
                 key={item.id}
                 onClick={() => openModal(item)}
@@ -270,6 +274,9 @@ export default function Portfolio() {
                   className="absolute inset-0 transition-transform duration-[400ms] ease-out group-hover:scale-110"
                   style={{
                     background: item.backgroundImage || item.backgroundColor,
+                    backgroundSize: item.backgroundImage?.startsWith('url') ? 'cover' : undefined,
+                    backgroundPosition: item.backgroundImage?.startsWith('url') ? 'center' : undefined,
+                    backgroundRepeat: item.backgroundImage?.startsWith('url') ? 'no-repeat' : undefined,
                   }}
                 >
                   {/* Abstract pattern overlay for texture */}
@@ -285,23 +292,15 @@ export default function Portfolio() {
 
                 {/* Content Container */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
-                  {/* Logo/Icon - Moves up and scales down on hover */}
+                  {/* Business Name - Moves up and scales down on hover */}
                   <div className="group-hover:-translate-y-8 group-hover:scale-75 transition-all duration-[400ms] mb-0 group-hover:mb-0">
-                    {item.logoType === "image" && item.logo ? (
-                      <div className="w-32 h-32 relative">
-                        <Image
-                          src={item.logo}
-                          alt={item.title}
-                          fill
-                          className="object-contain"
-                          unoptimized
-                        />
-                      </div>
-                    ) : (
-                      <h2 className="text-4xl md:text-5xl font-bold text-white">
-                        {item.title}
-                      </h2>
-                    )}
+                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight" style={{
+                      fontFamily: 'var(--font-jetbrains-mono), "JetBrains Mono", "Fira Code", "SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace',
+                      letterSpacing: '-0.02em',
+                      textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+                    }}>
+                      {item.title}
+                    </h2>
                   </div>
 
                   {/* Hidden Content - Fades in on hover */}
@@ -352,32 +351,41 @@ export default function Portfolio() {
               <X className="w-6 h-6 text-black" />
             </button>
 
-            {/* Hero Image */}
-            <div
-              className="h-64 md:h-96 w-full relative"
-              style={{
-                background: selectedItem.heroImage || selectedItem.backgroundImage || selectedItem.backgroundColor,
-              }}
-            >
-              <div className="absolute inset-0 bg-black/40"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                {selectedItem.logoType === "image" && selectedItem.logo ? (
-                  <div className="w-48 h-48 relative">
-                    <Image
-                      src={selectedItem.logo}
-                      alt={selectedItem.title}
-                      fill
-                      className="object-contain"
-                      unoptimized
-                    />
-                  </div>
-                ) : (
-                  <h2 className="text-5xl md:text-7xl font-bold text-white">
+            {/* Screenshot or Hero Image */}
+            {selectedItem.screenshot ? (
+              <div className="w-full relative bg-gray-100">
+                <div className="relative w-full" style={{ aspectRatio: '16/9', minHeight: '400px' }}>
+                  <Image
+                    src={selectedItem.screenshot}
+                    alt={`${selectedItem.title} website screenshot`}
+                    fill
+                    className="object-contain"
+                    unoptimized
+                  />
+                </div>
+              </div>
+            ) : (
+              <div
+                className="h-64 md:h-96 w-full relative"
+                style={{
+                  background: selectedItem.heroImage || selectedItem.backgroundImage || selectedItem.backgroundColor,
+                  backgroundSize: (selectedItem.heroImage || selectedItem.backgroundImage)?.startsWith('url') ? 'cover' : undefined,
+                  backgroundPosition: (selectedItem.heroImage || selectedItem.backgroundImage)?.startsWith('url') ? 'center' : undefined,
+                  backgroundRepeat: (selectedItem.heroImage || selectedItem.backgroundImage)?.startsWith('url') ? 'no-repeat' : undefined,
+                }}
+              >
+                <div className="absolute inset-0 bg-black/40"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight px-4 text-center" style={{
+                    fontFamily: 'var(--font-jetbrains-mono), "JetBrains Mono", "Fira Code", "SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace',
+                    letterSpacing: '-0.02em',
+                    textShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+                  }}>
                     {selectedItem.title}
                   </h2>
-                )}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Modal Content */}
             <div className="p-8 md:p-12">
@@ -398,6 +406,16 @@ export default function Portfolio() {
                   {selectedItem.subtitle}
                 </p>
               </div>
+
+              {/* Project Details */}
+              {selectedItem.projectDetails && (
+                <div className="mb-8 pb-8 border-b border-gray-200">
+                  <h3 className="text-2xl font-bold mb-4 text-black">What We Completed</h3>
+                  <p className="text-[#6B7280] leading-relaxed text-lg">
+                    {selectedItem.projectDetails}
+                  </p>
+                </div>
+              )}
 
               {/* Technologies */}
               {selectedItem.technologies && (
@@ -559,7 +577,7 @@ export default function Portfolio() {
                     <ChevronLeft className="w-6 h-6" />
                   </button>
                   <span className="text-sm text-[#6B7280]">
-                    {selectedIndex + 1} / {portfolioItems.length}
+                    {selectedIndex + 1} / {visibleItems.length}
                   </span>
                   <button
                     onClick={() => navigateModal("next")}
