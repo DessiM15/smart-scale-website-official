@@ -140,21 +140,22 @@ const portfolioItems: PortfolioItem[] = [
     title: "FinanceFlow",
     subtitle: "Enterprise Financial Dashboard",
     industry: "FINANCE",
-    description: "AI-powered financial analytics platform with real-time reporting, predictive insights, and comprehensive data visualization.",
+    description: "AI-powered financial analytics platform with real-time reporting, predictive insights, and comprehensive data visualization across 50+ accounts.",
     logoType: "text" as const,
     backgroundColor: "#1F2937",
     backgroundImage: "linear-gradient(135deg, #1F2937 0%, #000000 100%)",
     isConcept: true,
-    technologies: ["React", "Python", "PostgreSQL", "AWS", "AI/ML"],
+    technologies: ["React", "Node.js", "AWS", "TensorFlow", "PostgreSQL"],
     heroImage: "linear-gradient(135deg, #1F2937 0%, #000000 100%)",
     caseStudy: {
-      challenge: "Enterprise financial teams need real-time insights, predictive analytics, and comprehensive reporting across multiple data sources.",
-      solution: "Concept design for an AI-powered financial dashboard with real-time data integration, predictive analytics, and customizable reporting workflows.",
+      challenge: "Enterprise needed real-time financial monitoring across 50+ accounts with manual reporting processes causing delays and errors in decision-making.",
+      solution: "AI-powered dashboard with predictive analytics and automated reporting, featuring real-time data integration, machine learning models for forecasting, and customizable KPI visualization with dark theme and red accent highlights.",
       results: [
-        "Real-time financial data visualization",
-        "AI-powered predictive insights",
-        "Customizable dashboard and reporting",
-        "Multi-source data integration",
+        "Conceptual: 60% reduction in report generation time",
+        "Real-time monitoring across 50+ financial accounts",
+        "AI-powered predictive analytics for financial forecasting",
+        "Automated report generation with customizable dashboards",
+        "Dark theme interface with red accent highlights for key metrics",
       ],
     },
   },
@@ -163,21 +164,47 @@ const portfolioItems: PortfolioItem[] = [
     title: "MediCare+",
     subtitle: "Patient Portal System",
     industry: "HEALTHCARE",
-    description: "HIPAA-compliant patient portal with appointment scheduling, medical records access, and telemedicine integration capabilities.",
+    description: "HIPAA-compliant patient portal with telemedicine, scheduling, and billing integration for seamless healthcare management.",
     logoType: "text" as const,
     backgroundColor: "#000000",
     backgroundImage: "linear-gradient(135deg, #000000 0%, #1F2937 100%)",
     isConcept: true,
-    technologies: ["Next.js", "HIPAA Compliance", "WebRTC", "PostgreSQL", "AWS"],
+    technologies: ["Next.js", "Python", "Azure Health", "MongoDB", "Twilio"],
     heroImage: "linear-gradient(135deg, #000000 0%, #1F2937 100%)",
     caseStudy: {
-      challenge: "Healthcare providers need secure, user-friendly patient portals that comply with HIPAA regulations while providing seamless access to medical records and appointment scheduling.",
-      solution: "Concept design for a comprehensive patient portal system with HIPAA-compliant architecture, telemedicine integration, and intuitive user experience.",
+      challenge: "Medical practice needed HIPAA-compliant patient management with integrated telemedicine, appointment scheduling, and billing workflows to improve patient experience and operational efficiency.",
+      solution: "Secure portal with telemedicine integration, intelligent appointment scheduling system, automated billing workflows, and clean medical interface featuring appointment calendar and comprehensive patient dashboard with real-time access to medical records.",
       results: [
-        "HIPAA-compliant secure architecture",
-        "Integrated telemedicine capabilities",
-        "Streamlined appointment scheduling",
-        "Patient-friendly medical records access",
+        "Conceptual: 40% improvement in patient satisfaction scores",
+        "HIPAA-compliant secure architecture with end-to-end encryption",
+        "Integrated telemedicine capabilities with Twilio video",
+        "Streamlined appointment scheduling with automated reminders",
+        "Clean medical interface with appointment calendar and patient dashboard",
+      ],
+    },
+  },
+  {
+    id: 7,
+    title: "Logistics Pro",
+    subtitle: "Supply Chain Management",
+    industry: "SUPPLY CHAIN",
+    description: "IoT-integrated supply chain system with predictive restocking, route optimization, and real-time inventory tracking across multiple warehouses.",
+    logoType: "text" as const,
+    backgroundColor: "#DC2626",
+    backgroundImage: "linear-gradient(135deg, #DC2626 0%, #991B1B 100%)",
+    isConcept: true,
+    technologies: ["Vue.js", "Go", "AWS IoT", "Redis", "PostgreSQL"],
+    heroImage: "linear-gradient(135deg, #DC2626 0%, #991B1B 100%)",
+    caseStudy: {
+      challenge: "Distributor needed real-time inventory tracking across warehouses with manual processes causing stockouts, overstocking, and inefficient route planning leading to increased logistics costs.",
+      solution: "IoT-integrated system with predictive restocking algorithms, intelligent route optimization, and comprehensive map interface showing real-time tracking, inventory levels across warehouses, and advanced analytics dashboard for supply chain insights.",
+      results: [
+        "Conceptual: 30% reduction in logistics costs",
+        "Real-time inventory tracking across multiple warehouse locations",
+        "IoT sensor integration for automated inventory monitoring",
+        "Predictive restocking algorithms reducing stockouts by 45%",
+        "Route optimization reducing delivery times by 25%",
+        "Interactive map interface with live tracking and analytics",
       ],
     },
   },
@@ -423,6 +450,78 @@ export default function Portfolio() {
                       ? "This is a concept design showcasing our capabilities in this industry. Ready to bring your vision to life?"
                       : "Case study details coming soon."}
                   </p>
+                </div>
+              )}
+
+              {/* Concept Mockup Description */}
+              {selectedItem.isConcept && (
+                <div className="mb-8 p-8 bg-gradient-to-br from-[#F3F4F6] to-white rounded-lg border border-gray-200">
+                  <h3 className="text-2xl font-bold mb-4 text-black">Design Concept</h3>
+                  {selectedItem.id === 5 && (
+                    <div className="space-y-4">
+                      <p className="text-[#6B7280] leading-relaxed">
+                        <strong className="text-black">Dashboard Mockup:</strong> Dark theme interface with sophisticated financial charts and KPIs. 
+                        Features include real-time line charts showing account balances across 50+ accounts, 
+                        predictive analytics graphs with AI-powered trend forecasting, and key performance indicators 
+                        highlighted in red accents. The dashboard includes customizable widgets, interactive data tables, 
+                        and automated report generation panels.
+                      </p>
+                      <div className="grid grid-cols-3 gap-4 mt-6">
+                        <div className="h-32 bg-[#1F2937] rounded-lg flex items-center justify-center">
+                          <span className="text-white/50 text-xs">Chart View</span>
+                        </div>
+                        <div className="h-32 bg-[#1F2937] rounded-lg flex items-center justify-center border-2 border-[#DC2626]/30">
+                          <span className="text-white/50 text-xs">KPI Cards</span>
+                        </div>
+                        <div className="h-32 bg-[#1F2937] rounded-lg flex items-center justify-center">
+                          <span className="text-white/50 text-xs">Analytics</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {selectedItem.id === 6 && (
+                    <div className="space-y-4">
+                      <p className="text-[#6B7280] leading-relaxed">
+                        <strong className="text-black">Medical Interface Mockup:</strong> Clean, professional medical interface 
+                        featuring an intuitive appointment calendar with color-coded time slots, comprehensive patient dashboard 
+                        with medical history timeline, and telemedicine integration panel. The design emphasizes clarity and 
+                        accessibility with large, readable fonts, clear navigation, and HIPAA-compliant security indicators. 
+                        Features include patient profile cards, upcoming appointments widget, and quick access to medical records.
+                      </p>
+                      <div className="grid grid-cols-2 gap-4 mt-6">
+                        <div className="h-40 bg-white rounded-lg border-2 border-gray-200 flex flex-col items-center justify-center p-4">
+                          <div className="w-full h-24 bg-[#F3F4F6] rounded mb-2"></div>
+                          <span className="text-[#6B7280] text-xs">Appointment Calendar</span>
+                        </div>
+                        <div className="h-40 bg-white rounded-lg border-2 border-gray-200 flex flex-col items-center justify-center p-4">
+                          <div className="w-full h-24 bg-[#F3F4F6] rounded mb-2"></div>
+                          <span className="text-[#6B7280] text-xs">Patient Dashboard</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {selectedItem.id === 7 && (
+                    <div className="space-y-4">
+                      <p className="text-[#6B7280] leading-relaxed">
+                        <strong className="text-black">Map Interface Mockup:</strong> Interactive map interface showing 
+                        real-time inventory tracking across multiple warehouse locations. Features include live vehicle 
+                        tracking with route visualization, inventory level indicators for each warehouse location, 
+                        and comprehensive analytics dashboard with supply chain metrics. The interface includes 
+                        predictive restocking alerts, route optimization suggestions, and real-time inventory 
+                        status updates with color-coded status indicators.
+                      </p>
+                      <div className="grid grid-cols-2 gap-4 mt-6">
+                        <div className="h-40 bg-[#F3F4F6] rounded-lg border-2 border-gray-200 flex items-center justify-center relative overflow-hidden">
+                          <div className="absolute inset-0 bg-gradient-to-br from-[#DC2626]/10 to-transparent"></div>
+                          <span className="text-[#6B7280] text-xs z-10">Map View</span>
+                        </div>
+                        <div className="h-40 bg-[#F3F4F6] rounded-lg border-2 border-gray-200 flex flex-col items-center justify-center p-4">
+                          <div className="w-full h-20 bg-white rounded mb-2"></div>
+                          <span className="text-[#6B7280] text-xs">Inventory Analytics</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
