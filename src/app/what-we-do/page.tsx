@@ -1,3 +1,5 @@
+"use client";
+
 import ServiceCard from "@/components/ServiceCard";
 import Link from "next/link";
 import {
@@ -9,6 +11,11 @@ import {
   Layout,
   Zap,
 } from "lucide-react";
+import TechBackground from "@/components/TechBackground";
+import { useHeroAnimations } from "@/hooks/useHeroAnimations";
+import CodeSnippets from "@/components/hero-backgrounds/CodeSnippets";
+import HeroCTA from "@/components/HeroCTA";
+import ScrollIndicator from "@/components/hero-backgrounds/ScrollIndicator";
 
 const capabilities = [
   {
@@ -82,20 +89,42 @@ const processSteps = [
 ];
 
 export default function WhatWeDo() {
+  const { sectionRef, parallaxStyle, scrollStyle } = useHeroAnimations();
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <section className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 bg-black text-white">
-        <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
-            What We Do
+      <section 
+        ref={sectionRef}
+        className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 bg-black text-white relative overflow-hidden min-h-[60vh] flex items-center"
+        style={scrollStyle}
+      >
+        <TechBackground />
+        {/* Animated countdown timer showing "7 days" */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-10 hero-bg-elements" style={{ opacity: 0 }}>
+          <div className="text-[20rem] md:text-[30rem] font-bold text-[#DC2626]/20 select-none">
+            7
+          </div>
+        </div>
+        <CodeSnippets />
+        <div className="max-w-7xl mx-auto text-center relative z-10" style={parallaxStyle}>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 leading-tight hero-headline">
+            Your MVP in 7 Days.
           </h1>
-          <p className="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto">
-            We provide structured, reliable, and scalable solutions that support
-            long-term growth for businesses across multiple industries.
+          <p className="text-lg sm:text-xl text-white/70 max-w-3xl mx-auto mb-8 hero-subheadline">
+            While others are still writing proposals, we're already delivering your first working prototype.
           </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <HeroCTA href="/contact" variant="primary">
+              Schedule Consultation
+            </HeroCTA>
+            <HeroCTA href="/company" variant="secondary">
+              See Our Process
+            </HeroCTA>
+          </div>
         </div>
       </section>
+      <ScrollIndicator />
 
       {/* Capabilities Grid */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">

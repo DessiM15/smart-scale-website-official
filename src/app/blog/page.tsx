@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getAllBlogPosts } from "@/lib/blog";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
+import BlogHero from "@/components/BlogHero";
 
 export const metadata = {
   title: "Blog | Smart Scale - AI & Software Development Insights",
@@ -12,20 +13,7 @@ export default function BlogPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <section className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 bg-black text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-[#DC2626] rounded-full blur-3xl"></div>
-        </div>
-        <div className="max-w-7xl mx-auto text-center relative z-10">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
-            Blog
-          </h1>
-          <p className="text-lg sm:text-xl text-white/70 max-w-3xl mx-auto">
-            Insights on AI-accelerated development, MVP strategies, and software development best practices.
-          </p>
-        </div>
-      </section>
+      <BlogHero />
 
       {/* Blog Posts Grid */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">

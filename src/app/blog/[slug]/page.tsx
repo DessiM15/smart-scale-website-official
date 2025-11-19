@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getBlogPost, getAllBlogPosts } from "@/lib/blog";
 import { Calendar, Clock, ArrowLeft, Share2, Twitter, Facebook, Linkedin } from "lucide-react";
 import SocialShareButtons from "@/components/SocialShareButtons";
+import TechBackground from "@/components/TechBackground";
 
 export async function generateStaticParams() {
   const posts = getAllBlogPosts();
@@ -159,9 +160,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
       <div className="min-h-screen bg-white">
         {/* Header */}
         <section className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 bg-black text-white relative overflow-hidden">
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-[#DC2626] rounded-full blur-3xl"></div>
-          </div>
+          <TechBackground />
           <div className="max-w-4xl mx-auto relative z-10">
             <Link
               href="/blog"

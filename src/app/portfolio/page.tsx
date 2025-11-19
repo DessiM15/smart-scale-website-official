@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { X, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import TechBackground from "@/components/TechBackground";
+import { useHeroAnimations } from "@/hooks/useHeroAnimations";
+import GeometricShapes from "@/components/hero-backgrounds/GeometricShapes";
+import HeroCTA from "@/components/HeroCTA";
+import ScrollIndicator from "@/components/hero-backgrounds/ScrollIndicator";
 
 interface PortfolioItem {
   id: number;
@@ -215,6 +221,7 @@ const portfolioItems: PortfolioItem[] = [
 export default function Portfolio() {
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const { sectionRef, parallaxStyle, scrollStyle } = useHeroAnimations();
 
   const visibleItems = portfolioItems.filter(item => !item.hidden);
 
@@ -245,22 +252,34 @@ export default function Portfolio() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <section className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 bg-black text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-[#DC2626] rounded-full blur-3xl"></div>
-        </div>
-        <div className="max-w-7xl mx-auto text-center relative z-10">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
-            Portfolio
+      <section 
+        ref={sectionRef}
+        className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 bg-black text-white relative overflow-hidden min-h-[60vh] flex items-center"
+        style={scrollStyle}
+      >
+        <TechBackground />
+        <GeometricShapes />
+        <div className="max-w-7xl mx-auto text-center relative z-10" style={parallaxStyle}>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 leading-tight hero-headline">
+            Fresh Perspectives. Modern Solutions.
           </h1>
-          <p className="text-lg sm:text-xl text-white/70 max-w-3xl mx-auto">
-            Enterprise-quality solutions across industries. Built fast. Built right.
+          <p className="text-lg sm:text-xl text-white/70 max-w-3xl mx-auto mb-8 hero-subheadline">
+            See how we're applying cutting-edge AI and modern development practices to solve real business challenges.
           </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <HeroCTA href="/contact" variant="primary">
+              Start Your Project
+            </HeroCTA>
+            <HeroCTA href="#portfolio-grid" variant="secondary">
+              Explore Our Work
+            </HeroCTA>
+          </div>
         </div>
       </section>
+      <ScrollIndicator />
 
       {/* Portfolio Grid - Mercury Dev Style */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8">
+      <section id="portfolio-grid" className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {visibleItems.map((item) => (

@@ -46,6 +46,10 @@ export default function WhyChooseSmartScale() {
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
+    if (hasAnimated) return; // Don't set up observer if already animated
+
+    const timersRef: { current: NodeJS.Timeout[] } = { current: [] };
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -76,6 +80,7 @@ export default function WhyChooseSmartScale() {
                   clearInterval(timer);
                 }
               }, stepDuration);
+              timersRef.current.push(timer);
             });
           }
         });
@@ -83,14 +88,17 @@ export default function WhyChooseSmartScale() {
       { threshold: 0.3 }
     );
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
+    const currentSection = sectionRef.current;
+    if (currentSection) {
+      observer.observe(currentSection);
     }
 
     return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current);
+      if (currentSection) {
+        observer.unobserve(currentSection);
       }
+      // Cleanup all timers
+      timersRef.current.forEach(timer => clearInterval(timer));
     };
   }, [hasAnimated]);
 

@@ -1,3 +1,5 @@
+"use client";
+
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { SERVICES } from "@/lib/constants";
@@ -10,8 +12,12 @@ import {
   Layout,
   Zap,
 } from "lucide-react";
-import type { Metadata } from "next";
 import ServiceNavigation from "@/components/ServiceNavigation";
+import TechBackground from "@/components/TechBackground";
+import { useHeroAnimations } from "@/hooks/useHeroAnimations";
+import CodeSnippets from "@/components/hero-backgrounds/CodeSnippets";
+import HeroCTA from "@/components/HeroCTA";
+import ScrollIndicator from "@/components/hero-backgrounds/ScrollIndicator";
 
 // Icon mapping for services
 const iconMap: Record<string, React.ReactNode> = {
@@ -25,36 +31,15 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 interface PageProps {
-  params: Promise<{
+  params: {
     slug: string;
-  }>;
-}
-
-export async function generateStaticParams() {
-  return SERVICES.map((service) => ({
-    slug: service.slug,
-  }));
-}
-
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const service = SERVICES.find((s) => s.slug === slug);
-
-  if (!service) {
-    return {
-      title: "Service Not Found",
-    };
-  }
-
-  return {
-    title: `${service.title} | Smart Scale`,
-    description: service.shortDescription,
   };
 }
 
-export default async function ServicePage({ params }: PageProps) {
-  const { slug } = await params;
+export default function ServicePage({ params }: PageProps) {
+  const { slug } = params;
   const service = SERVICES.find((s) => s.slug === slug);
+  const { sectionRef, parallaxStyle, scrollStyle } = useHeroAnimations();
 
   if (!service) {
     notFound();
@@ -65,11 +50,17 @@ export default async function ServicePage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 bg-black text-white">
-        <div className="max-w-7xl mx-auto">
+      <section 
+        ref={sectionRef}
+        className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 bg-black text-white relative overflow-hidden min-h-[60vh] flex items-center"
+        style={scrollStyle}
+      >
+        <TechBackground />
+        <CodeSnippets />
+        <div className="max-w-7xl mx-auto relative z-10" style={parallaxStyle}>
           <div className="flex flex-col items-center text-center">
             {icon && (
-              <div className="mb-8 flex justify-center items-center">
+              <div className="mb-8 flex justify-center items-center hero-headline">
                 <div className="w-24 h-24 rounded-full bg-[#DC2626] flex items-center justify-center text-white shadow-lg p-6">
                   <div className="flex items-center justify-center w-full h-full">
                     {icon}
@@ -77,15 +68,24 @@ export default async function ServicePage({ params }: PageProps) {
                 </div>
               </div>
             )}
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
-              {service.title}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 leading-tight hero-headline">
+              {service.title}: Built with AI-Powered Speed
             </h1>
-            <p className="text-lg sm:text-xl text-gray-300 max-w-3xl">
-              {service.shortDescription}
+            <p className="text-lg sm:text-xl text-white/70 max-w-3xl mb-8 hero-subheadline">
+              See how we deliver {service.title.toLowerCase()} using modern development practices and AI acceleration.
             </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <HeroCTA href="/contact" variant="primary">
+                Build Something Similar
+              </HeroCTA>
+              <HeroCTA href="/portfolio" variant="secondary">
+                View Next Project
+              </HeroCTA>
+            </div>
           </div>
         </div>
       </section>
+      <ScrollIndicator />
 
       {/* Extended Description */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-white">

@@ -1,22 +1,53 @@
+"use client";
+
 import ContactForm from "@/components/ContactForm";
+import TechBackground from "@/components/TechBackground";
+import { useHeroAnimations } from "@/hooks/useHeroAnimations";
+import DataVisualization from "@/components/hero-backgrounds/DataVisualization";
+import HeroCTA from "@/components/HeroCTA";
+import ScrollIndicator from "@/components/hero-backgrounds/ScrollIndicator";
 
 export default function Contact() {
+  const { sectionRef, parallaxStyle, scrollStyle } = useHeroAnimations();
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <section className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 bg-black text-white">
-        <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
-            Contact Smart Scale
+      <section 
+        ref={sectionRef}
+        className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 bg-black text-white relative overflow-hidden min-h-[60vh] flex items-center"
+        style={scrollStyle}
+      >
+        <TechBackground />
+        {/* Animated direct connection lines */}
+        <div className="absolute inset-0 opacity-10 hero-bg-elements" style={{ opacity: 0 }}>
+          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <line x1="20%" y1="30%" x2="50%" y2="50%" stroke="#DC2626" strokeWidth="2" className="animate-pulse" />
+            <line x1="80%" y1="30%" x2="50%" y2="50%" stroke="#DC2626" strokeWidth="2" className="animate-pulse" style={{ animationDelay: '0.5s' }} />
+            <line x1="20%" y1="70%" x2="50%" y2="50%" stroke="#DC2626" strokeWidth="2" className="animate-pulse" style={{ animationDelay: '1s' }} />
+            <line x1="80%" y1="70%" x2="50%" y2="50%" stroke="#DC2626" strokeWidth="2" className="animate-pulse" style={{ animationDelay: '1.5s' }} />
+            <circle cx="50%" cy="50%" r="8" fill="#DC2626" className="animate-pulse" />
+          </svg>
+        </div>
+        <DataVisualization />
+        <div className="max-w-7xl mx-auto text-center relative z-10" style={parallaxStyle}>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 leading-tight hero-headline">
+            Talk Directly to the Builders
           </h1>
-          <p className="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto">
-            Get in touch to discuss your project and request an estimate.
+          <p className="text-lg sm:text-xl text-white/70 max-w-3xl mx-auto mb-8 hero-subheadline">
+            No sales team. No account managers. Just the two founders who will personally build your project.
           </p>
+          <div className="flex justify-center">
+            <HeroCTA href="#contact-form" variant="secondary">
+              Send Project Details
+            </HeroCTA>
+          </div>
         </div>
       </section>
+      <ScrollIndicator />
 
       {/* Contact Form and Info */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8">
+      <section id="contact-form" className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Contact Form */}
@@ -48,12 +79,24 @@ export default function Contact() {
                   <h3 className="text-lg font-semibold mb-2 text-black">
                     Phone
                   </h3>
-                  <a
-                    href="tel:+1234567890"
-                    className="text-[#DC2626] hover:underline text-lg"
-                  >
-                    (123) 456-7890
-                  </a>
+                  <div className="space-y-2">
+                    <div>
+                      <a
+                        href="tel:8324070773"
+                        className="text-[#DC2626] hover:underline text-lg block"
+                      >
+                        Jay: 832.407.0773
+                      </a>
+                    </div>
+                    <div>
+                      <a
+                        href="tel:8327905001"
+                        className="text-[#DC2626] hover:underline text-lg block"
+                      >
+                        Dee: 832.790.5001
+                      </a>
+                    </div>
+                  </div>
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold mb-2 text-black">

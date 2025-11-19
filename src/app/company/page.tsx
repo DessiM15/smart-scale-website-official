@@ -2,6 +2,11 @@
 
 import Link from "next/link";
 import { Zap, Eye, Lightbulb, Target } from "lucide-react";
+import TechBackground from "@/components/TechBackground";
+import { useHeroAnimations } from "@/hooks/useHeroAnimations";
+import NetworkConnections from "@/components/hero-backgrounds/NetworkConnections";
+import HeroCTA from "@/components/HeroCTA";
+import ScrollIndicator from "@/components/hero-backgrounds/ScrollIndicator";
 
 const values = [
   {
@@ -50,27 +55,40 @@ const methodologySteps = [
 ];
 
 export default function Company() {
+  const { sectionRef, parallaxStyle, scrollStyle } = useHeroAnimations();
+
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 bg-black text-white relative overflow-hidden">
-        {/* Abstract geometric background */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-[#DC2626] rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#DC2626] rounded-full blur-3xl"></div>
+      <section 
+        ref={sectionRef}
+        className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 bg-black text-white relative overflow-hidden min-h-[60vh] flex items-center"
+        style={scrollStyle}
+      >
+        <TechBackground />
+        {/* Animated startup journey timeline */}
+        <div className="absolute inset-0 opacity-5 hero-bg-elements" style={{ opacity: 0 }}>
+          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#DC2626] to-transparent"></div>
+          <div className="absolute top-1/2 left-[10%] w-4 h-4 -translate-y-1/2 rounded-full bg-[#DC2626] animate-pulse"></div>
+          <div className="absolute top-1/2 left-[30%] w-4 h-4 -translate-y-1/2 rounded-full bg-[#DC2626] animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+          <div className="absolute top-1/2 left-[50%] w-4 h-4 -translate-y-1/2 rounded-full bg-[#DC2626] animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-1/2 left-[70%] w-4 h-4 -translate-y-1/2 rounded-full bg-[#DC2626] animate-pulse" style={{ animationDelay: '1.5s' }}></div>
+          <div className="absolute top-1/2 left-[90%] w-4 h-4 -translate-y-1/2 rounded-full bg-[#DC2626] animate-pulse" style={{ animationDelay: '2s' }}></div>
         </div>
-        
-        <div className="max-w-7xl mx-auto text-center relative z-10">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold leading-tight mb-6">
-            Built by Entrepreneurs.
-            <br />
-            <span className="text-[#DC2626]">For Entrepreneurs.</span>
+        <NetworkConnections />
+        <div className="max-w-7xl mx-auto text-center relative z-10" style={parallaxStyle}>
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold leading-tight mb-6 hero-headline">
+            New Energy. Real Results.
           </h1>
-          <p className="text-xl sm:text-2xl text-white/80 max-w-3xl mx-auto">
-            A premium boutique development studio delivering enterprise-quality solutions without the agency bureaucracy.
+          <p className="text-xl sm:text-2xl text-white/70 max-w-3xl mx-auto mb-8 hero-subheadline">
+            We're not jaded by years of 'how things are done.' We're hungry founders using AI to revolutionize how software gets built.
           </p>
+          <HeroCTA href="#methodology" variant="primary">
+            Why We're Different
+          </HeroCTA>
         </div>
       </section>
+      <ScrollIndicator />
 
       {/* Founder Section */}
       <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
@@ -132,7 +150,7 @@ export default function Company() {
       </section>
 
       {/* Methodology Diagram */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
+      <section id="methodology" className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-black">
