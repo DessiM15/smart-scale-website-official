@@ -91,10 +91,12 @@ export default function WhatWeDo() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-black text-white">
+      <section className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 bg-black text-white">
         <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-5xl sm:text-6xl font-bold mb-6">What We Do</h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
+            What We Do
+          </h1>
+          <p className="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto">
             We provide structured, reliable, and scalable solutions that support
             long-term growth for businesses across multiple industries.
           </p>
