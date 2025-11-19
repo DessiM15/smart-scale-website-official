@@ -18,7 +18,6 @@ const categories = [
   "All Projects",
   "Mobile",
   "Web",
-  "Staff Augmentation",
   "Enterprise Systems",
   "AI / Automation",
   "eCommerce",

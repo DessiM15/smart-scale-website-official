@@ -4,7 +4,6 @@ import {
   Smartphone,
   Globe,
   Layers,
-  Users,
   Brain,
   Building2,
   Layout,
@@ -26,11 +25,6 @@ const capabilities = [
     title: "Cross-Platform Apps",
     description: "Unified applications that work seamlessly across all platforms.",
     icon: <Layers className="w-8 h-8" />,
-  },
-  {
-    title: "Staff Augmentation",
-    description: "Expert developers to augment your team and accelerate delivery.",
-    icon: <Users className="w-8 h-8" />,
   },
   {
     title: "AI Workflow Automation",
