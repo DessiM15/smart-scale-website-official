@@ -24,7 +24,7 @@ export default function UrgencyCTA() {
           Ready to Ship in 7 Days?
         </h2>
         <p className="text-xl text-white/80 mb-4 max-w-2xl mx-auto">
-          We're currently accepting a limited number of new projects for Q1 2025.
+          We're currently accepting a limited number of new projects for Q1 2026.
         </p>
         <p className="text-lg text-white/70 mb-10 max-w-2xl mx-auto">
           Get direct founder access, enterprise-quality code, and AI-accelerated development—without the agency overhead.

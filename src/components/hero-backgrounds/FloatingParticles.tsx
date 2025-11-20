@@ -20,9 +20,16 @@ export default function FloatingParticles({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [particles, setParticles] = useState<Particle[]>([]);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isMounted, setIsMounted] = useState(false);
   const animationFrameRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+
     // Responsive particle count
     const getParticleCount = () => {
       if (typeof window === 'undefined') return 0;
@@ -37,7 +44,7 @@ export default function FloatingParticles({
     if (!canvas) return;
     
     // Don't render on mobile
-    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+    if (window.innerWidth < 768) {
       return;
     }
 
@@ -134,13 +141,11 @@ export default function FloatingParticles({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [count, responsive]);
+  }, [count, responsive, isMounted]);
 
-  // Don't render on mobile
-  if (typeof window !== 'undefined' && window.innerWidth < 768) {
-    return null;
-  }
-
+  // Always render the canvas element to avoid hydration mismatch
+  // The canvas will be hidden on mobile via CSS (hidden md:block)
+  // and the animation won't run if window.innerWidth < 768
   return (
     <canvas
       ref={canvasRef}
