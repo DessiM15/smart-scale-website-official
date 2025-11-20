@@ -51,6 +51,12 @@ export default function Navbar() {
               Company
             </Link>
             <Link
+              href="/blog"
+              className="text-sm font-medium text-black hover:text-[#DC2626] transition"
+            >
+              Blog
+            </Link>
+            <Link
               href="/contact"
               className="text-sm font-medium text-black hover:text-[#DC2626] transition"
             >
@@ -118,6 +124,13 @@ export default function Navbar() {
               onClick={() => setMobileMenuOpen(false)}
             >
               Company
+            </Link>
+            <Link
+              href="/blog"
+              className="block text-sm font-medium text-black hover:text-[#DC2626] transition"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Blog
             </Link>
             <Link
               href="/contact"

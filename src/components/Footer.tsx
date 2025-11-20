@@ -57,6 +57,14 @@ export default function Footer() {
                   Company
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/blog"
+                  className="text-sm text-gray-400 hover:text-white transition"
+                >
+                  Blog
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
