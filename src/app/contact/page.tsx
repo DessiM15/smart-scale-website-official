@@ -3,9 +3,9 @@
 import ContactForm from "@/components/ContactForm";
 import TechBackground from "@/components/TechBackground";
 import { useHeroAnimations } from "@/hooks/useHeroAnimations";
-import DataVisualization from "@/components/hero-backgrounds/DataVisualization";
 import HeroCTA from "@/components/HeroCTA";
 import ScrollIndicator from "@/components/hero-backgrounds/ScrollIndicator";
+import Image from "next/image";
 
 export default function Contact() {
   const { sectionRef, parallaxStyle, scrollStyle } = useHeroAnimations();
@@ -19,17 +19,18 @@ export default function Contact() {
         style={scrollStyle}
       >
         <TechBackground />
-        {/* Animated direct connection lines */}
-        <div className="absolute inset-0 opacity-10 hero-bg-elements" style={{ opacity: 0 }}>
-          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-            <line x1="20%" y1="30%" x2="50%" y2="50%" stroke="#DC2626" strokeWidth="2" className="animate-pulse" />
-            <line x1="80%" y1="30%" x2="50%" y2="50%" stroke="#DC2626" strokeWidth="2" className="animate-pulse" style={{ animationDelay: '0.5s' }} />
-            <line x1="20%" y1="70%" x2="50%" y2="50%" stroke="#DC2626" strokeWidth="2" className="animate-pulse" style={{ animationDelay: '1s' }} />
-            <line x1="80%" y1="70%" x2="50%" y2="50%" stroke="#DC2626" strokeWidth="2" className="animate-pulse" style={{ animationDelay: '1.5s' }} />
-            <circle cx="50%" cy="50%" r="8" fill="#DC2626" className="animate-pulse" />
-          </svg>
+        {/* Logo fade-in from back to front */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-0">
+          <Image
+            src="/assets/smart-scale-logo-official.png"
+            alt="Smart Scale"
+            width={300}
+            height={120}
+            className="w-auto h-24 sm:h-32 md:h-40 brightness-0 invert animate-logo-fade-in"
+            priority
+            unoptimized
+          />
         </div>
-        <DataVisualization />
         <div className="max-w-7xl mx-auto text-center relative z-10" style={parallaxStyle}>
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 leading-tight hero-headline">
             Talk Directly to the Builders
@@ -69,10 +70,10 @@ export default function Contact() {
                     Email
                   </h3>
                   <a
-                    href="mailto:contact@smartscale.com"
+                    href="mailto:project@ssl-mail.com"
                     className="text-[#DC2626] hover:underline text-lg"
                   >
-                    contact@smartscale.com
+                    project@ssl-mail.com
                   </a>
                 </div>
                 <div>

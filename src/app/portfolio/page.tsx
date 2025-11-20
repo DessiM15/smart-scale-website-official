@@ -278,19 +278,19 @@ export default function Portfolio() {
       </section>
       <ScrollIndicator />
 
-      {/* Portfolio Grid - Mercury Dev Style */}
+      {/* Portfolio Grid - Fingent Style */}
       <section id="portfolio-grid" className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {visibleItems.map((item) => (
               <div
                 key={item.id}
                 onClick={() => openModal(item)}
-                className="group relative aspect-[4/3] overflow-hidden cursor-pointer"
+                className="group relative aspect-square overflow-hidden cursor-pointer rounded-lg"
               >
                 {/* Background Image */}
                 <div
-                  className="absolute inset-0 transition-transform duration-[400ms] ease-out group-hover:scale-110"
+                  className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-110"
                   style={{
                     background: item.backgroundImage || item.backgroundColor,
                     backgroundSize: item.backgroundImage?.startsWith('url') ? 'cover' : undefined,
@@ -306,46 +306,36 @@ export default function Portfolio() {
                   </div>
                 </div>
 
-                {/* Overlay Gradient */}
-                <div className="absolute inset-0 bg-black/60 group-hover:bg-black/80 transition-opacity duration-[400ms]"></div>
+                {/* Overlay Gradient - Darker at bottom for text readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/40 group-hover:from-black/95 group-hover:via-black/70 group-hover:to-black/50 transition-opacity duration-500"></div>
 
-                {/* Content Container */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
-                  {/* Business Name - Moves up and scales down on hover */}
-                  <div className="group-hover:-translate-y-8 group-hover:scale-75 transition-all duration-[400ms] mb-0 group-hover:mb-0">
-                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight" style={{
-                      fontFamily: 'var(--font-jetbrains-mono), "JetBrains Mono", "Fira Code", "SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", monospace',
-                      letterSpacing: '-0.02em',
-                      textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
-                    }}>
-                      {item.title}
-                    </h2>
-                  </div>
-
-                  {/* Hidden Content - Fades in on hover */}
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-[400ms] mt-4 text-center w-full">
-                    <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">
-                      {item.title}
-                    </h3>
-                    <p className="text-[#DC2626] text-xs font-semibold uppercase tracking-wider mb-3">
-                      {item.industry}
-                    </p>
-                    <p className="text-white/90 text-sm md:text-base leading-relaxed mb-4 line-clamp-2">
-                      {item.description}
-                    </p>
-                    <span className="inline-flex items-center gap-2 text-[#DC2626] text-sm font-semibold group-hover:gap-3 transition-all">
-                      View Project
-                      <ArrowRight className="w-4 h-4" />
-                    </span>
-                  </div>
+                {/* Category Badge - Top Left */}
+                <div className="absolute top-3 left-3 z-10">
+                  <span className="px-2.5 py-1 bg-black/60 backdrop-blur-sm text-white text-[10px] font-semibold uppercase tracking-wider rounded">
+                    {item.industry}
+                  </span>
                 </div>
 
-                {/* Concept Badge */}
+                {/* Concept Badge - Top Right */}
                 {item.isConcept && (
-                  <div className="absolute top-4 right-4 px-3 py-1 bg-[#DC2626] text-white text-xs font-semibold rounded-full">
+                  <div className="absolute top-3 right-3 z-10 px-2.5 py-1 bg-[#DC2626]/90 backdrop-blur-sm text-white text-[10px] font-semibold rounded">
                     Concept
                   </div>
                 )}
+
+                {/* Content Container - Bottom Aligned */}
+                <div className="absolute inset-0 flex flex-col justify-end p-4 md:p-5">
+                  {/* Short Description - Bottom */}
+                  <div className="transform group-hover:translate-y-0 translate-y-0 transition-transform duration-500">
+                    <h3 className="text-sm md:text-base font-semibold text-white leading-tight mb-1 line-clamp-2" style={{
+                      fontFamily: 'system-ui, -apple-system, sans-serif',
+                      letterSpacing: '-0.01em',
+                      textShadow: '0 2px 8px rgba(0, 0, 0, 0.8)',
+                    }}>
+                      {item.subtitle || item.description.split('.')[0]}
+                    </h3>
+                  </div>
+                </div>
               </div>
             ))}
           </div>

@@ -68,12 +68,12 @@ export default function Company() {
         <TechBackground />
         {/* Animated startup journey timeline */}
         <div className="absolute inset-0 opacity-5 hero-bg-elements" style={{ opacity: 0 }}>
-          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#DC2626] to-transparent"></div>
-          <div className="absolute top-1/2 left-[10%] w-4 h-4 -translate-y-1/2 rounded-full bg-[#DC2626] animate-pulse"></div>
-          <div className="absolute top-1/2 left-[30%] w-4 h-4 -translate-y-1/2 rounded-full bg-[#DC2626] animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-          <div className="absolute top-1/2 left-[50%] w-4 h-4 -translate-y-1/2 rounded-full bg-[#DC2626] animate-pulse" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute top-1/2 left-[70%] w-4 h-4 -translate-y-1/2 rounded-full bg-[#DC2626] animate-pulse" style={{ animationDelay: '1.5s' }}></div>
-          <div className="absolute top-1/2 left-[90%] w-4 h-4 -translate-y-1/2 rounded-full bg-[#DC2626] animate-pulse" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+          <div className="absolute top-1/2 left-[10%] w-4 h-4 -translate-y-1/2 rounded-full bg-white/10 animate-pulse"></div>
+          <div className="absolute top-1/2 left-[30%] w-4 h-4 -translate-y-1/2 rounded-full bg-white/10 animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+          <div className="absolute top-1/2 left-[50%] w-4 h-4 -translate-y-1/2 rounded-full bg-white/10 animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-1/2 left-[70%] w-4 h-4 -translate-y-1/2 rounded-full bg-white/10 animate-pulse" style={{ animationDelay: '1.5s' }}></div>
+          <div className="absolute top-1/2 left-[90%] w-4 h-4 -translate-y-1/2 rounded-full bg-white/10 animate-pulse" style={{ animationDelay: '2s' }}></div>
         </div>
         <NetworkConnections />
         <div className="max-w-7xl mx-auto text-center relative z-10" style={parallaxStyle}>

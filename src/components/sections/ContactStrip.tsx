@@ -16,8 +16,8 @@ export default function ContactStrip() {
         <div className="mt-12 text-center space-y-4">
           <p className="text-lg">
             <strong>Email:</strong>{" "}
-            <a href="mailto:contact@smartscale.com" className="text-[#DC2626] hover:underline">
-              contact@smartscale.com
+            <a href="mailto:project@ssl-mail.com" className="text-[#DC2626] hover:underline">
+              project@ssl-mail.com
             </a>
           </p>
           <p className="text-lg">

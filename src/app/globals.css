@@ -544,6 +544,22 @@
   animation: fadeIn 0.5s ease-out;
 }
 
+/* Logo fade-in from back to front */
+@keyframes logoFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 0.15;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-logo-fade-in {
+  animation: logoFadeIn 2s ease-out 0.5s both;
+}
+
 /* Responsive animation controls */
 @media (max-width: 1023px) {
   .hero-bg-elements {
