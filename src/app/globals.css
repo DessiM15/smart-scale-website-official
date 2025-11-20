@@ -592,3 +592,53 @@
   }
 }
 
+/* GSAP Animation Support */
+.hero-content > * {
+  will-change: transform, opacity;
+}
+
+.service-card, .capability-card, .portfolio-item {
+  will-change: transform, opacity, filter;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+
+[data-count] {
+  display: inline-block;
+  min-width: 3ch;
+  text-align: center;
+}
+
+.section-divider {
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    #DC2626 20%, 
+    #DC2626 80%, 
+    transparent 100%);
+  background-size: 200% 100%;
+  height: 2px;
+  will-change: transform;
+}
+
+[data-glow] {
+  transition: box-shadow 0.3s ease;
+}
+
+/* Prevent layout shift during animations */
+.content-section {
+  contain: layout style;
+}
+
+/* Initial states for animated elements */
+.gsap-hidden {
+  visibility: hidden;
+}
+
+/* Scroll Reveal Animation Classes */
+.scroll-reveal,
+.scroll-reveal-fade,
+.scroll-reveal-slide,
+.scroll-reveal-stagger > * {
+  will-change: transform, opacity;
+}
+

@@ -70,14 +70,14 @@ export default function IndustriesWeServe() {
     <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-black">
+          <h2 className="scroll-reveal text-4xl sm:text-5xl font-bold mb-4 text-black">
             Industry Expertise
           </h2>
-          <p className="text-lg text-[#6B7280] max-w-2xl mx-auto">
+          <p className="scroll-reveal text-lg text-[#6B7280] max-w-2xl mx-auto">
             Proven solutions across diverse industries. Enterprise quality, boutique service.
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="scroll-reveal-stagger grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
           {industries.map((industry, index) => (
             <IndustryCard
               key={index}

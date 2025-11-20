@@ -31,10 +31,10 @@ export default function ProcessVisualization() {
     <section className="py-24 px-4 sm:px-6 lg:px-8 bg-black text-white">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-4">
+          <h2 className="scroll-reveal text-4xl sm:text-5xl font-bold mb-4">
             Our Process
           </h2>
-          <p className="text-lg text-white/70 max-w-2xl mx-auto">
+          <p className="scroll-reveal text-lg text-white/70 max-w-2xl mx-auto">
             From concept to launch in record time. No bureaucracy, no delays—just results.
           </p>
         </div>
@@ -44,7 +44,7 @@ export default function ProcessVisualization() {
           {/* Connection Line - Hidden on mobile, visible on larger screens */}
           <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-[#DC2626] via-[#DC2626]/50 to-[#DC2626] transform -translate-y-1/2"></div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
+          <div className="scroll-reveal-stagger grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
             {processSteps.map((step, index) => (
               <div
                 key={index}

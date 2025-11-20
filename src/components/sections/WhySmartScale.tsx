@@ -25,15 +25,15 @@ export default function WhySmartScale() {
     <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-black">
+          <h2 className="scroll-reveal text-4xl sm:text-5xl font-bold mb-4 text-black">
             Why Smart Scale
           </h2>
-          <p className="text-lg text-[#6B7280] max-w-2xl mx-auto">
+          <p className="scroll-reveal text-lg text-[#6B7280] max-w-2xl mx-auto">
             Premium boutique development with enterprise capabilities. Built for companies that demand excellence without the agency red tape.
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+        <div className="scroll-reveal-stagger grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
           {benefits.map((benefit, index) => (
             <div
               key={index}

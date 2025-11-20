@@ -28,14 +28,14 @@ export default function OurClients() {
     <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#F3F4F6]">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-black">
+          <h2 className="scroll-reveal text-4xl sm:text-5xl font-bold mb-4 text-black">
             Trusted Partners
           </h2>
-          <p className="text-lg text-[#6B7280] max-w-2xl mx-auto">
+          <p className="scroll-reveal text-lg text-[#6B7280] max-w-2xl mx-auto">
             Companies that trust us to deliver enterprise-quality solutions.
           </p>
         </div>
-        <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12 lg:gap-16">
+        <div className="scroll-reveal-stagger flex flex-wrap justify-center items-center gap-8 md:gap-12 lg:gap-16">
           {clients.map((client, index) => (
             <div
               key={index}

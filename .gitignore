@@ -44,3 +44,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# large video files
+assets/botmaker-video.mp4
+*.mp4
+

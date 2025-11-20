@@ -55,7 +55,7 @@ export default function ServicePageClient({ slug }: ServicePageClientProps) {
         <TechBackground />
         <CodeSnippets />
         <div className="max-w-7xl mx-auto relative z-10" style={parallaxStyle}>
-          <div className="flex flex-col items-center text-center">
+          <div className="hero-content flex flex-col items-center text-center">
             {icon && (
               <div className="mb-8 flex justify-center items-center hero-headline">
                 <div className="w-24 h-24 rounded-full bg-[#DC2626] flex items-center justify-center text-white shadow-lg p-6">
@@ -72,10 +72,10 @@ export default function ServicePageClient({ slug }: ServicePageClientProps) {
               See how we deliver {service.title.toLowerCase()} using modern development practices and AI acceleration.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <HeroCTA href="/contact" variant="primary">
+              <HeroCTA href="/contact" variant="primary" className="cta-button">
                 Build Something Similar
               </HeroCTA>
-              <HeroCTA href="/portfolio" variant="secondary">
+              <HeroCTA href="/portfolio" variant="secondary" className="cta-button">
                 View Next Project
               </HeroCTA>
             </div>
@@ -86,7 +86,7 @@ export default function ServicePageClient({ slug }: ServicePageClientProps) {
 
       {/* Extended Description */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto content-section">
           <p className="text-lg text-gray-700 leading-relaxed">
             {service.extendedDescription}
           </p>
@@ -172,7 +172,7 @@ export default function ServicePageClient({ slug }: ServicePageClientProps) {
           </p>
           <Link
             href="/contact"
-            className="inline-block px-8 py-4 bg-[#DC2626] text-white rounded-full text-lg font-semibold hover:bg-red-700 transition"
+            className="request-estimate inline-block px-8 py-4 bg-[#DC2626] text-white rounded-full text-lg font-semibold hover:bg-red-700 transition"
           >
             Request Estimate
           </Link>

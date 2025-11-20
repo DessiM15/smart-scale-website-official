@@ -260,19 +260,21 @@ export default function Portfolio() {
         <TechBackground />
         <GeometricShapes />
         <div className="max-w-7xl mx-auto text-center relative z-10" style={parallaxStyle}>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 leading-tight hero-headline">
-            Fresh Perspectives. Modern Solutions.
-          </h1>
-          <p className="text-lg sm:text-xl text-white/70 max-w-3xl mx-auto mb-8 hero-subheadline">
-            See how we're applying cutting-edge AI and modern development practices to solve real business challenges.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <HeroCTA href="/contact" variant="primary">
-              Start Your Project
-            </HeroCTA>
-            <HeroCTA href="#portfolio-grid" variant="secondary">
-              Explore Our Work
-            </HeroCTA>
+          <div className="hero-content">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 leading-tight hero-headline">
+              Fresh Perspectives. Modern Solutions.
+            </h1>
+            <p className="text-lg sm:text-xl text-white/70 max-w-3xl mx-auto mb-8 hero-subheadline">
+              See how we're applying cutting-edge AI and modern development practices to solve real business challenges.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <HeroCTA href="/contact" variant="primary" className="cta-button">
+                Start Your Project
+              </HeroCTA>
+              <HeroCTA href="#portfolio-grid" variant="secondary" className="cta-button">
+                Explore Our Work
+              </HeroCTA>
+            </div>
           </div>
         </div>
       </section>
@@ -286,7 +288,7 @@ export default function Portfolio() {
               <div
                 key={item.id}
                 onClick={() => openModal(item)}
-                className="group relative aspect-square overflow-hidden cursor-pointer rounded-lg"
+                className="portfolio-item group relative aspect-square overflow-hidden cursor-pointer rounded-lg"
               >
                 {/* Background Image */}
                 <div
@@ -554,9 +556,9 @@ export default function Portfolio() {
 
               {/* Testimonial */}
               {selectedItem.caseStudy?.testimonial && (
-                <div className="mb-8 p-8 bg-[#F3F4F6] rounded-lg">
+                <div className="testimonial mb-8 p-8 bg-[#F3F4F6] rounded-lg">
                   <div className="flex items-start gap-4">
-                    <div className="text-4xl text-[#DC2626] font-serif">"</div>
+                    <div className="quote-mark text-4xl text-[#DC2626] font-serif">"</div>
                     <div className="flex-1">
                       <p className="text-lg text-[#1F2937] italic mb-4">
                         {selectedItem.caseStudy.testimonial.quote}

@@ -20,13 +20,13 @@ export default function UrgencyCTA() {
           </span>
         </div>
 
-        <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6">
+        <h2 className="scroll-reveal text-4xl sm:text-5xl md:text-6xl font-bold mb-6">
           Ready to Ship in 7 Days?
         </h2>
-        <p className="text-xl text-white/80 mb-4 max-w-2xl mx-auto">
+        <p className="scroll-reveal text-xl text-white/80 mb-4 max-w-2xl mx-auto">
           We're currently accepting a limited number of new projects for Q1 2026.
         </p>
-        <p className="text-lg text-white/70 mb-10 max-w-2xl mx-auto">
+        <p className="scroll-reveal text-lg text-white/70 mb-10 max-w-2xl mx-auto">
           Get direct founder access, enterprise-quality code, and AI-accelerated development—without the agency overhead.
         </p>
 

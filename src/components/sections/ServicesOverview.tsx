@@ -27,10 +27,10 @@ export default function ServicesOverview() {
   return (
     <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-4xl sm:text-5xl font-bold mb-16 text-center text-black">
+        <h2 className="scroll-reveal text-4xl sm:text-5xl font-bold mb-16 text-center text-black">
           Services Overview
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <div className="scroll-reveal-stagger grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {SERVICES.map((service) => (
             <ServiceCard
               key={service.slug}

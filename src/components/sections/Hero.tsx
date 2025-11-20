@@ -88,7 +88,7 @@ export default function Hero() {
 
       {/* Hero Content */}
       <div className="md:px-8 md:pt-0 md:pb-0 max-w-7xl mr-auto mb-20 ml-auto pt-6 pr-6 pb-28 pl-6 relative z-10">
-        <div className="grid place-items-center relative" style={parallaxStyle}>
+        <div className="hero-content grid place-items-center relative" style={parallaxStyle}>
           {/* Main headline */}
           <h1 className="md:mt-10 text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight select-none font-semibold text-white tracking-tight mt-10 text-center px-4 hero-headline">
             Enterprise Software. AI Systems. Digital Transformation.
@@ -99,10 +99,10 @@ export default function Hero() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 z-10 max-w-2xl mt-8 mr-auto ml-auto relative px-4">
-            <HeroCTA href="/contact" variant="primary">
+            <HeroCTA href="/contact" variant="primary" className="cta-button">
               Request Estimate
             </HeroCTA>
-            <HeroCTA href="/portfolio" variant="secondary">
+            <HeroCTA href="/portfolio" variant="secondary" className="cta-button">
               View Portfolio
             </HeroCTA>
           </div>
