@@ -56,19 +56,11 @@ export default function ProcessVisualization() {
               >
                 {/* Step Card */}
                 <div
-                  className={`p-8 rounded-lg transition-all duration-300 ${
-                    step.highlight
-                      ? "bg-[#DC2626] text-white shadow-2xl shadow-[#DC2626]/50"
-                      : "bg-[#1F2937] hover:bg-[#1F2937]/80"
-                  }`}
+                  className="p-8 rounded-lg transition-all duration-300 bg-[#1F2937] hover:bg-[#1F2937]/80 hover:border-[#DC2626] hover:border-2 border-2 border-transparent"
                 >
                   {/* Icon Circle */}
                   <div
-                    className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 ${
-                      step.highlight
-                        ? "bg-white/20 text-white"
-                        : "bg-[#DC2626] text-white"
-                    }`}
+                    className="w-16 h-16 rounded-full flex items-center justify-center mb-6 bg-[#DC2626] text-white"
                   >
                     {step.icon}
                   </div>
