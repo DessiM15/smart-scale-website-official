@@ -63,7 +63,7 @@ export default function HeroCTA({
     }
   };
 
-  const baseClasses = "group hero-cta-button transition-all duration-500 ease-out cursor-pointer overflow-hidden rounded-full pt-3 pr-4 pb-3 pl-6 relative shadow-2xl backdrop-blur-xl hero-cta";
+  const baseClasses = "group hero-cta-button transition-all duration-500 ease-out cursor-pointer overflow-hidden rounded-full pt-3 pr-4 pb-3 pl-6 relative shadow-2xl backdrop-blur-xl";
   
   const primaryClasses = "hover:shadow-[#DC2626]/30 hover:shadow-2xl hover:scale-[1.02] hover:-translate-y-1 active:scale-[1.01] active:shadow-[#DC2626]/40 focus:outline-none focus:ring-2 focus:ring-[#DC2626]/50 hover:border-[#DC2626]/60 bg-gradient-to-br from-[#DC2626]/40 via-black/60 to-black/80 border-[#DC2626]/30 border-2 hero-cta-primary-idle";
   
