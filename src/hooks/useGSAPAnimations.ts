@@ -498,35 +498,8 @@ export function useGSAPAnimations() {
         anchor.addEventListener("click", handleClick, { passive: false });
       });
 
-      // Batch animations for better performance
-      ScrollTrigger.batch(".batch-animate", {
-        onEnter: (batch) =>
-          gsap.to(batch, {
-            opacity: 1,
-            y: 0,
-            stagger: 0.1,
-            overwrite: true,
-          }),
-        onLeave: (batch) =>
-          gsap.set(batch, {
-            opacity: 0,
-            y: 50,
-            overwrite: true,
-          }),
-        onEnterBack: (batch) =>
-          gsap.to(batch, {
-            opacity: 1,
-            y: 0,
-            stagger: 0.1,
-            overwrite: true,
-          }),
-        onLeaveBack: (batch) =>
-          gsap.set(batch, {
-            opacity: 0,
-            y: 50,
-            overwrite: true,
-          }),
-      });
+      // Batch animations removed - was causing content to disappear on scroll
+      // If you need batch animations in the future, use "once: true" pattern instead
 
         // Refresh ScrollTrigger after initialization
         ScrollTrigger.refresh();
