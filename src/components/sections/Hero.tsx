@@ -99,10 +99,10 @@ export default function Hero() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 z-10 max-w-2xl mt-8 mr-auto ml-auto relative px-4">
-            <HeroCTA href="/contact" variant="primary" className="cta-button">
+            <HeroCTA href="/contact" variant="primary" className="hero-cta">
               Request Estimate
             </HeroCTA>
-            <HeroCTA href="/portfolio" variant="secondary" className="cta-button">
+            <HeroCTA href="/portfolio" variant="secondary" className="hero-cta">
               View Portfolio
             </HeroCTA>
           </div>
