@@ -32,11 +32,12 @@ export default function BlogPage() {
                 className="group block bg-white rounded-lg overflow-hidden hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-[#DC2626]"
               >
                 {/* Cover Image */}
-                <div className="h-48 w-full relative overflow-hidden bg-black">
+                <div className="h-48 w-full relative overflow-hidden bg-gray-200">
                   <BlogCoverImage
                     src={post.coverImage}
                     alt={post.coverImageAlt}
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    priority={false} // Lazy load blog list images
                   />
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
                 </div>

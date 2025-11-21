@@ -252,11 +252,11 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </section>
 
         {/* Cover Image */}
-        <section className="relative h-64 md:h-96 w-full overflow-hidden bg-black">
+        <section className="relative h-64 md:h-96 w-full overflow-hidden bg-gray-900">
           <BlogCoverImage
             src={post.coverImage}
             alt={post.coverImageAlt}
-            priority
+            priority={true} // Prioritize hero image
             sizes="100vw"
           />
           <div className="absolute inset-0 bg-black/20"></div>

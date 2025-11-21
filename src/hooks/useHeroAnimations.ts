@@ -8,7 +8,7 @@ interface UseHeroAnimationsOptions {
 }
 
 export function useHeroAnimations(options: UseHeroAnimationsOptions = {}) {
-  const { enableParallax = true, enableScroll = true } = options;
+  const { enableParallax = false, enableScroll = true } = options;
   const sectionRef = useRef<HTMLElement>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [scrollProgress, setScrollProgress] = useState(0);

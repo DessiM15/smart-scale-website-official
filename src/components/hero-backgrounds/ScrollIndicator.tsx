@@ -1,11 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 
 export default function ScrollIndicator() {
+  const pathname = usePathname();
   const [hasScrolled, setHasScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
+
+  // Don't show on portfolio page (handle all variations)
+  if (pathname?.startsWith("/portfolio")) {
+    return null;
+  }
 
   useEffect(() => {
     const handleScroll = () => {

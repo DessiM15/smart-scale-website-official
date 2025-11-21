@@ -131,3 +131,5 @@ After generating the base images, you'll need to:
 - **Optimize:** Compress images while maintaining quality
 - **Consistency:** Ensure all three images have similar visual weight and style
 
+
+

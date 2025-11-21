@@ -49,3 +49,5 @@ Once you add the image files to `public/assets/`, they will automatically displa
 
 The images will automatically fit within their frames and scale responsively.
 
+
+

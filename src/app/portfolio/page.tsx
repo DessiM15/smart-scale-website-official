@@ -8,7 +8,6 @@ import TechBackground from "@/components/TechBackground";
 import { useHeroAnimations } from "@/hooks/useHeroAnimations";
 import GeometricShapes from "@/components/hero-backgrounds/GeometricShapes";
 import HeroCTA from "@/components/HeroCTA";
-import ScrollIndicator from "@/components/hero-backgrounds/ScrollIndicator";
 
 interface PortfolioItem {
   id: number;
@@ -278,7 +277,6 @@ export default function Portfolio() {
           </div>
         </div>
       </section>
-      <ScrollIndicator />
 
       {/* Portfolio Grid - Fingent Style */}
       <section id="portfolio-grid" className="py-24 px-4 sm:px-6 lg:px-8">
