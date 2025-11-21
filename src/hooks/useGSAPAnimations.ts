@@ -366,23 +366,23 @@ export function useGSAPAnimations() {
               trigger: button,
               start: "top 90%",
               once: true,
-              onComplete: () => {
-                // Add recurring pulse after initial animation
-                gsap.to(button, {
-                  boxShadow: "0 0 0 0 rgba(220, 38, 38, 0.4)",
-                  duration: 2,
-                  repeat: -1,
-                  repeatDelay: 3,
-                  ease: "power2.inOut",
-                  onRepeat: function () {
-                    gsap.to(button, {
-                      boxShadow: "0 0 20px 10px rgba(220, 38, 38, 0)",
-                      duration: 2,
-                      ease: "power2.out",
-                    });
-                  },
-                });
-              },
+            },
+            onComplete: () => {
+              // Add recurring pulse after initial animation
+              gsap.to(button, {
+                boxShadow: "0 0 0 0 rgba(220, 38, 38, 0.4)",
+                duration: 2,
+                repeat: -1,
+                repeatDelay: 3,
+                ease: "power2.inOut",
+                onRepeat: function () {
+                  gsap.to(button, {
+                    boxShadow: "0 0 20px 10px rgba(220, 38, 38, 0)",
+                    duration: 2,
+                    ease: "power2.out",
+                  });
+                },
+              });
             },
           });
         });
