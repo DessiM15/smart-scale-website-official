@@ -38,14 +38,13 @@ export function useGSAPAnimations() {
 
     if (prefersReducedMotion || isMobile) {
       // Disable all animations on mobile or reduced motion
-      if (isMobile) {
-        // On mobile, just make everything visible immediately
-        gsap.set(".scroll-reveal, .scroll-reveal-fade, .scroll-reveal-slide, .scroll-reveal-stagger > *", {
-          opacity: 1,
-          y: 0,
-          x: 0,
-        });
-      }
+      // Make everything visible immediately
+      gsap.set(".scroll-reveal, .scroll-reveal-fade, .scroll-reveal-slide, .scroll-reveal-stagger > *, .hero-content > *, .service-card, .portfolio-item", {
+        opacity: 1,
+        y: 0,
+        x: 0,
+        scale: 1,
+      });
       gsap.globalTimeline.timeScale(0);
       ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
       return;
@@ -63,6 +62,7 @@ export function useGSAPAnimations() {
 
     // Initialize all animations after DOM is ready
     const initAnimations = () => {
+      try {
       // 0. SCROLL REVEAL - Simple fade-in animation for any element
       const scrollRevealElements = document.querySelectorAll(".scroll-reveal");
       scrollRevealElements.forEach((element: any) => {
@@ -528,8 +528,17 @@ export function useGSAPAnimations() {
           }),
       });
 
-      // Refresh ScrollTrigger after initialization
-      ScrollTrigger.refresh();
+        // Refresh ScrollTrigger after initialization
+        ScrollTrigger.refresh();
+      } catch (error) {
+        console.error('GSAP animation initialization failed:', error);
+        // Fallback: make all elements visible immediately
+        const allElements = document.querySelectorAll(".scroll-reveal, .scroll-reveal-fade, .scroll-reveal-slide, .scroll-reveal-stagger > *, .hero-content > *, .service-card, .portfolio-item");
+        allElements.forEach((el: any) => {
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0) translateX(0) scale(1)';
+        });
+      }
     };
 
     // Set initial states for animated elements BEFORE initializing animations
@@ -606,6 +615,19 @@ export function useGSAPAnimations() {
                 }
               }
             });
+            
+            // Emergency fallback: If GSAP fails completely, make all content visible after 3 seconds
+            setTimeout(() => {
+              const stillHiddenElements = document.querySelectorAll(".scroll-reveal, .scroll-reveal-fade, .scroll-reveal-slide, .scroll-reveal-stagger > *, .hero-content > *, .service-card, .portfolio-item");
+              stillHiddenElements.forEach((el: any) => {
+                const computedStyle = window.getComputedStyle(el);
+                if (computedStyle.opacity === "0" || parseFloat(computedStyle.opacity) < 0.1) {
+                  console.warn('GSAP animation failed, making element visible:', el);
+                  el.style.opacity = '1';
+                  el.style.transform = 'translateY(0) translateX(0) scale(1)';
+                }
+              });
+            }, 3000);
           }, 300);
         }, 200);
       }, 300);

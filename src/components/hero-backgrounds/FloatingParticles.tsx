@@ -30,26 +30,31 @@ export default function FloatingParticles({
   useEffect(() => {
     if (!isMounted) return;
 
-    // Responsive particle count
-    const getParticleCount = () => {
-      if (typeof window === 'undefined') return 0;
-      if (!responsive) return count;
-      if (window.innerWidth >= 1920) return count;
-      if (window.innerWidth >= 1024) return Math.floor(count * 0.7);
-      if (window.innerWidth >= 768) return Math.floor(count * 0.4);
-      return 0; // No particles on mobile
-    };
+    // Add a small delay to ensure DOM is fully ready
+    const initCanvas = () => {
+      // Responsive particle count
+      const getParticleCount = () => {
+        if (typeof window === 'undefined') return 0;
+        if (!responsive) return count;
+        if (window.innerWidth >= 1920) return count;
+        if (window.innerWidth >= 1024) return Math.floor(count * 0.7);
+        if (window.innerWidth >= 768) return Math.floor(count * 0.4);
+        return 0; // No particles on mobile
+      };
 
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    
-    // Don't render on mobile
-    if (window.innerWidth < 768) {
-      return;
-    }
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      
+      // Don't render on mobile
+      if (window.innerWidth < 768) {
+        return;
+      }
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        console.warn('Failed to get 2D context for particles canvas');
+        return;
+      }
 
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
@@ -134,12 +139,23 @@ export default function FloatingParticles({
 
     animate();
 
+    // Make canvas visible after initialization
+    canvas.style.opacity = '1';
+
+      return () => {
+        window.removeEventListener("resize", resizeCanvas);
+        window.removeEventListener("mousemove", handleMouseMove);
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
+      };
+    };
+
+    // Initialize with a small delay to ensure DOM is ready
+    const timeoutId = setTimeout(initCanvas, 100);
+    
     return () => {
-      window.removeEventListener("resize", resizeCanvas);
-      window.removeEventListener("mousemove", handleMouseMove);
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
+      clearTimeout(timeoutId);
     };
   }, [count, responsive, isMounted]);
 

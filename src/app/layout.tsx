@@ -33,10 +33,49 @@ export default function RootLayout({
       <body>
         <Script
           id="unicorn-studio"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
           dangerouslySetInnerHTML={{
             __html: `
-              !function(){if(!window.UnicornStudio){window.UnicornStudio={isInitialized:!1};var i=document.createElement("script");i.src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v1.4.29/dist/unicornStudio.umd.js",i.onload=function(){window.UnicornStudio.isInitialized||(UnicornStudio.init(),window.UnicornStudio.isInitialized=!0)},(document.head || document.body).appendChild(i)}}();
+              !function(){
+                if(!window.UnicornStudio){
+                  window.UnicornStudio={isInitialized:!1};
+                  
+                  // Wait for DOM to be fully loaded
+                  const initUnicorn = () => {
+                    // Check if WebGL is supported
+                    const canvas = document.createElement('canvas');
+                    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                    
+                    if (!gl) {
+                      console.warn('WebGL not supported, skipping UnicornStudio');
+                      return;
+                    }
+                    
+                    var i=document.createElement("script");
+                    i.src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v1.4.29/dist/unicornStudio.umd.js";
+                    i.onload=function(){
+                      try {
+                        if (!window.UnicornStudio.isInitialized) {
+                          UnicornStudio.init();
+                          window.UnicornStudio.isInitialized=!0;
+                        }
+                      } catch (e) {
+                        console.warn('UnicornStudio initialization failed:', e);
+                      }
+                    };
+                    i.onerror=function(){
+                      console.warn('Failed to load UnicornStudio script');
+                    };
+                    (document.head || document.body).appendChild(i);
+                  };
+                  
+                  if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', initUnicorn);
+                  } else {
+                    setTimeout(initUnicorn, 100);
+                  }
+                }
+              }();
             `,
           }}
         />

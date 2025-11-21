@@ -6,11 +6,15 @@ export default function DataVisualization() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const initCanvas = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        console.warn('Failed to get 2D context for data visualization canvas');
+        return;
+      }
 
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
@@ -65,10 +69,21 @@ export default function DataVisualization() {
       requestAnimationFrame(animate);
     };
 
-    animate();
+      animate();
 
+      // Make canvas visible after initialization
+      canvas.style.opacity = '1';
+
+      return () => {
+        window.removeEventListener("resize", resizeCanvas);
+      };
+    };
+
+    // Initialize with a small delay to ensure DOM is ready
+    const timeoutId = setTimeout(initCanvas, 150);
+    
     return () => {
-      window.removeEventListener("resize", resizeCanvas);
+      clearTimeout(timeoutId);
     };
   }, []);
 
