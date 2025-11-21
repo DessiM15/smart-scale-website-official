@@ -434,9 +434,18 @@ export default function Portfolio() {
                     {selectedItem.technologies.map((tech, idx) => (
                       <span
                         key={idx}
-                        className="px-4 py-2 bg-[#F3F4F6] text-[#1F2937] rounded-full text-sm font-medium"
+                        className="group transition-all duration-500 ease-out cursor-default overflow-hidden rounded-full px-4 py-2 relative shadow-2xl backdrop-blur-xl bg-gradient-to-br from-[#DC2626]/40 via-black/60 to-black/80 border-[#DC2626]/30 border-2 text-sm font-medium text-white hover:shadow-[#DC2626]/30 hover:shadow-2xl hover:scale-[1.02] hover:-translate-y-1 hover:border-[#DC2626]/60"
                       >
-                        {tech}
+                        {/* Gradient Shine Effect */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#DC2626]/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out z-0"></div>
+                        
+                        {/* Hover Overlay */}
+                        <div className="group-hover:opacity-100 transition-opacity duration-500 rounded-2xl absolute top-0 right-0 bottom-0 left-0 z-0 bg-gradient-to-r from-[#DC2626]/10 via-[#DC2626]/20 to-[#DC2626]/10 opacity-0"></div>
+
+                        {/* Content */}
+                        <span className="relative z-10 group-hover:text-white transition-colors duration-300 drop-shadow-sm">
+                          {tech}
+                        </span>
                       </span>
                     ))}
                   </div>
