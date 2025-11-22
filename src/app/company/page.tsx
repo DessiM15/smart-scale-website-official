@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Zap, Eye, Lightbulb, Target } from "lucide-react";
 import TechBackground from "@/components/TechBackground";
 import { useHeroAnimations } from "@/hooks/useHeroAnimations";
@@ -83,9 +82,13 @@ export default function Company() {
           <p className="text-xl sm:text-2xl text-white/70 max-w-3xl mx-auto mb-8 hero-subheadline">
             We're not jaded by years of 'how things are done.' We're hungry founders using AI to revolutionize how software gets built.
           </p>
-          <HeroCTA href="#methodology" variant="primary">
-            Why We're Different
-          </HeroCTA>
+          
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 z-10 max-w-2xl mt-8 mr-auto ml-auto relative px-4 justify-center">
+            <HeroCTA href="#methodology" variant="primary" className="hero-cta">
+              Why We're Different
+            </HeroCTA>
+          </div>
         </div>
       </section>
       <ScrollIndicator />
@@ -229,12 +232,11 @@ export default function Company() {
           <p className="text-xl text-white/80 mb-8">
             Get direct access, enterprise quality, and 7-day MVPs—without the agency overhead.
           </p>
-          <Link
-            href="/contact"
-            className="inline-block px-8 py-4 bg-[#DC2626] text-white rounded-full text-lg font-semibold hover:bg-red-700 transition-all duration-300 hover:scale-105"
-          >
-            Request Estimate
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <HeroCTA href="/contact" variant="primary">
+              Request Estimate
+            </HeroCTA>
+          </div>
         </div>
       </section>
     </div>
