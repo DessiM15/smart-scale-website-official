@@ -34,7 +34,7 @@ export function useGSAPAnimations() {
     console.log('GSAP scroll animations disabled - making all content visible');
     
     const makeContentVisible = () => {
-      const allElements = document.querySelectorAll(".scroll-reveal, .scroll-reveal-fade, .scroll-reveal-slide, .scroll-reveal-stagger > *, .hero-content > *, .service-card, .portfolio-item, .cta-button, .request-estimate");
+      const allElements = document.querySelectorAll(".scroll-reveal, .scroll-reveal-fade, .scroll-reveal-slide, .scroll-reveal-stagger > *, .hero-content > *, .service-card, .portfolio-item, .cta-button, .request-estimate, .hero-cta");
       allElements.forEach((el: any) => {
         el.style.opacity = '1';
         el.style.transform = 'translateY(0) translateX(0) scale(1)';
