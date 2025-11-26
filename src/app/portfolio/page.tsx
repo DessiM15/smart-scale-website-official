@@ -170,6 +170,28 @@ const portfolioItems: PortfolioItem[] = [
   },
   {
     id: 6,
+    title: "Arbor Cove Funding",
+    subtitle: "Financial Services Platform",
+    industry: "FINANCE",
+    description: "Modern financial services platform with streamlined loan processing, client management, and comprehensive financial analytics.",
+    backgroundColor: "#1F2937",
+    backgroundImage: "url(/assets/arbor-cove-logo-ss.png)",
+    technologies: ["Next.js", "TypeScript", "Node.js", "PostgreSQL", "Vercel"],
+    heroImage: "url(/assets/arbor-cove-logo-ss.png)",
+    hidden: false,
+    caseStudy: {
+      challenge: "Financial services company needed a modern digital platform to streamline loan processing, improve client management, and enhance operational efficiency.",
+      solution: "Developed a comprehensive financial services platform with automated loan processing workflows, client portal, real-time financial analytics, and secure document management system.",
+      results: [
+        "Streamlined loan application and processing workflows",
+        "Enhanced client management and communication",
+        "Real-time financial analytics and reporting",
+        "Secure document management and compliance",
+      ],
+    },
+  },
+  {
+    id: 7,
     title: "MediCare+",
     subtitle: "Patient Portal System",
     industry: "HEALTHCARE",
@@ -193,7 +215,7 @@ const portfolioItems: PortfolioItem[] = [
     },
   },
   {
-    id: 7,
+    id: 8,
     title: "Logistics Pro",
     subtitle: "Supply Chain Management",
     industry: "SUPPLY CHAIN",
