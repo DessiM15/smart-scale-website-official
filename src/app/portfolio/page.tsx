@@ -23,6 +23,7 @@ interface PortfolioItem {
   screenshot?: string;
   projectDetails?: string;
   hidden?: boolean;
+  interactiveDemo?: string;
   caseStudy?: {
     challenge: string;
     solution: string;
@@ -153,7 +154,8 @@ const portfolioItems: PortfolioItem[] = [
     isConcept: true,
     technologies: ["React", "Node.js", "AWS", "TensorFlow", "PostgreSQL"],
     heroImage: "url(/assets/finance-ss-portfolio.jpg)",
-    hidden: true,
+    hidden: false,
+    interactiveDemo: "/financeflo-dashboard.html",
     caseStudy: {
       challenge: "Enterprise needed real-time financial monitoring across 50+ accounts with manual reporting processes causing delays and errors in decision-making.",
       solution: "AI-powered dashboard with predictive analytics and automated reporting, featuring real-time data integration, machine learning models for forecasting, and customizable KPI visualization with dark theme and red accent highlights.",
@@ -220,6 +222,7 @@ const portfolioItems: PortfolioItem[] = [
 export default function Portfolio() {
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [iframeLoaded, setIframeLoaded] = useState<boolean>(false);
   const { sectionRef, parallaxStyle, scrollStyle } = useHeroAnimations();
 
   const visibleItems = portfolioItems.filter(item => !item.hidden);
@@ -228,6 +231,7 @@ export default function Portfolio() {
     const index = visibleItems.findIndex((p) => p.id === item.id);
     setSelectedIndex(index);
     setSelectedItem(item);
+    setIframeLoaded(false); // Reset iframe loaded state when opening modal
     document.body.style.overflow = "hidden";
   };
 
@@ -415,6 +419,36 @@ export default function Portfolio() {
                   {selectedItem.subtitle}
                 </p>
               </div>
+
+              {/* Interactive Demo */}
+              {selectedItem.interactiveDemo && (
+                <div className="mb-8 pb-8 border-b border-gray-200">
+                  <h3 className="text-2xl font-bold mb-4 text-black">Interactive Dashboard</h3>
+                  <p className="text-[#6B7280] mb-4 leading-relaxed">
+                    Explore the FinanceFlow dashboard below. Navigate through different views, interact with charts, and experience the AI-powered features.
+                  </p>
+                  <div className="w-full rounded-lg overflow-hidden border-2 border-gray-200 shadow-lg bg-gray-100 relative" style={{ minHeight: '800px' }}>
+                    {!iframeLoaded && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                        <div className="text-center">
+                          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#DC2626] mb-4"></div>
+                          <p className="text-gray-600">Loading dashboard...</p>
+                        </div>
+                      </div>
+                    )}
+                    <iframe
+                      src={selectedItem.interactiveDemo}
+                      className="w-full"
+                      style={{ height: '800px', border: 'none', opacity: iframeLoaded ? 1 : 0, transition: 'opacity 0.3s' }}
+                      title={`${selectedItem.title} Interactive Dashboard`}
+                      allow="fullscreen"
+                      loading="lazy"
+                      onLoad={() => setIframeLoaded(true)}
+                      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Project Details */}
               {selectedItem.projectDetails && (

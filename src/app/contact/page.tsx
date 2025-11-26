@@ -5,7 +5,6 @@ import TechBackground from "@/components/TechBackground";
 import { useHeroAnimations } from "@/hooks/useHeroAnimations";
 import HeroCTA from "@/components/HeroCTA";
 import ScrollIndicator from "@/components/hero-backgrounds/ScrollIndicator";
-import Image from "next/image";
 
 export default function Contact() {
   const { sectionRef, parallaxStyle, scrollStyle } = useHeroAnimations();
@@ -19,18 +18,6 @@ export default function Contact() {
         style={scrollStyle}
       >
         <TechBackground />
-        {/* Logo fade-in from back to front */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-0">
-          <Image
-            src="/assets/smart-scale-logo-official.png"
-            alt="Smart Scale"
-            width={300}
-            height={120}
-            className="w-auto h-24 sm:h-32 md:h-40 brightness-0 invert animate-logo-fade-in"
-            priority
-            unoptimized
-          />
-        </div>
         <div className="max-w-7xl mx-auto text-center relative z-10" style={parallaxStyle}>
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 leading-tight hero-headline">
             Talk Directly to the Builders

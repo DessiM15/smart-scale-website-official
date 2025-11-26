@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinanceFlow | Enterprise Financial Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --bg-primary: #09090b;
+      --bg-secondary: #18181b;
+      --bg-tertiary: #27272a;
+      --border: rgba(63, 63, 70, 0.5);
+      --border-light: rgba(63, 63, 70, 0.3);
+      --text-primary: #fafafa;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      --accent: #10b981;
+      --accent-dim: rgba(16, 185, 129, 0.15);
+      --danger: #ef4444;
+      --danger-dim: rgba(239, 68, 68, 0.15);
+      --warning: #f59e0b;
+      --warning-dim: rgba(245, 158, 11, 0.15);
+      --info: #3b82f6;
+      --info-dim: rgba(59, 130, 246, 0.15);
+      --purple: #8b5cf6;
+      --purple-dim: rgba(139, 92, 246, 0.15);
+    }
+    
+    body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; font-size: 14px; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .app { display: flex; min-height: 100vh; }
+    
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      padding: 20px 14px;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      height: 100vh;
+      z-index: 100;
+      transition: transform 0.3s ease;
+    }
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 90; }
+    
+    .logo { display: flex; align-items: center; gap: 10px; padding: 0 10px; margin-bottom: 28px; }
+    .logo-icon { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, var(--accent), #059669); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; color: white; }
+    .logo-text h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.5px; }
+    .logo-text span { font-size: 10px; color: var(--text-muted); font-weight: 500; }
+    
+    .close-sidebar { display: none; position: absolute; top: 14px; right: 14px; background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 8px; }
+    
+    .nav-section { margin-bottom: 20px; }
+    .nav-label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 0 10px; margin-bottom: 6px; }
+    .nav { display: flex; flex-direction: column; gap: 2px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 7px; color: var(--text-secondary); cursor: pointer; transition: all 0.15s; border: none; background: none; width: 100%; text-align: left; font-family: inherit; font-size: 13px; font-weight: 500; }
+    .nav-item:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+    .nav-item.active { background: var(--accent-dim); color: var(--accent); }
+    .nav-item svg { width: 17px; height: 17px; opacity: 0.7; flex-shrink: 0; }
+    .nav-item.active svg { opacity: 1; }
+    .nav-item .badge { margin-left: auto; font-size: 10px; padding: 2px 6px; border-radius: 10px; background: var(--danger); color: white; font-weight: 600; }
+    .nav-item .ai-badge { margin-left: auto; font-size: 9px; padding: 2px 6px; border-radius: 10px; background: linear-gradient(135deg, var(--purple), var(--info)); color: white; font-weight: 600; }
+    
+    .sidebar-footer { margin-top: auto; padding: 14px; background: var(--bg-tertiary); border-radius: 10px; border: 1px solid var(--border-light); }
+    .sidebar-footer-header { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+    .sidebar-footer p { font-size: 11px; color: var(--text-muted); }
+    .sidebar-footer .highlight { color: var(--text-secondary); font-weight: 500; }
+    
+    /* Main */
+    .main { flex: 1; margin-left: 260px; background: var(--bg-primary); min-height: 100vh; }
+    
+    /* Header */
+    .header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--bg-primary); position: sticky; top: 0; z-index: 40; gap: 12px; }
+    .header-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+    .mobile-menu-btn { display: none; background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 6px; margin: -6px; }
+    .mobile-menu-btn svg { width: 22px; height: 22px; }
+    .header-title h2 { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+    .header-title p { font-size: 11px; color: var(--text-muted); }
+    
+    .header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .icon-btn { width: 34px; height: 34px; border-radius: 7px; background: var(--bg-secondary); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); cursor: pointer; position: relative; flex-shrink: 0; }
+    .icon-btn:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+    .icon-btn svg { width: 17px; height: 17px; }
+    .icon-btn .badge { position: absolute; top: -2px; right: -2px; width: 15px; height: 15px; border-radius: 50%; background: var(--danger); color: white; font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+    .avatar { width: 34px; height: 34px; border-radius: 7px; background: linear-gradient(135deg, var(--purple), var(--info)); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12px; color: white; flex-shrink: 0; }
+    
+    .content { padding: 20px; }
+    
+    /* Views */
+    .view { display: none; }
+    .view.active { display: block; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    
+    /* Stats Row */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+    .stat-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+    .stat-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+    .stat-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .stat-icon.green { background: var(--accent-dim); color: var(--accent); }
+    .stat-icon.blue { background: var(--info-dim); color: var(--info); }
+    .stat-icon.purple { background: var(--purple-dim); color: var(--purple); }
+    .stat-icon.orange { background: var(--warning-dim); color: var(--warning); }
+    .stat-icon.red { background: var(--danger-dim); color: var(--danger); }
+    .stat-icon svg { width: 18px; height: 18px; }
+    .stat-trend { display: flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 600; padding: 3px 6px; border-radius: 5px; }
+    .stat-trend.up { background: var(--accent-dim); color: var(--accent); }
+    .stat-trend.down { background: var(--danger-dim); color: var(--danger); }
+    .stat-trend svg { width: 10px; height: 10px; }
+    .stat-label { font-size: 11px; color: var(--text-muted); margin-bottom: 3px; font-weight: 500; }
+    .stat-value { font-size: 22px; font-weight: 700; letter-spacing: -1px; margin-bottom: 2px; }
+    .stat-subtitle { font-size: 10px; color: var(--text-muted); }
+    
+    /* Cards */
+    .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; }
+    .card-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+    .card-title { font-size: 13px; font-weight: 600; }
+    .card-subtitle { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+    .card-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .card-body { padding: 16px; }
+    
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 7px 12px; border-radius: 7px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; border: 1px solid transparent; font-family: inherit; white-space: nowrap; }
+    .btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .btn-primary { background: var(--accent); color: white; border-color: var(--accent); }
+    .btn-primary:hover { background: #059669; }
+    .btn-secondary { background: var(--bg-tertiary); color: var(--text-primary); border-color: var(--border); }
+    .btn-secondary:hover { background: var(--bg-primary); }
+    .btn-ghost { background: transparent; color: var(--text-secondary); }
+    .btn-ghost:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+    .btn-ai { background: linear-gradient(135deg, var(--purple), var(--info)); color: white; border: none; }
+    .btn-ai:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-sm { padding: 5px 9px; font-size: 11px; }
+    .btn-sm svg { width: 12px; height: 12px; }
+    
+    /* Grid Layouts */
+    .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .grid-equal { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    
+    /* Chart Container */
+    .chart-container { height: 220px; position: relative; }
+    .chart-legend { display: flex; gap: 12px; font-size: 11px; color: var(--text-secondary); }
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+    .legend-dot { width: 7px; height: 7px; border-radius: 2px; }
+    
+    /* Table */
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 500px; }
+    th { text-align: left; font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px; background: var(--bg-tertiary); border-bottom: 1px solid var(--border); }
+    th:first-child { border-radius: 6px 0 0 6px; }
+    th:last-child { border-radius: 0 6px 6px 0; }
+    td { padding: 11px 12px; border-bottom: 1px solid var(--border-light); font-size: 12px; }
+    tr:last-child td { border-bottom: none; }
+    .cell-primary { color: var(--text-primary); font-weight: 500; }
+    .cell-secondary { color: var(--text-secondary); }
+    .cell-positive { color: var(--accent); font-weight: 600; }
+    .cell-negative { color: var(--danger); font-weight: 600; }
+    
+    /* Tags */
+    .tag { display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 5px; font-size: 10px; font-weight: 600; }
+    .tag-success { background: var(--accent-dim); color: var(--accent); }
+    .tag-danger { background: var(--danger-dim); color: var(--danger); }
+    .tag-warning { background: var(--warning-dim); color: var(--warning); }
+    .tag-info { background: var(--info-dim); color: var(--info); }
+    .tag-purple { background: var(--purple-dim); color: var(--purple); }
+    .tag .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+    
+    /* AI Insights with Actions */
+    .insight-card { padding: 14px; border-radius: 10px; margin-bottom: 10px; border: 1px solid; }
+    .insight-card:last-child { margin-bottom: 0; }
+    .insight-card.alert { background: var(--danger-dim); border-color: rgba(239, 68, 68, 0.3); }
+    .insight-card.success { background: var(--accent-dim); border-color: rgba(16, 185, 129, 0.3); }
+    .insight-card.info { background: var(--info-dim); border-color: rgba(59, 130, 246, 0.3); }
+    .insight-header { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .insight-header svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .insight-title { font-size: 12px; font-weight: 600; }
+    .insight-card.alert .insight-title { color: var(--danger); }
+    .insight-card.success .insight-title { color: var(--accent); }
+    .insight-card.info .insight-title { color: var(--info); }
+    .insight-text { font-size: 11px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px; }
+    .insight-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .insight-meta { display: flex; align-items: center; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .ai-powered { display: inline-flex; align-items: center; gap: 3px; font-size: 9px; color: var(--text-muted); background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; }
+    .ai-powered svg { width: 10px; height: 10px; }
+    
+    /* AI Section Banner */
+    .ai-section { background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.1)); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+    .ai-section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .ai-section-icon { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, var(--purple), var(--info)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .ai-section-icon svg { width: 18px; height: 18px; color: white; }
+    .ai-section-title { font-size: 14px; font-weight: 600; }
+    .ai-section-subtitle { font-size: 11px; color: var(--text-muted); }
+    .ai-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; }
+    .ai-feature { display: flex; align-items: center; gap: 8px; padding: 10px; background: var(--bg-secondary); border-radius: 7px; }
+    .ai-feature-icon { width: 28px; height: 28px; border-radius: 6px; background: var(--purple-dim); color: var(--purple); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .ai-feature-icon svg { width: 14px; height: 14px; }
+    .ai-feature span { font-size: 11px; font-weight: 500; }
+    
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 540px; max-height: 90vh; overflow: hidden; animation: modalIn 0.2s ease; }
+    @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .modal-header h3 { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .modal-close { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; margin: -6px; }
+    .modal-body { padding: 20px; overflow-y: auto; max-height: calc(90vh - 130px); }
+    .modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+    
+    /* Workflow Setup */
+    .workflow-step { padding: 16px; background: var(--bg-tertiary); border-radius: 10px; margin-bottom: 12px; border: 1px solid var(--border-light); }
+    .workflow-step-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .workflow-step-number { width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+    .workflow-step-title { font-size: 13px; font-weight: 600; }
+    .workflow-options { display: flex; flex-wrap: wrap; gap: 6px; }
+    .workflow-option { padding: 8px 12px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 7px; cursor: pointer; transition: all 0.15s; font-size: 11px; display: flex; align-items: center; gap: 6px; }
+    .workflow-option:hover { border-color: var(--accent); }
+    .workflow-option.selected { border-color: var(--accent); background: var(--accent-dim); }
+    .workflow-option svg { width: 14px; height: 14px; }
+    
+    .form-group { margin-bottom: 12px; }
+    .form-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; display: block; }
+    .form-input { width: 100%; padding: 9px 12px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 7px; color: var(--text-primary); font-size: 12px; font-family: inherit; }
+    .form-input:focus { outline: none; border-color: var(--accent); }
+    .form-input::placeholder { color: var(--text-muted); }
+    textarea.form-input { min-height: 90px; resize: vertical; }
+    
+    /* Toast Notification */
+    .toast { position: fixed; bottom: 20px; right: 20px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: flex; align-items: center; gap: 10px; z-index: 300; box-shadow: 0 10px 40px rgba(0,0,0,0.3); transform: translateY(100px); opacity: 0; transition: all 0.3s ease; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .toast-icon.success { background: var(--accent-dim); color: var(--accent); }
+    .toast-icon svg { width: 18px; height: 18px; }
+    .toast-content h4 { font-size: 13px; font-weight: 600; margin-bottom: 1px; }
+    .toast-content p { font-size: 11px; color: var(--text-muted); }
+    
+    /* Project Row */
+    .project-row { display: flex; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--border-light); gap: 12px; flex-wrap: wrap; }
+    .project-row:last-child { border-bottom: none; }
+    .project-info { flex: 1; min-width: 180px; }
+    .project-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .project-client { font-size: 11px; color: var(--text-muted); }
+    .project-metrics { display: flex; gap: 20px; flex-wrap: wrap; }
+    .project-metric { text-align: right; min-width: 60px; }
+    .project-metric-label { font-size: 9px; color: var(--text-muted); margin-bottom: 1px; text-transform: uppercase; }
+    .project-metric-value { font-size: 13px; font-weight: 600; }
+    .margin-indicator { width: 45px; height: 3px; background: var(--bg-tertiary); border-radius: 2px; overflow: hidden; margin-top: 3px; }
+    .margin-fill { height: 100%; border-radius: 2px; background: var(--accent); }
+    .margin-fill.warning { background: var(--warning); }
+    .margin-fill.danger { background: var(--danger); }
+    
+    /* Reports */
+    .reports-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .report-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; padding: 16px; cursor: pointer; transition: all 0.2s; }
+    .report-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .report-card.selected { border-color: var(--accent); background: var(--accent-dim); }
+    .report-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+    .report-icon svg { width: 20px; height: 20px; }
+    .report-card h3 { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .report-card p { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+    
+    .report-preview { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .report-preview-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; background: var(--bg-tertiary); }
+    .report-preview-body { padding: 20px; overflow-x: auto; }
+    .report-preview-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    
+    /* Report Document */
+    .report-document { background: white; color: #1a1a1a; border-radius: 6px; padding: 28px; max-width: 700px; margin: 0 auto; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+    .report-document h1 { font-size: 20px; font-weight: 700; margin-bottom: 6px; color: #111; }
+    .report-document .subtitle { font-size: 12px; color: #666; margin-bottom: 20px; }
+    .report-document .section { margin-bottom: 16px; }
+    .report-document .section-title { font-size: 12px; font-weight: 600; color: #333; margin-bottom: 8px; padding-bottom: 5px; border-bottom: 2px solid #eee; }
+    .report-document table { width: 100%; margin-bottom: 12px; min-width: auto; }
+    .report-document th { background: #f5f5f5; color: #333; font-size: 10px; padding: 7px 9px; text-align: left; border: 1px solid #e5e5e5; }
+    .report-document td { padding: 7px 9px; border: 1px solid #e5e5e5; font-size: 11px; }
+    .report-document .total-row { background: #f9f9f9; font-weight: 600; }
+    .report-document .positive { color: #059669; }
+    .report-document .negative { color: #dc2626; }
+    .report-document .footer { margin-top: 20px; padding-top: 12px; border-top: 1px solid #eee; font-size: 9px; color: #999; text-align: center; }
+    
+    /* Account Card */
+    .account-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 14px; position: relative; overflow: hidden; }
+    .account-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--info)); }
+    .account-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+    .account-info { display: flex; align-items: center; gap: 12px; }
+    .bank-logo { width: 42px; height: 42px; border-radius: 10px; background: #1a73e8; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; color: white; flex-shrink: 0; }
+    .account-name { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+    .account-number { font-size: 12px; color: var(--text-muted); }
+    .account-balance { text-align: right; }
+    .account-balance-label { font-size: 10px; color: var(--text-muted); margin-bottom: 2px; }
+    .account-balance-value { font-size: 22px; font-weight: 700; }
+    .account-meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding-top: 16px; border-top: 1px solid var(--border-light); }
+    .account-meta-item label { font-size: 10px; color: var(--text-muted); display: block; margin-bottom: 2px; }
+    .account-meta-item span { font-size: 12px; font-weight: 500; }
+    
+    /* Mobile Responsive */
+    @media (max-width: 1024px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .sidebar-overlay.open { display: block; }
+      .close-sidebar { display: block; }
+      .main { margin-left: 0; }
+      .mobile-menu-btn { display: block; }
+      .header-title p { display: none; }
+      .grid-2, .grid-equal { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .account-meta { grid-template-columns: repeat(2, 1fr); }
+    }
+    
+    @media (max-width: 640px) {
+      .content { padding: 14px; }
+      .header { padding: 10px 14px; }
+      .header-title h2 { font-size: 15px; }
+      .stats-row { grid-template-columns: 1fr; gap: 10px; }
+      .stat-card { padding: 14px; }
+      .stat-value { font-size: 20px; }
+      .card-header { padding: 12px 14px; flex-direction: column; align-items: flex-start; }
+      .card-body { padding: 14px; }
+      .card-actions { width: 100%; }
+      .project-row { flex-direction: column; align-items: flex-start; }
+      .project-metrics { width: 100%; justify-content: space-between; margin-top: 10px; }
+      .project-metric { text-align: left; }
+      .account-meta { grid-template-columns: 1fr 1fr; }
+      .modal { margin: 12px; border-radius: 10px; }
+      .modal-body { padding: 14px; }
+      .reports-grid { grid-template-columns: 1fr; }
+      .report-document { padding: 16px; }
+      .report-preview-actions { width: 100%; }
+      .report-preview-actions .btn { flex: 1; }
+      .insight-actions { flex-direction: column; }
+      .insight-actions .btn { width: 100%; }
+      .toast { left: 14px; right: 14px; bottom: 14px; }
+      .ai-features { grid-template-columns: 1fr; }
+    }
+    
+    /* Print Styles */
+    @media print {
+      .sidebar, .header, .card-actions, .btn, .mobile-menu-btn, .sidebar-overlay, .ai-section { display: none !important; }
+      .main { margin-left: 0 !important; }
+      .content { padding: 0 !important; }
+      .report-document { box-shadow: none; max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+    
+    <aside class="sidebar">
+      <button class="close-sidebar" onclick="closeSidebar()"><svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      
+      <div class="logo">
+        <div class="logo-icon">F</div>
+        <div class="logo-text"><h1>FinanceFlow</h1><span>Enterprise Edition</span></div>
+      </div>
+      
+      <div class="nav-section">
+        <div class="nav-label">Overview</div>
+        <nav class="nav">
+          <button class="nav-item active" data-view="dashboard" onclick="switchView('dashboard')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>Dashboard</button>
+          <button class="nav-item" data-view="projects" onclick="switchView('projects')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>Projects<span class="badge">3</span></button>
+          <button class="nav-item" data-view="clients" onclick="switchView('clients')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Clients</button>
+        </nav>
+      </div>
+      
+      <div class="nav-section">
+        <div class="nav-label">Finance</div>
+        <nav class="nav">
+          <button class="nav-item" data-view="cashflow" onclick="switchView('cashflow')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>Cash Flow</button>
+          <button class="nav-item" data-view="accounts" onclick="switchView('accounts')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>Accounts</button>
+          <button class="nav-item" data-view="reports" onclick="switchView('reports')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Reports</button>
+        </nav>
+      </div>
+      
+      <div class="nav-section">
+        <div class="nav-label">Automation</div>
+        <nav class="nav">
+          <button class="nav-item" data-view="automations" onclick="switchView('automations')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>AI Workflows<span class="ai-badge">AI</span></button>
+        </nav>
+      </div>
+      
+      <div class="sidebar-footer">
+        <div class="sidebar-footer-header"><div class="status-dot"></div><span style="font-size: 11px; font-weight: 600; color: var(--accent);">Live Connected</span></div>
+        <p class="highlight">Chase Business ••••4521</p>
+        <p>Last sync: Just now</p>
+      </div>
+    </aside>
+    
+    <main class="main">
+      <header class="header">
+        <div class="header-left">
+          <button class="mobile-menu-btn" onclick="openSidebar()"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+          <div class="header-title"><h2>Financial Overview</h2><p>Real-time insights</p></div>
+        </div>
+        <div class="header-actions">
+          <button class="icon-btn"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg><span class="badge">2</span></button>
+          <div class="avatar">DS</div>
+        </div>
+      </header>
+      
+      <div class="content">
+        <!-- Dashboard View -->
+        <div class="view active" id="dashboard">
+          <div class="ai-section">
+            <div class="ai-section-header">
+              <div class="ai-section-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+              <div><div class="ai-section-title">AI-Powered Automations</div><div class="ai-section-subtitle">3 workflows active • Click any action button to trigger AI</div></div>
+            </div>
+            <div class="ai-features">
+              <div class="ai-feature"><div class="ai-feature-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div><span>Auto Email</span></div>
+              <div class="ai-feature"><div class="ai-feature-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg></div><span>SMS Reminders</span></div>
+              <div class="ai-feature"><div class="ai-feature-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg></div><span>Call Scheduling</span></div>
+              <div class="ai-feature"><div class="ai-feature-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div><span>Smart Alerts</span></div>
+            </div>
+          </div>
+          
+          <div class="stats-row">
+            <div class="stat-card">
+              <div class="stat-card-header"><div class="stat-icon green"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><div class="stat-trend up"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>12.5%</div></div>
+              <div class="stat-label">Total Revenue</div>
+              <div class="stat-value mono">$127,500</div>
+              <div class="stat-subtitle">+$14,200 from last month</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-header"><div class="stat-icon blue"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div><div class="stat-trend up"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>8.3%</div></div>
+              <div class="stat-label">Net Profit</div>
+              <div class="stat-value mono">$48,200</div>
+              <div class="stat-subtitle">37.8% margin</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-header"><div class="stat-icon purple"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg></div><div class="stat-trend up"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>5.2%</div></div>
+              <div class="stat-label">Cash Balance</div>
+              <div class="stat-value mono">$284,650</div>
+              <div class="stat-subtitle">8.5 mo runway</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-header"><div class="stat-icon red"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></div></div>
+              <div class="stat-label">Overdue Invoices</div>
+              <div class="stat-value mono" style="color: var(--danger);">$28,000</div>
+              <div class="stat-subtitle">2 invoices • 15 days</div>
+            </div>
+          </div>
+          
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header"><div><div class="card-title">Cash Flow Forecast</div><div class="card-subtitle">Actual vs Projected</div></div><div class="chart-legend"><div class="legend-item"><div class="legend-dot" style="background: var(--accent);"></div>Actual</div><div class="legend-item"><div class="legend-dot" style="background: var(--info); opacity: 0.5;"></div>Projected</div></div></div>
+              <div class="card-body"><div class="chart-container"><canvas id="cashflowChart"></canvas></div></div>
+            </div>
+            
+            <div class="card">
+              <div class="card-header"><div class="card-title">AI-Powered Insights</div><span class="ai-powered"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>Live</span></div>
+              <div class="card-body" style="padding: 14px;">
+                <div class="insight-card alert">
+                  <div class="insight-header"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--danger);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg><span class="insight-title">Cash Flow Alert</span></div>
+                  <p class="insight-text">MetricsHub invoice ($28,000) is 15 days overdue. AI recommends immediate follow-up to avoid cash crunch.</p>
+                  <div class="insight-actions">
+                    <button class="btn btn-ai btn-sm" onclick="openWorkflowModal('followup')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>Start Follow-up</button>
+                    <button class="btn btn-secondary btn-sm" onclick="openWorkflowModal('schedule')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>Schedule Call</button>
+                  </div>
+                  <div class="insight-meta"><span class="ai-powered"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>AI will personalize your follow-up</span></div>
+                </div>
+                
+                <div class="insight-card success">
+                  <div class="insight-header"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--accent);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg><span class="insight-title">Upsell Opportunity</span></div>
+                  <p class="insight-text">TechCorp has 38% margin. Great candidate for Phase 2 proposal.</p>
+                  <div class="insight-actions"><button class="btn btn-ai btn-sm" onclick="openWorkflowModal('proposal')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>Draft Proposal</button></div>
+                </div>
+                
+                <div class="insight-card info">
+                  <div class="insight-header"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--info);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg><span class="insight-title">Forecast Update</span></div>
+                  <p class="insight-text">December projected +$78K revenue.</p>
+                  <div class="insight-actions"><button class="btn btn-secondary btn-sm">View Forecast</button></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-header"><div><div class="card-title">Recent Transactions</div><div class="card-subtitle">Auto-synced from Chase</div></div><div class="card-actions"><button class="btn btn-secondary btn-sm"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>Filter</button><button class="btn btn-secondary btn-sm"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Export</button></div></div>
+            <div class="table-container">
+              <table>
+                <thead><tr><th>Description</th><th>Category</th><th>Date</th><th style="text-align: right;">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td class="cell-primary">TechCorp Inc - Invoice #1042</td><td><span class="tag tag-success">Payment</span></td><td class="cell-secondary">Nov 25</td><td class="cell-positive mono" style="text-align: right;">+$15,000</td></tr>
+                  <tr><td class="cell-primary">AWS Monthly Services</td><td><span class="tag tag-purple">Infrastructure</span></td><td class="cell-secondary">Nov 24</td><td class="cell-negative mono" style="text-align: right;">-$2,340</td></tr>
+                  <tr><td class="cell-primary">StartupXYZ - Milestone 2</td><td><span class="tag tag-success">Payment</span></td><td class="cell-secondary">Nov 23</td><td class="cell-positive mono" style="text-align: right;">+$28,500</td></tr>
+                  <tr><td class="cell-primary">Contractor - John D.</td><td><span class="tag tag-info">Labor</span></td><td class="cell-secondary">Nov 22</td><td class="cell-negative mono" style="text-align: right;">-$4,500</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Projects View -->
+        <div class="view" id="projects">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+            <div><h2 style="font-size: 18px; font-weight: 600; margin-bottom: 3px;">Project Profitability</h2><p style="font-size: 12px; color: var(--text-muted);">Track revenue, costs, and margins</p></div>
+            <button class="btn btn-primary"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>New Project</button>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Active Projects (4)</div></div>
+            <div>
+              <div class="project-row"><div class="project-info"><div class="project-name">Website Redesign <span class="tag tag-success"><span class="dot"></span>Active</span></div><div class="project-client">TechCorp Inc • Due Dec 15</div></div><div class="project-metrics"><div class="project-metric"><div class="project-metric-label">Revenue</div><div class="project-metric-value mono">$45K</div></div><div class="project-metric"><div class="project-metric-label">Profit</div><div class="project-metric-value mono" style="color: var(--accent);">+$17K</div></div><div class="project-metric"><div class="project-metric-label">Margin</div><div class="project-metric-value mono" style="color: var(--accent);">37.8%</div><div class="margin-indicator"><div class="margin-fill" style="width: 76%;"></div></div></div></div></div>
+              <div class="project-row"><div class="project-info"><div class="project-name">Mobile App MVP <span class="tag tag-success"><span class="dot"></span>Active</span></div><div class="project-client">StartupXYZ • Due Dec 30</div></div><div class="project-metrics"><div class="project-metric"><div class="project-metric-label">Revenue</div><div class="project-metric-value mono">$85K</div></div><div class="project-metric"><div class="project-metric-label">Profit</div><div class="project-metric-value mono" style="color: var(--accent);">+$33K</div></div><div class="project-metric"><div class="project-metric-label">Margin</div><div class="project-metric-value mono" style="color: var(--accent);">38.8%</div><div class="margin-indicator"><div class="margin-fill" style="width: 78%;"></div></div></div></div></div>
+              <div class="project-row"><div class="project-info"><div class="project-name">E-commerce Platform <span class="tag tag-warning"><span class="dot"></span>At Risk</span></div><div class="project-client">RetailPro • Due Nov 28</div></div><div class="project-metrics"><div class="project-metric"><div class="project-metric-label">Revenue</div><div class="project-metric-value mono">$120K</div></div><div class="project-metric"><div class="project-metric-label">Profit</div><div class="project-metric-value mono" style="color: var(--warning);">+$25K</div></div><div class="project-metric"><div class="project-metric-label">Margin</div><div class="project-metric-value mono" style="color: var(--warning);">20.8%</div><div class="margin-indicator"><div class="margin-fill warning" style="width: 42%;"></div></div></div></div></div>
+              <div class="project-row"><div class="project-info"><div class="project-name">Dashboard Analytics <span class="tag tag-danger"><span class="dot"></span>Losing</span></div><div class="project-client">MetricsHub • Due Dec 5</div></div><div class="project-metrics"><div class="project-metric"><div class="project-metric-label">Revenue</div><div class="project-metric-value mono">$28K</div></div><div class="project-metric"><div class="project-metric-label">Profit</div><div class="project-metric-value mono" style="color: var(--danger);">-$3K</div></div><div class="project-metric"><div class="project-metric-label">Margin</div><div class="project-metric-value mono" style="color: var(--danger);">-10.7%</div><div class="margin-indicator"><div class="margin-fill danger" style="width: 21%;"></div></div></div></div></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Clients View -->
+        <div class="view" id="clients">
+          <div style="margin-bottom: 20px;"><h2 style="font-size: 18px; font-weight: 600; margin-bottom: 3px;">Client Profitability</h2><p style="font-size: 12px; color: var(--text-muted);">Ranked by profit</p></div>
+          <div class="card">
+            <div>
+              <div class="project-row"><div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 140px;"><div style="width: 28px; height: 28px; border-radius: 7px; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px;">#1</div><div><div class="project-name">TechCorp <span class="tag tag-warning" style="background: rgba(251, 191, 36, 0.2); color: #fbbf24;">★ Gold</span></div><div class="project-client">4 projects</div></div></div><div class="project-metrics"><div class="project-metric"><div class="project-metric-label">Revenue</div><div class="project-metric-value mono">$245K</div></div><div class="project-metric"><div class="project-metric-label">Profit</div><div class="project-metric-value mono" style="color: var(--accent);">+$89K</div></div><div class="project-metric"><div class="project-metric-label">Margin</div><div class="project-metric-value mono" style="color: var(--accent);">36.3%</div></div></div></div>
+              <div class="project-row"><div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 140px;"><div style="width: 28px; height: 28px; border-radius: 7px; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px;">#2</div><div><div class="project-name">StartupXYZ <span class="tag tag-warning" style="background: rgba(251, 191, 36, 0.2); color: #fbbf24;">★ Gold</span></div><div class="project-client">3 projects</div></div></div><div class="project-metrics"><div class="project-metric"><div class="project-metric-label">Revenue</div><div class="project-metric-value mono">$185K</div></div><div class="project-metric"><div class="project-metric-label">Profit</div><div class="project-metric-value mono" style="color: var(--accent);">+$72K</div></div><div class="project-metric"><div class="project-metric-label">Margin</div><div class="project-metric-value mono" style="color: var(--accent);">38.9%</div></div></div></div>
+              <div class="project-row"><div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 140px;"><div style="width: 28px; height: 28px; border-radius: 7px; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px;">#3</div><div><div class="project-name">MetricsHub <span class="tag tag-danger">At Risk</span></div><div class="project-client">2 projects</div></div></div><div class="project-metrics"><div class="project-metric"><div class="project-metric-label">Revenue</div><div class="project-metric-value mono">$56K</div></div><div class="project-metric"><div class="project-metric-label">Profit</div><div class="project-metric-value mono" style="color: var(--danger);">-$8K</div></div><div class="project-metric"><div class="project-metric-label">Margin</div><div class="project-metric-value mono" style="color: var(--danger);">-14.3%</div></div></div></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Cash Flow View -->
+        <div class="view" id="cashflow">
+          <div style="margin-bottom: 20px;"><h2 style="font-size: 18px; font-weight: 600; margin-bottom: 3px;">Cash Flow Forecast</h2><p style="font-size: 12px; color: var(--text-muted);">Predict cash position</p></div>
+          <div class="stats-row" style="grid-template-columns: repeat(3, 1fr);">
+            <div class="stat-card"><div class="stat-label">Current Cash</div><div class="stat-value mono">$284,650</div><div class="stat-subtitle" style="color: var(--accent);">+$12,400 this week</div></div>
+            <div class="stat-card"><div class="stat-label">30-Day Forecast</div><div class="stat-value mono" style="color: var(--accent);">+$53,000</div><div class="stat-subtitle">Expected inflow</div></div>
+            <div class="stat-card"><div class="stat-label">Runway</div><div class="stat-value mono">8.5 mo</div><div class="stat-subtitle">At current burn</div></div>
+          </div>
+          <div class="card"><div class="card-header"><div class="card-title">Weekly Breakdown</div></div><div class="card-body"><div class="chart-container"><canvas id="weeklyChart"></canvas></div></div></div>
+        </div>
+        
+        <!-- Accounts View -->
+        <div class="view" id="accounts">
+          <div style="margin-bottom: 20px;"><h2 style="font-size: 18px; font-weight: 600; margin-bottom: 3px;">Connected Accounts</h2><p style="font-size: 12px; color: var(--text-muted);">Bank connections via Plaid</p></div>
+          <div class="account-card">
+            <div class="account-header"><div class="account-info"><div class="bank-logo">C</div><div><div class="account-name">Chase Business Checking</div><div class="account-number">••••4521 • via Plaid</div></div></div><div class="account-balance"><div class="account-balance-label">Balance</div><div class="account-balance-value mono">$284,650</div></div></div>
+            <div class="account-meta"><div class="account-meta-item"><label>Status</label><span style="color: var(--accent);">● Connected</span></div><div class="account-meta-item"><label>Last Sync</label><span>2 min ago</span></div><div class="account-meta-item"><label>Transactions</label><span>1,247</span></div><div class="account-meta-item"><label>Since</label><span>Oct 15</span></div></div>
+          </div>
+          <div class="card" style="text-align: center; padding: 32px 20px;"><div style="width: 48px; height: 48px; border-radius: 12px; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px;"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 22px; height: 22px; color: var(--text-muted);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"/></svg></div><h3 style="font-size: 15px; font-weight: 600; margin-bottom: 6px;">Connect Another Account</h3><p style="font-size: 12px; color: var(--text-muted); max-width: 300px; margin: 0 auto 14px;">Securely connect via Plaid</p><button class="btn btn-primary">Connect with Plaid</button></div>
+        </div>
+        
+        <!-- Reports View -->
+        <div class="view" id="reports">
+          <div style="margin-bottom: 20px;"><h2 style="font-size: 18px; font-weight: 600; margin-bottom: 3px;">Financial Reports</h2><p style="font-size: 12px; color: var(--text-muted);">Generate and export</p></div>
+          <div class="reports-grid">
+            <div class="report-card selected" onclick="selectReport(this)"><div class="report-icon" style="background: var(--accent-dim); color: var(--accent);"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg></div><h3>Profit & Loss</h3><p>Income statement with revenue breakdown</p></div>
+            <div class="report-card" onclick="selectReport(this)"><div class="report-icon" style="background: var(--info-dim); color: var(--info);"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg></div><h3>Cash Flow Statement</h3><p>Inflows, outflows, forecasting</p></div>
+            <div class="report-card" onclick="selectReport(this)"><div class="report-icon" style="background: var(--purple-dim); color: var(--purple);"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div><h3>Project Summary</h3><p>Profitability per project</p></div>
+          </div>
+          <div class="report-preview">
+            <div class="report-preview-header"><div><div style="font-size: 13px; font-weight: 600;">Report Preview</div><div style="font-size: 11px; color: var(--text-muted);">Nov 2024</div></div><div class="report-preview-actions"><button class="btn btn-secondary btn-sm" onclick="window.print()"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>Print</button><button class="btn btn-secondary btn-sm"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>PDF</button><button class="btn btn-primary btn-sm"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Excel</button></div></div>
+            <div class="report-preview-body">
+              <div class="report-document"><h1>Profit & Loss Statement</h1><div class="subtitle">Smart Scale • November 2024</div><div class="section"><div class="section-title">Revenue</div><table><tr><td>Client Services</td><td style="text-align: right;">$115,500</td></tr><tr><td>Retainer Income</td><td style="text-align: right;">$12,000</td></tr><tr class="total-row"><td><strong>Total Revenue</strong></td><td style="text-align: right;"><strong>$127,500</strong></td></tr></table></div><div class="section"><div class="section-title">Expenses</div><table><tr><td>Contractors</td><td style="text-align: right;">$42,500</td></tr><tr><td>Software</td><td style="text-align: right;">$2,880</td></tr><tr><td>Infrastructure</td><td style="text-align: right;">$2,340</td></tr><tr><td>Payroll</td><td style="text-align: right;">$18,500</td></tr><tr><td>Other</td><td style="text-align: right;">$13,080</td></tr><tr class="total-row"><td><strong>Total Expenses</strong></td><td style="text-align: right;"><strong>$79,300</strong></td></tr></table></div><div class="section" style="background: #f0fdf4; padding: 14px; border-radius: 6px;"><table style="margin: 0;"><tr class="total-row" style="background: transparent;"><td style="font-size: 15px; border: none;"><strong>Net Profit</strong></td><td style="text-align: right; font-size: 15px; border: none;" class="positive"><strong>$48,200</strong></td></tr><tr style="background: transparent;"><td style="border: none;">Net Margin</td><td style="text-align: right; border: none;"><strong>37.8%</strong></td></tr></table></div><div class="footer">Generated by FinanceFlow • Nov 26, 2024</div></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- AI Automations View -->
+        <div class="view" id="automations">
+          <div style="margin-bottom: 20px;"><h2 style="font-size: 18px; font-weight: 600; margin-bottom: 3px;">AI Workflow Automations</h2><p style="font-size: 12px; color: var(--text-muted);">Set up intelligent automations with AI assistance</p></div>
+          <div class="ai-section" style="margin-bottom: 20px;">
+            <div class="ai-section-header"><div class="ai-section-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></div><div><div class="ai-section-title">AI Setup Assistant</div><div class="ai-section-subtitle">Configure workflows in minutes—no coding required</div></div></div>
+          </div>
+          <div class="stats-row" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 20px;">
+            <div class="stat-card" style="cursor: pointer;" onclick="openWorkflowModal('followup')"><div class="stat-icon purple" style="margin-bottom: 10px;"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div><div class="stat-label">Invoice Follow-up</div><div style="font-size: 14px; font-weight: 600; margin-bottom: 6px;">Auto Email + SMS</div><div class="stat-subtitle">Triggered on overdue</div><div style="margin-top: 10px;"><span class="tag tag-success">Active</span></div></div>
+            <div class="stat-card" style="cursor: pointer;" onclick="openWorkflowModal('alert')"><div class="stat-icon blue" style="margin-bottom: 10px;"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg></div><div class="stat-label">Cash Flow Alerts</div><div style="font-size: 14px; font-weight: 600; margin-bottom: 6px;">Slack + Email</div><div class="stat-subtitle">Low balance threshold</div><div style="margin-top: 10px;"><span class="tag tag-success">Active</span></div></div>
+            <div class="stat-card" style="cursor: pointer;" onclick="openWorkflowModal('report')"><div class="stat-icon green" style="margin-bottom: 10px;"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div><div class="stat-label">Weekly Reports</div><div style="font-size: 14px; font-weight: 600; margin-bottom: 6px;">Auto-Generated</div><div class="stat-subtitle">Every Monday 9am</div><div style="margin-top: 10px;"><span class="tag tag-success">Active</span></div></div>
+          </div>
+          <div class="card"><div class="card-header"><div class="card-title">Create New Workflow</div><button class="btn btn-ai" onclick="openWorkflowModal('new')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>New Workflow</button></div><div class="card-body"><p style="color: var(--text-muted); text-align: center; padding: 32px;">Click "New Workflow" to create custom automations with AI assistance</p></div></div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- Workflow Modal -->
+  <div class="modal-overlay" id="workflowModal">
+    <div class="modal">
+      <div class="modal-header"><h3><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 22px; height: 22px; color: var(--purple);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> AI Workflow Setup</h3><button class="modal-close" onclick="closeWorkflowModal()"><svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div>
+      <div class="modal-body">
+        <div class="ai-section" style="margin-bottom: 16px; padding: 14px;"><p style="font-size: 12px; color: var(--text-secondary);"><strong style="color: var(--text-primary);">AI Assistant:</strong> I'll help you configure this workflow. Select your preferences and I'll handle the rest automatically.</p></div>
+        <div class="workflow-step">
+          <div class="workflow-step-header"><div class="workflow-step-number">1</div><div class="workflow-step-title">Choose Trigger</div></div>
+          <div class="workflow-options">
+            <div class="workflow-option selected" onclick="selectOption(this)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Invoice Overdue</div>
+            <div class="workflow-option" onclick="selectOption(this)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>Cash Low</div>
+            <div class="workflow-option" onclick="selectOption(this)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>Project At Risk</div>
+          </div>
+        </div>
+        <div class="workflow-step">
+          <div class="workflow-step-header"><div class="workflow-step-number">2</div><div class="workflow-step-title">Choose Actions</div></div>
+          <div class="workflow-options">
+            <div class="workflow-option selected" onclick="toggleOption(this)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>Email</div>
+            <div class="workflow-option selected" onclick="toggleOption(this)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>SMS</div>
+            <div class="workflow-option" onclick="toggleOption(this)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>Phone Call</div>
+            <div class="workflow-option" onclick="toggleOption(this)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>Slack</div>
+          </div>
+        </div>
+        <div class="workflow-step">
+          <div class="workflow-step-header"><div class="workflow-step-number">3</div><div class="workflow-step-title">Customize Message</div></div>
+          <div class="form-group"><label class="form-label">Email Subject</label><input type="text" class="form-input" value="Friendly Reminder: Invoice #[number] is Overdue"></div>
+          <div class="form-group"><label class="form-label">Message Template</label><textarea class="form-input">Hi [client_name],
+
+I hope you're doing well! Just following up on Invoice #[invoice_number] for $[amount], which was due on [due_date].
+
+Please let me know if you have any questions.
+
+Best,
+[your_name]</textarea></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary" onclick="closeWorkflowModal()">Cancel</button><button class="btn btn-ai" onclick="activateWorkflow()"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>Activate Workflow</button></div>
+    </div>
+  </div>
+  
+  <!-- Toast -->
+  <div class="toast" id="toast"><div class="toast-icon success"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></div><div class="toast-content"><h4>Workflow Activated!</h4><p>AI will handle follow-ups automatically.</p></div></div>
+  
+  <script>
+    function switchView(viewId) {
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      document.querySelector(`[data-view="${viewId}"]`).classList.add('active');
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById(viewId).classList.add('active');
+      closeSidebar();
+      if (viewId === 'dashboard') initCashflowChart();
+      if (viewId === 'cashflow') initWeeklyChart();
+    }
+    
+    function openSidebar() { document.querySelector('.sidebar').classList.add('open'); document.querySelector('.sidebar-overlay').classList.add('open'); }
+    function closeSidebar() { document.querySelector('.sidebar').classList.remove('open'); document.querySelector('.sidebar-overlay').classList.remove('open'); }
+    function selectReport(el) { document.querySelectorAll('.report-card').forEach(c => c.classList.remove('selected')); el.classList.add('selected'); }
+    function openWorkflowModal(type) { document.getElementById('workflowModal').classList.add('active'); }
+    function closeWorkflowModal() { document.getElementById('workflowModal').classList.remove('active'); }
+    function selectOption(el) { el.parentElement.querySelectorAll('.workflow-option').forEach(o => o.classList.remove('selected')); el.classList.add('selected'); }
+    function toggleOption(el) { el.classList.toggle('selected'); }
+    function activateWorkflow() { closeWorkflowModal(); const toast = document.getElementById('toast'); toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 4000); }
+    
+    function initCashflowChart() {
+      const ctx = document.getElementById('cashflowChart');
+      if (!ctx) return;
+      if (window.cashflowChartInstance) window.cashflowChartInstance.destroy();
+      window.cashflowChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: { labels: ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan'], datasets: [{ label: 'Actual', data: [45000, 52000, 48000, 61000, 55000, 72000, null, null], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#10b981' }, { label: 'Projected', data: [42000, 48000, 51000, 55000, 58000, 65000, 78000, 82000], borderColor: '#3b82f6', borderDash: [5, 5], backgroundColor: 'rgba(59, 130, 246, 0.05)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2, pointBackgroundColor: '#3b82f6' }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: 'rgba(63, 63, 70, 0.3)' }, ticks: { color: '#71717a', font: { size: 10 } } }, y: { grid: { color: 'rgba(63, 63, 70, 0.3)' }, ticks: { color: '#71717a', font: { size: 10 }, callback: (v) => `$${v/1000}k` } } } }
+      });
+    }
+    
+    function initWeeklyChart() {
+      const ctx = document.getElementById('weeklyChart');
+      if (!ctx) return;
+      if (window.weeklyChartInstance) window.weeklyChartInstance.destroy();
+      window.weeklyChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: { labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'], datasets: [{ label: 'Inflow', data: [45000, 32000, 58000, 41000], backgroundColor: '#10b981', borderRadius: 5 }, { label: 'Outflow', data: [28000, 35000, 31000, 29000], backgroundColor: '#ef4444', borderRadius: 5 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: '#71717a', font: { size: 10 } } }, y: { grid: { color: 'rgba(63, 63, 70, 0.3)' }, ticks: { color: '#71717a', font: { size: 10 }, callback: (v) => `$${v/1000}k` } } } }
+      });
+    }
+    
+    initCashflowChart();
+  </script>
+</body>
+</html>
