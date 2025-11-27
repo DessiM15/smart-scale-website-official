@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DiscoverEase - Legal Discovery Platform</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'DM Sans', system-ui, sans-serif; overflow-x: hidden; }
+    
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+      /* Hide sidebar on mobile */
+      aside.fixed {
+        transform: translateX(-100%) !important;
+        transition: transform 0.3s ease;
+      }
+      
+      /* Remove left margin from main content on mobile */
+      main.ml-56 {
+        margin-left: 0 !important;
+      }
+      
+      /* Make header responsive */
+      header > div {
+        flex-direction: column !important;
+        gap: 1rem !important;
+        align-items: stretch !important;
+      }
+      
+      header .relative.w-72 {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      
+      /* Stack header buttons */
+      header .flex.items-center.gap-2 {
+        width: 100% !important;
+        justify-content: space-between !important;
+      }
+      
+      /* Make grid layouts responsive */
+      .grid.grid-cols-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.75rem !important;
+      }
+      
+      .grid.grid-cols-3 {
+        grid-template-columns: 1fr !important;
+      }
+      
+      .col-span-2 {
+        grid-column: span 1 !important;
+      }
+      
+      /* Make cards stack on mobile */
+      .space-y-6 > div {
+        margin-bottom: 1rem;
+      }
+      
+      /* Adjust padding on mobile */
+      .p-6 {
+        padding: 1rem !important;
+      }
+      
+      /* Make tables scrollable on mobile */
+      .overflow-x-auto {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      /* Adjust text sizes on mobile */
+      .text-xl {
+        font-size: 1.125rem !important;
+      }
+      
+      .text-2xl {
+        font-size: 1.5rem !important;
+      }
+      
+      /* Make modals full width on mobile */
+      .fixed.inset-0 {
+        padding: 0.5rem !important;
+      }
+      
+      /* Adjust notification dropdown on mobile */
+      .absolute.right-0.w-72 {
+        width: calc(100vw - 2rem) !important;
+        right: 1rem !important;
+        left: auto !important;
+      }
+      
+      /* Ensure body doesn't overflow */
+      html, body {
+        max-width: 100vw;
+        overflow-x: hidden;
+      }
+      
+      /* Make all containers respect viewport */
+      #root {
+        max-width: 100vw;
+        overflow-x: hidden;
+      }
+    }
+    
+    @media (max-width: 640px) {
+      /* Single column for stats on very small screens */
+      .grid.grid-cols-4 {
+        grid-template-columns: 1fr !important;
+      }
+      
+      /* Reduce padding further */
+      .p-6 {
+        padding: 0.75rem !important;
+      }
+      
+      .px-6 {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+      }
+      
+      .py-3 {
+        padding-top: 0.75rem !important;
+        padding-bottom: 0.75rem !important;
+      }
+      
+      /* Smaller text on very small screens */
+      .text-base {
+        font-size: 0.875rem !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState } = React;
+
+// Lucide icons as inline SVGs
+const Scale = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 3v17.5"/><path d="m4.5 6.5 15 0"/><path d="M4 10l.5 7.5c0 1.38 3.13 2.5 7 2.5s7-1.12 7-2.5L19 10"/>
+    <path d="M4.5 6.5 2 12c0 1.38 1.79 2.5 4 2.5s4-1.12 4-2.5l-2.5-5.5"/><path d="M19.5 6.5 22 12c0 1.38-1.79 2.5-4 2.5s-4-1.12-4-2.5l2.5-5.5"/>
+  </svg>
+);
+const FileText = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/>
+  </svg>
+);
+const Calendar = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+  </svg>
+);
+const Bell = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+  </svg>
+);
+const Search = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </svg>
+);
+const Plus = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+  </svg>
+);
+const Users = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+  </svg>
+);
+const ChevronRight = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9 18 15 12 9 6"/>
+  </svg>
+);
+const Clock = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+  </svg>
+);
+const AlertTriangle = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+);
+const CheckCircle2 = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>
+  </svg>
+);
+const Upload = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+  </svg>
+);
+const Link2 = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/>
+  </svg>
+);
+const Settings = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+  </svg>
+);
+const BarChart3 = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>
+  </svg>
+);
+const Download = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+  </svg>
+);
+const Eye = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+  </svg>
+);
+const Sparkles = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/>
+  </svg>
+);
+const Briefcase = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+  </svg>
+);
+const Building2 = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/>
+  </svg>
+);
+const Gavel = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m14 13-7.5 7.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L11 10"/><path d="m16 16 6-6"/><path d="m8 8 6-6"/><path d="m9 7 8 8"/><path d="m21 11-8-8"/>
+  </svg>
+);
+const FileCheck = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/>
+  </svg>
+);
+const Share2 = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+  </svg>
+);
+const X = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+);
+const Copy = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+  </svg>
+);
+const Check = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+);
+const Filter = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+  </svg>
+);
+const ExternalLink = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+  </svg>
+);
+const Mail = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+  </svg>
+);
+const Phone = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+  </svg>
+);
+const Bot = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>
+  </svg>
+);
+const Zap = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+  </svg>
+);
+const Send = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+  </svg>
+);
+const FileSearch = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v3"/><polyline points="14 2 14 8 20 8"/><path d="M5 17a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="m9 18-1.5-1.5"/>
+  </svg>
+);
+const Brain = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/>
+  </svg>
+);
+const RefreshCw = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+  </svg>
+);
+const UserPlus = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+  </svg>
+);
+
+// Demo data
+const demoUser = { name: 'Sarah Mitchell', firmName: 'Mitchell & Associates' };
+const demoDashboardStats = { totalCases: 3, activeCases: 2, documentsUploaded: 12, pendingDocuments: 5, overdueDocuments: 2, upcomingDeadlines: 6 };
+
+const demoCases = [
+  { id: 'case_001', caseNumber: '2024-CV-00847', caseName: 'Johnson v. ABC Manufacturing Corp.', caseType: 'personal_injury', status: 'active', court: 'Harris County District Court', judge: 'Hon. Patricia Williams', discoveryCutoff: new Date('2025-05-15'), batesPrefix: 'JVA', currentBatesNumber: 1247, trialDate: new Date('2025-06-15') },
+  { id: 'case_002', caseNumber: '2024-CV-01234', caseName: 'Smith Family Trust v. Heritage Realty', caseType: 'real_estate', status: 'active', court: 'Fort Bend County District Court', judge: 'Hon. Robert Chen', discoveryCutoff: new Date('2025-07-10'), batesPrefix: 'SFT', currentBatesNumber: 456, trialDate: new Date('2025-08-10') },
+  { id: 'case_003', caseNumber: '2024-CV-00512', caseName: 'Davis v. TechStart Inc.', caseType: 'employment', status: 'pending', court: 'Travis County District Court', judge: 'Hon. Maria Santos', discoveryCutoff: new Date('2025-02-20'), batesPrefix: 'DVT', currentBatesNumber: 892, trialDate: new Date('2025-03-20') },
+];
+
+const demoParties = [
+  { id: 'party_001', caseId: 'case_001', name: 'Michael Johnson', role: 'plaintiff', email: 'mjohnson@email.com', phone: '(713) 555-0123', attorney: 'Sarah Mitchell', attorneyEmail: 'sarah@mitchell-law.com', documentsProvided: 4, documentsPending: 1 },
+  { id: 'party_002', caseId: 'case_001', name: 'ABC Manufacturing Corp.', role: 'defendant', email: 'legal@abcmfg.com', phone: '(713) 555-9876', attorney: 'James Crawford', attorneyEmail: 'jcrawford@defenselaw.com', shareToken: 'abc123', documentsProvided: 2, documentsPending: 3 },
+  { id: 'party_003', caseId: 'case_001', name: 'Dr. Emily Watson', role: 'expert', email: 'ewatson@medical-experts.com', phone: '(832) 555-4567', documentsProvided: 1, documentsPending: 0 },
+  { id: 'party_004', caseId: 'case_001', name: 'Tom Richards', role: 'witness', email: 'trichards@email.com', phone: '(281) 555-7890', documentsProvided: 0, documentsPending: 1 },
+  { id: 'party_005', caseId: 'case_002', name: 'Smith Family Trust', role: 'plaintiff', email: 'smith@trust.com', attorney: 'Sarah Mitchell', documentsProvided: 3, documentsPending: 2 },
+  { id: 'party_006', caseId: 'case_002', name: 'Heritage Realty LLC', role: 'defendant', email: 'legal@heritagerealty.com', attorney: 'Mark Thompson', shareToken: 'def456', documentsProvided: 1, documentsPending: 4 },
+  { id: 'party_007', caseId: 'case_003', name: 'Jennifer Davis', role: 'plaintiff', email: 'jdavis@email.com', attorney: 'Sarah Mitchell', documentsProvided: 5, documentsPending: 1 },
+  { id: 'party_008', caseId: 'case_003', name: 'TechStart Inc.', role: 'defendant', email: 'hr@techstart.io', attorney: 'Lisa Park', shareToken: 'ghi789', documentsProvided: 2, documentsPending: 2 },
+];
+
+const allDeadlines = [
+  { id: 'dl_001', caseId: 'case_001', caseName: 'Johnson v. ABC Manufacturing', title: 'Response to RFP Set 1', type: 'response', dueDate: new Date('2024-12-01'), status: 'upcoming', party: 'ABC Manufacturing Corp.', daysLeft: 5 },
+  { id: 'dl_002', caseId: 'case_001', caseName: 'Johnson v. ABC Manufacturing', title: 'Witness Statements', type: 'document', dueDate: new Date('2024-11-20'), status: 'overdue', party: 'Multiple', daysLeft: -6 },
+  { id: 'dl_003', caseId: 'case_001', caseName: 'Johnson v. ABC Manufacturing', title: 'Expert Report - Dr. Watson', type: 'document', dueDate: new Date('2024-12-15'), status: 'upcoming', party: 'Dr. Emily Watson', daysLeft: 19 },
+  { id: 'dl_004', caseId: 'case_001', caseName: 'Johnson v. ABC Manufacturing', title: 'Interrogatory Responses', type: 'response', dueDate: new Date('2024-12-10'), status: 'upcoming', party: 'ABC Manufacturing Corp.', daysLeft: 14 },
+  { id: 'dl_005', caseId: 'case_002', caseName: 'Smith v. Heritage Realty', title: 'Property Inspection Report', type: 'document', dueDate: new Date('2024-12-05'), status: 'upcoming', party: 'Heritage Realty LLC', daysLeft: 9 },
+  { id: 'dl_006', caseId: 'case_002', caseName: 'Smith v. Heritage Realty', title: 'Title Documents', type: 'document', dueDate: new Date('2024-11-18'), status: 'overdue', party: 'Heritage Realty LLC', daysLeft: -8 },
+  { id: 'dl_007', caseId: 'case_003', caseName: 'Davis v. TechStart', title: 'Personnel File', type: 'document', dueDate: new Date('2024-12-08'), status: 'upcoming', party: 'TechStart Inc.', daysLeft: 12 },
+  { id: 'dl_008', caseId: 'case_003', caseName: 'Davis v. TechStart', title: 'Email Communications', type: 'document', dueDate: new Date('2024-12-20'), status: 'upcoming', party: 'TechStart Inc.', daysLeft: 24 },
+];
+
+const allDocuments = [
+  { id: 'doc_001', caseId: 'case_001', caseName: 'Johnson v. ABC Manufacturing', originalName: 'Johnson_Medical_Records_Memorial_Hermann.pdf', batesStart: 'JVA-000000001', batesEnd: 'JVA-000000045', pageCount: 45, fileSize: 4521984, status: 'reviewed', mimeType: 'application/pdf', createdAt: new Date('2024-11-10'), uploadedBy: 'Sarah Mitchell', category: 'Medical Records' },
+  { id: 'doc_002', caseId: 'case_001', caseName: 'Johnson v. ABC Manufacturing', originalName: 'Johnson_Medical_Records_Orthopedic.pdf', batesStart: 'JVA-000000046', batesEnd: 'JVA-000000078', pageCount: 33, fileSize: 2847296, status: 'reviewed', mimeType: 'application/pdf', createdAt: new Date('2024-11-13'), uploadedBy: 'Sarah Mitchell', category: 'Medical Records' },
+  { id: 'doc_003', caseId: 'case_001', caseName: 'Johnson v. ABC Manufacturing', originalName: 'Medical_Bills_Compilation.pdf', batesStart: 'JVA-000000079', batesEnd: 'JVA-000000092', pageCount: 14, fileSize: 1245184, status: 'uploaded', mimeType: 'application/pdf', createdAt: new Date('2024-11-15'), uploadedBy: 'Sarah Mitchell', category: 'Medical Bills' },
+  { id: 'doc_004', caseId: 'case_001', caseName: 'Johnson v. ABC Manufacturing', originalName: 'ABC_Manufacturing_Safety_Policies.pdf', batesStart: 'JVA-000000093', batesEnd: 'JVA-000000156', pageCount: 64, fileSize: 5242880, status: 'uploaded', mimeType: 'application/pdf', createdAt: new Date('2024-11-18'), uploadedBy: 'ABC Manufacturing', category: 'Safety Documents' },
+  { id: 'doc_005', caseId: 'case_001', caseName: 'Johnson v. ABC Manufacturing', originalName: 'Incident_Photos.zip', batesStart: 'JVA-000000157', batesEnd: 'JVA-000000172', pageCount: 16, fileSize: 15728640, status: 'pending_review', mimeType: 'application/zip', createdAt: new Date('2024-11-19'), uploadedBy: 'Michael Johnson', category: 'Photographs' },
+  { id: 'doc_006', caseId: 'case_002', caseName: 'Smith v. Heritage Realty', originalName: 'Purchase_Agreement.pdf', batesStart: 'SFT-000000001', batesEnd: 'SFT-000000028', pageCount: 28, fileSize: 2097152, status: 'reviewed', mimeType: 'application/pdf', createdAt: new Date('2024-11-08'), uploadedBy: 'Sarah Mitchell', category: 'Contracts' },
+  { id: 'doc_007', caseId: 'case_002', caseName: 'Smith v. Heritage Realty', originalName: 'Property_Inspection_Initial.pdf', batesStart: 'SFT-000000029', batesEnd: 'SFT-000000052', pageCount: 24, fileSize: 3145728, status: 'uploaded', mimeType: 'application/pdf', createdAt: new Date('2024-11-12'), uploadedBy: 'Smith Family Trust', category: 'Inspection Reports' },
+  { id: 'doc_008', caseId: 'case_003', caseName: 'Davis v. TechStart', originalName: 'Employment_Contract_Davis.pdf', batesStart: 'DVT-000000001', batesEnd: 'DVT-000000015', pageCount: 15, fileSize: 1048576, status: 'reviewed', mimeType: 'application/pdf', createdAt: new Date('2024-11-05'), uploadedBy: 'Sarah Mitchell', category: 'Employment Contract' },
+  { id: 'doc_009', caseId: 'case_003', caseName: 'Davis v. TechStart', originalName: 'Performance_Reviews_2022_2024.pdf', batesStart: 'DVT-000000016', batesEnd: 'DVT-000000045', pageCount: 30, fileSize: 2621440, status: 'uploaded', mimeType: 'application/pdf', createdAt: new Date('2024-11-14'), uploadedBy: 'TechStart Inc.', category: 'Performance Reviews' },
+  { id: 'doc_010', caseId: 'case_003', caseName: 'Davis v. TechStart', originalName: 'HR_Complaint_File.pdf', batesStart: 'DVT-000000046', batesEnd: 'DVT-000000058', pageCount: 13, fileSize: 1572864, status: 'pending_review', mimeType: 'application/pdf', createdAt: new Date('2024-11-17'), uploadedBy: 'Jennifer Davis', category: 'HR Documents' },
+];
+
+const demoNotifications = [
+  { id: 'notif_001', title: 'New Document Uploaded', message: 'ABC Manufacturing Corp. uploaded "Safety_Policies.pdf"', isRead: false },
+  { id: 'notif_002', title: 'Deadline Approaching', message: 'Response to RFP Set 1 due in 5 days', isRead: false },
+  { id: 'notif_003', title: 'Document Overdue', message: 'Witness Statements are now overdue', isRead: true },
+  { id: 'notif_004', title: 'AI Analysis Complete', message: 'Document review completed for Medical Records', isRead: false },
+];
+
+const demoActivityLog = [
+  { id: 'act_001', action: 'document_uploaded', details: 'ABC Manufacturing Corp. uploaded "Safety_Policies.pdf"', createdAt: new Date('2024-11-18T14:30:00') },
+  { id: 'act_002', action: 'document_reviewed', details: 'Reviewed "Medical_Records_Orthopedic.pdf"', createdAt: new Date('2024-11-14T16:45:00') },
+  { id: 'act_003', action: 'status_changed', details: 'Changed "Witness Statements" status to overdue', createdAt: new Date('2024-11-21T08:00:00') },
+  { id: 'act_004', action: 'ai_workflow', details: 'AI sent follow-up reminder to ABC Manufacturing', createdAt: new Date('2024-11-20T09:00:00') },
+];
+
+const caseTypeLabels = { personal_injury: 'Personal Injury', real_estate: 'Real Estate', employment: 'Employment', civil_litigation: 'Civil Litigation', family_law: 'Family Law', contract_dispute: 'Contract Dispute', medical_malpractice: 'Medical Malpractice', intellectual_property: 'Intellectual Property', criminal_defense: 'Criminal Defense', other: 'Other' };
+
+const smartSuggestions = {
+  personal_injury: ['Medical records and bills', 'Police/accident reports', 'Witness statements', 'Insurance policies', 'Employment records (lost wages)', 'Photographs of injuries/scene'],
+  employment: ['Employment contract', 'Personnel file', 'Performance reviews', 'Email communications', 'Company policies/handbook', 'Payroll records'],
+  real_estate: ['Property deeds', 'Title search/insurance', 'Purchase agreements', 'Inspection reports', 'Appraisals', 'Survey documents'],
+};
+
+const aiWorkflows = [
+  { id: 'wf_001', name: 'Overdue Document Follow-up', description: 'Automatically send reminder emails when documents are 3+ days overdue', status: 'active', lastRun: '2 hours ago', nextRun: 'Daily at 9:00 AM' },
+  { id: 'wf_002', name: 'Deadline Reminders', description: 'Send notifications 7, 3, and 1 day before deadlines', status: 'active', lastRun: '1 day ago', nextRun: 'Daily at 8:00 AM' },
+  { id: 'wf_003', name: 'Document Analysis', description: 'AI reviews uploaded documents and suggests relevant categories', status: 'active', lastRun: '30 minutes ago', nextRun: 'On upload' },
+  { id: 'wf_004', name: 'Missing Document Detection', description: 'Identifies gaps in discovery based on case type', status: 'active', lastRun: '1 hour ago', nextRun: 'Weekly' },
+];
+
+const formatDate = (date) => date ? new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Not set';
+const formatFileSize = (bytes) => { if (bytes === 0) return '0 B'; const k = 1024; const sizes = ['B', 'KB', 'MB', 'GB']; const i = Math.floor(Math.log(bytes) / Math.log(k)); return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]; };
+const getStatusColor = (status) => ({ active: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30', pending: 'bg-amber-500/20 text-amber-400 border-amber-500/30', uploaded: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30', reviewed: 'bg-blue-500/20 text-blue-400 border-blue-500/30', overdue: 'bg-red-500/20 text-red-400 border-red-500/30', missing: 'bg-red-500/20 text-red-400 border-red-500/30', upcoming: 'bg-amber-500/20 text-amber-400 border-amber-500/30', pending_review: 'bg-purple-500/20 text-purple-400 border-purple-500/30' }[status] || 'bg-slate-500/20 text-slate-400 border-slate-500/30');
+const getRoleColor = (role) => ({ plaintiff: 'bg-blue-500/20 text-blue-400 border-blue-500/30', defendant: 'bg-red-500/20 text-red-400 border-red-500/30', witness: 'bg-amber-500/20 text-amber-400 border-amber-500/30', expert: 'bg-purple-500/20 text-purple-400 border-purple-500/30' }[role] || 'bg-slate-500/20 text-slate-400 border-slate-500/30');
+
+function DiscoverEase() {
+  const [currentView, setCurrentView] = useState('dashboard');
+  const [selectedCaseId, setSelectedCaseId] = useState(null);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showNewCaseModal, setShowNewCaseModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showAIWorkflowModal, setShowAIWorkflowModal] = useState(false);
+  const [showFollowUpModal, setShowFollowUpModal] = useState(false);
+  const [selectedDeadline, setSelectedDeadline] = useState(null);
+  const [showPartyModal, setShowPartyModal] = useState(false);
+  const [selectedParty, setSelectedParty] = useState(null);
+  const [newCaseType, setNewCaseType] = useState('personal_injury');
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [docFilter, setDocFilter] = useState('all');
+  const [deadlineFilter, setDeadlineFilter] = useState('all');
+
+  const selectedCase = selectedCaseId ? demoCases.find(c => c.id === selectedCaseId) : null;
+  const unreadNotifications = demoNotifications.filter(n => !n.isRead).length;
+
+  const handleCopyLink = () => { setCopiedLink(true); setTimeout(() => setCopiedLink(false), 2000); };
+
+  const filteredDocuments = docFilter === 'all' ? allDocuments : allDocuments.filter(d => d.status === docFilter);
+  const filteredDeadlines = deadlineFilter === 'all' ? allDeadlines : allDeadlines.filter(d => d.status === deadlineFilter);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-200" style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+      {/* Sidebar */}
+      <aside className="fixed left-0 top-0 h-full w-56 bg-slate-900/80 border-r border-slate-800/50 z-40">
+        <div className="p-5">
+          <div className="flex items-center gap-2.5 mb-8">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg">
+              <Scale className="w-4 h-4 text-slate-900" />
+            </div>
+            <div>
+              <h1 className="text-base font-semibold text-white tracking-tight">DiscoverEase</h1>
+              <p className="text-[10px] text-slate-500">Legal Discovery Platform</p>
+            </div>
+          </div>
+
+          <nav className="space-y-1">
+            {[
+              { icon: BarChart3, label: 'Dashboard', view: 'dashboard' },
+              { icon: Briefcase, label: 'Cases', view: 'cases', count: demoCases.length },
+              { icon: FileText, label: 'Documents', view: 'documents', count: allDocuments.length },
+              { icon: Calendar, label: 'Deadlines', view: 'deadlines', count: allDeadlines.filter(d => d.status === 'overdue').length },
+              { icon: Users, label: 'Parties', view: 'parties', count: demoParties.length },
+              { icon: Bot, label: 'AI Workflows', view: 'workflows' },
+            ].map(({ icon: Icon, label, view, count }) => (
+              <button
+                key={view}
+                onClick={() => { setCurrentView(view); setSelectedCaseId(null); }}
+                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 ${
+                  currentView === view || (view === 'cases' && currentView === 'case-detail')
+                    ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' 
+                    : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span className="font-medium">{label}</span>
+                {count !== undefined && <span className={`ml-auto text-xs px-1.5 py-0.5 rounded-full ${view === 'deadlines' && count > 0 ? 'bg-red-500/20 text-red-400' : 'bg-slate-700 text-slate-300'}`}>{count}</span>}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-slate-800/50">
+          <div className="flex items-center gap-2 px-1">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-600/20 flex items-center justify-center border border-amber-500/30">
+              <span className="text-xs font-medium text-amber-400">SM</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-slate-200 truncate">{demoUser.name}</p>
+              <p className="text-[10px] text-slate-500 truncate">{demoUser.firmName}</p>
+            </div>
+            <Settings className="w-3.5 h-3.5 text-slate-500" />
+          </div>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <main className="ml-56 min-h-screen">
+        {/* Header */}
+        <header className="sticky top-0 z-30 bg-slate-900/60 backdrop-blur-xl border-b border-slate-800/50">
+          <div className="px-6 py-3 flex items-center justify-between">
+            <div className="relative w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+              <input type="text" placeholder="Search cases, documents..." className="w-full pl-9 pr-3 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-amber-500/50" />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <button onClick={() => setShowNotifications(!showNotifications)} className="relative p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 rounded-lg transition-all">
+                  <Bell className="w-4 h-4" />
+                  {unreadNotifications > 0 && <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-amber-500 rounded-full" />}
+                </button>
+                {showNotifications && (
+                  <div className="absolute right-0 mt-1 w-72 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden">
+                    <div className="p-3 border-b border-slate-700"><h3 className="font-semibold text-white text-sm">Notifications</h3></div>
+                    <div className="max-h-64 overflow-y-auto">
+                      {demoNotifications.map((n) => (
+                        <div key={n.id} className={`p-3 border-b border-slate-700/50 hover:bg-slate-700/30 cursor-pointer ${!n.isRead ? 'bg-amber-500/5' : ''}`}>
+                          <div className="flex gap-2">
+                            <div className={`w-1.5 h-1.5 mt-1.5 rounded-full flex-shrink-0 ${!n.isRead ? 'bg-amber-500' : 'bg-slate-600'}`} />
+                            <div><p className="text-xs font-medium text-slate-200">{n.title}</p><p className="text-[10px] text-slate-400 mt-0.5">{n.message}</p></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <button onClick={() => setShowNewCaseModal(true)} className="flex items-center gap-1.5 px-3 py-2 bg-amber-500 hover:bg-amber-400 text-slate-900 text-sm font-semibold rounded-lg transition-all shadow-lg shadow-amber-500/20">
+                <Plus className="w-3.5 h-3.5" />New Case
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <div className="p-6">
+          {/* Dashboard View */}
+          {currentView === 'dashboard' && (
+            <div className="space-y-6">
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-slate-800/80 to-slate-800/40 border border-slate-700/50 p-6">
+                <div className="relative z-10">
+                  <h2 className="text-xl font-semibold text-white mb-1">Welcome back, {demoUser.name.split(' ')[0]}</h2>
+                  <p className="text-slate-400 text-sm">You have {demoDashboardStats.pendingDocuments} pending documents and {demoDashboardStats.upcomingDeadlines} upcoming deadlines.</p>
+                </div>
+                <Scale className="absolute right-6 top-1/2 -translate-y-1/2 w-24 h-24 text-amber-500 opacity-10" />
+              </div>
+
+              {/* AI Insights Banner */}
+              <div className="p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                    <Brain className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-sm font-semibold text-purple-300 mb-1">AI Insights</h3>
+                    <p className="text-xs text-slate-400 mb-2">Based on your case types, here are some recommendations:</p>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="px-2 py-1 bg-slate-800/50 rounded text-[10px] text-slate-300">2 documents need review</span>
+                      <span className="px-2 py-1 bg-red-500/20 rounded text-[10px] text-red-300">2 overdue items require follow-up</span>
+                      <span className="px-2 py-1 bg-amber-500/20 rounded text-[10px] text-amber-300">Missing: Witness statements for Johnson case</span>
+                    </div>
+                  </div>
+                  <button onClick={() => setCurrentView('workflows')} className="px-3 py-1.5 text-xs bg-purple-500/20 text-purple-300 rounded-lg hover:bg-purple-500/30 transition-colors">View Workflows</button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-4 gap-4">
+                {[
+                  { icon: Briefcase, label: 'Active Cases', value: demoDashboardStats.totalCases, color: 'blue', onClick: () => setCurrentView('cases') },
+                  { icon: FileCheck, label: 'Documents', value: demoDashboardStats.documentsUploaded, color: 'emerald', onClick: () => setCurrentView('documents') },
+                  { icon: Clock, label: 'Pending', value: demoDashboardStats.pendingDocuments, color: 'amber', onClick: () => setCurrentView('deadlines') },
+                  { icon: AlertTriangle, label: 'Overdue', value: demoDashboardStats.overdueDocuments, color: 'red', onClick: () => { setCurrentView('deadlines'); setDeadlineFilter('overdue'); } },
+                ].map(({ icon: Icon, label, value, color, onClick }) => (
+                  <div key={label} onClick={onClick} className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 hover:border-amber-500/30 transition-all cursor-pointer">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className={`w-10 h-10 rounded-lg bg-${color}-500/10 flex items-center justify-center`}>
+                        <Icon className={`w-5 h-5 text-${color}-400`} />
+                      </div>
+                    </div>
+                    <p className="text-2xl font-semibold text-white">{value}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{label}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-3 gap-6">
+                <div className="col-span-2 bg-slate-800/40 border border-slate-700/50 rounded-xl overflow-hidden">
+                  <div className="p-4 border-b border-slate-700/50 flex items-center justify-between">
+                    <h3 className="font-semibold text-white">Recent Cases</h3>
+                    <button onClick={() => setCurrentView('cases')} className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1">View all <ChevronRight className="w-3 h-3" /></button>
+                  </div>
+                  <div className="divide-y divide-slate-700/50">
+                    {demoCases.slice(0, 3).map((c) => (
+                      <div key={c.id} onClick={() => { setSelectedCaseId(c.id); setCurrentView('case-detail'); }} className="p-4 hover:bg-slate-700/20 cursor-pointer transition-colors">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="text-sm font-medium text-white">{c.caseName}</h4>
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${getStatusColor(c.status)}`}>{c.status}</span>
+                            </div>
+                            <p className="text-xs text-slate-400">{c.caseNumber} • {caseTypeLabels[c.caseType]}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[10px] text-slate-500">Discovery Cutoff</p>
+                            <p className="text-xs font-medium text-slate-200">{formatDate(c.discoveryCutoff)}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl overflow-hidden">
+                  <div className="p-4 border-b border-slate-700/50"><h3 className="font-semibold text-white">Recent Activity</h3></div>
+                  <div className="p-3 space-y-3 max-h-72 overflow-y-auto">
+                    {demoActivityLog.map((a) => (
+                      <div key={a.id} className="flex gap-2">
+                        <div className="w-6 h-6 rounded-full bg-slate-700/50 flex items-center justify-center flex-shrink-0">
+                          {a.action.includes('upload') && <Upload className="w-3 h-3 text-emerald-400" />}
+                          {a.action.includes('review') && <Eye className="w-3 h-3 text-blue-400" />}
+                          {a.action.includes('status') && <AlertTriangle className="w-3 h-3 text-amber-400" />}
+                          {a.action.includes('ai') && <Bot className="w-3 h-3 text-purple-400" />}
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-300">{a.details}</p>
+                          <p className="text-[10px] text-slate-500 mt-0.5">{new Date(a.createdAt).toLocaleString()}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Documents View */}
+          {currentView === 'documents' && (
+            <div className="space-y-5">
+              <div className="flex items-center justify-between">
+                <div><h2 className="text-xl font-semibold text-white">All Documents</h2><p className="text-slate-400 text-sm mt-0.5">{allDocuments.length} documents across all cases</p></div>
+                <div className="flex items-center gap-2">
+                  <select value={docFilter} onChange={(e) => setDocFilter(e.target.value)} className="px-3 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-sm text-slate-200 focus:outline-none">
+                    <option value="all">All Status</option>
+                    <option value="uploaded">Uploaded</option>
+                    <option value="reviewed">Reviewed</option>
+                    <option value="pending_review">Pending Review</option>
+                  </select>
+                  <button className="px-3 py-2 text-sm bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold rounded-lg flex items-center gap-1.5"><Upload className="w-3.5 h-3.5" />Upload</button>
+                </div>
+              </div>
+
+              {/* AI Document Suggestions */}
+              <div className="p-4 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <FileSearch className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h3 className="text-sm font-semibold text-blue-300 mb-1">AI Document Analysis</h3>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      <span className="px-2 py-1 bg-purple-500/20 rounded text-[10px] text-purple-300 flex items-center gap-1"><Eye className="w-3 h-3" /> 2 documents pending review</span>
+                      <span className="px-2 py-1 bg-emerald-500/20 rounded text-[10px] text-emerald-300 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Medical records complete for Johnson case</span>
+                      <span className="px-2 py-1 bg-amber-500/20 rounded text-[10px] text-amber-300 flex items-center gap-1"><Sparkles className="w-3 h-3" /> Suggest: Request updated employment records</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl overflow-hidden">
+                <table className="w-full text-left">
+                  <thead className="border-b border-slate-700/50 bg-slate-900/30"><tr>
+                    <th className="px-4 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Document</th>
+                    <th className="px-4 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Case</th>
+                    <th className="px-4 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Bates Range</th>
+                    <th className="px-4 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Pages</th>
+                    <th className="px-4 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Status</th>
+                    <th className="px-4 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Uploaded</th>
+                    <th className="px-4 py-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider"></th>
+                  </tr></thead>
+                  <tbody className="divide-y divide-slate-800/50">
+                    {filteredDocuments.map((doc) => (
+                      <tr key={doc.id} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-lg bg-slate-700/50 flex items-center justify-center"><FileText className="w-4 h-4 text-slate-400" /></div>
+                            <div><p className="text-sm font-medium text-slate-200 truncate max-w-48">{doc.originalName}</p><p className="text-[10px] text-slate-500">{doc.category}</p></div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-xs text-slate-400">{doc.caseName.split(' v. ')[0]}</td>
+                        <td className="px-4 py-3"><span className="font-mono text-xs text-amber-400">{doc.batesStart}</span></td>
+                        <td className="px-4 py-3 text-sm text-slate-300">{doc.pageCount}</td>
+                        <td className="px-4 py-3"><span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${getStatusColor(doc.status)}`}>{doc.status.replace('_', ' ')}</span></td>
+                        <td className="px-4 py-3 text-xs text-slate-400">{formatDate(doc.createdAt)}</td>
+                        <td className="px-4 py-3"><div className="flex items-center gap-1"><button className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 rounded-lg"><Download className="w-3.5 h-3.5" /></button><button className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 rounded-lg"><Eye className="w-3.5 h-3.5" /></button></div></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Deadlines View */}
+          {currentView === 'deadlines' && (
+            <div className="space-y-5">
+              <div className="flex items-center justify-between">
+                <div><h2 className="text-xl font-semibold text-white">Deadlines</h2><p className="text-slate-400 text-sm mt-0.5">{allDeadlines.filter(d => d.status === 'overdue').length} overdue, {allDeadlines.filter(d => d.status === 'upcoming').length} upcoming</p></div>
+                <div className="flex items-center gap-2">
+                  <select value={deadlineFilter} onChange={(e) => setDeadlineFilter(e.target.value)} className="px-3 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-sm text-slate-200 focus:outline-none">
+                    <option value="all">All Deadlines</option>
+                    <option value="overdue">Overdue</option>
+                    <option value="upcoming">Upcoming</option>
+                  </select>
+                  <button className="px-3 py-2 text-sm bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold rounded-lg flex items-center gap-1.5"><Plus className="w-3.5 h-3.5" />Add Deadline</button>
+                </div>
+              </div>
+
+              {/* AI Workflow Suggestion */}
+              <div className="p-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <Zap className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h3 className="text-sm font-semibold text-amber-300 mb-1">AI Workflow Available</h3>
+                    <p className="text-xs text-slate-400">2 items are overdue. AI can automatically send follow-up emails to responsible parties.</p>
+                  </div>
+                  <button onClick={() => setShowFollowUpModal(true)} className="px-3 py-1.5 text-xs bg-amber-500/20 text-amber-300 rounded-lg hover:bg-amber-500/30 transition-colors flex items-center gap-1"><Send className="w-3 h-3" /> Send Follow-ups</button>
+                </div>
+              </div>
+
+              <div className="grid gap-3">
+                {filteredDeadlines.map((dl) => (
+                  <div key={dl.id} className={`bg-slate-800/40 border rounded-xl p-4 transition-all ${dl.status === 'overdue' ? 'border-red-500/30' : 'border-slate-700/50 hover:border-amber-500/30'}`}>
+                    <div className="flex items-start justify-between">
+                      <div className="flex gap-3">
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${dl.status === 'overdue' ? 'bg-red-500/10' : 'bg-amber-500/10'}`}>
+                          {dl.status === 'overdue' ? <AlertTriangle className="w-5 h-5 text-red-400" /> : <Clock className="w-5 h-5 text-amber-400" />}
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-medium text-white">{dl.title}</h3>
+                          <p className="text-xs text-slate-400 mt-0.5">{dl.caseName}</p>
+                          <p className="text-xs text-slate-500 mt-1">Responsible: {dl.party}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${getStatusColor(dl.status)}`}>{dl.status}</span>
+                        <p className="text-sm font-medium text-white mt-1">{formatDate(dl.dueDate)}</p>
+                        <p className={`text-xs mt-0.5 ${dl.daysLeft < 0 ? 'text-red-400' : dl.daysLeft <= 7 ? 'text-amber-400' : 'text-slate-400'}`}>
+                          {dl.daysLeft < 0 ? `${Math.abs(dl.daysLeft)} days overdue` : `${dl.daysLeft} days left`}
+                        </p>
+                      </div>
+                    </div>
+                    {dl.status === 'overdue' && (
+                      <div className="mt-3 pt-3 border-t border-slate-700/50 flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-xs text-slate-400">
+                          <Bot className="w-3.5 h-3.5 text-purple-400" />
+                          <span>AI can send automated follow-up</span>
+                        </div>
+                        <button onClick={() => { setSelectedDeadline(dl); setShowFollowUpModal(true); }} className="px-2 py-1 text-xs bg-purple-500/20 text-purple-300 rounded hover:bg-purple-500/30 transition-colors flex items-center gap-1"><Mail className="w-3 h-3" /> Send Reminder</button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Parties View */}
+          {currentView === 'parties' && (
+            <div className="space-y-5">
+              <div className="flex items-center justify-between">
+                <div><h2 className="text-xl font-semibold text-white">All Parties</h2><p className="text-slate-400 text-sm mt-0.5">{demoParties.length} parties across all cases</p></div>
+                <button className="px-3 py-2 text-sm bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold rounded-lg flex items-center gap-1.5"><UserPlus className="w-3.5 h-3.5" />Add Party</button>
+              </div>
+
+              {/* AI Party Suggestions */}
+              <div className="p-4 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <Sparkles className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h3 className="text-sm font-semibold text-emerald-300 mb-1">AI Suggestions for Document Requests</h3>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      <span className="px-2 py-1 bg-slate-800/50 rounded text-[10px] text-slate-300">ABC Manufacturing: Request updated safety training records</span>
+                      <span className="px-2 py-1 bg-slate-800/50 rounded text-[10px] text-slate-300">Heritage Realty: Missing disclosure documents</span>
+                      <span className="px-2 py-1 bg-slate-800/50 rounded text-[10px] text-slate-300">TechStart: Request termination meeting notes</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                {demoParties.map((party) => {
+                  const partyCase = demoCases.find(c => c.id === party.caseId);
+                  return (
+                    <div key={party.id} onClick={() => { setSelectedParty(party); setShowPartyModal(true); }} className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 hover:border-amber-500/30 cursor-pointer transition-all">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-slate-700/50 flex items-center justify-center">
+                            <span className="text-sm font-medium text-slate-300">{party.name.split(' ').map(n => n[0]).join('').slice(0, 2)}</span>
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-medium text-white">{party.name}</h3>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border mt-0.5 ${getRoleColor(party.role)}`}>{party.role}</span>
+                          </div>
+                        </div>
+                        {party.shareToken && <Link2 className="w-4 h-4 text-amber-400" />}
+                      </div>
+                      <p className="text-xs text-slate-400 mb-2">{partyCase?.caseName}</p>
+                      <div className="flex items-center gap-4 text-xs text-slate-500">
+                        {party.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{party.email}</span>}
+                      </div>
+                      <div className="mt-3 pt-3 border-t border-slate-700/50 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-emerald-400">{party.documentsProvided} docs provided</span>
+                          {party.documentsPending > 0 && <span className="text-xs text-amber-400">{party.documentsPending} pending</span>}
+                        </div>
+                        <button className="text-xs text-slate-400 hover:text-amber-400 transition-colors">View Details →</button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* AI Workflows View */}
+          {currentView === 'workflows' && (
+            <div className="space-y-5">
+              <div className="flex items-center justify-between">
+                <div><h2 className="text-xl font-semibold text-white">AI Workflows</h2><p className="text-slate-400 text-sm mt-0.5">Automate repetitive discovery tasks</p></div>
+                <button onClick={() => setShowAIWorkflowModal(true)} className="px-3 py-2 text-sm bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold rounded-lg flex items-center gap-1.5"><Plus className="w-3.5 h-3.5" />Create Workflow</button>
+              </div>
+
+              {/* AI Summary */}
+              <div className="p-5 bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-cyan-500/10 border border-purple-500/20 rounded-xl">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                    <Brain className="w-6 h-6 text-purple-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-base font-semibold text-white mb-2">AI Discovery Assistant</h3>
+                    <p className="text-sm text-slate-400 mb-3">Your AI workflows have automated 47 tasks this month, saving approximately 12 hours of manual work.</p>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="bg-slate-900/30 rounded-lg p-3"><p className="text-xl font-semibold text-emerald-400">47</p><p className="text-[10px] text-slate-500">Tasks Automated</p></div>
+                      <div className="bg-slate-900/30 rounded-lg p-3"><p className="text-xl font-semibold text-blue-400">12h</p><p className="text-[10px] text-slate-500">Time Saved</p></div>
+                      <div className="bg-slate-900/30 rounded-lg p-3"><p className="text-xl font-semibold text-amber-400">4</p><p className="text-[10px] text-slate-500">Active Workflows</p></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-4">
+                {aiWorkflows.map((wf) => (
+                  <div key={wf.id} className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-5 hover:border-amber-500/30 transition-all">
+                    <div className="flex items-start justify-between">
+                      <div className="flex gap-4">
+                        <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                          {wf.name.includes('Follow-up') && <Mail className="w-5 h-5 text-purple-400" />}
+                          {wf.name.includes('Reminder') && <Bell className="w-5 h-5 text-purple-400" />}
+                          {wf.name.includes('Analysis') && <FileSearch className="w-5 h-5 text-purple-400" />}
+                          {wf.name.includes('Detection') && <Sparkles className="w-5 h-5 text-purple-400" />}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="text-sm font-medium text-white">{wf.name}</h3>
+                            <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 text-[10px] rounded-full">{wf.status}</span>
+                          </div>
+                          <p className="text-xs text-slate-400">{wf.description}</p>
+                          <div className="flex items-center gap-4 mt-2 text-[10px] text-slate-500">
+                            <span>Last run: {wf.lastRun}</span>
+                            <span>Next: {wf.nextRun}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 rounded-lg"><RefreshCw className="w-4 h-4" /></button>
+                        <button className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 rounded-lg"><Settings className="w-4 h-4" /></button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Smart Suggestions Section */}
+              <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-5">
+                <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2"><Sparkles className="w-4 h-4 text-amber-400" /> AI Suggested Actions</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-slate-900/30 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center"><AlertTriangle className="w-4 h-4 text-red-400" /></div>
+                      <div><p className="text-xs font-medium text-slate-200">Send follow-up for overdue Witness Statements</p><p className="text-[10px] text-slate-500">Johnson v. ABC Manufacturing • 6 days overdue</p></div>
+                    </div>
+                    <button className="px-3 py-1.5 text-xs bg-amber-500 text-slate-900 font-medium rounded hover:bg-amber-400 transition-colors">Execute</button>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-slate-900/30 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center"><FileSearch className="w-4 h-4 text-blue-400" /></div>
+                      <div><p className="text-xs font-medium text-slate-200">Review 2 newly uploaded documents</p><p className="text-[10px] text-slate-500">Incident_Photos.zip, HR_Complaint_File.pdf</p></div>
+                    </div>
+                    <button className="px-3 py-1.5 text-xs bg-blue-500/20 text-blue-300 font-medium rounded hover:bg-blue-500/30 transition-colors">Review</button>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-slate-900/30 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center"><Sparkles className="w-4 h-4 text-purple-400" /></div>
+                      <div><p className="text-xs font-medium text-slate-200">Missing documents detected for Davis case</p><p className="text-[10px] text-slate-500">Suggest requesting: Email communications, Slack messages</p></div>
+                    </div>
+                    <button className="px-3 py-1.5 text-xs bg-purple-500/20 text-purple-300 font-medium rounded hover:bg-purple-500/30 transition-colors">Add Request</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Cases View - Keep existing */}
+          {currentView === 'cases' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div><h2 className="text-xl font-semibold text-white">Cases</h2><p className="text-slate-400 text-sm mt-0.5">Manage your litigation cases and discovery</p></div>
+                <div className="flex items-center gap-2">
+                  <button className="px-3 py-2 text-sm text-slate-300 border border-slate-600 rounded-lg hover:border-amber-500/50 flex items-center gap-1.5"><Filter className="w-3.5 h-3.5" />Filter</button>
+                  <button onClick={() => setShowNewCaseModal(true)} className="px-3 py-2 text-sm bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold rounded-lg flex items-center gap-1.5"><Plus className="w-3.5 h-3.5" />New Case</button>
+                </div>
+              </div>
+              <div className="grid gap-3">
+                {demoCases.map((c) => (
+                  <div key={c.id} onClick={() => { setSelectedCaseId(c.id); setCurrentView('case-detail'); }} className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-5 hover:border-amber-500/30 cursor-pointer transition-all">
+                    <div className="flex items-start justify-between">
+                      <div className="flex gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-slate-700/50 flex items-center justify-center"><Gavel className="w-5 h-5 text-amber-400" /></div>
+                        <div>
+                          <div className="flex items-center gap-2 mb-0.5"><h3 className="font-medium text-white">{c.caseName}</h3><span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${getStatusColor(c.status)}`}>{c.status}</span></div>
+                          <p className="text-xs text-slate-400 mb-2">{c.caseNumber} • {caseTypeLabels[c.caseType]}</p>
+                          <div className="flex items-center gap-4 text-xs text-slate-400">
+                            <span className="flex items-center gap-1"><Building2 className="w-3 h-3" />{c.court}</span>
+                            <span className="flex items-center gap-1"><Gavel className="w-3 h-3" />{c.judge}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">Discovery Cutoff</p>
+                        <p className="text-base font-semibold text-white">{formatDate(c.discoveryCutoff)}</p>
+                        <p className="text-xs text-slate-400 mt-0.5 font-mono">{c.batesPrefix}-{String(c.currentBatesNumber).padStart(9, '0')}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Case Detail View */}
+          {currentView === 'case-detail' && selectedCase && (
+            <div className="space-y-5">
+              <div className="flex items-center gap-2 text-xs">
+                <button onClick={() => setCurrentView('cases')} className="text-slate-400 hover:text-amber-400 transition-colors">Cases</button>
+                <ChevronRight className="w-3 h-3 text-slate-600" />
+                <span className="text-slate-200">{selectedCase.caseName}</span>
+              </div>
+              <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-5">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1"><h2 className="text-xl font-semibold text-white">{selectedCase.caseName}</h2><span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${getStatusColor(selectedCase.status)}`}>{selectedCase.status}</span></div>
+                    <p className="text-sm text-slate-400">{selectedCase.caseNumber} • {caseTypeLabels[selectedCase.caseType]}</p>
+                    <div className="flex items-center gap-4 mt-3 text-xs text-slate-400">
+                      <span className="flex items-center gap-1"><Building2 className="w-3 h-3" />{selectedCase.court}</span>
+                      <span className="flex items-center gap-1"><Gavel className="w-3 h-3" />{selectedCase.judge}</span>
+                      <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />Trial: {formatDate(selectedCase.trialDate)}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setShowShareModal(true)} className="px-3 py-2 text-sm text-slate-300 border border-slate-600 rounded-lg hover:border-amber-500/50 flex items-center gap-1.5"><Share2 className="w-3.5 h-3.5" />Share Link</button>
+                    <button className="px-3 py-2 text-sm bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold rounded-lg flex items-center gap-1.5"><Upload className="w-3.5 h-3.5" />Upload</button>
+                  </div>
+                </div>
+                <div className="mt-5 p-3 bg-slate-900/50 rounded-lg border border-slate-700/30 flex items-center justify-between">
+                  <div><p className="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">Bates Numbering</p><p className="text-base font-mono text-amber-400">{selectedCase.batesPrefix}-{String(selectedCase.currentBatesNumber).padStart(9, '0')}</p></div>
+                  <div className="text-right"><p className="text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">Discovery Cutoff</p><p className="text-base font-semibold text-white">{formatDate(selectedCase.discoveryCutoff)}</p></div>
+                </div>
+              </div>
+              {/* Rest of case detail content */}
+              <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4">
+                <h3 className="font-semibold text-white mb-3 flex items-center gap-2"><Sparkles className="w-4 h-4 text-amber-400" /> AI Suggestions for this Case</h3>
+                <div className="flex flex-wrap gap-2">
+                  {(smartSuggestions[selectedCase.caseType] || []).map((s, i) => (
+                    <span key={i} className="px-3 py-1.5 bg-slate-700/50 rounded-lg text-xs text-slate-300 flex items-center gap-1.5"><Plus className="w-3 h-3" />{s}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* New Case Modal */}
+      {showNewCaseModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
+            <div className="p-5 border-b border-slate-700 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-white">Create New Case</h2>
+              <button onClick={() => setShowNewCaseModal(false)} className="text-slate-400 hover:text-slate-200"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="p-5 space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="block text-xs font-medium text-slate-300 mb-1.5">Case Number</label><input type="text" placeholder="2024-CV-XXXXX" className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-amber-500/50" /></div>
+                <div><label className="block text-xs font-medium text-slate-300 mb-1.5">Case Type</label><select className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-amber-500/50" value={newCaseType} onChange={(e) => setNewCaseType(e.target.value)}>
+                  {Object.entries(caseTypeLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                </select></div>
+              </div>
+              <div><label className="block text-xs font-medium text-slate-300 mb-1.5">Case Name</label><input type="text" placeholder="Plaintiff v. Defendant" className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-amber-500/50" /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="block text-xs font-medium text-slate-300 mb-1.5">Bates Prefix</label><input type="text" placeholder="ABC" className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-sm text-slate-200 font-mono focus:outline-none focus:border-amber-500/50" maxLength={4} /></div>
+                <div><label className="block text-xs font-medium text-slate-300 mb-1.5">Discovery Cutoff</label><input type="date" className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-amber-500/50" /></div>
+              </div>
+              <div className="p-3 bg-amber-500/5 border border-amber-500/20 rounded-xl">
+                <div className="flex items-center gap-1.5 mb-2"><Sparkles className="w-4 h-4 text-amber-400" /><h4 className="text-sm font-medium text-amber-400">AI Smart Suggestions</h4></div>
+                <p className="text-xs text-slate-400 mb-2">Recommended documents for {caseTypeLabels[newCaseType]}:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {(smartSuggestions[newCaseType] || smartSuggestions.personal_injury).slice(0, 6).map((s, i) => (
+                    <button key={i} className="px-2 py-1 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg text-[10px] text-slate-300 transition-colors flex items-center gap-1"><Plus className="w-2.5 h-2.5" />{s}</button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="p-5 border-t border-slate-700 flex justify-end gap-2">
+              <button onClick={() => setShowNewCaseModal(false)} className="px-4 py-2 text-sm text-slate-300 border border-slate-600 rounded-lg hover:border-amber-500/50">Cancel</button>
+              <button className="px-4 py-2 text-sm bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold rounded-lg">Create Case</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md">
+            <div className="p-5 border-b border-slate-700 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-white">Share Discovery Portal</h2>
+              <button onClick={() => setShowShareModal(false)} className="text-slate-400 hover:text-slate-200"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="p-5 space-y-4">
+              <p className="text-sm text-slate-400">Share this link with parties to allow them to upload discovery documents directly.</p>
+              <div><label className="block text-xs font-medium text-slate-300 mb-1.5">Select Party</label><select className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-amber-500/50">
+                {demoParties.filter(p => p.caseId === selectedCaseId).map((p) => <option key={p.id} value={p.id}>{p.name} ({p.role})</option>)}
+              </select></div>
+              <div><label className="block text-xs font-medium text-slate-300 mb-1.5">Shareable Link</label><div className="flex gap-2">
+                <input type="text" readOnly value="https://discoverease.app/submit/abc123xyz789" className="flex-1 px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-xs text-slate-200 font-mono" />
+                <button onClick={handleCopyLink} className="px-3 py-2 text-sm text-slate-300 border border-slate-600 rounded-lg hover:border-amber-500/50 flex items-center gap-1.5">{copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}{copiedLink ? 'Copied!' : 'Copy'}</button>
+              </div></div>
+              <div className="p-3 bg-amber-500/5 border border-amber-500/20 rounded-lg">
+                <div className="flex items-start gap-2"><Sparkles className="w-4 h-4 text-amber-400 mt-0.5" /><div><p className="text-xs font-medium text-amber-400">What parties can do:</p><ul className="text-[10px] text-slate-400 mt-1 space-y-0.5"><li>• Upload documents directly</li><li>• View required documents list</li><li>• See upload deadlines</li><li>• Auto-numbered with Bates</li></ul></div></div>
+              </div>
+            </div>
+            <div className="p-5 border-t border-slate-700 flex justify-end gap-2">
+              <button onClick={() => setShowShareModal(false)} className="px-4 py-2 text-sm text-slate-300 border border-slate-600 rounded-lg hover:border-amber-500/50">Close</button>
+              <button className="px-4 py-2 text-sm bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold rounded-lg flex items-center gap-1.5"><ExternalLink className="w-3.5 h-3.5" />Open Portal</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Follow-up Modal */}
+      {showFollowUpModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-lg">
+            <div className="p-5 border-b border-slate-700 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-white flex items-center gap-2"><Bot className="w-5 h-5 text-purple-400" /> AI Follow-up Email</h2>
+              <button onClick={() => setShowFollowUpModal(false)} className="text-slate-400 hover:text-slate-200"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="p-5 space-y-4">
+              <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                <p className="text-xs text-purple-300">AI has generated a professional follow-up email based on the overdue items.</p>
+              </div>
+              <div><label className="block text-xs font-medium text-slate-300 mb-1.5">To</label><input type="text" value="legal@abcmfg.com" className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-sm text-slate-200" readOnly /></div>
+              <div><label className="block text-xs font-medium text-slate-300 mb-1.5">Subject</label><input type="text" value="Outstanding Discovery Documents - Johnson v. ABC Manufacturing" className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-sm text-slate-200" /></div>
+              <div><label className="block text-xs font-medium text-slate-300 mb-1.5">Message</label><textarea rows={6} className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-sm text-slate-200 resize-none" defaultValue={`Dear Counsel,
+
+This is a friendly reminder regarding outstanding discovery documents in the matter of Johnson v. ABC Manufacturing Corp. (Case No. 2024-CV-00847).
+
+The following items are now overdue:
+• Witness Statements - Due: November 20, 2024 (6 days overdue)
+
+Please upload these documents at your earliest convenience via our secure portal or contact us if you need additional time.
+
+Best regards,
+Sarah Mitchell
+Mitchell & Associates`} /></div>
+            </div>
+            <div className="p-5 border-t border-slate-700 flex justify-end gap-2">
+              <button onClick={() => setShowFollowUpModal(false)} className="px-4 py-2 text-sm text-slate-300 border border-slate-600 rounded-lg hover:border-amber-500/50">Cancel</button>
+              <button onClick={() => setShowFollowUpModal(false)} className="px-4 py-2 text-sm bg-purple-500 hover:bg-purple-400 text-white font-semibold rounded-lg flex items-center gap-1.5"><Send className="w-3.5 h-3.5" />Send Email</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Party Detail Modal */}
+      {showPartyModal && selectedParty && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-lg">
+            <div className="p-5 border-b border-slate-700 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-white">{selectedParty.name}</h2>
+              <button onClick={() => { setShowPartyModal(false); setSelectedParty(null); }} className="text-slate-400 hover:text-slate-200"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="p-5 space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-full bg-slate-700/50 flex items-center justify-center">
+                  <span className="text-lg font-medium text-slate-300">{selectedParty.name.split(' ').map(n => n[0]).join('').slice(0, 2)}</span>
+                </div>
+                <div>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${getRoleColor(selectedParty.role)}`}>{selectedParty.role}</span>
+                  <p className="text-sm text-slate-400 mt-1">{demoCases.find(c => c.id === selectedParty.caseId)?.caseName}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {selectedParty.email && <div className="p-3 bg-slate-900/30 rounded-lg"><p className="text-[10px] text-slate-500 mb-1">Email</p><p className="text-xs text-slate-300">{selectedParty.email}</p></div>}
+                {selectedParty.phone && <div className="p-3 bg-slate-900/30 rounded-lg"><p className="text-[10px] text-slate-500 mb-1">Phone</p><p className="text-xs text-slate-300">{selectedParty.phone}</p></div>}
+                {selectedParty.attorney && <div className="p-3 bg-slate-900/30 rounded-lg"><p className="text-[10px] text-slate-500 mb-1">Attorney</p><p className="text-xs text-slate-300">{selectedParty.attorney}</p></div>}
+                <div className="p-3 bg-slate-900/30 rounded-lg"><p className="text-[10px] text-slate-500 mb-1">Documents</p><p className="text-xs text-slate-300">{selectedParty.documentsProvided} provided, {selectedParty.documentsPending} pending</p></div>
+              </div>
+              <div className="p-3 bg-amber-500/5 border border-amber-500/20 rounded-lg">
+                <div className="flex items-start gap-2"><Sparkles className="w-4 h-4 text-amber-400 mt-0.5" /><div><p className="text-xs font-medium text-amber-400">AI Suggested Requests</p><ul className="text-[10px] text-slate-400 mt-1 space-y-0.5">
+                  <li>• Request updated safety training records</li>
+                  <li>• Ask for incident investigation report</li>
+                  <li>• Obtain maintenance logs for equipment</li>
+                </ul></div></div>
+              </div>
+            </div>
+            <div className="p-5 border-t border-slate-700 flex justify-between">
+              {selectedParty.shareToken && <button className="px-4 py-2 text-sm text-amber-400 border border-amber-500/30 rounded-lg hover:bg-amber-500/10 flex items-center gap-1.5"><Link2 className="w-3.5 h-3.5" />Copy Portal Link</button>}
+              <div className="flex gap-2 ml-auto">
+                <button className="px-4 py-2 text-sm text-slate-300 border border-slate-600 rounded-lg hover:border-amber-500/50 flex items-center gap-1.5"><Mail className="w-3.5 h-3.5" />Email</button>
+                <button onClick={() => { setShowPartyModal(false); setSelectedParty(null); }} className="px-4 py-2 text-sm bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold rounded-lg">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Workflow Modal */}
+      {showAIWorkflowModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-lg">
+            <div className="p-5 border-b border-slate-700 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-white flex items-center gap-2"><Zap className="w-5 h-5 text-amber-400" /> Create AI Workflow</h2>
+              <button onClick={() => setShowAIWorkflowModal(false)} className="text-slate-400 hover:text-slate-200"><X className="w-4 h-4" /></button>
+            </div>
+            <div className="p-5 space-y-4">
+              <div><label className="block text-xs font-medium text-slate-300 mb-1.5">Workflow Name</label><input type="text" placeholder="e.g., Weekly Status Report" className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-amber-500/50" /></div>
+              <div><label className="block text-xs font-medium text-slate-300 mb-1.5">Trigger</label><select className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-amber-500/50">
+                <option>When document is uploaded</option>
+                <option>When deadline is approaching</option>
+                <option>When document is overdue</option>
+                <option>On schedule (daily/weekly)</option>
+              </select></div>
+              <div><label className="block text-xs font-medium text-slate-300 mb-1.5">Action</label><select className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-amber-500/50">
+                <option>Send email notification</option>
+                <option>Analyze document with AI</option>
+                <option>Generate status report</option>
+                <option>Update document status</option>
+              </select></div>
+              <div><label className="block text-xs font-medium text-slate-300 mb-1.5">Description</label><textarea rows={3} placeholder="Describe what this workflow does..." className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-sm text-slate-200 placeholder:text-slate-500 resize-none focus:outline-none focus:border-amber-500/50" /></div>
+            </div>
+            <div className="p-5 border-t border-slate-700 flex justify-end gap-2">
+              <button onClick={() => setShowAIWorkflowModal(false)} className="px-4 py-2 text-sm text-slate-300 border border-slate-600 rounded-lg hover:border-amber-500/50">Cancel</button>
+              <button onClick={() => setShowAIWorkflowModal(false)} className="px-4 py-2 text-sm bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold rounded-lg">Create Workflow</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<DiscoverEase />);
+  </script>
+</body>
+</html>

@@ -239,6 +239,36 @@ const portfolioItems: PortfolioItem[] = [
       ],
     },
   },
+  {
+    id: 9,
+    title: "DiscoverEase",
+    subtitle: "AI-Powered Legal Discovery Platform",
+    industry: "LEGAL TECH",
+    description: "Intelligent document management and discovery tracking for litigation teams, featuring automated Bates numbering, deadline monitoring, and AI-powered workflows.",
+    backgroundColor: "#1F2937",
+    backgroundImage: "url(/assets/law-ss-portfolio.jpg)",
+    isConcept: true,
+    technologies: ["React", "Next.js", "Node.js", "Supabase", "PostgreSQL", "Drizzle ORM", "Tailwind CSS", "OpenAI"],
+    heroImage: "url(/assets/law-ss-portfolio.jpg)",
+    hidden: false,
+    interactiveDemo: "/discoverease-dashboard.html",
+    caseStudy: {
+      challenge: "Legal discovery is one of the most time-consuming and error-prone aspects of litigation. Attorneys managing complex cases face mountains of documents that require precise tracking, standardized numbering, and strict deadline compliance. Traditional methods—spreadsheets, email chains, and manual follow-ups—lead to missed deadlines, inconsistent document organization, and countless billable hours wasted on administrative tasks instead of case strategy. Law firms needed a modern solution that could automatically assign and track Bates numbers across thousands of documents, monitor discovery deadlines and send proactive alerts, allow opposing parties to upload documents through secure portals, and provide AI-powered insights to identify missing documents and suggest follow-up actions.",
+      solution: "DiscoverEase is an intelligent legal discovery management platform that transforms how litigation teams handle document production. The system combines automated Bates numbering, smart deadline tracking, and AI-powered workflows into a single, intuitive dashboard. Key features include automated Bates numbering with configurable prefix system following Maryland ESI Guidelines, automatic sequential assignment on upload with full range tracking for multi-page documents, smart deadline management with visual timeline and automatic reminders at 7, 3, and 1 day before deadlines, secure party portals with unique shareable links for opposing counsel, AI-powered workflows with automatic document categorization and missing document detection, and comprehensive case management with 10 case types, party tracking, and activity logs.",
+      results: [
+        "75% reduction in time spent on document organization and Bates numbering",
+        "Zero missed deadlines with proactive AI reminders and escalations",
+        "60% faster document collection through self-service party portals",
+        "40+ hours saved per month through automated follow-up workflows",
+        "100% accuracy in Bates number sequencing with no gaps or duplicates",
+      ],
+      testimonial: {
+        quote: "DiscoverEase transformed how our firm handles discovery. What used to take paralegals days now happens automatically. The AI follow-up feature alone has saved us from countless awkward phone calls chasing documents.",
+        author: "Sarah Mitchell",
+        role: "Managing Partner, Mitchell & Associates",
+      },
+    },
+  },
 ];
 
 export default function Portfolio() {
@@ -345,7 +375,7 @@ export default function Portfolio() {
                 {/* Concept Badge - Top Right */}
                 {item.isConcept && (
                   <div className="absolute top-3 right-3 z-10 px-2.5 py-1 bg-[#DC2626]/90 backdrop-blur-sm text-white text-[10px] font-semibold rounded">
-                    Concept
+                    💡 CONCEPT PROJECT
                   </div>
                 )}
 
@@ -428,7 +458,7 @@ export default function Portfolio() {
               <div className="mb-8">
                 {selectedItem.isConcept && (
                   <span className="inline-block px-3 py-1 bg-[#DC2626] text-white text-sm font-semibold rounded-full mb-4">
-                    Concept Design
+                    💡 CONCEPT PROJECT
                   </span>
                 )}
                 <h2 className="text-4xl md:text-5xl font-bold mb-2 text-black">
@@ -447,9 +477,9 @@ export default function Portfolio() {
                 <div className="mb-8 pb-8 border-b border-gray-200">
                   <h3 className="text-2xl font-bold mb-4 text-black">Interactive Dashboard</h3>
                   <p className="text-[#6B7280] mb-4 leading-relaxed">
-                    Explore the FinanceFlow dashboard below. Navigate through different views, interact with charts, and experience the AI-powered features.
+                    Explore the {selectedItem.title} dashboard below. Navigate through different views, interact with features, and experience the platform's capabilities.
                   </p>
-                  <div className="w-full rounded-lg overflow-hidden border-2 border-gray-200 shadow-lg bg-gray-100 relative" style={{ minHeight: '800px' }}>
+                  <div className="w-full rounded-lg overflow-hidden border-2 border-gray-200 shadow-lg bg-gray-100 relative min-h-[600px] md:min-h-[800px]">
                     {!iframeLoaded && (
                       <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
                         <div className="text-center">
@@ -460,8 +490,8 @@ export default function Portfolio() {
                     )}
                     <iframe
                       src={selectedItem.interactiveDemo}
-                      className="w-full"
-                      style={{ height: '800px', border: 'none', opacity: iframeLoaded ? 1 : 0, transition: 'opacity 0.3s' }}
+                      className="w-full h-[600px] md:h-[800px]"
+                      style={{ border: 'none', opacity: iframeLoaded ? 1 : 0, transition: 'opacity 0.3s' }}
                       title={`${selectedItem.title} Interactive Dashboard`}
                       allow="fullscreen"
                       loading="lazy"
@@ -610,6 +640,38 @@ export default function Portfolio() {
                         <div className="h-40 bg-[#F3F4F6] rounded-lg border-2 border-gray-200 flex flex-col items-center justify-center p-4">
                           <div className="w-full h-20 bg-white rounded mb-2"></div>
                           <span className="text-[#6B7280] text-xs">Inventory Analytics</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {selectedItem.id === 9 && (
+                    <div className="space-y-4">
+                      <p className="text-[#6B7280] leading-relaxed">
+                        <strong className="text-black">Legal Discovery Platform Mockup:</strong> Professional legal discovery management interface 
+                        featuring automated Bates numbering system with configurable prefixes, comprehensive document management with 
+                        full range tracking for multi-page documents, smart deadline management with visual timeline showing overdue 
+                        and upcoming items, secure party portals for opposing counsel document uploads, and AI-powered workflows 
+                        with automatic document categorization and missing document detection. The platform includes a unified 
+                        dashboard with case statistics, recent activity feeds, document lists with Bates ranges and AI analysis 
+                        banners, deadline tracking with countdown timers, party management with role badges, and AI automation 
+                        dashboard with suggested actions for discovery management.
+                      </p>
+                      <div className="grid grid-cols-2 gap-4 mt-6">
+                        <div className="h-40 bg-white rounded-lg border-2 border-gray-200 flex flex-col items-center justify-center p-4">
+                          <div className="w-full h-24 bg-[#F3F4F6] rounded mb-2"></div>
+                          <span className="text-[#6B7280] text-xs">Document Management</span>
+                        </div>
+                        <div className="h-40 bg-white rounded-lg border-2 border-gray-200 flex flex-col items-center justify-center p-4">
+                          <div className="w-full h-24 bg-[#F3F4F6] rounded mb-2"></div>
+                          <span className="text-[#6B7280] text-xs">Deadline Tracking</span>
+                        </div>
+                        <div className="h-40 bg-white rounded-lg border-2 border-gray-200 flex flex-col items-center justify-center p-4">
+                          <div className="w-full h-24 bg-[#F3F4F6] rounded mb-2"></div>
+                          <span className="text-[#6B7280] text-xs">AI Workflows</span>
+                        </div>
+                        <div className="h-40 bg-white rounded-lg border-2 border-gray-200 flex flex-col items-center justify-center p-4">
+                          <div className="w-full h-24 bg-[#F3F4F6] rounded mb-2"></div>
+                          <span className="text-[#6B7280] text-xs">Party Portals</span>
                         </div>
                       </div>
                     </div>
