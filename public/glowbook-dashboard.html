@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>The Glow Book - Beauty Business Platform</title>
+  <style>
+    /* Mobile Optimization Styles */
+    @media (max-width: 768px) {
+      /* View switcher - hide on mobile or make smaller */
+      div[style*="position: fixed"][style*="top: 12px"] {
+        display: none !important;
+      }
+      
+      /* Bottom navigation padding for safe area */
+      nav[style*="position: fixed"][style*="bottom: 0"] {
+        padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+      }
+      
+      /* Hero section - adjust height for mobile */
+      div[style*="height: 70vh"][style*="min-height: 500px"] {
+        height: 60vh !important;
+        min-height: 400px !important;
+        padding: 24px 20px !important;
+      }
+      
+      /* Hero title - smaller on mobile */
+      h1[style*="fontSize: '48px'"] {
+        font-size: 36px !important;
+        line-height: 1.1 !important;
+      }
+      
+      /* Cursive subtitle - smaller */
+      p[style*="fontSize: '22px'"][style*="fontStyle: 'italic'"] {
+        font-size: 18px !important;
+      }
+      
+      /* Gallery - 2 columns on mobile */
+      div[style*="gridTemplateColumns: 'repeat(3, 1fr)'"] {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 6px !important;
+      }
+      
+      /* Service cards - adjust min-width for mobile */
+      div[style*="minWidth: '160px'"] {
+        min-width: 140px !important;
+        padding: 16px !important;
+      }
+      
+      /* Booking page padding */
+      div[style*="padding: '0 24px 120px'"] {
+        padding: 0 16px 100px !important;
+      }
+      
+      /* Page titles - smaller */
+      h1[style*="fontSize: '32px'"] {
+        font-size: 24px !important;
+      }
+      
+      /* Stats grid - single column on mobile */
+      div[style*="gridTemplateColumns: 'repeat(2, 1fr)'"] {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+      }
+      
+      /* Stats grid - single column for admin */
+      div[style*="gridTemplateColumns: 'repeat(3, 1fr)'"] {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+      }
+      
+      /* Time slots - 2 columns on mobile */
+      div[style*="gridTemplateColumns: 'repeat(3, 1fr)'"][style*="gap: '10px'"] {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+      
+      /* Date picker - smaller on mobile */
+      div[style*="minWidth: '60px'"] {
+        min-width: 50px !important;
+        padding: 12px 8px !important;
+      }
+      
+      /* Admin pages padding */
+      div[style*="padding: '0 20px 110px'"] {
+        padding: 0 16px 100px !important;
+      }
+      
+      /* Cards - adjust padding */
+      div[style*="padding: '20px'"][style*="borderRadius: '16px'"] {
+        padding: 16px !important;
+      }
+      
+      /* Modal - full width on mobile */
+      div[style*="maxWidth: '500px'"] {
+        max-width: 100% !important;
+        border-radius: 16px 16px 0 0 !important;
+        padding: 20px !important;
+      }
+      
+      /* Input fields - touch friendly */
+      input[type="text"],
+      input[type="date"],
+      textarea {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        padding: 14px !important;
+        min-height: 44px !important; /* Touch target size */
+      }
+      
+      /* Buttons - touch friendly */
+      button {
+        min-height: 44px !important;
+        min-width: 44px !important;
+      }
+      
+      /* Chat input - adjust padding */
+      div[style*="padding: '16px 24px calc(90px"] {
+        padding: 12px 16px calc(90px + env(safe-area-inset-bottom)) !important;
+      }
+      
+      /* Calendar view - single column */
+      div[style*="minWidth: '52px'"] {
+        min-width: 45px !important;
+        padding: 12px 8px !important;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      /* Extra small screens */
+      /* Hero section - even smaller */
+      div[style*="height: 70vh"] {
+        height: 50vh !important;
+        min-height: 350px !important;
+        padding: 20px 16px !important;
+      }
+      
+      /* Hero title - extra small */
+      h1[style*="fontSize: '48px'"] {
+        font-size: 28px !important;
+      }
+      
+      /* Stats - single column on very small */
+      div[style*="gridTemplateColumns: 'repeat(2, 1fr)'"],
+      div[style*="gridTemplateColumns: 'repeat(3, 1fr)'"] {
+        grid-template-columns: 1fr !important;
+      }
+      
+      /* Time slots - single column on very small */
+      div[style*="gridTemplateColumns: 'repeat(3, 1fr)'"][style*="gap: '10px'"] {
+        grid-template-columns: 1fr !important;
+      }
+      
+      /* Gallery - single column on very small */
+      div[style*="gridTemplateColumns: 'repeat(3, 1fr)'"][style*="gap: '8px'"] {
+        grid-template-columns: 1fr !important;
+      }
+    }
+    
+    /* Touch improvements */
+    @media (hover: none) and (pointer: coarse) {
+      /* Larger touch targets */
+      button, a, [role="button"] {
+        min-height: 44px;
+        min-width: 44px;
+      }
+      
+      /* Prevent text selection on tap */
+      button, nav {
+        -webkit-tap-highlight-color: rgba(201, 169, 98, 0.2);
+        -webkit-user-select: none;
+        user-select: none;
+      }
+    }
+    
+    /* Safe area support for iOS */
+    @supports (padding: max(0px)) {
+      body {
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+      }
+      
+      nav[style*="position: fixed"][style*="bottom: 0"] {
+        padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+      }
+    }
+  </style>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+    const { createElement: h } = React;
+    
+    // Lucide icons as components
+    const createIcon = (name, props) => {
+      const icon = lucideIcons[name];
+      if (!icon) return null;
+      return h('svg', { ...props, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: icon } });
+    };
+    
+    // Since lucide-react isn't directly available, we'll use a workaround
+    // We'll create icon components that use SVG paths
+    const Icon = ({ name, ...props }) => {
+      const iconElement = document.createElement('div');
+      if (typeof lucide !== 'undefined' && lucide[name]) {
+        const icon = lucide[name];
+        return React.createElement('svg', { ...props, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }, 
+          React.createElement('path', { d: icon.paths || '' })
+        );
+      }
+      return null;
+    };
+    
+    // Simple icon helper that handles size and color
+    const makeIcon = (children) => (props) => {
+      const { size = 24, color = 'currentColor', strokeWidth = 2, fill, ...rest } = props;
+      return React.createElement('svg', {
+        ...rest,
+        width: size,
+        height: size,
+        viewBox: '0 0 24 24',
+        fill: fill || 'none',
+        stroke: color,
+        strokeWidth: strokeWidth,
+        strokeLinecap: 'round',
+        strokeLinejoin: 'round'
+      }, children);
+    };
+    
+    const Sparkles = makeIcon([
+      React.createElement('path', { key: '1', d: 'M12 3L10.1 8.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z' }),
+      React.createElement('path', { key: '2', d: 'M5 3v4' }),
+      React.createElement('path', { key: '3', d: 'M19 17v4' }),
+      React.createElement('path', { key: '4', d: 'M3 5h4' }),
+      React.createElement('path', { key: '5', d: 'M17 19h4' })
+    ]);
+    const Calendar = makeIcon([
+      React.createElement('rect', { key: '1', x: 3, y: 4, width: 18, height: 18, rx: 2, ry: 2 }),
+      React.createElement('line', { key: '2', x1: 16, y1: 2, x2: 16, y2: 6 }),
+      React.createElement('line', { key: '3', x1: 8, y1: 2, x2: 8, y2: 6 }),
+      React.createElement('line', { key: '4', x1: 3, y1: 10, x2: 21, y2: 10 })
+    ]);
+    const Clock = makeIcon([
+      React.createElement('circle', { key: '1', cx: 12, cy: 12, r: 10 }),
+      React.createElement('polyline', { key: '2', points: '12 6 12 12 16 14' })
+    ]);
+    const MessageCircle = makeIcon([
+      React.createElement('path', { key: '1', d: 'M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z' })
+    ]);
+    const ChevronRight = makeIcon([
+      React.createElement('polyline', { key: '1', points: '9 18 15 12 9 6' })
+    ]);
+    const Star = makeIcon([
+      React.createElement('polygon', { key: '1', points: '12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2' })
+    ]);
+    const MapPin = makeIcon([
+      React.createElement('path', { key: '1', d: 'M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z' }),
+      React.createElement('circle', { key: '2', cx: 12, cy: 10, r: 3 })
+    ]);
+    const Instagram = makeIcon([
+      React.createElement('rect', { key: '1', x: 2, y: 2, width: 20, height: 20, rx: 5, ry: 5 }),
+      React.createElement('path', { key: '2', d: 'M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z' }),
+      React.createElement('line', { key: '3', x1: 17.5, y1: 6.5, x2: 17.51, y2: 6.5 })
+    ]);
+    const Music = makeIcon([
+      React.createElement('path', { key: '1', d: 'M9 18V5l12-2v13' }),
+      React.createElement('circle', { key: '2', cx: 6, cy: 18, r: 3 }),
+      React.createElement('circle', { key: '3', cx: 18, cy: 16, r: 3 })
+    ]);
+    const Facebook = makeIcon([
+      React.createElement('path', { key: '1', d: 'M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z' })
+    ]);
+    const CreditCard = makeIcon([
+      React.createElement('rect', { key: '1', x: 1, y: 4, width: 22, height: 16, rx: 2, ry: 2 }),
+      React.createElement('line', { key: '2', x1: 1, y1: 10, x2: 23, y2: 10 })
+    ]);
+    const X = makeIcon([
+      React.createElement('line', { key: '1', x1: 18, y1: 6, x2: 6, y2: 18 }),
+      React.createElement('line', { key: '2', x1: 6, y1: 6, x2: 18, y2: 18 })
+    ]);
+    const Check = makeIcon([
+      React.createElement('polyline', { key: '1', points: '20 6 9 17 4 12' })
+    ]);
+    const AlertCircle = makeIcon([
+      React.createElement('circle', { key: '1', cx: 12, cy: 12, r: 10 }),
+      React.createElement('line', { key: '2', x1: 12, y1: 8, x2: 12, y2: 12 }),
+      React.createElement('line', { key: '3', x1: 12, y1: 16, x2: 12.01, y2: 16 })
+    ]);
+    const Gift = makeIcon([
+      React.createElement('polyline', { key: '1', points: '20 12 20 22 4 22 4 12' }),
+      React.createElement('rect', { key: '2', x: 2, y: 7, width: 20, height: 5 }),
+      React.createElement('line', { key: '3', x1: 12, y1: 22, x2: 12, y2: 7 }),
+      React.createElement('path', { key: '4', d: 'M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z' }),
+      React.createElement('path', { key: '5', d: 'M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z' })
+    ]);
+    const Home = makeIcon([
+      React.createElement('path', { key: '1', d: 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' }),
+      React.createElement('polyline', { key: '2', points: '9 22 9 12 15 12 15 22' })
+    ]);
+    const Megaphone = makeIcon([
+      React.createElement('path', { key: '1', d: 'M3 11c0-1.1.9-2 2-2h2a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-6z' }),
+      React.createElement('path', { key: '2', d: 'M11 7h8a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-8' }),
+      React.createElement('line', { key: '3', x1: 7, y1: 15, x2: 7.01, y2: 15 })
+    ]);
+    const Globe = makeIcon([
+      React.createElement('circle', { key: '1', cx: 12, cy: 12, r: 10 }),
+      React.createElement('line', { key: '2', x1: 2, y1: 12, x2: 22, y2: 12 }),
+      React.createElement('path', { key: '3', d: 'M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z' })
+    ]);
+    const Package = makeIcon([
+      React.createElement('line', { key: '1', x1: 16.5, y1: 9.4, x2: 7.5, y2: 4.21 }),
+      React.createElement('path', { key: '2', d: 'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z' }),
+      React.createElement('polyline', { key: '3', points: '3.27 6.96 12 12.01 20.73 6.96' }),
+      React.createElement('line', { key: '4', x1: 12, y1: 22.08, x2: 12, y2: 12 })
+    ]);
+    const Smartphone = makeIcon([
+      React.createElement('rect', { key: '1', x: 5, y: 2, width: 14, height: 20, rx: 2, ry: 2 }),
+      React.createElement('line', { key: '2', x1: 12, y1: 18, x2: 12.01, y2: 18 })
+    ]);
+    const Bot = makeIcon([
+      React.createElement('path', { key: '1', d: 'M12 8V4H8' }),
+      React.createElement('rect', { key: '2', x: 4, y: 8, width: 16, height: 12, rx: 2 }),
+      React.createElement('path', { key: '3', d: 'M2 14h2' }),
+      React.createElement('path', { key: '4', d: 'M20 14h2' }),
+      React.createElement('path', { key: '5', d: 'M15 13v2' }),
+      React.createElement('path', { key: '6', d: 'M9 13v2' })
+    ]);
+    const Send = makeIcon([
+      React.createElement('line', { key: '1', x1: 22, y1: 2, x2: 11, y2: 13 }),
+      React.createElement('polygon', { key: '2', points: '22 2 15 22 11 13 2 9 22 2' })
+    ]);
+    const Camera = makeIcon([
+      React.createElement('path', { key: '1', d: 'M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z' }),
+      React.createElement('circle', { key: '2', cx: 12, cy: 13, r: 3 })
+    ]);
+    const Play = makeIcon([
+      React.createElement('polygon', { key: '1', points: '5 3 19 12 5 21 5 3' })
+    ]);
+    const TrendingUp = makeIcon([
+      React.createElement('polyline', { key: '1', points: '23 6 13.5 15.5 8.5 10.5 1 18' }),
+      React.createElement('polyline', { key: '2', points: '17 6 23 6 23 12' })
+    ]);
+    const DollarSign = makeIcon([
+      React.createElement('line', { key: '1', x1: 12, y1: 1, x2: 12, y2: 23 }),
+      React.createElement('path', { key: '2', d: 'M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' })
+    ]);
+    const Bell = makeIcon([
+      React.createElement('path', { key: '1', d: 'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9' }),
+      React.createElement('path', { key: '2', d: 'M13.73 21a2 2 0 0 1-3.46 0' })
+    ]);
+    const Plus = makeIcon([
+      React.createElement('line', { key: '1', x1: 12, y1: 5, x2: 12, y2: 19 }),
+      React.createElement('line', { key: '2', x1: 5, y1: 12, x2: 19, y2: 12 })
+    ]);
+    const Shield = makeIcon([
+      React.createElement('path', { key: '1', d: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' })
+    ]);
+    const Users = makeIcon([
+      React.createElement('path', { key: '1', d: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2' }),
+      React.createElement('circle', { key: '2', cx: 9, cy: 7, r: 4 }),
+      React.createElement('path', { key: '3', d: 'M23 21v-2a4 4 0 0 0-3-3.87' }),
+      React.createElement('path', { key: '4', d: 'M16 3.13a4 4 0 0 1 0 7.75' })
+    ]);
+    const Type = makeIcon([
+      React.createElement('polyline', { key: '1', points: '4 7 4 4 20 4 20 7' }),
+      React.createElement('line', { key: '2', x1: 9, y1: 20, x2: 15, y2: 20 }),
+      React.createElement('line', { key: '3', x1: 12, y1: 4, x2: 12, y2: 20 })
+    ]);
+    const Image = makeIcon([
+      React.createElement('rect', { key: '1', x: 3, y: 3, width: 18, height: 18, rx: 2, ry: 2 }),
+      React.createElement('circle', { key: '2', cx: 8.5, cy: 8.5, r: 1.5 }),
+      React.createElement('polyline', { key: '3', points: '21 15 16 10 5 21' })
+    ]);
+    const Palette = makeIcon([
+      React.createElement('circle', { key: '1', cx: 13.5, cy: 6.5, r: 0.5 }),
+      React.createElement('circle', { key: '2', cx: 17.5, cy: 10.5, r: 0.5 }),
+      React.createElement('circle', { key: '3', cx: 8.5, cy: 7.5, r: 0.5 }),
+      React.createElement('circle', { key: '4', cx: 6.5, cy: 12.5, r: 0.5 }),
+      React.createElement('path', { key: '5', d: 'M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z' })
+    ]);
+    const Eye = makeIcon([
+      React.createElement('path', { key: '1', d: 'M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z' }),
+      React.createElement('circle', { key: '2', cx: 12, cy: 12, r: 3 })
+    ]);
+    const FileText = makeIcon([
+      React.createElement('path', { key: '1', d: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z' }),
+      React.createElement('polyline', { key: '2', points: '14 2 14 8 20 8' }),
+      React.createElement('line', { key: '3', x1: 16, y1: 13, x2: 8, y2: 13 }),
+      React.createElement('line', { key: '4', x1: 16, y1: 17, x2: 8, y2: 17 }),
+      React.createElement('polyline', { key: '5', points: '10 9 9 9 8 9' })
+    ]);
+    const ClipboardCheck = makeIcon([
+      React.createElement('path', { key: '1', d: 'M9 11l3 3L22 4' }),
+      React.createElement('path', { key: '2', d: 'M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7' })
+    ]);
+    const Mail = makeIcon([
+      React.createElement('rect', { key: '1', x: 2, y: 4, width: 20, height: 16, rx: 2, ry: 2 }),
+      React.createElement('path', { key: '2', d: 'm22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7' })
+    ]);
+    const Zap = makeIcon([
+      React.createElement('polygon', { key: '1', points: '13 2 3 14 12 14 11 22 21 10 12 10 13 2' })
+    ]);
+    const BarChart3 = makeIcon([
+      React.createElement('path', { key: '1', d: 'M3 3v18h18' }),
+      React.createElement('path', { key: '2', d: 'M18 17V9' }),
+      React.createElement('path', { key: '3', d: 'M13 17V5' }),
+      React.createElement('path', { key: '4', d: 'M8 17v-3' })
+    ]);
+
+const GlowBook = () => {
+  const [currentView, setCurrentView] = useState('client');
+  const [clientPage, setClientPage] = useState('home');
+  const [adminPage, setAdminPage] = useState('dashboard');
+  const [selectedService, setSelectedService] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedTime, setSelectedTime] = useState(null);
+  const [showPayment, setShowPayment] = useState(false);
+  const [showConsentForm, setShowConsentForm] = useState(false);
+  const [consentCompleted, setConsentCompleted] = useState(false);
+  const [showPolicies, setShowPolicies] = useState(false);
+  const [showAIChat, setShowAIChat] = useState(false);
+  const [showSpecialOffer, setShowSpecialOffer] = useState(true);
+  const [bookingStarted, setBookingStarted] = useState(false);
+  const [showAbandonedReminder, setShowAbandonedReminder] = useState(false);
+  const [consentData, setConsentData] = useState({ firstTime: '', pregnant: '', agreed: false });
+  const [chatMessages, setChatMessages] = useState([{ from: 'brittanee', text: 'Hey girl! Let me know if you have any questions', time: '2:30 PM' }]);
+  const [newMessage, setNewMessage] = useState('');
+
+  useEffect(() => {
+    if (bookingStarted && selectedService && !selectedTime) {
+      const timer = setTimeout(() => setShowAbandonedReminder(true), 8000);
+      return () => clearTimeout(timer);
+    }
+  }, [bookingStarted, selectedService, selectedTime]);
+
+  const specialOffer = { title: 'Holiday Glow Special', description: 'Get 20% off any facial when you book a wax', code: 'HOLIDAYGLOW', validUntil: 'Dec 31, 2024', discount: '20%' };
+  const bookingPolicies = [
+    { title: 'Cancellation Policy', icon: Calendar, content: 'Please cancel at least 24 hours before. Late cancellations may be subject to a 50% fee.' },
+    { title: 'Late Arrival', icon: Clock, content: 'If you arrive 15+ minutes late, your appointment may need to be rescheduled.' },
+    { title: 'Payment', icon: CreditCard, content: 'Payment is due at time of service. We accept cards, Apple Pay, and cash.' },
+    { title: 'Preparation', icon: Shield, content: 'For waxing, hair should be 1/4 inch. Avoid sun and retinol 48 hours before.' },
+  ];
+  const services = [
+    { id: 1, name: 'Brazilian Wax', duration: '45 min', price: 65, category: 'Waxing' },
+    { id: 2, name: 'Bikini Line', duration: '20 min', price: 35, category: 'Waxing' },
+    { id: 3, name: 'Full Leg Wax', duration: '60 min', price: 75, category: 'Waxing' },
+    { id: 4, name: 'Underarm Wax', duration: '15 min', price: 25, category: 'Waxing' },
+    { id: 5, name: 'Brow Wax & Shape', duration: '20 min', price: 28, category: 'Facial' },
+    { id: 6, name: 'Hydrating Facial', duration: '60 min', price: 95, category: 'Skincare' },
+  ];
+  const galleryImages = ['https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=400&h=400&fit=crop','https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400&h=400&fit=crop','https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400&h=400&fit=crop','https://images.unsplash.com/photo-1519824145371-296894a0daa9?w=400&h=400&fit=crop','https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&h=400&fit=crop','https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=400&h=400&fit=crop'];
+  const appointments = [
+    { id: 1, client: 'Sarah Mitchell', service: 'Brazilian Wax', date: 'Today', time: '2:00 PM', status: 'checked-in', formComplete: true, paid: true, price: 65 },
+    { id: 2, client: 'Jessica Chen', service: 'Full Leg Wax', date: 'Today', time: '3:30 PM', status: 'confirmed', formComplete: true, paid: false, price: 75 },
+    { id: 3, client: 'Amanda Kim', service: 'Brow Wax', date: 'Tomorrow', time: '10:00 AM', status: 'pending', formComplete: false, paid: false, price: 28 },
+  ];
+  const inventory = [
+    { id: 1, name: 'Hard Wax Beads', category: 'Wax', currentStock: 32, unit: 'oz', avgUsagePerWeek: 48, daysUntilEmpty: 4, status: 'low', price: 2.50 },
+    { id: 2, name: 'Soft Wax', category: 'Wax', currentStock: 64, unit: 'oz', avgUsagePerWeek: 24, daysUntilEmpty: 18, status: 'ok', price: 1.80 },
+    { id: 3, name: 'Pre-Wax Oil', category: 'Prep', currentStock: 8, unit: 'oz', avgUsagePerWeek: 6, daysUntilEmpty: 9, status: 'warning', price: 3.20 },
+    { id: 4, name: 'Post-Wax Serum', category: 'Aftercare', currentStock: 4, unit: 'oz', avgUsagePerWeek: 4, daysUntilEmpty: 7, status: 'low', price: 5.50 },
+  ];
+  const socialMetrics = { instagram: { followers: 2847, growth: '+12%', engagement: '4.2%', connected: true }, tiktok: { followers: 8923, growth: '+34%', engagement: '8.7%', connected: true }, facebook: { followers: 1205, growth: '+3%', engagement: '2.1%', connected: false } };
+  const marketingCampaigns = [{ id: 1, name: 'Holiday Glow Special', type: 'Email', sent: 234, opened: 156, revenue: 840 }, { id: 2, name: 'New Client Welcome', type: 'Auto-Email', sent: 45, opened: 38, revenue: 1540 }];
+  const seoScore = { overall: 78, mobile: 92, speed: 85, content: 71 };
+  const seoRankings = { 'brazilian wax katy': 3, 'esthetician near me': 12, 'waxing houston': 8 };
+  const dates = [{ day: 'Mon', date: '25', available: true }, { day: 'Tue', date: '26', available: true }, { day: 'Wed', date: '27', available: true }, { day: 'Thu', date: '28', available: false }, { day: 'Fri', date: '29', available: true }, { day: 'Sat', date: '30', available: true }];
+  const timeSlots = ['9:00 AM', '10:00 AM', '11:00 AM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM'];
+
+  const colors = { gold: '#C9A962', goldLight: '#D4AF7D', black: '#0A0A0A', darkBg: '#111111', darkCard: '#1A1A1A', darkBorder: 'rgba(201,169,98,0.15)', blush: '#F5E1DA', rose: '#E8C4C4', pink: '#D4A5A5', pinkMuted: 'rgba(212,165,165,0.15)', white: '#FFFFFF', textLight: 'rgba(255,255,255,0.9)', textMuted: 'rgba(255,255,255,0.6)', textDim: 'rgba(255,255,255,0.4)', success: '#4CAF50', warning: '#FF9800', error: '#FF5252' };
+  const heading = { fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 400 };
+  const cursive = { fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: 'italic', fontWeight: 300 };
+  const body = { fontFamily: '"Montserrat", sans-serif', fontWeight: 300, fontSize: '14px' };
+
+  const ClientNav = () => (<nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(17,17,17,0.98)', backdropFilter: 'blur(20px)', borderTop: `1px solid ${colors.darkBorder}`, padding: '12px 0 max(12px, env(safe-area-inset-bottom))', zIndex: 100, display: 'flex', justifyContent: 'space-around' }}>{[{ id: 'home', icon: Home, label: 'Home' }, { id: 'book', icon: Calendar, label: 'Book' }, { id: 'appointments', icon: Clock, label: 'Appts' }, { id: 'chat', icon: MessageCircle, label: 'Chat' }].map(item => (<button key={item.id} onClick={() => setClientPage(item.id)} style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', opacity: clientPage === item.id ? 1 : 0.5 }}><item.icon size={20} color={colors.gold} strokeWidth={1.5} /><span style={{ ...body, fontSize: '10px', color: colors.textLight, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{item.label}</span></button>))}</nav>);
+
+  const ClientHome = () => (<div style={{ minHeight: '100vh', background: colors.black }}><div style={{ position: 'relative', height: '70vh', minHeight: '500px', background: `linear-gradient(180deg, rgba(0,0,0,0.3) 0%, ${colors.black} 100%), url('https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=1200&h=800&fit=crop')`, backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '40px 24px' }}><div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: `linear-gradient(90deg, transparent 0%, ${colors.gold} 50%, transparent 100%)` }} /><div style={{ position: 'relative', zIndex: 1 }}><div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}><Sparkles size={16} color={colors.gold} /><span style={{ ...body, fontSize: '11px', color: colors.gold, textTransform: 'uppercase', letterSpacing: '0.2em' }}>Luxury Esthetics</span></div><h1 style={{ ...heading, fontSize: '48px', color: colors.white, margin: '0 0 12px', lineHeight: 1.1 }}>Brittanee</h1><p style={{ ...cursive, fontSize: '22px', color: colors.pink, margin: '0 0 8px' }}>Esthetics & Waxing Studio</p><div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '24px' }}><MapPin size={14} color={colors.textMuted} /><span style={{ ...body, fontSize: '13px', color: colors.textMuted }}>Katy, TX</span></div><div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>{[Instagram, Music, Facebook].map((Icon, i) => (<div key={i} style={{ width: '40px', height: '40px', borderRadius: '50%', background: colors.darkCard, border: `1px solid ${colors.darkBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Icon size={18} color={colors.textMuted} /></div>))}</div><button onClick={() => setClientPage('book')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', width: '100%', padding: '18px 24px', background: `linear-gradient(135deg, ${colors.gold} 0%, ${colors.goldLight} 100%)`, border: 'none', borderRadius: '12px', cursor: 'pointer', boxShadow: '0 10px 40px rgba(201,169,98,0.3)' }}><Calendar size={18} color={colors.white} /><span style={{ ...body, fontSize: '14px', color: colors.white, fontWeight: 500 }}>Book Your Appointment</span></button></div></div>{showSpecialOffer && (<div style={{ margin: '0 24px 24px', padding: '16px 20px', background: `linear-gradient(135deg, ${colors.pinkMuted} 0%, rgba(201,169,98,0.1) 100%)`, borderRadius: '14px', border: `1px solid ${colors.darkBorder}`, position: 'relative' }}><button onClick={() => setShowSpecialOffer(false)} style={{ position: 'absolute', top: '8px', right: '8px', background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} color={colors.textDim} /></button><div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}><Gift size={18} color={colors.gold} /><span style={{ ...body, fontSize: '12px', color: colors.gold, fontWeight: 500, textTransform: 'uppercase' }}>Special Offer</span></div><p style={{ ...heading, fontSize: '18px', color: colors.white, margin: '0 0 6px' }}>{specialOffer.title}</p><p style={{ ...body, fontSize: '13px', color: colors.textMuted, margin: '0 0 8px' }}>{specialOffer.description}</p><span style={{ ...body, fontSize: '12px', color: colors.textDim }}>Code: <span style={{ color: colors.gold }}>{specialOffer.code}</span></span></div>)}<div style={{ padding: '0 24px 120px' }}><div style={{ marginBottom: '32px' }}><h2 style={{ ...heading, fontSize: '22px', color: colors.white, margin: '0 0 16px' }}>Gallery</h2><div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>{galleryImages.map((img, i) => (<div key={i} style={{ aspectRatio: '1', borderRadius: '12px', overflow: 'hidden' }}><img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>))}</div></div><div style={{ marginBottom: '32px' }}><h2 style={{ ...heading, fontSize: '22px', color: colors.white, margin: '0 0 16px' }}>Services</h2><div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px' }}>{services.slice(0, 4).map(service => (<div key={service.id} onClick={() => { setSelectedService(service); setClientPage('book'); }} style={{ minWidth: '160px', background: colors.darkCard, borderRadius: '16px', padding: '20px', cursor: 'pointer', border: `1px solid ${colors.darkBorder}` }}><div style={{ width: '48px', height: '48px', borderRadius: '50%', background: colors.pinkMuted, marginBottom: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Sparkles size={20} color={colors.pink} /></div><p style={{ ...body, fontSize: '14px', color: colors.white, margin: '0 0 4px', fontWeight: 500 }}>{service.name}</p><p style={{ ...body, fontSize: '12px', color: colors.textDim, margin: '0 0 8px' }}>{service.duration}</p><p style={{ ...heading, fontSize: '18px', color: colors.gold, margin: 0 }}>${service.price}</p></div>))}</div></div><button onClick={() => setShowPolicies(true)} style={{ width: '100%', padding: '18px 20px', background: colors.darkCard, border: `1px solid ${colors.darkBorder}`, borderRadius: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}><div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><Shield size={20} color={colors.gold} /><div style={{ textAlign: 'left' }}><p style={{ ...body, fontSize: '14px', color: colors.white, margin: 0, fontWeight: 500 }}>Booking Policies</p><p style={{ ...body, fontSize: '12px', color: colors.textMuted, margin: 0 }}>Cancellation, payment & prep</p></div></div><ChevronRight size={20} color={colors.textDim} /></button><div style={{ background: colors.darkCard, borderRadius: '20px', padding: '24px', border: `1px solid ${colors.darkBorder}` }}><div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>{[1,2,3,4,5].map(i => <Star key={i} size={18} fill={colors.gold} color={colors.gold} />)}<span style={{ ...heading, fontSize: '24px', color: colors.white }}>4.9</span></div><p style={{ ...cursive, fontSize: '16px', color: colors.textLight, lineHeight: 1.7, margin: '0 0 12px' }}>"Best waxing experience ever. So gentle and professional!"</p><p style={{ ...body, fontSize: '13px', color: colors.textDim, margin: 0 }}>— Sarah M.</p></div></div>{showPolicies && (<div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 200, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}><div style={{ background: colors.darkBg, borderRadius: '24px 24px 0 0', padding: '24px', width: '100%', maxWidth: '500px', maxHeight: '85vh', overflow: 'auto' }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}><h2 style={{ ...heading, fontSize: '24px', color: colors.white, margin: 0 }}>Booking Policies</h2><button onClick={() => setShowPolicies(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} color={colors.textMuted} /></button></div>{bookingPolicies.map((p, i) => (<div key={i} style={{ background: colors.darkCard, borderRadius: '14px', padding: '18px', border: `1px solid ${colors.darkBorder}`, marginBottom: '12px' }}><div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}><p.icon size={20} color={colors.gold} /><p style={{ ...body, fontSize: '15px', color: colors.white, margin: 0, fontWeight: 500 }}>{p.title}</p></div><p style={{ ...body, fontSize: '13px', color: colors.textMuted, margin: 0, lineHeight: 1.6 }}>{p.content}</p></div>))}</div></div>)}</div>);
+
+  const ClientBooking = () => (<div style={{ minHeight: '100vh', background: colors.black, padding: '0 24px 120px' }}><div style={{ paddingTop: '60px', paddingBottom: '24px', textAlign: 'center' }}><h1 style={{ ...heading, fontSize: '32px', color: colors.white, margin: '0 0 8px' }}>Book Appointment</h1><p style={{ ...cursive, fontSize: '18px', color: colors.pink, margin: 0 }}>Select service & time</p></div>{showSpecialOffer && (<div style={{ padding: '14px 16px', marginBottom: '20px', background: colors.pinkMuted, borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}><Gift size={18} color={colors.gold} /><p style={{ ...body, fontSize: '13px', color: colors.textLight, margin: 0 }}>Use <span style={{ color: colors.gold }}>{specialOffer.code}</span> for {specialOffer.discount} off</p></div>)}<div style={{ marginBottom: '28px' }}><p style={{ ...body, fontSize: '11px', color: colors.gold, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '14px' }}>Step 1 — Service</p>{services.map(s => (<div key={s.id} onClick={() => { setSelectedService(s); setBookingStarted(true); }} style={{ background: selectedService?.id === s.id ? `linear-gradient(135deg, ${colors.gold} 0%, ${colors.goldLight} 100%)` : colors.darkCard, borderRadius: '14px', padding: '18px', cursor: 'pointer', border: selectedService?.id === s.id ? 'none' : `1px solid ${colors.darkBorder}`, marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><div><p style={{ ...body, fontSize: '15px', color: selectedService?.id === s.id ? colors.white : colors.textLight, margin: '0 0 4px', fontWeight: 500 }}>{s.name}</p><p style={{ ...body, fontSize: '12px', color: selectedService?.id === s.id ? 'rgba(255,255,255,0.7)' : colors.textDim, margin: 0 }}>{s.duration}</p></div><p style={{ ...heading, fontSize: '20px', color: selectedService?.id === s.id ? colors.white : colors.gold, margin: 0 }}>${s.price}</p></div>))}</div>{selectedService && (<div style={{ marginBottom: '28px' }}><p style={{ ...body, fontSize: '11px', color: colors.gold, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '14px' }}>Step 2 — Date</p><div style={{ display: 'flex', gap: '10px', overflowX: 'auto' }}>{dates.map((d, i) => (<div key={i} onClick={() => d.available && setSelectedDate(d)} style={{ minWidth: '60px', padding: '16px 12px', textAlign: 'center', borderRadius: '14px', cursor: d.available ? 'pointer' : 'not-allowed', background: selectedDate?.date === d.date ? `linear-gradient(135deg, ${colors.gold} 0%, ${colors.goldLight} 100%)` : colors.darkCard, opacity: d.available ? 1 : 0.4, border: `1px solid ${colors.darkBorder}` }}><p style={{ ...body, fontSize: '10px', color: selectedDate?.date === d.date ? 'rgba(255,255,255,0.8)' : colors.textDim, margin: '0 0 6px', textTransform: 'uppercase' }}>{d.day}</p><p style={{ ...heading, fontSize: '20px', color: selectedDate?.date === d.date ? colors.white : colors.textLight, margin: 0 }}>{d.date}</p></div>))}</div></div>)}{selectedDate && (<div style={{ marginBottom: '28px' }}><p style={{ ...body, fontSize: '11px', color: colors.gold, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '14px' }}>Step 3 — Time</p><div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>{timeSlots.map((t, i) => (<div key={i} onClick={() => setSelectedTime(t)} style={{ padding: '14px', textAlign: 'center', borderRadius: '12px', cursor: 'pointer', background: selectedTime === t ? `linear-gradient(135deg, ${colors.gold} 0%, ${colors.goldLight} 100%)` : colors.darkCard, border: `1px solid ${colors.darkBorder}` }}><p style={{ ...body, fontSize: '13px', color: selectedTime === t ? colors.white : colors.textLight, margin: 0 }}>{t}</p></div>))}</div></div>)}{selectedTime && (<div><div style={{ background: colors.darkCard, borderRadius: '16px', padding: '20px', marginBottom: '16px', border: `1px solid ${colors.darkBorder}` }}><p style={{ ...body, fontSize: '11px', color: colors.textDim, textTransform: 'uppercase', marginBottom: '14px' }}>Summary</p><p style={{ ...body, fontSize: '16px', color: colors.white, margin: '0 0 6px', fontWeight: 500 }}>{selectedService.name}</p><p style={{ ...body, fontSize: '14px', color: colors.textMuted, margin: '0 0 16px' }}>{selectedDate.day}, Nov {selectedDate.date} at {selectedTime}</p><div style={{ borderTop: `1px solid ${colors.darkBorder}`, paddingTop: '14px', display: 'flex', justifyContent: 'space-between' }}><span style={{ ...body, color: colors.textMuted }}>Total</span><span style={{ ...heading, fontSize: '28px', color: colors.gold }}>${selectedService.price}</span></div></div><div style={{ background: consentCompleted ? 'rgba(76,175,80,0.1)' : colors.pinkMuted, borderRadius: '12px', padding: '14px 16px', marginBottom: '12px', border: `1px solid ${consentCompleted ? colors.success : colors.darkBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}><div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>{consentCompleted ? <Check size={18} color={colors.success} /> : <FileText size={18} color={colors.gold} />}<div><p style={{ ...body, fontSize: '13px', color: consentCompleted ? colors.success : colors.white, margin: 0, fontWeight: 500 }}>{consentCompleted ? 'Consent Form Completed' : 'Consent Form Required'}</p><p style={{ ...body, fontSize: '11px', color: colors.textMuted, margin: 0 }}>{consentCompleted ? 'Ready for payment' : 'Complete before booking'}</p></div></div>{!consentCompleted && <button onClick={() => setShowConsentForm(true)} style={{ ...body, fontSize: '11px', padding: '8px 14px', background: colors.gold, border: 'none', borderRadius: '8px', color: colors.white, cursor: 'pointer' }}>Fill Out</button>}</div><button onClick={() => consentCompleted ? setShowPayment(true) : setShowConsentForm(true)} style={{ width: '100%', padding: '18px', background: `linear-gradient(135deg, ${colors.gold} 0%, ${colors.goldLight} 100%)`, border: 'none', borderRadius: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>{consentCompleted ? <CreditCard size={18} color={colors.white} /> : <FileText size={18} color={colors.white} />}<span style={{ ...body, fontSize: '14px', color: colors.white, fontWeight: 500 }}>{consentCompleted ? 'Continue to Payment' : 'Fill Out Consent Form'}</span></button></div>)}{showConsentForm && (<div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 200, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}><div style={{ background: colors.darkBg, borderRadius: '24px 24px 0 0', padding: '24px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflow: 'auto' }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}><div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><ClipboardCheck size={24} color={colors.gold} /><h2 style={{ ...heading, fontSize: '22px', color: colors.white, margin: 0 }}>Consent Form</h2></div><button onClick={() => setShowConsentForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} color={colors.textMuted} /></button></div><div style={{ background: colors.darkCard, borderRadius: '14px', padding: '18px', border: `1px solid ${colors.darkBorder}`, marginBottom: '16px' }}><p style={{ ...body, fontSize: '11px', color: colors.gold, textTransform: 'uppercase', marginBottom: '14px' }}>Personal Info</p>{['Full Name', 'Email', 'Phone'].map((f, i) => (<div key={i} style={{ marginBottom: '12px' }}><label style={{ ...body, fontSize: '12px', color: colors.textMuted, display: 'block', marginBottom: '6px' }}>{f}</label><input type="text" placeholder={f} style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.03)', border: `1px solid ${colors.darkBorder}`, borderRadius: '10px', fontSize: '14px', fontFamily: '"Montserrat", sans-serif', color: colors.white, boxSizing: 'border-box' }} /></div>))}</div><div style={{ background: colors.darkCard, borderRadius: '14px', padding: '18px', border: `1px solid ${colors.darkBorder}`, marginBottom: '16px' }}><p style={{ ...body, fontSize: '11px', color: colors.gold, textTransform: 'uppercase', marginBottom: '14px' }}>Health Info</p><div style={{ marginBottom: '14px' }}><label style={{ ...body, fontSize: '12px', color: colors.textMuted, display: 'block', marginBottom: '8px' }}>First waxing service?</label><div style={{ display: 'flex', gap: '10px' }}>{['Yes', 'No'].map(o => (<button key={o} onClick={() => setConsentData({...consentData, firstTime: o})} style={{ flex: 1, padding: '12px', background: consentData.firstTime === o ? colors.gold : 'rgba(255,255,255,0.03)', border: `1px solid ${consentData.firstTime === o ? colors.gold : colors.darkBorder}`, borderRadius: '10px', color: consentData.firstTime === o ? colors.white : colors.textLight, cursor: 'pointer', fontFamily: '"Montserrat", sans-serif' }}>{o}</button>))}</div></div><div style={{ marginBottom: '14px' }}><label style={{ ...body, fontSize: '12px', color: colors.textMuted, display: 'block', marginBottom: '8px' }}>Pregnant or nursing?</label><div style={{ display: 'flex', gap: '10px' }}>{['Yes', 'No'].map(o => (<button key={o} onClick={() => setConsentData({...consentData, pregnant: o})} style={{ flex: 1, padding: '12px', background: consentData.pregnant === o ? colors.gold : 'rgba(255,255,255,0.03)', border: `1px solid ${consentData.pregnant === o ? colors.gold : colors.darkBorder}`, borderRadius: '10px', color: consentData.pregnant === o ? colors.white : colors.textLight, cursor: 'pointer', fontFamily: '"Montserrat", sans-serif' }}>{o}</button>))}</div></div><label style={{ ...body, fontSize: '12px', color: colors.textMuted, display: 'block', marginBottom: '6px' }}>Allergies or medications?</label><textarea placeholder="List any..." style={{ width: '100%', padding: '14px', background: 'rgba(255,255,255,0.03)', border: `1px solid ${colors.darkBorder}`, borderRadius: '10px', fontSize: '14px', fontFamily: '"Montserrat", sans-serif', color: colors.white, minHeight: '70px', resize: 'none', boxSizing: 'border-box' }} /></div><div style={{ background: colors.darkCard, borderRadius: '14px', padding: '18px', border: `1px solid ${colors.darkBorder}`, marginBottom: '20px' }}><div onClick={() => setConsentData({...consentData, agreed: !consentData.agreed})} style={{ display: 'flex', gap: '12px', cursor: 'pointer' }}><div style={{ width: '24px', height: '24px', borderRadius: '6px', border: `2px solid ${consentData.agreed ? colors.gold : colors.darkBorder}`, background: consentData.agreed ? colors.gold : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{consentData.agreed && <Check size={14} color={colors.white} />}</div><p style={{ ...body, fontSize: '12px', color: colors.textMuted, lineHeight: 1.6, margin: 0 }}>I understand waxing may cause temporary redness. I confirm the info is accurate and consent to the service.</p></div></div><button onClick={() => { if(consentData.agreed) { setConsentCompleted(true); setShowConsentForm(false); }}} disabled={!consentData.agreed} style={{ width: '100%', padding: '18px', background: consentData.agreed ? `linear-gradient(135deg, ${colors.gold} 0%, ${colors.goldLight} 100%)` : 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '14px', cursor: consentData.agreed ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}><Check size={18} color={colors.white} /><span style={{ ...body, fontSize: '14px', color: colors.white, fontWeight: 500 }}>Submit Consent Form</span></button></div></div>)}{showPayment && (<div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 200, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}><div style={{ background: colors.darkBg, borderRadius: '24px 24px 0 0', padding: '24px', width: '100%', maxWidth: '500px' }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}><h2 style={{ ...heading, fontSize: '24px', color: colors.white, margin: 0 }}>Payment</h2><button onClick={() => setShowPayment(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} color={colors.textMuted} /></button></div><div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', background: 'rgba(76,175,80,0.1)', borderRadius: '10px', marginBottom: '20px' }}><Check size={16} color={colors.success} /><p style={{ ...body, fontSize: '12px', color: colors.success, margin: 0 }}>Consent form completed</p></div><div style={{ marginBottom: '16px' }}><label style={{ ...body, fontSize: '12px', color: colors.textMuted, display: 'block', marginBottom: '8px' }}>Card Number</label><input type="text" placeholder="4242 4242 4242 4242" style={{ width: '100%', padding: '16px', background: colors.darkCard, border: `1px solid ${colors.darkBorder}`, borderRadius: '12px', fontSize: '15px', fontFamily: '"Montserrat", sans-serif', color: colors.white, boxSizing: 'border-box' }} /></div><div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}><div style={{ flex: 1 }}><label style={{ ...body, fontSize: '12px', color: colors.textMuted, display: 'block', marginBottom: '8px' }}>Expiry</label><input type="text" placeholder="MM/YY" style={{ width: '100%', padding: '16px', background: colors.darkCard, border: `1px solid ${colors.darkBorder}`, borderRadius: '12px', fontSize: '15px', fontFamily: '"Montserrat", sans-serif', color: colors.white, boxSizing: 'border-box' }} /></div><div style={{ flex: 1 }}><label style={{ ...body, fontSize: '12px', color: colors.textMuted, display: 'block', marginBottom: '8px' }}>CVC</label><input type="text" placeholder="123" style={{ width: '100%', padding: '16px', background: colors.darkCard, border: `1px solid ${colors.darkBorder}`, borderRadius: '12px', fontSize: '15px', fontFamily: '"Montserrat", sans-serif', color: colors.white, boxSizing: 'border-box' }} /></div></div><button onClick={() => { setShowPayment(false); setClientPage('appointments'); }} style={{ width: '100%', padding: '18px', background: `linear-gradient(135deg, ${colors.gold} 0%, ${colors.goldLight} 100%)`, border: 'none', borderRadius: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}><Check size={18} color={colors.white} /><span style={{ ...body, fontSize: '14px', color: colors.white, fontWeight: 500 }}>Pay ${selectedService?.price}</span></button></div></div>)}{showAbandonedReminder && (<div style={{ position: 'fixed', bottom: '100px', left: '24px', right: '24px', background: colors.darkCard, borderRadius: '16px', padding: '18px', border: `1px solid ${colors.gold}`, zIndex: 150 }}><button onClick={() => setShowAbandonedReminder(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} color={colors.textDim} /></button><div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}><Bell size={18} color={colors.gold} /><p style={{ ...body, fontSize: '14px', color: colors.white, margin: 0, fontWeight: 500 }}>Finish Your Booking</p></div><p style={{ ...body, fontSize: '13px', color: colors.textMuted, margin: '0 0 14px' }}>Complete your {selectedService?.name} booking!</p><button onClick={() => setShowAbandonedReminder(false)} style={{ width: '100%', padding: '12px', background: colors.gold, border: 'none', borderRadius: '10px', cursor: 'pointer' }}><span style={{ ...body, fontSize: '13px', color: colors.white }}>Continue</span></button></div>)}</div>);
+
+  const ClientAppointments = () => (<div style={{ minHeight: '100vh', background: colors.black, padding: '0 24px 120px' }}><div style={{ paddingTop: '60px', paddingBottom: '24px', textAlign: 'center' }}><h1 style={{ ...heading, fontSize: '32px', color: colors.white, margin: '0 0 8px' }}>My Appointments</h1></div>{appointments.map(apt => (<div key={apt.id} style={{ background: colors.darkCard, borderRadius: '16px', padding: '20px', border: `1px solid ${colors.darkBorder}`, marginBottom: '14px' }}><div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '14px' }}><div><p style={{ ...body, fontSize: '16px', color: colors.white, margin: '0 0 6px', fontWeight: 500 }}>{apt.service}</p><p style={{ ...body, fontSize: '13px', color: colors.textMuted, margin: 0 }}>{apt.date} at {apt.time}</p></div><span style={{ ...body, fontSize: '10px', padding: '6px 12px', borderRadius: '20px', background: apt.paid ? 'rgba(76,175,80,0.15)' : 'rgba(255,152,0,0.15)', color: apt.paid ? colors.success : colors.warning }}>{apt.paid ? 'Paid' : 'Pay Now'}</span></div><div style={{ display: 'flex', gap: '10px' }}><button style={{ flex: 1, padding: '12px', background: 'transparent', border: `1px solid ${colors.gold}`, borderRadius: '10px', color: colors.gold, cursor: 'pointer', fontFamily: '"Montserrat", sans-serif', fontSize: '12px' }}>Reschedule</button><button style={{ flex: 1, padding: '12px', background: colors.pinkMuted, border: 'none', borderRadius: '10px', color: colors.error, cursor: 'pointer', fontFamily: '"Montserrat", sans-serif', fontSize: '12px' }}>Cancel</button></div></div>))}</div>);
+
+  const ClientChat = () => (<div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: colors.black }}><div style={{ padding: '60px 24px 20px', background: colors.darkBg, borderBottom: `1px solid ${colors.darkBorder}`, textAlign: 'center' }}><div style={{ width: '60px', height: '60px', borderRadius: '50%', background: `linear-gradient(135deg, ${colors.blush} 0%, ${colors.rose} 100%)`, margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px solid ${colors.gold}` }}><Sparkles size={24} color={colors.gold} /></div><h1 style={{ ...heading, fontSize: '22px', color: colors.white, margin: 0 }}>Brittanee</h1></div><div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>{chatMessages.map((msg, i) => (<div key={i} style={{ display: 'flex', justifyContent: msg.from === 'client' ? 'flex-end' : 'flex-start', marginBottom: '16px' }}><div style={{ maxWidth: '80%', padding: '14px 18px', borderRadius: msg.from === 'client' ? '18px 18px 4px 18px' : '18px 18px 18px 4px', background: msg.from === 'client' ? colors.gold : colors.darkCard }}><p style={{ ...body, fontSize: '14px', color: colors.white, margin: 0 }}>{msg.text}</p></div></div>))}</div><div style={{ padding: '16px 24px calc(90px + env(safe-area-inset-bottom))', background: colors.darkBg }}><div style={{ display: 'flex', gap: '12px' }}><input type="text" value={newMessage} onChange={e => setNewMessage(e.target.value)} placeholder="Type a message..." style={{ flex: 1, padding: '14px 18px', background: colors.darkCard, border: `1px solid ${colors.darkBorder}`, borderRadius: '25px', fontSize: '15px', fontFamily: '"Montserrat", sans-serif', color: colors.white }} /><button onClick={() => { if(newMessage.trim()) { setChatMessages([...chatMessages, { from: 'client', text: newMessage, time: 'Now' }]); setNewMessage(''); }}} style={{ width: '48px', height: '48px', borderRadius: '50%', background: colors.gold, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Send size={18} color={colors.white} /></button></div></div></div>);
+
+  const AdminNav = () => (<nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(17,17,17,0.98)', padding: '10px 0 max(10px, env(safe-area-inset-bottom))', zIndex: 100, display: 'flex', justifyContent: 'space-around', borderTop: `1px solid ${colors.darkBorder}` }}>{[{ id: 'dashboard', icon: Home, label: 'Home' }, { id: 'calendar', icon: Calendar, label: 'Book' }, { id: 'marketing', icon: Megaphone, label: 'Market' }, { id: 'website', icon: Globe, label: 'Site' }, { id: 'inventory', icon: Package, label: 'Stock' }, { id: 'social', icon: Smartphone, label: 'Social' }].map(item => (<button key={item.id} onClick={() => setAdminPage(item.id)} style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', opacity: adminPage === item.id ? 1 : 0.4 }}><item.icon size={18} color={colors.gold} /><span style={{ ...body, fontSize: '9px', color: colors.white, textTransform: 'uppercase' }}>{item.label}</span></button>))}</nav>);
+
+  const AdminDashboard = () => (<div style={{ padding: '0 20px 110px', background: colors.black, minHeight: '100vh' }}><div style={{ paddingTop: '50px', paddingBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}><div><p style={{ ...body, fontSize: '12px', color: colors.textDim, margin: '0 0 4px' }}>Welcome back,</p><h1 style={{ ...heading, fontSize: '28px', color: colors.white, margin: 0 }}>Brittanee</h1></div><button onClick={() => setShowAIChat(true)} style={{ padding: '10px 16px', background: colors.gold, border: 'none', borderRadius: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}><Bot size={16} color={colors.white} /><span style={{ ...body, fontSize: '11px', color: colors.white, fontWeight: 500 }}>AI Assistant</span></button></div><div style={{ padding: '16px', marginBottom: '20px', background: colors.pinkMuted, borderRadius: '14px', border: `1px solid ${colors.gold}` }}><div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}><Gift size={18} color={colors.gold} /><span style={{ ...body, fontSize: '12px', color: colors.gold, fontWeight: 500, textTransform: 'uppercase' }}>Active Offer</span></div><p style={{ ...body, fontSize: '14px', color: colors.white, margin: '0 0 4px', fontWeight: 500 }}>{specialOffer.title}</p><p style={{ ...body, fontSize: '12px', color: colors.textMuted, margin: 0 }}>{specialOffer.description}</p></div><div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '24px' }}>{[{ label: "Today's Revenue", value: '$285', icon: DollarSign, trend: '+12%' }, { label: 'Appointments', value: '4', icon: Calendar, trend: '2 left' }, { label: 'New Clients', value: '3', icon: Users, trend: 'this week' }, { label: 'Messages', value: '5', icon: MessageCircle, trend: '2 unread' }].map((stat, i) => (<div key={i} style={{ background: colors.darkCard, borderRadius: '16px', padding: '18px', border: `1px solid ${colors.darkBorder}` }}><div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}><stat.icon size={20} color={colors.gold} /><span style={{ ...body, fontSize: '10px', color: colors.success }}>{stat.trend}</span></div><p style={{ ...heading, fontSize: '26px', color: colors.white, margin: '0 0 4px' }}>{stat.value}</p><p style={{ ...body, fontSize: '11px', color: colors.textDim, margin: 0 }}>{stat.label}</p></div>))}</div>{inventory.filter(i => i.status === 'low').length > 0 && (<div style={{ background: 'rgba(255,82,82,0.08)', borderRadius: '14px', padding: '16px', marginBottom: '20px', border: '1px solid rgba(255,82,82,0.2)' }}><div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}><AlertCircle size={18} color={colors.error} /><p style={{ ...body, fontSize: '13px', color: colors.error, margin: 0, fontWeight: 500 }}>Low Stock Alert</p></div>{inventory.filter(i => i.status === 'low').map(item => (<div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderTop: `1px solid rgba(255,82,82,0.1)` }}><div><p style={{ ...body, fontSize: '13px', color: colors.white, margin: 0 }}>{item.name}</p><p style={{ ...body, fontSize: '11px', color: colors.textDim, margin: 0 }}>{item.currentStock} {item.unit} left</p></div><button style={{ ...body, fontSize: '11px', padding: '6px 14px', background: colors.gold, border: 'none', borderRadius: '8px', color: colors.white, cursor: 'pointer' }}>Order</button></div>))}</div>)}<p style={{ ...body, fontSize: '11px', color: colors.gold, textTransform: 'uppercase', marginBottom: '12px' }}>Today's Schedule</p>{appointments.filter(a => a.date === 'Today').map(apt => (<div key={apt.id} style={{ background: colors.darkCard, borderRadius: '14px', padding: '16px', border: `1px solid ${colors.darkBorder}`, marginBottom: '10px' }}><div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}><div><p style={{ ...body, fontSize: '14px', color: colors.white, margin: '0 0 4px', fontWeight: 500 }}>{apt.client}</p><p style={{ ...body, fontSize: '12px', color: colors.textDim, margin: 0 }}>{apt.service}</p></div><div style={{ textAlign: 'right' }}><p style={{ ...heading, fontSize: '16px', color: colors.gold, margin: 0 }}>{apt.time}</p><p style={{ ...body, fontSize: '12px', color: colors.textDim, margin: 0 }}>${apt.price}</p></div></div><div style={{ display: 'flex', gap: '8px' }}><span style={{ ...body, fontSize: '10px', padding: '5px 10px', borderRadius: '10px', background: apt.formComplete ? 'rgba(76,175,80,0.15)' : 'rgba(255,152,0,0.15)', color: apt.formComplete ? colors.success : colors.warning, display: 'flex', alignItems: 'center', gap: '4px' }}>{apt.formComplete ? <Check size={12} /> : <Clock size={12} />} Form</span><span style={{ ...body, fontSize: '10px', padding: '5px 10px', borderRadius: '10px', background: apt.paid ? 'rgba(76,175,80,0.15)' : 'rgba(255,152,0,0.15)', color: apt.paid ? colors.success : colors.warning, display: 'flex', alignItems: 'center', gap: '4px' }}>{apt.paid ? <Check size={12} /> : <DollarSign size={12} />} {apt.paid ? 'Paid' : 'Collect'}</span><button style={{ ...body, fontSize: '10px', padding: '5px 14px', marginLeft: 'auto', background: apt.status === 'checked-in' ? colors.success : colors.gold, border: 'none', borderRadius: '10px', color: colors.white, cursor: 'pointer' }}>{apt.status === 'checked-in' ? 'Checked In' : 'Check In'}</button></div></div>))}<div style={{ background: 'rgba(201,169,98,0.1)', borderRadius: '16px', padding: '20px', border: `1px solid ${colors.darkBorder}`, marginTop: '24px' }}><div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}><Bot size={18} color={colors.gold} /><p style={{ ...body, fontSize: '13px', color: colors.gold, margin: 0, fontWeight: 500 }}>AI Insights</p></div>{[{ icon: TrendingUp, text: 'Brazilian Wax bookings up 23% this month!' }, { icon: Package, text: 'Reorder Hard Wax in ~4 days.' }, { icon: Users, text: 'Sarah M. hasn\'t booked in 3 weeks.' }].map((insight, i) => (<div key={i} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}><insight.icon size={16} color={colors.textMuted} /><p style={{ ...body, fontSize: '13px', color: colors.textLight, margin: 0 }}>{insight.text}</p></div>))}</div></div>);
+
+  const AdminCalendar = () => (<div style={{ padding: '0 20px 110px', background: colors.black, minHeight: '100vh' }}><div style={{ paddingTop: '50px', paddingBottom: '24px' }}><h1 style={{ ...heading, fontSize: '28px', color: colors.white, margin: '0 0 8px' }}>Calendar</h1><p style={{ ...cursive, fontSize: '16px', color: colors.goldLight }}>November 2024</p></div><div style={{ display: 'flex', gap: '10px', marginBottom: '24px', overflowX: 'auto' }}>{dates.map((d, i) => (<div key={i} style={{ minWidth: '52px', padding: '14px 10px', textAlign: 'center', borderRadius: '14px', background: d.date === '26' ? colors.gold : colors.darkCard, border: `1px solid ${colors.darkBorder}` }}><p style={{ ...body, fontSize: '10px', color: d.date === '26' ? 'rgba(255,255,255,0.8)' : colors.textDim, margin: '0 0 6px', textTransform: 'uppercase' }}>{d.day}</p><p style={{ ...heading, fontSize: '20px', color: d.date === '26' ? colors.white : colors.textLight, margin: 0 }}>{d.date}</p></div>))}</div><p style={{ ...body, fontSize: '11px', color: colors.gold, textTransform: 'uppercase', marginBottom: '12px' }}>All Appointments</p>{appointments.map(apt => (<div key={apt.id} style={{ background: colors.darkCard, borderRadius: '14px', padding: '16px', border: `1px solid ${colors.darkBorder}`, marginBottom: '10px', display: 'flex', gap: '14px', alignItems: 'center' }}><div style={{ width: '4px', height: '50px', background: colors.gold, borderRadius: '2px' }} /><div style={{ flex: 1 }}><p style={{ ...body, fontSize: '14px', color: colors.white, margin: '0 0 4px', fontWeight: 500 }}>{apt.time} — {apt.client}</p><p style={{ ...body, fontSize: '12px', color: colors.textDim, margin: 0 }}>{apt.service} • ${apt.price}</p></div><span style={{ ...body, fontSize: '10px', color: colors.gold, background: 'rgba(201,169,98,0.15)', padding: '5px 10px', borderRadius: '8px' }}>{apt.date}</span></div>))}</div>);
+
+  const AdminMarketing = () => (<div style={{ padding: '0 20px 110px', background: colors.black, minHeight: '100vh' }}><div style={{ paddingTop: '50px', paddingBottom: '24px' }}><h1 style={{ ...heading, fontSize: '28px', color: colors.white, margin: '0 0 8px' }}>Marketing</h1><p style={{ ...cursive, fontSize: '16px', color: colors.goldLight }}>Grow your business</p></div><div style={{ background: colors.darkCard, borderRadius: '14px', padding: '18px', border: `1px solid ${colors.darkBorder}`, marginBottom: '20px' }}><div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '14px' }}><div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><Gift size={20} color={colors.gold} /><p style={{ ...body, fontSize: '14px', color: colors.white, margin: 0, fontWeight: 500 }}>Special Offers</p></div><button style={{ ...body, fontSize: '11px', padding: '6px 14px', background: colors.gold, border: 'none', borderRadius: '8px', color: colors.white, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}><Plus size={14} /> Create</button></div><div style={{ background: colors.pinkMuted, borderRadius: '10px', padding: '14px' }}><p style={{ ...body, fontSize: '13px', color: colors.white, margin: '0 0 4px', fontWeight: 500 }}>{specialOffer.title}</p><p style={{ ...body, fontSize: '12px', color: colors.textMuted, margin: 0 }}>{specialOffer.discount} off • Code: {specialOffer.code}</p></div></div><div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '24px' }}>{[{ icon: Mail, label: 'Email Blast', desc: 'Send to all' }, { icon: MessageCircle, label: 'SMS Campaign', desc: 'Text promos' }, { icon: Gift, label: 'Create Offer', desc: 'Discounts' }, { icon: Bot, label: 'AI Suggest', desc: 'Get ideas' }].map((a, i) => (<button key={i} style={{ background: colors.darkCard, borderRadius: '14px', padding: '18px', border: `1px solid ${colors.darkBorder}`, cursor: 'pointer', textAlign: 'left' }}><a.icon size={24} color={colors.gold} style={{ marginBottom: '10px' }} /><p style={{ ...body, fontSize: '13px', color: colors.white, margin: '0 0 4px', fontWeight: 500 }}>{a.label}</p><p style={{ ...body, fontSize: '11px', color: colors.textDim, margin: 0 }}>{a.desc}</p></button>))}</div><p style={{ ...body, fontSize: '11px', color: colors.gold, textTransform: 'uppercase', marginBottom: '12px' }}>Active Campaigns</p>{marketingCampaigns.map(c => (<div key={c.id} style={{ background: colors.darkCard, borderRadius: '14px', padding: '16px', border: `1px solid ${colors.darkBorder}`, marginBottom: '12px' }}><div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}><div><p style={{ ...body, fontSize: '14px', color: colors.white, margin: '0 0 4px', fontWeight: 500 }}>{c.name}</p><span style={{ ...body, fontSize: '10px', color: colors.gold, background: 'rgba(201,169,98,0.15)', padding: '2px 8px', borderRadius: '6px' }}>{c.type}</span></div><span style={{ ...body, fontSize: '10px', color: colors.success, background: 'rgba(76,175,80,0.15)', padding: '4px 8px', borderRadius: '8px' }}>Active</span></div><div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>{[{ label: 'Sent', value: c.sent }, { label: 'Opened', value: c.opened }, { label: 'Revenue', value: `$${c.revenue}` }].map((s, i) => (<div key={i} style={{ textAlign: 'center' }}><p style={{ ...heading, fontSize: '16px', color: colors.white, margin: '0 0 2px' }}>{s.value}</p><p style={{ ...body, fontSize: '9px', color: colors.textDim, margin: 0 }}>{s.label}</p></div>))}</div></div>))}<div style={{ background: 'rgba(201,169,98,0.1)', borderRadius: '16px', padding: '20px', border: `1px solid ${colors.darkBorder}` }}><div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}><Bot size={18} color={colors.gold} /><p style={{ ...body, fontSize: '13px', color: colors.gold, margin: 0, fontWeight: 500 }}>AI Campaign Ideas</p></div>{['Winter Glow Package - Bundle for 15% off', 'Win-back for inactive 30+ days', 'Referral: $10 off both parties'].map((idea, i) => (<div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: 'rgba(0,0,0,0.3)', borderRadius: '10px', marginBottom: '8px' }}><p style={{ ...body, fontSize: '12px', color: colors.textLight, margin: 0 }}>{idea}</p><button style={{ ...body, fontSize: '10px', padding: '5px 12px', background: colors.gold, border: 'none', borderRadius: '6px', color: colors.white, cursor: 'pointer' }}>Use</button></div>))}</div></div>);
+
+  const AdminWebsite = () => (<div style={{ padding: '0 20px 110px', background: colors.black, minHeight: '100vh' }}><div style={{ paddingTop: '50px', paddingBottom: '24px' }}><h1 style={{ ...heading, fontSize: '28px', color: colors.white, margin: '0 0 8px' }}>Website Builder</h1><p style={{ ...cursive, fontSize: '16px', color: colors.goldLight }}>AI-powered site creation</p></div><div style={{ background: colors.darkCard, borderRadius: '16px', overflow: 'hidden', marginBottom: '20px', border: `1px solid ${colors.darkBorder}` }}><div style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: `1px solid ${colors.darkBorder}` }}><div style={{ display: 'flex', gap: '6px' }}><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#FF5F56' }} /><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#FFBD2E' }} /><div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#27CA40' }} /></div><div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', borderRadius: '6px', padding: '6px 12px' }}><p style={{ ...body, fontSize: '11px', color: colors.textDim, margin: 0 }}>brittanee.glowbook.io</p></div></div><div style={{ padding: '24px', textAlign: 'center' }}><div style={{ width: '60px', height: '60px', borderRadius: '50%', background: `linear-gradient(135deg, ${colors.blush} 0%, ${colors.rose} 100%)`, margin: '0 auto 14px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px solid ${colors.gold}` }}><Sparkles size={24} color={colors.gold} /></div><p style={{ ...heading, fontSize: '20px', color: colors.white, margin: '0 0 4px' }}>Brittanee</p><p style={{ ...cursive, fontSize: '14px', color: colors.pink, margin: 0 }}>Esthetics & Waxing</p></div></div><div style={{ background: colors.darkCard, borderRadius: '14px', padding: '18px', border: `1px solid ${colors.darkBorder}`, marginBottom: '20px' }}><div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '18px' }}><p style={{ ...body, fontSize: '14px', color: colors.white, margin: 0, fontWeight: 500 }}>SEO Score</p><div style={{ width: '60px', height: '60px', borderRadius: '50%', border: `3px solid ${colors.gold}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ ...heading, fontSize: '22px', color: colors.gold }}>{seoScore.overall}</span></div></div><div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}>{[{ label: 'Mobile', value: seoScore.mobile, color: colors.success }, { label: 'Speed', value: seoScore.speed, color: colors.success }, { label: 'Content', value: seoScore.content, color: colors.warning }].map((item, i) => (<div key={i} style={{ textAlign: 'center' }}><p style={{ ...heading, fontSize: '20px', color: item.color, margin: '0 0 4px' }}>{item.value}</p><p style={{ ...body, fontSize: '11px', color: colors.textDim, margin: 0 }}>{item.label}</p></div>))}</div></div><div style={{ background: colors.darkCard, borderRadius: '14px', padding: '18px', border: `1px solid ${colors.darkBorder}`, marginBottom: '20px' }}><p style={{ ...body, fontSize: '11px', color: colors.gold, textTransform: 'uppercase', marginBottom: '12px' }}>Google Rankings</p>{Object.entries(seoRankings).map(([kw, rank], i) => (<div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderTop: i > 0 ? `1px solid ${colors.darkBorder}` : 'none' }}><p style={{ ...body, fontSize: '13px', color: colors.textLight, margin: 0 }}>"{kw}"</p><span style={{ ...body, fontSize: '12px', color: rank <= 5 ? colors.success : colors.gold, fontWeight: 500 }}>#{rank}</span></div>))}</div><div style={{ background: 'rgba(201,169,98,0.1)', borderRadius: '16px', padding: '20px', border: `1px solid ${colors.darkBorder}` }}><div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}><Bot size={18} color={colors.gold} /><p style={{ ...body, fontSize: '13px', color: colors.gold, margin: 0, fontWeight: 500 }}>AI Website Assistant</p></div><p style={{ ...body, fontSize: '13px', color: colors.textMuted, margin: '0 0 16px' }}>Tell me what to change!</p>{[{ icon: Palette, text: 'Make hero more luxurious' }, { icon: Image, text: 'Add Before/After gallery' }, { icon: Type, text: 'Better SEO descriptions' }].map((s, i) => (<button key={i} style={{ ...body, fontSize: '12px', padding: '14px 16px', background: 'rgba(0,0,0,0.3)', border: `1px solid ${colors.darkBorder}`, borderRadius: '10px', color: colors.textLight, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '10px', width: '100%', marginBottom: '8px' }}><s.icon size={16} color={colors.textMuted} />"{s.text}"</button>))}</div></div>);
+
+  const AdminInventory = () => (<div style={{ padding: '0 20px 110px', background: colors.black, minHeight: '100vh' }}><div style={{ paddingTop: '50px', paddingBottom: '24px' }}><h1 style={{ ...heading, fontSize: '28px', color: colors.white, margin: '0 0 8px' }}>Inventory</h1><p style={{ ...cursive, fontSize: '16px', color: colors.goldLight }}>AI-powered tracking</p></div><div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '24px' }}>{[{ label: 'Low', value: inventory.filter(i => i.status === 'low').length, color: colors.error }, { label: 'Warning', value: inventory.filter(i => i.status === 'warning').length, color: colors.warning }, { label: 'OK', value: inventory.filter(i => i.status === 'ok').length, color: colors.success }].map((s, i) => (<div key={i} style={{ background: colors.darkCard, borderRadius: '12px', padding: '16px', border: `1px solid ${colors.darkBorder}`, textAlign: 'center' }}><p style={{ ...heading, fontSize: '28px', color: s.color, margin: '0 0 4px' }}>{s.value}</p><p style={{ ...body, fontSize: '10px', color: colors.textDim, margin: 0 }}>{s.label}</p></div>))}</div><div style={{ background: 'rgba(201,169,98,0.1)', borderRadius: '14px', padding: '18px', border: `1px solid ${colors.darkBorder}`, marginBottom: '24px' }}><div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}><Bot size={18} color={colors.gold} /><p style={{ ...body, fontSize: '13px', color: colors.gold, margin: 0, fontWeight: 500 }}>AI Reorder Suggestions</p></div><p style={{ ...body, fontSize: '12px', color: colors.textMuted, margin: '0 0 14px' }}>Based on your usage:</p>{inventory.filter(i => i.status === 'low' || i.status === 'warning').map(item => (<div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', background: 'rgba(0,0,0,0.3)', borderRadius: '10px', marginBottom: '8px' }}><div><p style={{ ...body, fontSize: '13px', color: colors.white, margin: 0 }}>{item.name}</p><p style={{ ...body, fontSize: '11px', color: colors.textDim, margin: 0 }}>Order ~{Math.ceil(item.avgUsagePerWeek * 2)} {item.unit}</p></div><button style={{ ...body, fontSize: '11px', padding: '8px 14px', background: colors.gold, border: 'none', borderRadius: '8px', color: colors.white, cursor: 'pointer' }}>~${(Math.ceil(item.avgUsagePerWeek * 2) * item.price).toFixed(0)}</button></div>))}</div><p style={{ ...body, fontSize: '11px', color: colors.gold, textTransform: 'uppercase', marginBottom: '12px' }}>All Products</p>{inventory.map(item => (<div key={item.id} style={{ background: colors.darkCard, borderRadius: '14px', padding: '16px', border: `1px solid ${colors.darkBorder}`, marginBottom: '10px' }}><div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}><div><p style={{ ...body, fontSize: '14px', color: colors.white, margin: '0 0 6px', fontWeight: 500 }}>{item.name}</p><span style={{ ...body, fontSize: '10px', color: colors.gold, background: 'rgba(201,169,98,0.15)', padding: '3px 10px', borderRadius: '6px' }}>{item.category}</span></div><span style={{ ...body, fontSize: '10px', padding: '5px 10px', borderRadius: '8px', background: item.status === 'low' ? 'rgba(255,82,82,0.15)' : item.status === 'warning' ? 'rgba(255,152,0,0.15)' : 'rgba(76,175,80,0.15)', color: item.status === 'low' ? colors.error : item.status === 'warning' ? colors.warning : colors.success }}>{item.status === 'low' ? 'Low' : item.status === 'warning' ? 'Warning' : 'OK'}</span></div><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><div><p style={{ ...heading, fontSize: '22px', color: colors.white, margin: '0 0 2px' }}>{item.currentStock} <span style={{ ...body, fontSize: '12px', color: colors.textDim }}>{item.unit}</span></p><p style={{ ...body, fontSize: '11px', color: colors.textDim, margin: 0 }}>~{item.daysUntilEmpty} days left</p></div><button style={{ ...body, fontSize: '11px', padding: '8px 16px', background: 'rgba(255,255,255,0.05)', border: `1px solid ${colors.darkBorder}`, borderRadius: '8px', color: colors.textLight, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Plus size={14} /> Add</button></div></div>))}</div>);
+
+  const AdminSocial = () => (<div style={{ padding: '0 20px 110px', background: colors.black, minHeight: '100vh' }}><div style={{ paddingTop: '50px', paddingBottom: '24px' }}><h1 style={{ ...heading, fontSize: '28px', color: colors.white, margin: '0 0 8px' }}>Social Media</h1><p style={{ ...cursive, fontSize: '16px', color: colors.goldLight }}>All metrics in one place</p></div>{Object.entries(socialMetrics).map(([platform, data]) => (<div key={platform} style={{ background: colors.darkCard, borderRadius: '16px', padding: '20px', border: `1px solid ${colors.darkBorder}`, marginBottom: '14px' }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}><div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>{platform === 'instagram' ? <Instagram size={28} color={colors.textLight} /> : platform === 'tiktok' ? <Music size={28} color={colors.textLight} /> : <Facebook size={28} color={colors.textLight} />}<div><p style={{ ...body, fontSize: '15px', color: colors.white, margin: '0 0 2px', fontWeight: 500, textTransform: 'capitalize' }}>{platform}</p><p style={{ ...body, fontSize: '11px', color: data.connected ? colors.success : colors.warning, margin: 0 }}>{data.connected ? 'Connected' : 'Not Connected'}</p></div></div>{!data.connected && <button style={{ ...body, fontSize: '11px', padding: '8px 16px', background: colors.gold, border: 'none', borderRadius: '8px', color: colors.white, cursor: 'pointer' }}>Connect</button>}</div>{data.connected && (<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>{[{ label: 'Followers', value: data.followers.toLocaleString() }, { label: 'Growth', value: data.growth }, { label: 'Engage', value: data.engagement }].map((s, i) => (<div key={i} style={{ textAlign: 'center' }}><p style={{ ...heading, fontSize: '16px', color: i === 1 ? colors.success : colors.white, margin: '0 0 4px' }}>{s.value}</p><p style={{ ...body, fontSize: '9px', color: colors.textDim, margin: 0 }}>{s.label}</p></div>))}</div>)}</div>))}<div style={{ background: colors.darkCard, borderRadius: '14px', padding: '18px', border: `1px solid ${colors.darkBorder}`, marginBottom: '20px' }}><div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}><p style={{ ...body, fontSize: '13px', color: colors.white, margin: 0, fontWeight: 500 }}>Content Calendar</p><button style={{ ...body, fontSize: '11px', padding: '6px 12px', background: colors.gold, border: 'none', borderRadius: '8px', color: colors.white, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}><Plus size={14} /> Schedule</button></div>{[{ day: 'Today', time: '6:00 PM', content: 'Before/After transformation', icon: Instagram }, { day: 'Tomorrow', time: '12:00 PM', content: 'Brow wax tutorial', icon: Music }].map((post, i) => (<div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 0', borderTop: i > 0 ? `1px solid ${colors.darkBorder}` : 'none' }}><post.icon size={20} color={colors.textMuted} /><div><p style={{ ...body, fontSize: '13px', color: colors.white, margin: '0 0 2px' }}>{post.content}</p><p style={{ ...body, fontSize: '11px', color: colors.textDim, margin: 0 }}>{post.day} at {post.time}</p></div></div>))}</div><div style={{ background: 'rgba(201,169,98,0.1)', borderRadius: '16px', padding: '20px', border: `1px solid ${colors.darkBorder}` }}><div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}><Bot size={18} color={colors.gold} /><p style={{ ...body, fontSize: '13px', color: colors.gold, margin: 0, fontWeight: 500 }}>AI Content Ideas</p></div>{[{ icon: Play, text: '"Day in my life" - trending!' }, { icon: Camera, text: 'Client testimonial carousel' }, { icon: Eye, text: 'Satisfying wax peel ASMR' }, { icon: Zap, text: '"3 things before Brazilian" reel' }].map((idea, i) => (<div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', background: 'rgba(0,0,0,0.3)', borderRadius: '10px', marginBottom: '8px' }}><div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><idea.icon size={16} color={colors.textMuted} /><p style={{ ...body, fontSize: '12px', color: colors.textLight, margin: 0 }}>{idea.text}</p></div><button style={{ ...body, fontSize: '10px', padding: '6px 12px', background: colors.gold, border: 'none', borderRadius: '6px', color: colors.white, cursor: 'pointer' }}>Create</button></div>))}</div></div>);
+
+  const AIAssistant = () => (<div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 300, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}><div style={{ background: colors.darkBg, borderRadius: '24px 24px 0 0', padding: '24px', width: '100%', maxWidth: '500px', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}><div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><div style={{ width: '44px', height: '44px', borderRadius: '50%', background: colors.gold, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Bot size={22} color={colors.white} /></div><div><p style={{ ...body, fontSize: '15px', color: colors.white, margin: '0 0 2px', fontWeight: 500 }}>GlowBook AI</p><p style={{ ...body, fontSize: '11px', color: colors.gold, margin: 0 }}>Your business assistant</p></div></div><button onClick={() => setShowAIChat(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} color={colors.textMuted} /></button></div><div style={{ flex: 1, overflowY: 'auto', marginBottom: '16px' }}><div style={{ background: 'rgba(201,169,98,0.1)', borderRadius: '16px', padding: '18px', marginBottom: '16px' }}><p style={{ ...body, fontSize: '13px', color: colors.textLight, margin: '0 0 14px' }}>Hey Brittanee! What can I help you with?</p><div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>{[{ icon: Calendar, label: 'Scheduling' }, { icon: DollarSign, label: 'Pricing' }, { icon: Package, label: 'Inventory' }, { icon: Megaphone, label: 'Marketing' }].map((t, i) => (<span key={i} style={{ ...body, fontSize: '10px', color: colors.gold, background: 'rgba(201,169,98,0.2)', padding: '5px 10px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '5px' }}><t.icon size={12} /> {t.label}</span>))}</div></div>{['What should I order this week?', 'Write a marketing email', 'How to improve SEO?', 'Create a social post'].map((a, i) => (<button key={i} style={{ ...body, fontSize: '13px', padding: '14px 16px', background: 'rgba(255,255,255,0.03)', border: `1px solid ${colors.darkBorder}`, borderRadius: '12px', color: colors.textLight, cursor: 'pointer', textAlign: 'left', width: '100%', marginBottom: '8px' }}>{a}</button>))}</div><div style={{ display: 'flex', gap: '12px' }}><input type="text" placeholder="Ask me anything..." style={{ flex: 1, padding: '14px 18px', background: colors.darkCard, border: `1px solid ${colors.darkBorder}`, borderRadius: '25px', fontSize: '14px', fontFamily: '"Montserrat", sans-serif', color: colors.white }} /><button style={{ width: '48px', height: '48px', borderRadius: '50%', background: colors.gold, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Send size={18} color={colors.white} /></button></div></div></div>);
+
+  return (<div style={{ minHeight: '100vh', background: colors.black, fontFamily: '"Cormorant Garamond", Georgia, serif' }}><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Montserrat:wght@300;400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet" /><div style={{ position: 'fixed', top: '12px', right: '12px', zIndex: 200, display: 'flex', gap: '8px' }}><button onClick={() => setCurrentView('client')} style={{ padding: '10px 18px', background: currentView === 'client' ? colors.gold : 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '20px', color: colors.white, cursor: 'pointer', fontFamily: '"Montserrat", sans-serif', fontSize: '11px', fontWeight: 500 }}>Client View</button><button onClick={() => setCurrentView('admin')} style={{ padding: '10px 18px', background: currentView === 'admin' ? colors.gold : 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '20px', color: colors.white, cursor: 'pointer', fontFamily: '"Montserrat", sans-serif', fontSize: '11px', fontWeight: 500 }}>Brittanee's View</button></div>{currentView === 'client' ? (<>{clientPage === 'home' && <ClientHome />}{clientPage === 'book' && <ClientBooking />}{clientPage === 'appointments' && <ClientAppointments />}{clientPage === 'chat' && <ClientChat />}<ClientNav /></>) : (<>{adminPage === 'dashboard' && <AdminDashboard />}{adminPage === 'calendar' && <AdminCalendar />}{adminPage === 'marketing' && <AdminMarketing />}{adminPage === 'website' && <AdminWebsite />}{adminPage === 'inventory' && <AdminInventory />}{adminPage === 'social' && <AdminSocial />}<AdminNav /></>)}{showAIChat && <AIAssistant />}<style>{`input:focus,textarea:focus{outline:none;border-color:${colors.gold}!important}*{-webkit-tap-highlight-color:transparent;box-sizing:border-box}::-webkit-scrollbar{display:none}input::placeholder,textarea::placeholder{color:rgba(150,150,150,0.6)}`}</style></div>);
+};
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<GlowBook />);
+  </script>
+</body>
+</html>

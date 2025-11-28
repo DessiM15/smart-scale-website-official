@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>FinanceFlow | Enterprise Financial Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -303,8 +305,14 @@
     
     /* Mobile Responsive */
     @media (max-width: 1024px) {
-      .sidebar { transform: translateX(-100%); }
-      .sidebar.open { transform: translateX(0); }
+      .sidebar { 
+        transform: translateX(-100%); 
+        width: 280px;
+      }
+      .sidebar.open { 
+        transform: translateX(0);
+        box-shadow: 2px 0 20px rgba(0,0,0,0.3);
+      }
       .sidebar-overlay.open { display: block; }
       .close-sidebar { display: block; }
       .main { margin-left: 0; }
@@ -313,32 +321,280 @@
       .grid-2, .grid-equal { grid-template-columns: 1fr; }
       .stats-row { grid-template-columns: repeat(2, 1fr); }
       .account-meta { grid-template-columns: repeat(2, 1fr); }
+      
+      /* Touch-friendly improvements */
+      .nav-item, .btn, .icon-btn {
+        min-height: 44px;
+      }
+      
+      /* Better spacing on tablets */
+      .content { padding: 16px; }
+      .card { margin-bottom: 16px; }
+    }
+    
+    @media (max-width: 768px) {
+      /* Table view - make scrollable */
+      .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 -14px;
+        padding: 0 14px;
+      }
+      
+      table {
+        min-width: 600px;
+      }
+      
+      /* Chart containers - adjust height */
+      .chart-container {
+        height: 200px;
+      }
+      
+      /* Stats row - adjust gap */
+      .stats-row {
+        gap: 12px;
+      }
+      
+      /* Workflow options - stack on mobile */
+      .workflow-options {
+        flex-direction: column;
+      }
+      
+      .workflow-option {
+        width: 100%;
+      }
     }
     
     @media (max-width: 640px) {
       .content { padding: 14px; }
-      .header { padding: 10px 14px; }
+      .header { 
+        padding: 10px 14px; 
+        position: sticky;
+        top: 0;
+      }
       .header-title h2 { font-size: 15px; }
-      .stats-row { grid-template-columns: 1fr; gap: 10px; }
-      .stat-card { padding: 14px; }
+      .stats-row { 
+        grid-template-columns: 1fr; 
+        gap: 10px; 
+      }
+      .stat-card { 
+        padding: 14px; 
+        min-height: auto;
+      }
       .stat-value { font-size: 20px; }
-      .card-header { padding: 12px 14px; flex-direction: column; align-items: flex-start; }
+      .card-header { 
+        padding: 12px 14px; 
+        flex-direction: column; 
+        align-items: flex-start; 
+        gap: 12px;
+      }
       .card-body { padding: 14px; }
-      .card-actions { width: 100%; }
-      .project-row { flex-direction: column; align-items: flex-start; }
-      .project-metrics { width: 100%; justify-content: space-between; margin-top: 10px; }
+      .card-actions { 
+        width: 100%; 
+        flex-wrap: wrap;
+      }
+      .project-row { 
+        flex-direction: column; 
+        align-items: flex-start; 
+        gap: 12px;
+      }
+      .project-metrics { 
+        width: 100%; 
+        justify-content: space-between; 
+        margin-top: 10px; 
+        flex-wrap: wrap;
+        gap: 12px;
+      }
       .project-metric { text-align: left; }
-      .account-meta { grid-template-columns: 1fr 1fr; }
-      .modal { margin: 12px; border-radius: 10px; }
-      .modal-body { padding: 14px; }
+      .account-meta { 
+        grid-template-columns: 1fr 1fr; 
+        gap: 10px;
+      }
+      .modal { 
+        margin: 12px; 
+        border-radius: 10px; 
+        max-height: calc(100vh - 24px);
+      }
+      .modal-body { 
+        padding: 14px; 
+        max-height: calc(90vh - 140px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
       .reports-grid { grid-template-columns: 1fr; }
       .report-document { padding: 16px; }
-      .report-preview-actions { width: 100%; }
-      .report-preview-actions .btn { flex: 1; }
-      .insight-actions { flex-direction: column; }
-      .insight-actions .btn { width: 100%; }
-      .toast { left: 14px; right: 14px; bottom: 14px; }
-      .ai-features { grid-template-columns: 1fr; }
+      .report-preview-actions { 
+        width: 100%; 
+        flex-direction: column;
+      }
+      .report-preview-actions .btn { 
+        width: 100%;
+        margin: 0;
+      }
+      .insight-actions { 
+        flex-direction: column; 
+        gap: 8px;
+      }
+      .insight-actions .btn { 
+        width: 100%; 
+        justify-content: center;
+      }
+      .toast { 
+        left: 14px; 
+        right: 14px; 
+        bottom: max(14px, env(safe-area-inset-bottom)); 
+        width: auto;
+      }
+      .ai-features { 
+        grid-template-columns: 1fr; 
+      }
+      
+      /* Input fields - prevent zoom on iOS */
+      input[type="text"],
+      input[type="number"],
+      input[type="date"],
+      input[type="email"],
+      textarea,
+      select {
+        font-size: 16px !important;
+        padding: 12px !important;
+        min-height: 44px;
+      }
+      
+      /* Buttons - ensure touch-friendly */
+      .btn {
+        min-height: 44px;
+        padding: 10px 16px;
+      }
+      
+      .btn-sm {
+        min-height: 40px;
+        padding: 8px 14px;
+      }
+      
+      /* Icon buttons */
+      .icon-btn {
+        min-width: 44px;
+        min-height: 44px;
+      }
+      
+      /* Nav items */
+      .nav-item {
+        min-height: 44px;
+        padding: 10px;
+      }
+      
+      /* Form inputs */
+      .form-input {
+        font-size: 16px !important;
+        min-height: 44px;
+      }
+      
+      /* Account card - adjust layout */
+      .account-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      
+      .account-balance {
+        text-align: left;
+        width: 100%;
+      }
+      
+      /* Workflow step - better mobile layout */
+      .workflow-step {
+        padding: 14px;
+      }
+      
+      /* AI section - stack on mobile */
+      .ai-section-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+      }
+      
+      /* Safe area support */
+      .sidebar {
+        padding-bottom: max(20px, env(safe-area-inset-bottom));
+      }
+    }
+    
+    @media (max-width: 480px) {
+      /* Extra small screens */
+      .content { padding: 12px; }
+      .header { padding: 8px 12px; }
+      
+      .stats-row {
+        gap: 8px;
+      }
+      
+      .stat-card {
+        padding: 12px;
+      }
+      
+      .stat-value {
+        font-size: 18px;
+      }
+      
+      /* Smaller text on very small screens */
+      .card-title {
+        font-size: 12px;
+      }
+      
+      .card-subtitle {
+        font-size: 10px;
+      }
+      
+      /* Modal - full screen feel */
+      .modal {
+        margin: 0;
+        border-radius: 0;
+        max-height: 100vh;
+        height: 100vh;
+      }
+      
+      .modal-header {
+        padding: 12px 16px;
+      }
+      
+      .modal-body {
+        max-height: calc(100vh - 120px);
+      }
+    }
+    
+    /* Touch improvements for all touch devices */
+    @media (hover: none) and (pointer: coarse) {
+      button, .btn, .nav-item, a, [role="button"] {
+        -webkit-tap-highlight-color: rgba(16, 185, 129, 0.2);
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      
+      /* Larger hit areas */
+      .icon-btn::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        left: -8px;
+        right: -8px;
+        bottom: -8px;
+      }
+    }
+    
+    /* Safe area support for iOS */
+    @supports (padding: max(0px)) {
+      .sidebar {
+        padding-bottom: max(14px, env(safe-area-inset-bottom));
+      }
+      
+      .sidebar-footer {
+        margin-bottom: env(safe-area-inset-bottom);
+      }
+      
+      .toast {
+        bottom: max(20px, env(safe-area-inset-bottom));
+      }
     }
     
     /* Print Styles */
@@ -521,8 +777,8 @@
           <div style="margin-bottom: 20px;"><h2 style="font-size: 18px; font-weight: 600; margin-bottom: 3px;">Client Profitability</h2><p style="font-size: 12px; color: var(--text-muted);">Ranked by profit</p></div>
           <div class="card">
             <div>
-              <div class="project-row"><div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 140px;"><div style="width: 28px; height: 28px; border-radius: 7px; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px;">#1</div><div><div class="project-name">TechCorp <span class="tag tag-warning" style="background: rgba(251, 191, 36, 0.2); color: #fbbf24;">★ Gold</span></div><div class="project-client">4 projects</div></div></div><div class="project-metrics"><div class="project-metric"><div class="project-metric-label">Revenue</div><div class="project-metric-value mono">$245K</div></div><div class="project-metric"><div class="project-metric-label">Profit</div><div class="project-metric-value mono" style="color: var(--accent);">+$89K</div></div><div class="project-metric"><div class="project-metric-label">Margin</div><div class="project-metric-value mono" style="color: var(--accent);">36.3%</div></div></div></div>
-              <div class="project-row"><div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 140px;"><div style="width: 28px; height: 28px; border-radius: 7px; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px;">#2</div><div><div class="project-name">StartupXYZ <span class="tag tag-warning" style="background: rgba(251, 191, 36, 0.2); color: #fbbf24;">★ Gold</span></div><div class="project-client">3 projects</div></div></div><div class="project-metrics"><div class="project-metric"><div class="project-metric-label">Revenue</div><div class="project-metric-value mono">$185K</div></div><div class="project-metric"><div class="project-metric-label">Profit</div><div class="project-metric-value mono" style="color: var(--accent);">+$72K</div></div><div class="project-metric"><div class="project-metric-label">Margin</div><div class="project-metric-value mono" style="color: var(--accent);">38.9%</div></div></div></div>
+              <div class="project-row"><div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 140px;"><div style="width: 28px; height: 28px; border-radius: 7px; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px;">#1</div><div><div class="project-name">TechCorp <span class="tag tag-warning" style="background: rgba(251, 191, 36, 0.2); color: #fbbf24;">Gold</span></div><div class="project-client">4 projects</div></div></div><div class="project-metrics"><div class="project-metric"><div class="project-metric-label">Revenue</div><div class="project-metric-value mono">$245K</div></div><div class="project-metric"><div class="project-metric-label">Profit</div><div class="project-metric-value mono" style="color: var(--accent);">+$89K</div></div><div class="project-metric"><div class="project-metric-label">Margin</div><div class="project-metric-value mono" style="color: var(--accent);">36.3%</div></div></div></div>
+              <div class="project-row"><div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 140px;"><div style="width: 28px; height: 28px; border-radius: 7px; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px;">#2</div><div><div class="project-name">StartupXYZ <span class="tag tag-warning" style="background: rgba(251, 191, 36, 0.2); color: #fbbf24;">Gold</span></div><div class="project-client">3 projects</div></div></div><div class="project-metrics"><div class="project-metric"><div class="project-metric-label">Revenue</div><div class="project-metric-value mono">$185K</div></div><div class="project-metric"><div class="project-metric-label">Profit</div><div class="project-metric-value mono" style="color: var(--accent);">+$72K</div></div><div class="project-metric"><div class="project-metric-label">Margin</div><div class="project-metric-value mono" style="color: var(--accent);">38.9%</div></div></div></div>
               <div class="project-row"><div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 140px;"><div style="width: 28px; height: 28px; border-radius: 7px; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px;">#3</div><div><div class="project-name">MetricsHub <span class="tag tag-danger">At Risk</span></div><div class="project-client">2 projects</div></div></div><div class="project-metrics"><div class="project-metric"><div class="project-metric-label">Revenue</div><div class="project-metric-value mono">$56K</div></div><div class="project-metric"><div class="project-metric-label">Profit</div><div class="project-metric-value mono" style="color: var(--danger);">-$8K</div></div><div class="project-metric"><div class="project-metric-label">Margin</div><div class="project-metric-value mono" style="color: var(--danger);">-14.3%</div></div></div></div>
             </div>
           </div>
