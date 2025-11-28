@@ -269,6 +269,31 @@ const portfolioItems: PortfolioItem[] = [
       },
     },
   },
+  {
+    id: 10,
+    title: "The Glow Book",
+    subtitle: "All-in-One Business Operating System for Estheticians",
+    industry: "BEAUTY & WELLNESS",
+    description: "Everything you need to run your beauty business, in one beautiful platform. Consolidates booking, consent forms, payments, client management, inventory tracking, marketing campaigns, website builder, social media management, and AI-powered business insights.",
+    backgroundColor: "#0A0A0A",
+    backgroundImage: "url(/the-glow-book-cover.jpg)",
+    isConcept: true,
+    technologies: ["React", "Next.js", "TypeScript", "Stripe", "Tailwind CSS", "OpenAI"],
+    heroImage: "url(/the-glow-book-cover.jpg)",
+    hidden: false,
+    interactiveDemo: "/glowbook-dashboard.html",
+    caseStudy: {
+      challenge: "Estheticians juggle multiple expensive tools that don't talk to each other — one for booking, another for forms, another for payments, yet another for marketing. Existing solutions like GlossGenius are overpriced, Square charges extra for intake forms, Booksy isn't built for waxers, Fresha has terrible UX, and Vagaro doesn't include a website. They're losing time, money, and clients to fragmented software.",
+      solution: "The Glow Book consolidates everything into one luxurious, easy-to-use platform — booking, consent forms, payments, client management, inventory tracking, marketing campaigns, website builder, social media management, and AI-powered business insights. No app downloads for clients, no per-feature fees, just one tool that does it all. Features include a stunning dark luxury booking website (no app download required), service selection with real-time availability, digital consent forms with health questionnaires, secure payment processing via Stripe, appointment management and rescheduling, direct chat with provider, special offers and promotions display, daily stats and revenue tracking, appointment calendar with check-in/check-out, client database with visit history and notes, AI-powered inventory tracking with reorder suggestions, marketing hub (email/SMS campaigns, special offers), AI website builder with SEO optimization and Google rankings, social media management (Instagram, TikTok, Facebook metrics), and AI business assistant for scheduling, pricing, and content ideas.",
+      results: [
+        "Consolidates 5+ separate tools into one platform",
+        "Eliminates $200+/month in fragmented software costs",
+        "Reduces booking abandonment with smart reminders",
+        "AI inventory tracking prevents stockouts and lost revenue",
+        "Built-in marketing tools increase repeat bookings",
+      ],
+    },
+  },
 ];
 
 export default function Portfolio() {
@@ -375,7 +400,7 @@ export default function Portfolio() {
                 {/* Concept Badge - Top Right */}
                 {item.isConcept && (
                   <div className="absolute top-3 right-3 z-10 px-2.5 py-1 bg-[#DC2626]/90 backdrop-blur-sm text-white text-[10px] font-semibold rounded">
-                    💡 CONCEPT PROJECT
+                    CONCEPT PROJECT
                   </div>
                 )}
 
@@ -458,7 +483,7 @@ export default function Portfolio() {
               <div className="mb-8">
                 {selectedItem.isConcept && (
                   <span className="inline-block px-3 py-1 bg-[#DC2626] text-white text-sm font-semibold rounded-full mb-4">
-                    💡 CONCEPT PROJECT
+                    CONCEPT PROJECT
                   </span>
                 )}
                 <h2 className="text-4xl md:text-5xl font-bold mb-2 text-black">
@@ -672,6 +697,38 @@ export default function Portfolio() {
                         <div className="h-40 bg-white rounded-lg border-2 border-gray-200 flex flex-col items-center justify-center p-4">
                           <div className="w-full h-24 bg-[#F3F4F6] rounded mb-2"></div>
                           <span className="text-[#6B7280] text-xs">Party Portals</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {selectedItem.id === 10 && (
+                    <div className="space-y-4">
+                      <p className="text-[#6B7280] leading-relaxed">
+                        <strong className="text-black">Beauty Business Platform Mockup:</strong> Dark, luxurious aesthetic that reflects the premium nature of esthetician services. 
+                        Soft blush pinks (#F5E1DA) and warm golds (#C9A962) against rich blacks (#0A0A0A) create an elevated experience. 
+                        Features include a comprehensive dashboard with daily revenue tracking, appointment calendar with check-in/check-out, 
+                        client database with visit history and notes, AI-powered inventory tracking with reorder suggestions, marketing hub 
+                        with email/SMS campaigns and special offers, AI website builder with SEO optimization and Google rankings, 
+                        social media management with Instagram, TikTok, and Facebook metrics, and AI business assistant providing scheduling, 
+                        pricing, and content ideas. The platform consolidates booking, consent forms, payments, client management, inventory, 
+                        marketing, website builder, and social media into one beautiful, mobile-first platform.
+                      </p>
+                      <div className="grid grid-cols-2 gap-4 mt-6">
+                        <div className="h-40 bg-[#0A0A0A] rounded-lg border-2 border-[#C9A962]/30 flex flex-col items-center justify-center p-4">
+                          <div className="w-full h-24 bg-[#1A1A1A] rounded mb-2 border border-[#C9A962]/20"></div>
+                          <span className="text-[#F5E1DA]/60 text-xs">Dashboard & Stats</span>
+                        </div>
+                        <div className="h-40 bg-[#0A0A0A] rounded-lg border-2 border-[#C9A962]/30 flex flex-col items-center justify-center p-4">
+                          <div className="w-full h-24 bg-[#1A1A1A] rounded mb-2 border border-[#C9A962]/20"></div>
+                          <span className="text-[#F5E1DA]/60 text-xs">Booking & Calendar</span>
+                        </div>
+                        <div className="h-40 bg-[#0A0A0A] rounded-lg border-2 border-[#C9A962]/30 flex flex-col items-center justify-center p-4">
+                          <div className="w-full h-24 bg-[#1A1A1A] rounded mb-2 border border-[#C9A962]/20"></div>
+                          <span className="text-[#F5E1DA]/60 text-xs">Inventory & AI</span>
+                        </div>
+                        <div className="h-40 bg-[#0A0A0A] rounded-lg border-2 border-[#C9A962]/30 flex flex-col items-center justify-center p-4">
+                          <div className="w-full h-24 bg-[#1A1A1A] rounded mb-2 border border-[#C9A962]/20"></div>
+                          <span className="text-[#F5E1DA]/60 text-xs">Marketing Hub</span>
                         </div>
                       </div>
                     </div>
