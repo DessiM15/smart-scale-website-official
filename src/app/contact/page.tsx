@@ -1,6 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import ContactForm from "@/components/ContactForm";
+import TextConsentForm from "@/components/TextConsentForm";
+import VerificationModal from "@/components/VerificationModal";
 import TechBackground from "@/components/TechBackground";
 import { useHeroAnimations } from "@/hooks/useHeroAnimations";
 import HeroCTA from "@/components/HeroCTA";
@@ -8,6 +11,13 @@ import ScrollIndicator from "@/components/hero-backgrounds/ScrollIndicator";
 
 export default function Contact() {
   const { sectionRef, parallaxStyle, scrollStyle } = useHeroAnimations();
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
+  const [verificationData, setVerificationData] = useState<{
+    phone: string;
+    name: string;
+    email: string;
+  } | null>(null);
+  const [isVerified, setIsVerified] = useState(false);
 
   return (
     <div className="min-h-screen bg-white">
@@ -97,6 +107,64 @@ export default function Contact() {
           </div>
         </div>
       </section>
+
+      {/* SMS Consent Form Section */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-lg shadow-lg p-8 sm:p-12">
+            <h2 className="text-3xl font-bold mb-4 text-black">
+              Subscribe to Text Updates
+            </h2>
+            <p className="text-gray-600 mb-8">
+              Stay connected with Smart Scale. Receive important updates, project milestones, and exclusive offers via text message.
+            </p>
+            
+            {isVerified ? (
+              <div className="p-6 rounded-lg bg-green-50 text-green-800 border border-green-200">
+                <div className="flex items-center gap-3 mb-2">
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  <h3 className="text-xl font-semibold">Successfully Verified!</h3>
+                </div>
+                <p className="text-lg">
+                  Thank you for subscribing! You will now receive text message updates from Smart Scale.
+                </p>
+              </div>
+            ) : (
+              <TextConsentForm
+                onVerificationSent={(phone, name, email) => {
+                  setVerificationData({ phone, name, email });
+                  setIsVerificationModalOpen(true);
+                }}
+              />
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Verification Modal */}
+      {verificationData && (
+        <VerificationModal
+          isOpen={isVerificationModalOpen}
+          onClose={() => setIsVerificationModalOpen(false)}
+          onSuccess={() => {
+            setIsVerified(true);
+            setVerificationData(null);
+          }}
+          phone={verificationData.phone}
+        />
+      )}
     </div>
   );
 }
