@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Scale - One Sheet</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #FFFFFF;
+      color: #000000;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    @page {
+      size: letter;
+      margin: 0;
+    }
+
+    .page {
+      width: 8.5in;
+      min-height: 11in;
+      max-height: 11in;
+      margin: 0 auto;
+      padding: 0.4in;
+      background: #FFFFFF;
+      overflow: hidden;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 0.2in;
+      border-bottom: 2px solid #F3F4F6;
+      margin-bottom: 0.2in;
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-box {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .brand-name {
+      font-size: 24px;
+      font-weight: 800;
+      color: #000000;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-tagline {
+      font-size: 11px;
+      color: #DC2626;
+      font-weight: 500;
+    }
+
+    .header-contact {
+      text-align: right;
+      font-size: 11px;
+      color: #6B7280;
+    }
+
+    .header-contact a {
+      color: #000000;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    /* Hero Section */
+    .hero {
+      display: flex;
+      gap: 0.2in;
+      margin-bottom: 0.2in;
+    }
+
+    .hero-main {
+      flex: 1;
+      background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+      border-radius: 12px;
+      padding: 0.3in;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-main::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 60%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(220,38,38,0.15) 0%, transparent 70%);
+    }
+
+    .hero-title {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-title .main-text {
+      font-size: 36px;
+      font-weight: 900;
+      color: white;
+      line-height: 1.1;
+      letter-spacing: -1px;
+    }
+
+    .hero-title .highlight {
+      color: #DC2626;
+    }
+
+    .hero-subtitle {
+      font-size: 13px;
+      color: rgba(255,255,255,0.85);
+      margin-top: 12px;
+      font-weight: 400;
+      line-height: 1.5;
+      max-width: 400px;
+    }
+
+    .qr-section {
+      width: 1.6in;
+      background: #F9FAFB;
+      border-radius: 12px;
+      padding: 0.15in;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #E5E7EB;
+    }
+
+    .qr-code {
+      width: 100px;
+      height: 100px;
+      background: white;
+      border-radius: 8px;
+      padding: 6px;
+      margin-bottom: 6px;
+    }
+
+    .qr-code img {
+      width: 100%;
+      height: 100%;
+    }
+
+    .qr-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #000000;
+    }
+
+    /* What We Build Section */
+    .what-we-build {
+      margin-bottom: 0.18in;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #000000;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .build-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .build-box {
+      background: #FFFFFF;
+      border: 2px solid #DC2626;
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .build-box-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #000000;
+      margin-bottom: 6px;
+    }
+
+    .build-box-desc {
+      font-size: 10px;
+      color: #6B7280;
+      line-height: 1.5;
+    }
+
+    /* Own Your Systems Callout */
+    .own-systems {
+      background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 0.18in;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .own-systems-icon {
+      width: 40px;
+      height: 40px;
+      background: #DC2626;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .own-systems-content {
+      flex: 1;
+    }
+
+    .own-systems-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 4px;
+    }
+
+    .own-systems-desc {
+      font-size: 11px;
+      color: rgba(255,255,255,0.8);
+      line-height: 1.4;
+    }
+
+    /* Our Approach Section */
+    .approach {
+      margin-bottom: 0.18in;
+    }
+
+    .approach-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .approach-step {
+      text-align: center;
+      padding: 12px 8px;
+      background: #F9FAFB;
+      border-radius: 8px;
+      border: 1px solid #E5E7EB;
+    }
+
+    .step-number {
+      width: 28px;
+      height: 28px;
+      background: #DC2626;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      margin: 0 auto 8px;
+    }
+
+    .step-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #000000;
+      margin-bottom: 4px;
+    }
+
+    .step-desc {
+      font-size: 9px;
+      color: #6B7280;
+      line-height: 1.4;
+    }
+
+    /* 7 Day MVP Highlight */
+    .mvp-highlight {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 20px;
+      background: #FEF2F2;
+      border: 2px solid #DC2626;
+      border-radius: 10px;
+      margin-bottom: 0.18in;
+    }
+
+    .mvp-badge {
+      background: #DC2626;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .mvp-content {
+      flex: 1;
+    }
+
+    .mvp-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #000000;
+      margin-bottom: 2px;
+    }
+
+    .mvp-desc {
+      font-size: 11px;
+      color: #6B7280;
+      line-height: 1.4;
+    }
+
+    /* Industries */
+    .industries {
+      background: #F9FAFB;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 0.18in;
+      border: 1px solid #E5E7EB;
+    }
+
+    .industries-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #000000;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-right: 10px;
+    }
+
+    .industries-list {
+      font-size: 10px;
+      color: #4B5563;
+      display: inline;
+    }
+
+    /* CTA Footer */
+    .cta-footer {
+      background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+      border-radius: 12px;
+      padding: 0.22in;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-footer::before {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      right: -10%;
+      width: 40%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(220,38,38,0.2) 0%, transparent 70%);
+    }
+
+    .cta-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .cta-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 4px;
+      letter-spacing: -0.5px;
+    }
+
+    .cta-subtitle {
+      font-size: 11px;
+      color: rgba(255,255,255,0.8);
+      max-width: 380px;
+      line-height: 1.4;
+    }
+
+    .cta-logo {
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .cta-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: brightness(0) invert(1);
+    }
+
+    /* Contact Bar */
+    .contact-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 0.12in;
+      margin-top: 0.12in;
+    }
+
+    .contact-email {
+      font-size: 12px;
+      font-weight: 600;
+      color: #DC2626;
+    }
+
+    .contact-info {
+      font-size: 11px;
+      color: #4B5563;
+    }
+
+    .contact-info span {
+      margin: 0 8px;
+      color: #D1D5DB;
+    }
+
+    /* Print styles */
+    @media print {
+      body {
+        background: white;
+      }
+      .page {
+        margin: 0;
+        box-shadow: none;
+      }
+    }
+
+    /* Screen preview */
+    @media screen {
+      body {
+        background: #E5E7EB;
+        padding: 20px;
+      }
+      .page {
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo-section">
+        <div class="logo-box">
+          <img src="/assets/smart-scale-logo-official.png" alt="Smart Scale Logo">
+        </div>
+        <div>
+          <div class="brand-name">SMART SCALE</div>
+          <div class="brand-tagline">Custom Software Solutions</div>
+        </div>
+      </div>
+      <div class="header-contact">
+        <a href="https://smartscaleagent.com">smartscaleagent.com</a><br>
+        832.407.0773
+      </div>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="hero">
+      <div class="hero-main">
+        <div class="hero-title">
+          <div class="main-text">Custom Software<br><span class="highlight">Built for Your Business</span></div>
+        </div>
+        <div class="hero-subtitle">We build websites, applications, and business systems tailored to how you work. No cookie-cutter templates. No one-size-fits-all limitations.</div>
+      </div>
+      <div class="qr-section">
+        <div class="qr-code">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://smartscaleagent.com&format=svg" alt="QR Code to smartscaleagent.com">
+        </div>
+        <div class="qr-label">View Our Work</div>
+      </div>
+    </div>
+
+    <!-- What We Build -->
+    <div class="what-we-build">
+      <div class="section-title">What We Build</div>
+      <div class="build-grid">
+        <div class="build-box">
+          <div class="build-box-title">Websites</div>
+          <div class="build-box-desc">Professional sites that represent your brand and convert visitors into customers.</div>
+        </div>
+        <div class="build-box">
+          <div class="build-box-title">Web & Mobile Apps</div>
+          <div class="build-box-desc">Custom applications for your team and customers, on any device.</div>
+        </div>
+        <div class="build-box">
+          <div class="build-box-title">Business Systems</div>
+          <div class="build-box-desc">CRMs, dashboards, and workflows designed around your specific processes.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Own Your Systems Callout -->
+    <div class="own-systems">
+      <div class="own-systems-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="white" stroke-width="2"/>
+          <path d="M9 12L11 14L15 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="own-systems-content">
+        <div class="own-systems-title">100% Customizable &mdash; You Own Your Systems</div>
+        <div class="own-systems-desc">Unlike off-the-shelf software, everything we build is yours. No per-seat fees, no feature limitations, no working around someone else's constraints. Your business, your rules.</div>
+      </div>
+    </div>
+
+    <!-- Our Approach -->
+    <div class="approach">
+      <div class="section-title">How We Work</div>
+      <div class="approach-grid">
+        <div class="approach-step">
+          <div class="step-number">1</div>
+          <div class="step-title">Discovery</div>
+          <div class="step-desc">We learn your business, workflows, and goals</div>
+        </div>
+        <div class="approach-step">
+          <div class="step-number">2</div>
+          <div class="step-title">Design</div>
+          <div class="step-desc">Wireframes and prototypes for your approval</div>
+        </div>
+        <div class="approach-step">
+          <div class="step-number">3</div>
+          <div class="step-title">Build</div>
+          <div class="step-desc">Development with regular check-ins and updates</div>
+        </div>
+        <div class="approach-step">
+          <div class="step-number">4</div>
+          <div class="step-title">Launch</div>
+          <div class="step-desc">Deployment, training, and ongoing support</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7 Day MVP -->
+    <div class="mvp-highlight">
+      <div class="mvp-badge">7 Day MVP</div>
+      <div class="mvp-content">
+        <div class="mvp-title">From Concept to Working Prototype</div>
+        <div class="mvp-desc">Need to move fast? We can deliver a functional minimum viable product in just 7 days, so you can test your idea, gather feedback, and iterate quickly.</div>
+      </div>
+    </div>
+
+    <!-- Industries -->
+    <div class="industries">
+      <span class="industries-label">Industries We Serve:</span>
+      <span class="industries-list">Law Firms &bull; Finance &bull; Healthcare &bull; Real Estate &bull; Restaurants &bull; Beauty & Wellness &bull; Home Services &bull; Non-Profits</span>
+    </div>
+
+    <!-- CTA Footer -->
+    <div class="cta-footer">
+      <div class="cta-content">
+        <div class="cta-title">Let's Build Something Together</div>
+        <div class="cta-subtitle">Have an idea or a problem to solve? We'd love to hear about it. Reach out for a conversation &mdash; no pressure, just possibilities.</div>
+      </div>
+      <div class="cta-logo">
+        <img src="/assets/smart-scale-logo-official.png" alt="Smart Scale Logo">
+      </div>
+    </div>
+
+    <!-- Contact Bar -->
+    <div class="contact-bar">
+      <div class="contact-email">project@ssl-mail.com</div>
+      <div class="contact-info">
+        <strong>Jay Maldonado</strong>
+        <span>|</span>
+        832.407.0773
+        <span>|</span>
+        smartscaleagent.com
+      </div>
+    </div>
+  </div>
+</body>
+</html>

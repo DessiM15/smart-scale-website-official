@@ -172,7 +172,7 @@ const portfolioItems: PortfolioItem[] = [
     backgroundImage: "url(/assets/mex-taco-ss-portfolio.webp)",
     technologies: ["React Native", "Node.js", "Firebase", "Stripe", "AWS"],
     heroImage: "url(/assets/mex-taco-ss-portfolio.webp)",
-    screenshot: "/assets/mex-taco-screenshot.png",
+    screenshot: "/assets/mex-taco-screenshot-new.png",
     liveWebsite: "https://www.mextacohouse.com/m-index.html",
     projectDetails: "We completed a full website overhaul, integrated Uber Eats and Grubhub so that customers can order from their website. Added analytics tracking to see the value of the website and usage.",
     caseStudy: {
