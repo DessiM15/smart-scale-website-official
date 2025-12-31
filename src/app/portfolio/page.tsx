@@ -24,6 +24,7 @@ interface PortfolioItem {
   projectDetails?: string;
   hidden?: boolean;
   interactiveDemo?: string;
+  liveWebsite?: string;
   caseStudy?: {
     challenge: string;
     solution: string;
@@ -37,31 +38,104 @@ interface PortfolioItem {
 }
 
 const portfolioItems: PortfolioItem[] = [
+  // === INTERACTIVE PLATFORM DEMOS (shown first) ===
   {
-    id: 1,
-    title: "DealerPro",
-    subtitle: "Casino Training Platform",
-    industry: "ENTERPRISE SYSTEMS",
-    description: "Comprehensive training and certification platform for casino dealers with real-time progress tracking and automated assessments.",
-    backgroundColor: "#000000",
-    backgroundImage: "url(/assets/casino-ss-portfolio.jpg)",
-    technologies: ["React", "Node.js", "PostgreSQL", "AWS", "WebRTC"],
-    heroImage: "url(/assets/casino-ss-portfolio.jpg)",
-    hidden: true,
+    id: 9,
+    title: "DiscoverEase",
+    subtitle: "AI-Powered Legal Discovery Platform",
+    industry: "LEGAL TECH",
+    description: "Intelligent document management and discovery tracking for litigation teams, featuring automated Bates numbering, deadline monitoring, and AI-powered workflows.",
+    backgroundColor: "#1F2937",
+    backgroundImage: "url(/assets/law-ss-portfolio.jpg)",
+    isConcept: true,
+    technologies: ["React", "Next.js", "Node.js", "Supabase", "PostgreSQL", "Drizzle ORM", "Tailwind CSS", "OpenAI"],
+    heroImage: "url(/assets/law-ss-portfolio.jpg)",
+    hidden: false,
+    interactiveDemo: "/discoverease-dashboard.html",
     caseStudy: {
-      challenge: "Casino training programs required manual tracking, inconsistent certification processes, and lacked real-time performance analytics.",
-      solution: "Built a comprehensive training platform with automated certification workflows, real-time progress tracking, interactive video lessons, and AI-powered assessment tools.",
+      challenge: "Legal discovery is one of the most time-consuming and error-prone aspects of litigation. Attorneys managing complex cases face mountains of documents that require precise tracking, standardized numbering, and strict deadline compliance. Traditional methods—spreadsheets, email chains, and manual follow-ups—lead to missed deadlines, inconsistent document organization, and countless billable hours wasted on administrative tasks instead of case strategy. Law firms needed a modern solution that could automatically assign and track Bates numbers across thousands of documents, monitor discovery deadlines and send proactive alerts, allow opposing parties to upload documents through secure portals, and provide AI-powered insights to identify missing documents and suggest follow-up actions.",
+      solution: "DiscoverEase is an intelligent legal discovery management platform that transforms how litigation teams handle document production. The system is 100% customizable to your firm's specific needs and workflows. Key features include automated Bates numbering with configurable prefix system, smart deadline management with visual timeline and automatic reminders, secure party portals for opposing counsel, and AI-powered workflows with automatic document categorization. We're actively developing additional capabilities including AI-powered document uploading with intelligent extraction, document style matching to maintain firm standards, and full firm management system integration. This platform can be built out to serve as your complete practice management solution.",
       results: [
-        "90% reduction in certification processing time",
-        "Real-time analytics dashboard for training managers",
-        "Interactive video training with progress tracking",
-        "Automated compliance and certification workflows",
+        "75% reduction in time spent on document organization and Bates numbering",
+        "Zero missed deadlines with proactive AI reminders and escalations",
+        "60% faster document collection through self-service party portals",
+        "40+ hours saved per month through automated follow-up workflows",
+        "100% accuracy in Bates number sequencing with no gaps or duplicates",
       ],
-      testimonial: {
-        quote: "DealerPro transformed our training operations. The platform is intuitive, comprehensive, and has significantly improved our certification efficiency.",
-        author: "Training Director",
-        role: "Major Casino Group",
-      },
+    },
+  },
+  {
+    id: 10,
+    title: "The Glow Book",
+    subtitle: "All-in-One Business Operating System for Estheticians",
+    industry: "BEAUTY & WELLNESS",
+    description: "Everything you need to run your beauty business, in one beautiful platform. Consolidates booking, consent forms, payments, client management, inventory tracking, marketing campaigns, website builder, social media management, and AI-powered business insights.",
+    backgroundColor: "#0A0A0A",
+    backgroundImage: "url(/the-glow-book-cover.jpg)",
+    isConcept: true,
+    technologies: ["React", "Next.js", "TypeScript", "Stripe", "Tailwind CSS", "OpenAI"],
+    heroImage: "url(/the-glow-book-cover.jpg)",
+    hidden: false,
+    interactiveDemo: "/glowbook-dashboard.html",
+    caseStudy: {
+      challenge: "Estheticians juggle multiple expensive tools that don't talk to each other — one for booking, another for forms, another for payments, yet another for marketing. Existing solutions like GlossGenius are overpriced, Square charges extra for intake forms, Booksy isn't built for waxers, Fresha has terrible UX, and Vagaro doesn't include a website. They're losing time, money, and clients to fragmented software.",
+      solution: "The Glow Book consolidates everything into one luxurious, easy-to-use platform — booking, consent forms, payments, client management, inventory tracking, marketing campaigns, website builder, social media management, and AI-powered business insights. No app downloads for clients, no per-feature fees, just one tool that does it all. Features include a stunning dark luxury booking website (no app download required), service selection with real-time availability, digital consent forms with health questionnaires, secure payment processing via Stripe, appointment management and rescheduling, direct chat with provider, special offers and promotions display, daily stats and revenue tracking, appointment calendar with check-in/check-out, client database with visit history and notes, AI-powered inventory tracking with reorder suggestions, marketing hub (email/SMS campaigns, special offers), AI website builder with SEO optimization and Google rankings, social media management (Instagram, TikTok, Facebook metrics), and AI business assistant for scheduling, pricing, and content ideas.",
+      results: [
+        "Consolidates 5+ separate tools into one platform",
+        "Eliminates $200+/month in fragmented software costs",
+        "Reduces booking abandonment with smart reminders",
+        "AI inventory tracking prevents stockouts and lost revenue",
+        "Built-in marketing tools increase repeat bookings",
+      ],
+    },
+  },
+  {
+    id: 5,
+    title: "FinanceFlow",
+    subtitle: "Enterprise Financial Dashboard",
+    industry: "FINANCE",
+    description: "AI-powered financial analytics platform with real-time reporting, predictive insights, and comprehensive data visualization across 50+ accounts.",
+    backgroundColor: "#1F2937",
+    backgroundImage: "url(/assets/finance-ss-portfolio.jpg)",
+    isConcept: true,
+    technologies: ["React", "Node.js", "AWS", "TensorFlow", "PostgreSQL"],
+    heroImage: "url(/assets/finance-ss-portfolio.jpg)",
+    hidden: false,
+    interactiveDemo: "/financeflo-dashboard.html",
+    caseStudy: {
+      challenge: "Enterprise needed real-time financial monitoring across 50+ accounts with manual reporting processes causing delays and errors in decision-making.",
+      solution: "AI-powered dashboard with predictive analytics and automated reporting, featuring real-time data integration, machine learning models for forecasting, and customizable KPI visualization with dark theme and red accent highlights.",
+      results: [
+        "Conceptual: 60% reduction in report generation time",
+        "Real-time monitoring across 50+ financial accounts",
+        "AI-powered predictive analytics for financial forecasting",
+        "Automated report generation with customizable dashboards",
+        "Dark theme interface with red accent highlights for key metrics",
+      ],
+    },
+  },
+  // === LIVE CLIENT WEBSITES (shown last) ===
+  {
+    id: 6,
+    title: "Arbor Cove Funding",
+    subtitle: "Financial Services Platform",
+    industry: "FINANCE",
+    description: "Modern financial services platform with streamlined loan processing, client management, and comprehensive financial analytics.",
+    backgroundColor: "#1F2937",
+    backgroundImage: "url(/assets/arbor-cove-logo-ss.png)",
+    technologies: ["Next.js", "TypeScript", "Node.js", "PostgreSQL", "Vercel"],
+    heroImage: "url(/assets/arbor-cove-logo-ss.png)",
+    liveWebsite: "https://arborcovefunding.com/",
+    hidden: false,
+    caseStudy: {
+      challenge: "Financial services company needed a modern digital platform to streamline loan processing, improve client management, and enhance operational efficiency.",
+      solution: "Developed a comprehensive financial services platform with automated loan processing workflows, client portal, real-time financial analytics, and secure document management system.",
+      results: [
+        "Streamlined loan application and processing workflows",
+        "Enhanced client management and communication",
+        "Real-time financial analytics and reporting",
+        "Secure document management and compliance",
+      ],
     },
   },
   {
@@ -75,6 +149,7 @@ const portfolioItems: PortfolioItem[] = [
     technologies: ["Next.js", "TypeScript", "MongoDB", "Stripe", "Vercel"],
     heroImage: "url(/assets/law-ss-portfolio.jpg)",
     screenshot: "/assets/sylvester-screenshot.png",
+    liveWebsite: "https://www.srjaimelaw.com/",
     projectDetails: "We overhauled their website, creating a simple informational page that effectively communicates their legal services and expertise.",
     caseStudy: {
       challenge: "Streamline case management and client communication for a growing legal practice while maintaining professional online presence.",
@@ -98,6 +173,7 @@ const portfolioItems: PortfolioItem[] = [
     technologies: ["React Native", "Node.js", "Firebase", "Stripe", "AWS"],
     heroImage: "url(/assets/mex-taco-ss-portfolio.webp)",
     screenshot: "/assets/mex-taco-screenshot.png",
+    liveWebsite: "https://www.mextacohouse.com/m-index.html",
     projectDetails: "We completed a full website overhaul, integrated Uber Eats and Grubhub so that customers can order from their website. Added analytics tracking to see the value of the website and usage.",
     caseStudy: {
       challenge: "Modernize ordering system and streamline restaurant operations across multiple locations with integrated payment and delivery tracking.",
@@ -126,6 +202,7 @@ const portfolioItems: PortfolioItem[] = [
     technologies: ["Next.js", "Shopify", "Stripe", "Vercel", "Sanity CMS"],
     heroImage: "url(/assets/angels-churros-ss-portfolio.webp)",
     screenshot: "/assets/angels-screenshot.png",
+    liveWebsite: "https://angels-churros-website.vercel.app/",
     projectDetails: "We completed a full website overhaul consistent with their branding. We integrated their social media and their POS so that customers can order from the website and their store directly.",
     caseStudy: {
       challenge: "Launch an online presence with e-commerce capabilities for a specialty dessert business, integrating online ordering with in-store operations.",
@@ -143,53 +220,7 @@ const portfolioItems: PortfolioItem[] = [
       },
     },
   },
-  {
-    id: 5,
-    title: "FinanceFlow",
-    subtitle: "Enterprise Financial Dashboard",
-    industry: "FINANCE",
-    description: "AI-powered financial analytics platform with real-time reporting, predictive insights, and comprehensive data visualization across 50+ accounts.",
-    backgroundColor: "#1F2937",
-    backgroundImage: "url(/assets/finance-ss-portfolio.jpg)",
-    isConcept: true,
-    technologies: ["React", "Node.js", "AWS", "TensorFlow", "PostgreSQL"],
-    heroImage: "url(/assets/finance-ss-portfolio.jpg)",
-    hidden: false,
-    interactiveDemo: "/financeflo-dashboard.html",
-    caseStudy: {
-      challenge: "Enterprise needed real-time financial monitoring across 50+ accounts with manual reporting processes causing delays and errors in decision-making.",
-      solution: "AI-powered dashboard with predictive analytics and automated reporting, featuring real-time data integration, machine learning models for forecasting, and customizable KPI visualization with dark theme and red accent highlights.",
-      results: [
-        "Conceptual: 60% reduction in report generation time",
-        "Real-time monitoring across 50+ financial accounts",
-        "AI-powered predictive analytics for financial forecasting",
-        "Automated report generation with customizable dashboards",
-        "Dark theme interface with red accent highlights for key metrics",
-      ],
-    },
-  },
-  {
-    id: 6,
-    title: "Arbor Cove Funding",
-    subtitle: "Financial Services Platform",
-    industry: "FINANCE",
-    description: "Modern financial services platform with streamlined loan processing, client management, and comprehensive financial analytics.",
-    backgroundColor: "#1F2937",
-    backgroundImage: "url(/assets/arbor-cove-logo-ss.png)",
-    technologies: ["Next.js", "TypeScript", "Node.js", "PostgreSQL", "Vercel"],
-    heroImage: "url(/assets/arbor-cove-logo-ss.png)",
-    hidden: false,
-    caseStudy: {
-      challenge: "Financial services company needed a modern digital platform to streamline loan processing, improve client management, and enhance operational efficiency.",
-      solution: "Developed a comprehensive financial services platform with automated loan processing workflows, client portal, real-time financial analytics, and secure document management system.",
-      results: [
-        "Streamlined loan application and processing workflows",
-        "Enhanced client management and communication",
-        "Real-time financial analytics and reporting",
-        "Secure document management and compliance",
-      ],
-    },
-  },
+  // === HIDDEN PROJECTS ===
   {
     id: 7,
     title: "MediCare+",
@@ -239,70 +270,24 @@ const portfolioItems: PortfolioItem[] = [
       ],
     },
   },
-  {
-    id: 9,
-    title: "DiscoverEase",
-    subtitle: "AI-Powered Legal Discovery Platform",
-    industry: "LEGAL TECH",
-    description: "Intelligent document management and discovery tracking for litigation teams, featuring automated Bates numbering, deadline monitoring, and AI-powered workflows.",
-    backgroundColor: "#1F2937",
-    backgroundImage: "url(/assets/law-ss-portfolio.jpg)",
-    isConcept: true,
-    technologies: ["React", "Next.js", "Node.js", "Supabase", "PostgreSQL", "Drizzle ORM", "Tailwind CSS", "OpenAI"],
-    heroImage: "url(/assets/law-ss-portfolio.jpg)",
-    hidden: false,
-    interactiveDemo: "/discoverease-dashboard.html",
-    caseStudy: {
-      challenge: "Legal discovery is one of the most time-consuming and error-prone aspects of litigation. Attorneys managing complex cases face mountains of documents that require precise tracking, standardized numbering, and strict deadline compliance. Traditional methods—spreadsheets, email chains, and manual follow-ups—lead to missed deadlines, inconsistent document organization, and countless billable hours wasted on administrative tasks instead of case strategy. Law firms needed a modern solution that could automatically assign and track Bates numbers across thousands of documents, monitor discovery deadlines and send proactive alerts, allow opposing parties to upload documents through secure portals, and provide AI-powered insights to identify missing documents and suggest follow-up actions.",
-      solution: "DiscoverEase is an intelligent legal discovery management platform that transforms how litigation teams handle document production. The system combines automated Bates numbering, smart deadline tracking, and AI-powered workflows into a single, intuitive dashboard. Key features include automated Bates numbering with configurable prefix system following Maryland ESI Guidelines, automatic sequential assignment on upload with full range tracking for multi-page documents, smart deadline management with visual timeline and automatic reminders at 7, 3, and 1 day before deadlines, secure party portals with unique shareable links for opposing counsel, AI-powered workflows with automatic document categorization and missing document detection, and comprehensive case management with 10 case types, party tracking, and activity logs.",
-      results: [
-        "75% reduction in time spent on document organization and Bates numbering",
-        "Zero missed deadlines with proactive AI reminders and escalations",
-        "60% faster document collection through self-service party portals",
-        "40+ hours saved per month through automated follow-up workflows",
-        "100% accuracy in Bates number sequencing with no gaps or duplicates",
-      ],
-      testimonial: {
-        quote: "DiscoverEase transformed how our firm handles discovery. What used to take paralegals days now happens automatically. The AI follow-up feature alone has saved us from countless awkward phone calls chasing documents.",
-        author: "Sarah Mitchell",
-        role: "Managing Partner, Mitchell & Associates",
-      },
-    },
-  },
-  {
-    id: 10,
-    title: "The Glow Book",
-    subtitle: "All-in-One Business Operating System for Estheticians",
-    industry: "BEAUTY & WELLNESS",
-    description: "Everything you need to run your beauty business, in one beautiful platform. Consolidates booking, consent forms, payments, client management, inventory tracking, marketing campaigns, website builder, social media management, and AI-powered business insights.",
-    backgroundColor: "#0A0A0A",
-    backgroundImage: "url(/the-glow-book-cover.jpg)",
-    isConcept: true,
-    technologies: ["React", "Next.js", "TypeScript", "Stripe", "Tailwind CSS", "OpenAI"],
-    heroImage: "url(/the-glow-book-cover.jpg)",
-    hidden: false,
-    interactiveDemo: "/glowbook-dashboard.html",
-    caseStudy: {
-      challenge: "Estheticians juggle multiple expensive tools that don't talk to each other — one for booking, another for forms, another for payments, yet another for marketing. Existing solutions like GlossGenius are overpriced, Square charges extra for intake forms, Booksy isn't built for waxers, Fresha has terrible UX, and Vagaro doesn't include a website. They're losing time, money, and clients to fragmented software.",
-      solution: "The Glow Book consolidates everything into one luxurious, easy-to-use platform — booking, consent forms, payments, client management, inventory tracking, marketing campaigns, website builder, social media management, and AI-powered business insights. No app downloads for clients, no per-feature fees, just one tool that does it all. Features include a stunning dark luxury booking website (no app download required), service selection with real-time availability, digital consent forms with health questionnaires, secure payment processing via Stripe, appointment management and rescheduling, direct chat with provider, special offers and promotions display, daily stats and revenue tracking, appointment calendar with check-in/check-out, client database with visit history and notes, AI-powered inventory tracking with reorder suggestions, marketing hub (email/SMS campaigns, special offers), AI website builder with SEO optimization and Google rankings, social media management (Instagram, TikTok, Facebook metrics), and AI business assistant for scheduling, pricing, and content ideas.",
-      results: [
-        "Consolidates 5+ separate tools into one platform",
-        "Eliminates $200+/month in fragmented software costs",
-        "Reduces booking abandonment with smart reminders",
-        "AI inventory tracking prevents stockouts and lost revenue",
-        "Built-in marketing tools increase repeat bookings",
-      ],
-    },
-  },
 ];
 
 export default function Portfolio() {
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [iframeLoaded, setIframeLoaded] = useState<boolean>(false);
+  const [activeCategory, setActiveCategory] = useState<string>("All");
   const { sectionRef, parallaxStyle, scrollStyle } = useHeroAnimations();
 
   const visibleItems = portfolioItems.filter(item => !item.hidden);
+
+  // Extract unique categories from visible items
+  const categories = ["All", ...Array.from(new Set(visibleItems.map(item => item.industry)))];
+
+  // Filter items based on active category
+  const filteredItems = activeCategory === "All"
+    ? visibleItems
+    : visibleItems.filter(item => item.industry === activeCategory);
 
   const openModal = (item: PortfolioItem) => {
     const index = visibleItems.findIndex((p) => p.id === item.id);
@@ -359,11 +344,32 @@ export default function Portfolio() {
         </div>
       </section>
 
+      {/* Category Filter */}
+      <section className="py-8 px-4 sm:px-6 lg:px-8 bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-wrap gap-2 justify-center">
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setActiveCategory(category)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                  activeCategory === category
+                    ? "bg-[#DC2626] text-white shadow-md"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                {category === "All" ? "All Projects" : category.charAt(0) + category.slice(1).toLowerCase().replace(/_/g, " ")}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Portfolio Grid - Fingent Style */}
       <section id="portfolio-grid" className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {visibleItems.map((item) => (
+            {filteredItems.map((item) => (
               <div
                 key={item.id}
                 onClick={() => openModal(item)}
@@ -373,7 +379,8 @@ export default function Portfolio() {
                 <div
                   className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-110"
                   style={{
-                    background: item.backgroundImage || item.backgroundColor,
+                    backgroundColor: item.backgroundImage?.startsWith('url') ? undefined : item.backgroundColor,
+                    backgroundImage: item.backgroundImage?.startsWith('url') ? item.backgroundImage : undefined,
                     backgroundSize: item.backgroundImage?.startsWith('url') ? 'cover' : undefined,
                     backgroundPosition: item.backgroundImage?.startsWith('url') ? 'center' : undefined,
                     backgroundRepeat: item.backgroundImage?.startsWith('url') ? 'no-repeat' : undefined,
@@ -458,7 +465,8 @@ export default function Portfolio() {
               <div
                 className="h-64 md:h-96 w-full relative"
                 style={{
-                  background: selectedItem.heroImage || selectedItem.backgroundImage || selectedItem.backgroundColor,
+                  backgroundColor: (selectedItem.heroImage || selectedItem.backgroundImage)?.startsWith('url') ? undefined : selectedItem.backgroundColor,
+                  backgroundImage: (selectedItem.heroImage || selectedItem.backgroundImage)?.startsWith('url') ? (selectedItem.heroImage || selectedItem.backgroundImage) : undefined,
                   backgroundSize: (selectedItem.heroImage || selectedItem.backgroundImage)?.startsWith('url') ? 'cover' : undefined,
                   backgroundPosition: (selectedItem.heroImage || selectedItem.backgroundImage)?.startsWith('url') ? 'center' : undefined,
                   backgroundRepeat: (selectedItem.heroImage || selectedItem.backgroundImage)?.startsWith('url') ? 'no-repeat' : undefined,
@@ -497,7 +505,7 @@ export default function Portfolio() {
                 </p>
               </div>
 
-              {/* Interactive Demo */}
+              {/* Interactive Demo (for concept projects) */}
               {selectedItem.interactiveDemo && (
                 <div className="mb-8 pb-8 border-b border-gray-200">
                   <h3 className="text-2xl font-bold mb-4 text-black">Interactive Dashboard</h3>
@@ -524,6 +532,39 @@ export default function Portfolio() {
                       sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
                     />
                   </div>
+                </div>
+              )}
+
+              {/* Live Website (for real client projects) */}
+              {selectedItem.liveWebsite && (
+                <div className="mb-8 pb-8 border-b border-gray-200">
+                  <h3 className="text-2xl font-bold mb-4 text-black">Explore the Site</h3>
+                  <p className="text-[#6B7280] mb-4 leading-relaxed">
+                    Explore the live {selectedItem.title} website below. This is the actual site we built and deployed.
+                  </p>
+                  <div className="w-full rounded-lg overflow-hidden border-2 border-gray-200 shadow-lg bg-gray-100 relative" style={{ minHeight: '500px' }}>
+                    {!iframeLoaded && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                        <div className="text-center">
+                          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#DC2626] mb-4"></div>
+                          <p className="text-gray-600">Loading website...</p>
+                        </div>
+                      </div>
+                    )}
+                    <iframe
+                      src={selectedItem.liveWebsite}
+                      className="w-full h-[70vh] md:h-[800px]"
+                      style={{ border: 'none', opacity: iframeLoaded ? 1 : 0, transition: 'opacity 0.3s', minHeight: '500px' }}
+                      title={`${selectedItem.title} Live Website`}
+                      allow="fullscreen"
+                      loading="lazy"
+                      onLoad={() => setIframeLoaded(true)}
+                      sandbox="allow-scripts allow-same-origin allow-forms"
+                    />
+                  </div>
+                  <p className="text-sm text-[#9CA3AF] mt-3 text-center">
+                    Scroll within the frame to explore the full website
+                  </p>
                 </div>
               )}
 
@@ -733,6 +774,19 @@ export default function Portfolio() {
                       </div>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Customization Callout for Concept Projects */}
+              {selectedItem.isConcept && (
+                <div className="mb-8 p-6 bg-gradient-to-r from-[#DC2626]/10 via-[#DC2626]/5 to-transparent rounded-lg border-l-4 border-[#DC2626]">
+                  <h3 className="text-xl font-bold mb-2 text-black">100% Customizable to Your Business</h3>
+                  <p className="text-[#6B7280] leading-relaxed">
+                    This platform is fully customizable to fit your specific business needs and workflows.
+                    Whether you need additional features, integrations with your existing systems, or a completely
+                    tailored solution, we build it to work exactly the way you need it to.
+                    <span className="font-semibold text-black"> Let's discuss how we can adapt this for your business.</span>
+                  </p>
                 </div>
               )}
 
