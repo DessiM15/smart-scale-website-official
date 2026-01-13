@@ -5,6 +5,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import GSAPProvider from "@/components/GSAPProvider";
+import LoadingIntro from "@/components/LoadingIntro";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -79,6 +80,7 @@ export default function RootLayout({
             `,
           }}
         />
+        <LoadingIntro />
         <GSAPProvider>
           <Navbar />
           <main className="min-h-screen">{children}</main>
