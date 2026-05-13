@@ -44,19 +44,14 @@ export default function ContactForm() {
           type: "success",
           message: "Thank you! Your message has been sent successfully.",
         });
-        setFormData({
-          name: "",
-          email: "",
-          phone: "",
-          message: "",
-        });
+        setFormData({ name: "", email: "", phone: "", message: "" });
       } else {
         setSubmitStatus({
           type: "error",
           message: "Something went wrong. Please try again later.",
         });
       }
-    } catch (error) {
+    } catch {
       setSubmitStatus({
         type: "error",
         message: "Failed to send message. Please try again later.",
@@ -69,16 +64,16 @@ export default function ContactForm() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+  const inputClasses =
+    "w-full px-4 py-3 bg-[#161616] border border-white/[0.08] rounded-xl text-white placeholder-white/30 focus:ring-2 focus:ring-[#DC2626] focus:border-[#DC2626] outline-none transition";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label htmlFor="name" className="block text-sm font-medium mb-2">
+        <label htmlFor="name" className="block text-sm font-medium mb-2 text-white/70">
           Name
         </label>
         <input
@@ -88,11 +83,11 @@ export default function ContactForm() {
           required
           value={formData.name}
           onChange={handleChange}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#DC2626] focus:border-[#DC2626] outline-none"
+          className={inputClasses}
         />
       </div>
       <div>
-        <label htmlFor="email" className="block text-sm font-medium mb-2">
+        <label htmlFor="email" className="block text-sm font-medium mb-2 text-white/70">
           Email
         </label>
         <input
@@ -102,11 +97,11 @@ export default function ContactForm() {
           required
           value={formData.email}
           onChange={handleChange}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#DC2626] focus:border-[#DC2626] outline-none"
+          className={inputClasses}
         />
       </div>
       <div>
-        <label htmlFor="phone" className="block text-sm font-medium mb-2">
+        <label htmlFor="phone" className="block text-sm font-medium mb-2 text-white/70">
           Phone
         </label>
         <input
@@ -115,11 +110,11 @@ export default function ContactForm() {
           name="phone"
           value={formData.phone}
           onChange={handleChange}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#DC2626] focus:border-[#DC2626] outline-none"
+          className={inputClasses}
         />
       </div>
       <div>
-        <label htmlFor="message" className="block text-sm font-medium mb-2">
+        <label htmlFor="message" className="block text-sm font-medium mb-2 text-white/70">
           Message
         </label>
         <textarea
@@ -129,15 +124,15 @@ export default function ContactForm() {
           rows={5}
           value={formData.message}
           onChange={handleChange}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#DC2626] focus:border-[#DC2626] outline-none"
+          className={inputClasses}
         />
       </div>
       {submitStatus.type && (
         <div
           className={`p-4 rounded-lg ${
             submitStatus.type === "success"
-              ? "bg-green-50 text-green-800 border border-green-200"
-              : "bg-red-50 text-red-800 border border-red-200"
+              ? "bg-green-900/20 text-green-400 border border-green-500/20"
+              : "bg-red-900/20 text-red-400 border border-red-500/20"
           }`}
         >
           {submitStatus.message}
@@ -153,4 +148,3 @@ export default function ContactForm() {
     </form>
   );
 }
-

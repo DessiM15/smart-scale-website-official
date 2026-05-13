@@ -1,9 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getBlogPost, getAllBlogPosts } from "@/lib/blog";
-import { Calendar, Clock, ArrowLeft, Share2, Twitter, Facebook, Linkedin } from "lucide-react";
+import { Calendar, Clock, ArrowLeft } from "lucide-react";
 import SocialShareButtons from "@/components/SocialShareButtons";
-import TechBackground from "@/components/TechBackground";
 import BlogCoverImage from "@/components/BlogCoverImage";
 
 export async function generateStaticParams() {
@@ -18,9 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const post = getBlogPost(slug);
 
   if (!post) {
-    return {
-      title: "Post Not Found",
-    };
+    return { title: "Post Not Found" };
   }
 
   return {
@@ -44,11 +41,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     notFound();
   }
 
-  // Convert markdown-like content to HTML (simplified - in production, use a markdown parser)
   const formatContent = (content: string) => {
     if (!content) return "";
-    
-    // Simple escape function
+
     const escapeHtml = (text: string): string => {
       return text
         .replace(/&/g, "&amp;")
@@ -57,7 +52,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
     };
-    
+
     try {
       const lines = content.split("\n");
       let html = "";
@@ -67,115 +62,83 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         const line = lines[i];
         const trimmed = line.trim();
 
-        // Headers
         if (trimmed.startsWith("# ")) {
-          if (inList) {
-            html += "</ul>";
-            inList = false;
-          }
+          if (inList) { html += "</ul>"; inList = false; }
           let headerText = trimmed.substring(2);
-          headerText = headerText.replace(/\*\*([^\*]+)\*\*/g, '<strong class="text-black font-semibold">$1</strong>');
-          // Split by HTML tags and escape text parts
+          headerText = headerText.replace(/\*\*([^\*]+)\*\*/g, '<strong class="text-white font-semibold">$1</strong>');
           const headerParts = headerText.split(/(<[^>]+>)/);
           headerText = headerParts.map(part => part.startsWith('<') ? part : escapeHtml(part)).join('');
-          html += `<h1 class="text-4xl font-bold mb-6 text-black mt-12 first:mt-0">${headerText}</h1>`;
+          html += `<h1 class="text-4xl font-bold mb-6 text-white mt-12 first:mt-0">${headerText}</h1>`;
           continue;
         }
         if (trimmed.startsWith("## ")) {
-          if (inList) {
-            html += "</ul>";
-            inList = false;
-          }
+          if (inList) { html += "</ul>"; inList = false; }
           let headerText = trimmed.substring(3);
-          headerText = headerText.replace(/\*\*([^\*]+)\*\*/g, '<strong class="text-black font-semibold">$1</strong>');
+          headerText = headerText.replace(/\*\*([^\*]+)\*\*/g, '<strong class="text-white font-semibold">$1</strong>');
           const headerParts = headerText.split(/(<[^>]+>)/);
           headerText = headerParts.map(part => part.startsWith('<') ? part : escapeHtml(part)).join('');
-          html += `<h2 class="text-3xl font-bold mb-4 text-black mt-10">${headerText}</h2>`;
+          html += `<h2 class="text-3xl font-bold mb-4 text-white mt-10">${headerText}</h2>`;
           continue;
         }
         if (trimmed.startsWith("### ")) {
-          if (inList) {
-            html += "</ul>";
-            inList = false;
-          }
+          if (inList) { html += "</ul>"; inList = false; }
           let headerText = trimmed.substring(4);
-          headerText = headerText.replace(/\*\*([^\*]+)\*\*/g, '<strong class="text-black font-semibold">$1</strong>');
+          headerText = headerText.replace(/\*\*([^\*]+)\*\*/g, '<strong class="text-white font-semibold">$1</strong>');
           const headerParts = headerText.split(/(<[^>]+>)/);
           headerText = headerParts.map(part => part.startsWith('<') ? part : escapeHtml(part)).join('');
-          html += `<h3 class="text-2xl font-bold mb-3 text-black mt-8">${headerText}</h3>`;
+          html += `<h3 class="text-2xl font-bold mb-3 text-white mt-8">${headerText}</h3>`;
           continue;
         }
 
-        // Lists
         if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
           if (!inList) {
-            html += '<ul class="list-disc list-inside space-y-2 mb-6 text-[#6B7280] text-lg">';
+            html += '<ul class="list-disc list-inside space-y-2 mb-6 text-white/60 text-lg">';
             inList = true;
           }
           let listItem = trimmed.substring(2);
-          // Process markdown first
-          listItem = listItem.replace(/\*\*([^\*]+)\*\*/g, '<strong class="text-black font-semibold">$1</strong>');
+          listItem = listItem.replace(/\*\*([^\*]+)\*\*/g, '<strong class="text-white font-semibold">$1</strong>');
           listItem = listItem.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
             const safeText = escapeHtml(text);
             const safeUrl = escapeHtml(url);
             return `<a href="${safeUrl}" class="text-[#DC2626] hover:underline font-semibold" target="_blank" rel="noopener noreferrer">${safeText}</a>`;
           });
-          // Split by HTML tags and escape text parts
           const listParts = listItem.split(/(<[^>]+>)/);
           listItem = listParts.map(part => part.startsWith('<') ? part : escapeHtml(part)).join('');
           html += `<li class="ml-4">${listItem}</li>`;
           continue;
         }
 
-        // Close list if needed
         if (inList && trimmed === "") {
           html += "</ul>";
           inList = false;
           continue;
         }
 
-        // Empty lines
         if (trimmed === "") {
-          if (inList) {
-            html += "</ul>";
-            inList = false;
-          }
+          if (inList) { html += "</ul>"; inList = false; }
           html += "<br />";
           continue;
         }
 
-        // Regular paragraphs with formatting
-        if (inList) {
-          html += "</ul>";
-          inList = false;
-        }
+        if (inList) { html += "</ul>"; inList = false; }
 
         let processedLine = trimmed;
-        
-        // Process markdown first
         processedLine = processedLine.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
           const safeText = escapeHtml(text);
           const safeUrl = escapeHtml(url);
           return `<a href="${safeUrl}" class="text-[#DC2626] hover:underline font-semibold" target="_blank" rel="noopener noreferrer">${safeText}</a>`;
         });
-        
-        processedLine = processedLine.replace(/\*\*([^\*]+)\*\*/g, '<strong class="text-black font-semibold">$1</strong>');
-        
-        // Split by HTML tags and escape text parts
+        processedLine = processedLine.replace(/\*\*([^\*]+)\*\*/g, '<strong class="text-white font-semibold">$1</strong>');
         const lineParts = processedLine.split(/(<[^>]+>)/);
         processedLine = lineParts.map(part => part.startsWith('<') ? part : escapeHtml(part)).join('');
-
-        html += `<p class="text-[#6B7280] leading-relaxed mb-4 text-lg">${processedLine}</p>`;
+        html += `<p class="text-white/60 leading-relaxed mb-4 text-lg">${processedLine}</p>`;
       }
 
-      if (inList) {
-        html += "</ul>";
-      }
-
+      if (inList) html += "</ul>";
       return html;
     } catch (error) {
       console.error("Error formatting content:", error);
-      return `<p class="text-[#6B7280]">Error loading content.</p>`;
+      return `<p class="text-white/60">Error loading content.</p>`;
     }
   };
 
@@ -187,17 +150,11 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     image: `https://smartscale.com/blog/${post.coverImage}`,
     datePublished: post.date,
     dateModified: post.date,
-    author: {
-      "@type": "Organization",
-      name: post.author,
-    },
+    author: { "@type": "Organization", name: post.author },
     publisher: {
       "@type": "Organization",
       name: "Smart Scale",
-      logo: {
-        "@type": "ImageObject",
-        url: "https://smartscale.com/assets/smart-scale-logo-official.png",
-      },
+      logo: { "@type": "ImageObject", url: "https://smartscale.com/assets/smart-scale-logo-official.png" },
     },
   };
 
@@ -207,34 +164,33 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-[#0A0A0A]">
         {/* Header */}
-        <section className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 bg-black text-white relative overflow-hidden">
-          <TechBackground />
+        <section className="pt-28 pb-12 px-4 sm:px-6 lg:px-8 text-white relative overflow-hidden">
           <div className="max-w-4xl mx-auto relative z-10">
             <Link
               href="/blog"
-              className="inline-flex items-center gap-2 text-white/70 hover:text-white mb-6 transition-colors"
+              className="inline-flex items-center gap-2 text-white/50 hover:text-white mb-6 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back to Blog</span>
             </Link>
 
             <div className="flex items-center gap-4 mb-4 text-sm">
-              <span className="px-3 py-1 bg-white/10 rounded-full text-xs font-medium">
+              <span className="px-3 py-1 bg-white/[0.06] rounded-full text-xs font-medium text-white/60 border border-white/[0.08]">
                 {post.category}
               </span>
-              <div className="flex items-center gap-1 text-white/70">
+              <div className="flex items-center gap-1 text-white/50">
                 <Clock className="w-4 h-4" />
                 <span>{post.readTime}</span>
               </div>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight text-white">
               {post.title}
             </h1>
 
-            <div className="flex items-center gap-4 text-white/70">
+            <div className="flex items-center gap-4 text-white/50">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
                 <span>
@@ -245,27 +201,26 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                   })}
                 </span>
               </div>
-              <span>•</span>
+              <span>&bull;</span>
               <span>{post.author}</span>
             </div>
           </div>
         </section>
 
         {/* Cover Image */}
-        <section className="relative h-64 md:h-96 w-full overflow-hidden bg-gray-900">
+        <section className="relative h-64 md:h-96 w-full overflow-hidden bg-[#111111]">
           <BlogCoverImage
             src={post.coverImage}
             alt={post.coverImageAlt}
-            priority={true} // Prioritize hero image
+            priority={true}
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-black/20"></div>
+          <div className="absolute inset-0 bg-black/20" />
         </section>
 
         {/* Article Content */}
         <article className="py-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
-            {/* Social Share Buttons */}
             <div className="mb-12">
               <SocialShareButtons
                 title={post.title}
@@ -273,18 +228,17 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               />
             </div>
 
-            {/* Content */}
             <div
-              className="prose prose-lg max-w-none"
+              className="prose prose-lg prose-invert max-w-none"
               dangerouslySetInnerHTML={{ __html: formatContent(post.content || "") }}
             />
 
-            {/* CTA Section */}
-            <div className="mt-16 p-8 bg-[#F3F4F6] rounded-lg border-l-4 border-[#DC2626]">
-              <h3 className="text-2xl font-bold mb-4 text-black">
+            {/* CTA */}
+            <div className="mt-16 p-8 rounded-3xl bg-[#161616] border border-white/[0.08] border-l-4 border-l-[#DC2626]">
+              <h3 className="text-2xl font-bold mb-4 text-white">
                 Ready to Transform Your Development Process?
               </h3>
-              <p className="text-[#6B7280] mb-6 text-lg">
+              <p className="text-white/60 mb-6 text-lg">
                 Experience the power of AI-accelerated development with Smart Scale. Get your MVP in 7 days with direct founder involvement.
               </p>
               <Link
@@ -301,4 +255,3 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     </>
   );
 }
-

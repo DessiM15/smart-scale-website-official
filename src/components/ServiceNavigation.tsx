@@ -32,7 +32,7 @@ export default function ServiceNavigation() {
   return (
     <>
       {/* Navigation Buttons */}
-      <section id="service-navigation" className="py-8 px-4 sm:px-6 lg:px-8 bg-white">
+      <section id="service-navigation" className="py-8 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button

@@ -30,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
-      <body>
+      <body className="bg-[#0A0A0A] text-white">
         <Script
           id="unicorn-studio"
           strategy="lazyOnload"

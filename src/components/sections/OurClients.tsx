@@ -1,62 +1,51 @@
-const clients = [
-  {
-    name: "Arbor Cove Funding",
-    type: "image",
-    src: "/assets/arbor-cove-logo-ss.png",
-    alt: "Arbor Cove Funding",
-  },
-  {
-    name: "Law Office of Sylvester R. Jaime",
-    type: "text",
-  },
-  {
-    name: "Mex Taco House",
-    type: "image",
-    src: "/assets/mex-taco-logo-ss.jpg",
-    alt: "Mex Taco House",
-  },
-  {
-    name: "Angels Churros N' Chocolate",
-    type: "image",
-    src: "/assets/angels-churros-logo-ss.webp",
-    alt: "Angels Churros N' Chocolate",
-  },
+"use client";
+
+import SectionHeading from "@/components/ui/SectionHeading";
+
+const clientNames = [
+  "Bloxify",
+  "Lomeli Financial Group",
+  "Teachers Pension",
+  "Gulf Coast Alloys",
+  "Botmakers",
+  "Taylor Made Esthetics",
+  "Fight My Repo",
+  "Repo911",
+  "Valor Financial Advisors",
+  "APEX Affinity Group",
+  "Mex Taco House",
 ];
 
 export default function OurClients() {
+  // Double the list for seamless loop
+  const doubled = [...clientNames, ...clientNames];
+
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#F3F4F6]">
+    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="scroll-reveal text-4xl sm:text-5xl font-bold mb-4 text-black">
-            Trusted Partners
-          </h2>
-          <p className="scroll-reveal text-lg text-[#6B7280] max-w-2xl mx-auto">
-            Companies that trust us to deliver enterprise-quality solutions.
-          </p>
-        </div>
-        <div className="scroll-reveal-stagger flex flex-wrap justify-center items-center gap-8 md:gap-12 lg:gap-16">
-          {clients.map((client, index) => (
-            <div
+        <SectionHeading
+          title="Trusted Partners"
+          subtitle="Companies that trust us to deliver enterprise-quality solutions."
+        />
+      </div>
+
+      {/* Marquee */}
+      <div className="relative overflow-hidden">
+        {/* Fade edges */}
+        <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-[#0A0A0A] to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-[#0A0A0A] to-transparent z-10 pointer-events-none" />
+
+        <div className="animate-marquee flex items-center gap-12 whitespace-nowrap w-max">
+          {doubled.map((name, index) => (
+            <span
               key={index}
-              className="flex items-center justify-center h-20 md:h-24 lg:h-28 px-4"
+              className="text-2xl md:text-3xl font-semibold text-white/20 hover:text-white/50 transition-colors duration-300 select-none"
             >
-              {client.type === "image" ? (
-                <img
-                  src={client.src!}
-                  alt={client.alt!}
-                  className="object-contain h-full w-auto max-w-[200px] md:max-w-[240px] lg:max-w-[280px]"
-                />
-              ) : (
-                <div className="text-xl md:text-2xl font-serif font-semibold text-[#1F2937] tracking-wide">
-                  {client.name}
-                </div>
-              )}
-            </div>
+              {name}
+            </span>
           ))}
         </div>
       </div>
     </section>
   );
 }
-

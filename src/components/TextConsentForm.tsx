@@ -26,9 +26,7 @@ export default function TextConsentForm({ onVerificationSent }: TextConsentFormP
     try {
       const response = await fetch("/api/sms/send-verification", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
@@ -39,7 +37,6 @@ export default function TextConsentForm({ onVerificationSent }: TextConsentFormP
           type: "success",
           message: "Verification code sent! Please check your phone.",
         });
-        // Call the callback to open verification modal
         onVerificationSent(formData.phone, formData.name, formData.email);
       } else {
         setSubmitStatus({
@@ -47,7 +44,7 @@ export default function TextConsentForm({ onVerificationSent }: TextConsentFormP
           message: result.error || "Something went wrong. Please try again later.",
         });
       }
-    } catch (error) {
+    } catch {
       setSubmitStatus({
         type: "error",
         message: "Failed to send verification code. Please try again later.",
@@ -58,21 +55,21 @@ export default function TextConsentForm({ onVerificationSent }: TextConsentFormP
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+  const inputClasses =
+    "w-full px-4 py-3 bg-[#111111] border border-white/[0.08] rounded-xl text-white placeholder-white/30 focus:ring-2 focus:ring-[#DC2626] focus:border-[#DC2626] outline-none transition";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-white/50 mb-4">
           Subscribe to receive text message updates and notifications from Smart Scale.
         </p>
       </div>
       <div>
-        <label htmlFor="consent-name" className="block text-sm font-medium mb-2">
+        <label htmlFor="consent-name" className="block text-sm font-medium mb-2 text-white/70">
           Name
         </label>
         <input
@@ -82,11 +79,11 @@ export default function TextConsentForm({ onVerificationSent }: TextConsentFormP
           required
           value={formData.name}
           onChange={handleChange}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#DC2626] focus:border-[#DC2626] outline-none"
+          className={inputClasses}
         />
       </div>
       <div>
-        <label htmlFor="consent-email" className="block text-sm font-medium mb-2">
+        <label htmlFor="consent-email" className="block text-sm font-medium mb-2 text-white/70">
           Email
         </label>
         <input
@@ -96,11 +93,11 @@ export default function TextConsentForm({ onVerificationSent }: TextConsentFormP
           required
           value={formData.email}
           onChange={handleChange}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#DC2626] focus:border-[#DC2626] outline-none"
+          className={inputClasses}
         />
       </div>
       <div>
-        <label htmlFor="consent-phone" className="block text-sm font-medium mb-2">
+        <label htmlFor="consent-phone" className="block text-sm font-medium mb-2 text-white/70">
           Phone Number
         </label>
         <input
@@ -111,15 +108,15 @@ export default function TextConsentForm({ onVerificationSent }: TextConsentFormP
           value={formData.phone}
           onChange={handleChange}
           placeholder="(555) 123-4567"
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#DC2626] focus:border-[#DC2626] outline-none"
+          className={inputClasses}
         />
       </div>
       {submitStatus.type && (
         <div
           className={`p-4 rounded-lg ${
             submitStatus.type === "success"
-              ? "bg-green-50 text-green-800 border border-green-200"
-              : "bg-red-50 text-red-800 border border-red-200"
+              ? "bg-green-900/20 text-green-400 border border-green-500/20"
+              : "bg-red-900/20 text-red-400 border border-red-500/20"
           }`}
         >
           {submitStatus.message}
@@ -135,4 +132,3 @@ export default function TextConsentForm({ onVerificationSent }: TextConsentFormP
     </form>
   );
 }
-

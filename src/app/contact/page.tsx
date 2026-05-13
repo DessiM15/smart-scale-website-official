@@ -4,13 +4,9 @@ import { useState } from "react";
 import ContactForm from "@/components/ContactForm";
 import TextConsentForm from "@/components/TextConsentForm";
 import VerificationModal from "@/components/VerificationModal";
-import TechBackground from "@/components/TechBackground";
-import { useHeroAnimations } from "@/hooks/useHeroAnimations";
 import HeroCTA from "@/components/HeroCTA";
-import ScrollIndicator from "@/components/hero-backgrounds/ScrollIndicator";
 
 export default function Contact() {
-  const { sectionRef, parallaxStyle, scrollStyle } = useHeroAnimations();
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
   const [verificationData, setVerificationData] = useState<{
     phone: string;
@@ -20,20 +16,16 @@ export default function Contact() {
   const [isVerified, setIsVerified] = useState(false);
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <section 
-        ref={sectionRef}
-        className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 bg-black text-white relative overflow-hidden min-h-[60vh] flex items-center"
-        style={scrollStyle}
-      >
-        <TechBackground />
-        <div className="max-w-7xl mx-auto text-center relative z-10" style={parallaxStyle}>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 leading-tight hero-headline">
+    <div className="min-h-screen bg-[#0A0A0A]">
+      {/* Hero */}
+      <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 text-white relative overflow-hidden">
+        <div className="max-w-7xl mx-auto text-center relative z-10">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 hero-headline">
             Talk Directly to the Builders
           </h1>
-          <p className="text-lg sm:text-xl text-white/70 max-w-3xl mx-auto mb-8 hero-subheadline">
-            No sales team. No account managers. Just the two founders who will personally build your project.
+          <p className="text-lg sm:text-xl text-white/60 max-w-3xl mx-auto mb-8 hero-subheadline">
+            No sales team. No account managers. Just the two founders who will
+            personally build your project.
           </p>
           <div className="flex justify-center">
             <HeroCTA href="#contact-form" variant="secondary">
@@ -42,28 +34,25 @@ export default function Contact() {
           </div>
         </div>
       </section>
-      <ScrollIndicator />
 
       {/* Contact Form and Info */}
       <section id="contact-form" className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Contact Form */}
             <div>
-              <h2 className="text-3xl font-bold mb-6 text-black">
+              <h2 className="text-3xl font-bold mb-6 text-white">
                 Send us a message
               </h2>
               <ContactForm />
             </div>
 
-            {/* Contact Information */}
             <div>
-              <h2 className="text-3xl font-bold mb-6 text-black">
+              <h2 className="text-3xl font-bold mb-6 text-white">
                 Contact Information
               </h2>
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold mb-2 text-black">
+                  <h3 className="text-lg font-semibold mb-2 text-white">
                     Email
                   </h3>
                   <a
@@ -74,33 +63,29 @@ export default function Contact() {
                   </a>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-2 text-black">
+                  <h3 className="text-lg font-semibold mb-2 text-white">
                     Phone
                   </h3>
                   <div className="space-y-2">
-                    <div>
-                      <a
-                        href="tel:8324070773"
-                        className="text-[#DC2626] hover:underline text-lg block"
-                      >
-                        Jay: 832.407.0773
-                      </a>
-                    </div>
-                    <div>
-                      <a
-                        href="tel:8327905001"
-                        className="text-[#DC2626] hover:underline text-lg block"
-                      >
-                        Dee: 832.790.5001
-                      </a>
-                    </div>
+                    <a
+                      href="tel:8324070773"
+                      className="text-[#DC2626] hover:underline text-lg block"
+                    >
+                      Jay: 832.407.0773
+                    </a>
+                    <a
+                      href="tel:8327905001"
+                      className="text-[#DC2626] hover:underline text-lg block"
+                    >
+                      Dee: 832.790.5001
+                    </a>
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-2 text-black">
+                  <h3 className="text-lg font-semibold mb-2 text-white">
                     Location
                   </h3>
-                  <p className="text-gray-700 text-lg">Texas, United States</p>
+                  <p className="text-white/60 text-lg">Texas, United States</p>
                 </div>
               </div>
             </div>
@@ -109,18 +94,19 @@ export default function Contact() {
       </section>
 
       {/* SMS Consent Form Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gray-50">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-lg shadow-lg p-8 sm:p-12">
-            <h2 className="text-3xl font-bold mb-4 text-black">
+          <div className="rounded-3xl bg-[#161616] border border-white/[0.08] p-8 sm:p-12">
+            <h2 className="text-3xl font-bold mb-4 text-white">
               Subscribe to Text Updates
             </h2>
-            <p className="text-gray-600 mb-8">
-              Stay connected with Smart Scale. Receive important updates, project milestones, and exclusive offers via text message.
+            <p className="text-white/60 mb-8">
+              Stay connected with Smart Scale. Receive important updates,
+              project milestones, and exclusive offers via text message.
             </p>
-            
+
             {isVerified ? (
-              <div className="p-6 rounded-lg bg-green-50 text-green-800 border border-green-200">
+              <div className="p-6 rounded-lg bg-green-900/20 text-green-400 border border-green-500/20">
                 <div className="flex items-center gap-3 mb-2">
                   <svg
                     className="w-6 h-6"
@@ -135,10 +121,13 @@ export default function Contact() {
                       d="M5 13l4 4L19 7"
                     />
                   </svg>
-                  <h3 className="text-xl font-semibold">Successfully Verified!</h3>
+                  <h3 className="text-xl font-semibold">
+                    Successfully Verified!
+                  </h3>
                 </div>
                 <p className="text-lg">
-                  Thank you for subscribing! You will now receive text message updates from Smart Scale.
+                  Thank you for subscribing! You will now receive text message
+                  updates from Smart Scale.
                 </p>
               </div>
             ) : (
@@ -168,4 +157,3 @@ export default function Contact() {
     </div>
   );
 }
-

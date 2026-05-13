@@ -19,8 +19,8 @@ export default function ServiceCard({ title, description, icon, slug }: ServiceC
           </div>
         </div>
       )}
-      <h3 className="text-xl font-semibold mb-3 text-black text-center">{title}</h3>
-      <p className="text-gray-600 text-center">{description}</p>
+      <h3 className="text-xl font-semibold mb-3 text-white text-center">{title}</h3>
+      <p className="text-white/50 text-center">{description}</p>
     </>
   );
 
@@ -28,7 +28,7 @@ export default function ServiceCard({ title, description, icon, slug }: ServiceC
     return (
       <Link
         href={`/services/${slug}`}
-        className="service-card block p-8 rounded-lg hover:shadow-xl transition-all duration-300 bg-white group"
+        className="service-card block p-8 rounded-3xl hover:shadow-xl transition-all duration-300 bg-[#161616] border border-white/[0.08] hover:border-white/[0.15] group"
       >
         {cardContent}
       </Link>
@@ -36,9 +36,8 @@ export default function ServiceCard({ title, description, icon, slug }: ServiceC
   }
 
   return (
-    <div className="service-card p-8 rounded-lg bg-white">
+    <div className="service-card p-8 rounded-3xl bg-[#161616] border border-white/[0.08]">
       {cardContent}
     </div>
   );
 }
-

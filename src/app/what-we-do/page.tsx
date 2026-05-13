@@ -11,11 +11,8 @@ import {
   Layout,
   Zap,
 } from "lucide-react";
-import TechBackground from "@/components/TechBackground";
-import { useHeroAnimations } from "@/hooks/useHeroAnimations";
-import CodeSnippets from "@/components/hero-backgrounds/CodeSnippets";
+import GlowCard from "@/components/ui/GlowCard";
 import HeroCTA from "@/components/HeroCTA";
-import ScrollIndicator from "@/components/hero-backgrounds/ScrollIndicator";
 
 const capabilities = [
   {
@@ -49,7 +46,7 @@ const capabilities = [
     icon: <Layout className="w-8 h-8" />,
   },
   {
-    title: "Integrations and API Workflows",
+    title: "Integrations & APIs",
     description: "Seamless integrations and automated workflows to connect your systems.",
     icon: <Zap className="w-8 h-8" />,
   },
@@ -66,53 +63,24 @@ const technologies = [
 ];
 
 const processSteps = [
-  {
-    step: "Discovery",
-    description: "Understanding your business needs, goals, and technical requirements.",
-  },
-  {
-    step: "Planning",
-    description: "Creating detailed project plans, architecture, and timelines.",
-  },
-  {
-    step: "Development",
-    description: "Building your solution with clean, maintainable, and scalable code.",
-  },
-  {
-    step: "Testing",
-    description: "Comprehensive testing to ensure quality and reliability.",
-  },
-  {
-    step: "Deployment",
-    description: "Smooth deployment and ongoing support for your solution.",
-  },
+  { step: "Discovery", description: "Understanding your business needs, goals, and technical requirements." },
+  { step: "Planning", description: "Creating detailed project plans, architecture, and timelines." },
+  { step: "Development", description: "Building your solution with clean, maintainable, and scalable code." },
+  { step: "Testing", description: "Comprehensive testing to ensure quality and reliability." },
+  { step: "Deployment", description: "Smooth deployment and ongoing support for your solution." },
 ];
 
 export default function WhatWeDo() {
-  const { sectionRef, parallaxStyle, scrollStyle } = useHeroAnimations();
-
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <section 
-        ref={sectionRef}
-        className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 bg-black text-white relative overflow-hidden min-h-[60vh] flex items-center"
-        style={scrollStyle}
-      >
-        <TechBackground />
-        {/* Animated countdown timer showing "7 days" */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-10 hero-bg-elements" style={{ opacity: 0 }}>
-          <div className="text-[20rem] md:text-[30rem] font-bold text-[#DC2626]/20 select-none">
-            7
-          </div>
-        </div>
-        <CodeSnippets />
-        <div className="max-w-7xl mx-auto text-center relative z-10" style={parallaxStyle}>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 leading-tight hero-headline">
+    <div className="min-h-screen bg-[#0A0A0A]">
+      {/* Hero */}
+      <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 text-white relative overflow-hidden">
+        <div className="max-w-7xl mx-auto text-center relative z-10">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 hero-headline">
             Your MVP in 7 Days.
           </h1>
-          <p className="text-lg sm:text-xl text-white/70 max-w-3xl mx-auto mb-8 hero-subheadline">
-            While others are still writing proposals, we're already delivering your first working prototype.
+          <p className="text-lg sm:text-xl text-white/60 max-w-3xl mx-auto mb-8 hero-subheadline">
+            While others are still writing proposals, we&apos;re already delivering your first working prototype.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <HeroCTA href="/contact" variant="primary">
@@ -124,12 +92,11 @@ export default function WhatWeDo() {
           </div>
         </div>
       </section>
-      <ScrollIndicator />
 
       {/* Capabilities Grid */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-bold mb-12 text-center text-black">
+          <h2 className="text-4xl font-bold mb-12 text-center text-white">
             Capabilities
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -146,64 +113,55 @@ export default function WhatWeDo() {
       </section>
 
       {/* Technologies Used */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gray-50">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-bold mb-12 text-center text-black">
+          <h2 className="text-4xl font-bold mb-12 text-center text-white">
             Technologies Used
           </h2>
-          <div className="flex flex-wrap justify-center gap-6">
+          <div className="flex flex-wrap justify-center gap-4">
             {technologies.map((tech, index) => (
-              <div
+              <span
                 key={index}
-                className="group transition-all duration-500 ease-out cursor-default overflow-hidden rounded-lg px-6 py-3 relative shadow-2xl backdrop-blur-xl bg-gradient-to-br from-[#DC2626]/40 via-black/60 to-black/80 border-[#DC2626]/30 border-2 text-lg font-medium text-white hover:shadow-[#DC2626]/30 hover:shadow-2xl hover:scale-[1.02] hover:-translate-y-1 hover:border-[#DC2626]/60"
+                className="px-6 py-3 rounded-full text-lg font-medium bg-[#161616] text-white/70 border border-white/[0.08] hover:border-[#DC2626]/30 hover:text-white transition-all duration-300"
+                style={{ fontFamily: "var(--font-jetbrains-mono), monospace" }}
               >
-                {/* Gradient Shine Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#DC2626]/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out z-0"></div>
-                
-                {/* Hover Overlay */}
-                <div className="group-hover:opacity-100 transition-opacity duration-500 rounded-2xl absolute top-0 right-0 bottom-0 left-0 z-0 bg-gradient-to-r from-[#DC2626]/10 via-[#DC2626]/20 to-[#DC2626]/10 opacity-0"></div>
-
-                {/* Content */}
-                <span className="relative z-10 group-hover:text-white transition-colors duration-300 drop-shadow-sm">
-                  {tech}
-                </span>
-              </div>
+                {tech}
+              </span>
             ))}
           </div>
         </div>
       </section>
 
       {/* Process Overview */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-bold mb-12 text-center text-black">
+          <h2 className="text-4xl font-bold mb-12 text-center text-white">
             Our Process
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
             {processSteps.map((item, index) => (
-              <div
-                key={index}
-                className="p-6 border border-gray-200 rounded-lg bg-white"
-              >
+              <GlowCard key={index} className="p-6">
                 <div className="text-2xl font-bold text-[#DC2626] mb-2">
                   {index + 1}
                 </div>
-                <h3 className="text-xl font-semibold mb-3 text-black">
+                <h3 className="text-xl font-semibold mb-3 text-white">
                   {item.step}
                 </h3>
-                <p className="text-gray-600">{item.description}</p>
-              </div>
+                <p className="text-white/50">{item.description}</p>
+              </GlowCard>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Banner */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-black text-white">
+      {/* CTA */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-6">Ready to Get Started?</h2>
-          <p className="text-xl text-gray-300 mb-8">
-            Let's discuss how we can help transform your business.
+          <h2 className="text-4xl font-bold mb-6 text-white">
+            Ready to Get Started?
+          </h2>
+          <p className="text-xl text-white/60 mb-8">
+            Let&apos;s discuss how we can help transform your business.
           </p>
           <Link
             href="/contact"
@@ -216,4 +174,3 @@ export default function WhatWeDo() {
     </div>
   );
 }
-

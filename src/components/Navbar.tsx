@@ -2,13 +2,29 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? "bg-black/80 backdrop-blur-xl border-b border-white/[0.08]"
+          : "bg-transparent"
+      }`}
+    >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
@@ -18,7 +34,7 @@ export default function Navbar() {
               alt="Smart Scale"
               width={150}
               height={60}
-              className="h-12 w-auto"
+              className="h-12 w-auto brightness-0 invert"
               priority
               unoptimized
             />
@@ -28,37 +44,37 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-12">
             <Link
               href="/"
-              className="text-sm font-medium text-black hover:text-[#DC2626] transition"
+              className="text-sm font-medium text-white/70 hover:text-white transition"
             >
               Home
             </Link>
             <Link
               href="/what-we-do"
-              className="text-sm font-medium text-black hover:text-[#DC2626] transition"
+              className="text-sm font-medium text-white/70 hover:text-white transition"
             >
               What We Do
             </Link>
             <Link
               href="/portfolio"
-              className="text-sm font-medium text-black hover:text-[#DC2626] transition"
+              className="text-sm font-medium text-white/70 hover:text-white transition"
             >
               Portfolio
             </Link>
             <Link
               href="/company"
-              className="text-sm font-medium text-black hover:text-[#DC2626] transition"
+              className="text-sm font-medium text-white/70 hover:text-white transition"
             >
               Company
             </Link>
             <Link
               href="/blog"
-              className="text-sm font-medium text-black hover:text-[#DC2626] transition"
+              className="text-sm font-medium text-white/70 hover:text-white transition"
             >
               Blog
             </Link>
             <Link
               href="/contact"
-              className="text-sm font-medium text-black hover:text-[#DC2626] transition"
+              className="text-sm font-medium text-white/70 hover:text-white transition"
             >
               Contact
             </Link>
@@ -77,7 +93,7 @@ export default function Navbar() {
             aria-label="Toggle menu"
           >
             <svg
-              className="w-6 h-6 text-black"
+              className="w-6 h-6 text-white"
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -96,45 +112,45 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden pb-6 space-y-4">
+          <div className="md:hidden pb-6 space-y-4 bg-black/95 backdrop-blur-xl -mx-4 px-4 border-t border-white/[0.08]">
             <Link
               href="/"
-              className="block text-sm font-medium text-black hover:text-[#DC2626] transition"
+              className="block text-sm font-medium text-white/70 hover:text-white transition pt-4"
               onClick={() => setMobileMenuOpen(false)}
             >
               Home
             </Link>
             <Link
               href="/what-we-do"
-              className="block text-sm font-medium text-black hover:text-[#DC2626] transition"
+              className="block text-sm font-medium text-white/70 hover:text-white transition"
               onClick={() => setMobileMenuOpen(false)}
             >
               What We Do
             </Link>
             <Link
               href="/portfolio"
-              className="block text-sm font-medium text-black hover:text-[#DC2626] transition"
+              className="block text-sm font-medium text-white/70 hover:text-white transition"
               onClick={() => setMobileMenuOpen(false)}
             >
               Portfolio
             </Link>
             <Link
               href="/company"
-              className="block text-sm font-medium text-black hover:text-[#DC2626] transition"
+              className="block text-sm font-medium text-white/70 hover:text-white transition"
               onClick={() => setMobileMenuOpen(false)}
             >
               Company
             </Link>
             <Link
               href="/blog"
-              className="block text-sm font-medium text-black hover:text-[#DC2626] transition"
+              className="block text-sm font-medium text-white/70 hover:text-white transition"
               onClick={() => setMobileMenuOpen(false)}
             >
               Blog
             </Link>
             <Link
               href="/contact"
-              className="block text-sm font-medium text-black hover:text-[#DC2626] transition"
+              className="block text-sm font-medium text-white/70 hover:text-white transition"
               onClick={() => setMobileMenuOpen(false)}
             >
               Contact
@@ -152,4 +168,3 @@ export default function Navbar() {
     </header>
   );
 }
-

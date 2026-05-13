@@ -2,11 +2,8 @@
 
 import Link from "next/link";
 import { Zap, Eye, Lightbulb, Target } from "lucide-react";
-import TechBackground from "@/components/TechBackground";
-import { useHeroAnimations } from "@/hooks/useHeroAnimations";
-import FloatingParticles from "@/components/hero-backgrounds/FloatingParticles";
+import GlowCard from "@/components/ui/GlowCard";
 import HeroCTA from "@/components/HeroCTA";
-import ScrollIndicator from "@/components/hero-backgrounds/ScrollIndicator";
 
 const values = [
   {
@@ -32,23 +29,15 @@ const values = [
 ];
 
 export default function WhyUs() {
-  const { sectionRef, parallaxStyle, scrollStyle } = useHeroAnimations();
-
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <section 
-        ref={sectionRef}
-        className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 lg:px-8 bg-black text-white relative overflow-hidden min-h-[60vh] flex items-center"
-        style={scrollStyle}
-      >
-        <TechBackground />
-        <FloatingParticles count={50} />
-        <div className="max-w-7xl mx-auto text-center relative z-10" style={parallaxStyle}>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 leading-tight hero-headline">
+    <div className="min-h-screen bg-[#0A0A0A]">
+      {/* Hero */}
+      <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 text-white relative overflow-hidden">
+        <div className="max-w-7xl mx-auto text-center relative z-10">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 hero-headline">
             Hungry. Fast. Obsessed with Your Success.
           </h1>
-          <p className="text-lg sm:text-xl text-white/70 max-w-3xl mx-auto mb-8 hero-subheadline">
+          <p className="text-lg sm:text-xl text-white/60 max-w-3xl mx-auto mb-8 hero-subheadline">
             Your project gets our full energy and latest innovations.
           </p>
           <HeroCTA href="/contact" variant="primary">
@@ -56,65 +45,61 @@ export default function WhyUs() {
           </HeroCTA>
         </div>
       </section>
-      <ScrollIndicator />
 
       {/* Values Grid */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#F3F4F6]">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-black">
+            <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
               Our Values
             </h2>
-            <p className="text-lg text-[#6B7280] max-w-2xl mx-auto">
+            <p className="text-lg text-white/60 max-w-2xl mx-auto">
               The principles that guide every project and every interaction.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {values.map((value, index) => (
-              <div
-                key={index}
-                className="bg-white p-8 rounded-lg hover:shadow-xl transition-all duration-300 group"
-              >
-                <div className="w-14 h-14 rounded-full bg-[#DC2626] flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform duration-300">
+              <GlowCard key={index} className="p-8">
+                <div className="w-14 h-14 rounded-full bg-[#DC2626] flex items-center justify-center text-white mb-6">
                   {value.icon}
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-black">{value.title}</h3>
-                <p className="text-[#6B7280] leading-relaxed">{value.description}</p>
-              </div>
+                <h3 className="text-2xl font-bold mb-4 text-white">{value.title}</h3>
+                <p className="text-white/60 leading-relaxed">{value.description}</p>
+              </GlowCard>
             ))}
           </div>
         </div>
       </section>
 
       {/* Founder Difference */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-8 text-black text-center">
+          <h2 className="text-4xl sm:text-5xl font-bold mb-8 text-white text-center">
             Direct Founder Involvement
           </h2>
-          <div className="space-y-6 text-lg text-[#6B7280] leading-relaxed">
+          <div className="space-y-6 text-lg text-white/60 leading-relaxed">
             <p>
-              At Smart Scale, every project is led directly by the company's founders. This isn't a sales pitch—it's our core operating model. When you work with us, you get direct access to decision-makers who understand both the technical and business sides of your project.
+              At Smart Scale, every project is led directly by the company&apos;s founders. This isn&apos;t a sales pitch — it&apos;s our core operating model. When you work with us, you get direct access to decision-makers who understand both the technical and business sides of your project.
             </p>
             <p>
-              No account managers, no middle layers, no bureaucracy. Just founders who code, strategize, and deliver. This means faster decisions, clearer communication, and solutions that actually solve your problems—not just check boxes on a project plan.
+              No account managers, no middle layers, no bureaucracy. Just founders who code, strategize, and deliver. This means faster decisions, clearer communication, and solutions that actually solve your problems.
             </p>
-            <p className="font-semibold text-black text-center">
+            <p className="font-semibold text-white text-center">
               Enterprise quality. Boutique service. Founder-led execution.
             </p>
           </div>
         </div>
       </section>
 
-      {/* CTA Banner */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-black text-white">
+      {/* CTA */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-6">
+          <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-white">
             Ready to Experience the Difference?
           </h2>
-          <p className="text-xl text-white/80 mb-8">
-            Get direct access, enterprise quality, and 7-day MVPs—without the agency overhead.
+          <p className="text-xl text-white/60 mb-8">
+            Get direct access, enterprise quality, and 7-day MVPs — without the agency overhead.
           </p>
           <Link
             href="/contact"
@@ -127,4 +112,3 @@ export default function WhyUs() {
     </div>
   );
 }
-

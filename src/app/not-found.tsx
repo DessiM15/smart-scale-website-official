@@ -3,12 +3,12 @@ import { ArrowLeft, Home } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center px-4">
       <div className="max-w-md w-full text-center">
-        <h1 className="text-6xl font-bold text-black mb-4">404</h1>
-        <h2 className="text-2xl font-semibold text-black mb-4">Page Not Found</h2>
-        <p className="text-[#6B7280] mb-8">
-          The page you're looking for doesn't exist or has been moved.
+        <h1 className="text-6xl font-bold text-white mb-4">404</h1>
+        <h2 className="text-2xl font-semibold text-white mb-4">Page Not Found</h2>
+        <p className="text-white/60 mb-8">
+          The page you&apos;re looking for doesn&apos;t exist or has been moved.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
@@ -19,10 +19,10 @@ export default function NotFound() {
             Go Home
           </Link>
           <Link
-            href="/blog"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 border-2 border-[#DC2626] text-[#DC2626] rounded-full font-semibold hover:bg-[#DC2626] hover:text-white transition-colors"
+            href="/portfolio"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-white/[0.08] text-white rounded-full font-semibold hover:bg-white/10 transition-colors"
           >
-            View Blog
+            View Portfolio
           </Link>
         </div>
       </div>

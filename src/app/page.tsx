@@ -4,6 +4,7 @@ import WhyChooseSmartScale from "@/components/sections/WhyChooseSmartScale";
 import ProcessVisualization from "@/components/sections/ProcessVisualization";
 import IndustriesWeServe from "@/components/sections/IndustriesWeServe";
 import OurClients from "@/components/sections/OurClients";
+import BookACall from "@/components/sections/BookACall";
 import UrgencyCTA from "@/components/sections/UrgencyCTA";
 
 export default function Home() {
@@ -15,6 +16,7 @@ export default function Home() {
       <ProcessVisualization />
       <IndustriesWeServe />
       <OurClients />
+      <BookACall />
       <UrgencyCTA />
     </>
   );
