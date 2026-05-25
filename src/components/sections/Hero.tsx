@@ -48,10 +48,9 @@ export default function Hero() {
 
   // Reveal content on scroll even if video hasn't ended
   useEffect(() => {
-    const section = sectionRef.current;
     const content = contentRef.current;
     const video = videoRef.current;
-    if (!section || !content || !video) return;
+    if (!content || !video) return;
 
     const handleScroll = () => {
       if (videoEnded) return;
@@ -78,47 +77,38 @@ export default function Hero() {
   return (
     <section
       ref={sectionRef}
-      className="relative h-screen overflow-hidden bg-[#0A0A0A]"
+      className="relative h-screen overflow-hidden"
+      style={{ backgroundColor: "#000000" }}
     >
+      {/* Solid black background layer — prevents alpha-channel grid bleed */}
+      <div className="absolute inset-0 bg-black z-0" />
+
+      {/* Logo video — centered, no stretch, black behind */}
+      <div className="absolute inset-0 z-[1] flex items-center justify-center bg-black">
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          playsInline
+          className="w-full h-full object-contain"
+        >
+          <source src="/assets/smart-scale-logo-vid.mp4" type="video/mp4" />
+        </video>
+      </div>
+
       {/* Vignette overlay */}
       <div
-        className="absolute inset-0 z-10 pointer-events-none"
+        className="absolute inset-0 z-[2] pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse at center, transparent 50%, rgba(10,10,10,0.7) 100%)",
+            "radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%)",
         }}
       />
 
-      {/* Logo video - fullscreen */}
-      <video
-        ref={videoRef}
-        autoPlay
-        muted
-        playsInline
-        className="absolute inset-0 w-full h-full object-contain z-0 md:object-cover"
-        style={{ maxWidth: "100%", maxHeight: "100%" }}
-      >
-        <source src="/assets/smart-scale-logo-vid.mp4" type="video/mp4" />
-      </video>
-
-      {/* Mobile: constrain video */}
-      <style jsx>{`
-        @media (max-width: 767px) {
-          video {
-            width: 70% !important;
-            height: auto !important;
-            top: 50% !important;
-            left: 50% !important;
-            transform: translate(-50%, -60%);
-            object-fit: contain !important;
-          }
-        }
-      `}</style>
-
-      {/* Content overlay - revealed after video or on scroll */}
+      {/* Content overlay — revealed after video ends or on scroll */}
       <div
         ref={contentRef}
-        className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6"
+        className="absolute inset-0 z-[3] flex flex-col items-center justify-center px-6"
         style={{ opacity: 0, transform: "translateY(20px)" }}
       >
         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white text-center leading-tight tracking-tight max-w-4xl">
