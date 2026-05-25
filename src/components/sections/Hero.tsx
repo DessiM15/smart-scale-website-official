@@ -83,18 +83,17 @@ export default function Hero() {
       {/* Solid black background layer — prevents alpha-channel grid bleed */}
       <div className="absolute inset-0 bg-black z-0" />
 
-      {/* Logo video — centered, no stretch, black behind */}
-      <div className="absolute inset-0 z-[1] flex items-center justify-center bg-black">
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          playsInline
-          className="w-full h-full object-contain"
-        >
-          <source src="/assets/smart-scale-logo-vid.mp4" type="video/mp4" />
-        </video>
-      </div>
+      {/* Logo video — full screen, blend mode kills alpha checkerboard */}
+      <video
+        ref={videoRef}
+        autoPlay
+        muted
+        playsInline
+        className="absolute inset-0 z-[1] w-full h-full object-cover"
+        style={{ mixBlendMode: "lighten" }}
+      >
+        <source src="/assets/smart-scale-logo-vid.mp4" type="video/mp4" />
+      </video>
 
       {/* Vignette overlay */}
       <div
