@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
-import Script from "next/script";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import GSAPProvider from "@/components/GSAPProvider";
+import SmoothScrollProvider from "@/components/SmoothScrollProvider";
+import SchemaOrg from "@/components/SchemaOrg";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -12,15 +12,65 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const playfair = Playfair_Display({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-jetbrains-mono",
+  weight: ["400", "500", "600", "700", "800", "900"],
+  variable: "--font-playfair",
 });
 
 export const metadata: Metadata = {
-  title: "Smart Scale - Enterprise Software & AI Development",
-  description: "Custom-built solutions for businesses requiring precision and performance.",
+  metadataBase: new URL("https://smartscalesoftware.com"),
+  title: {
+    default: "Smart Scale | Precision Software for Enterprise",
+    template: "%s | Smart Scale",
+  },
+  description:
+    "Precision-engineered enterprise software, AI systems, and digital platforms. Architected for growth, built without compromise.",
+  keywords: [
+    "enterprise software development",
+    "AI systems",
+    "custom software",
+    "digital transformation",
+    "web applications",
+    "mobile development",
+    "enterprise platforms",
+    "software consultancy",
+  ],
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://smartscalesoftware.com",
+    siteName: "Smart Scale",
+    title: "Smart Scale | Precision Software for Enterprise",
+    description:
+      "Precision-engineered enterprise software, AI systems, and digital platforms. Architected for growth, built without compromise.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Smart Scale - Precision Software for Enterprise",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Smart Scale | Precision Software for Enterprise",
+    description:
+      "Precision-engineered enterprise software, AI systems, and digital platforms.",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 export default function RootLayout({
@@ -29,63 +79,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body className="bg-[#0A0A0A] text-white">
-        <Script
-          id="unicorn-studio"
-          strategy="lazyOnload"
-          dangerouslySetInnerHTML={{
-            __html: `
-              !function(){
-                if(!window.UnicornStudio){
-                  window.UnicornStudio={isInitialized:!1};
-                  
-                  // Wait for DOM to be fully loaded
-                  const initUnicorn = () => {
-                    // Check if WebGL is supported
-                    const canvas = document.createElement('canvas');
-                    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-                    
-                    if (!gl) {
-                      console.warn('WebGL not supported, skipping UnicornStudio');
-                      return;
-                    }
-                    
-                    var i=document.createElement("script");
-                    i.src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v1.4.29/dist/unicornStudio.umd.js";
-                    i.onload=function(){
-                      try {
-                        if (!window.UnicornStudio.isInitialized) {
-                          UnicornStudio.init();
-                          window.UnicornStudio.isInitialized=!0;
-                        }
-                      } catch (e) {
-                        console.warn('UnicornStudio initialization failed:', e);
-                      }
-                    };
-                    i.onerror=function(){
-                      console.warn('Failed to load UnicornStudio script');
-                    };
-                    (document.head || document.body).appendChild(i);
-                  };
-                  
-                  if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', initUnicorn);
-                  } else {
-                    setTimeout(initUnicorn, 100);
-                  }
-                }
-              }();
-            `,
-          }}
-        />
-        <GSAPProvider>
+        <SchemaOrg />
+        <SmoothScrollProvider>
           <Navbar />
           <main className="min-h-screen">{children}</main>
           <Footer />
-        </GSAPProvider>
+        </SmoothScrollProvider>
       </body>
     </html>
   );
 }
-

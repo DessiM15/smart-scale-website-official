@@ -4,6 +4,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 
+const links = [
+  { href: "/", label: "Home" },
+  { href: "/portfolio", label: "Work" },
+  { href: "/what-we-do", label: "Services" },
+  { href: "/company", label: "About" },
+  { href: "/contact", label: "Contact" },
+];
+
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -42,47 +50,20 @@ export default function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-12">
-            <Link
-              href="/"
-              className="text-sm font-medium text-white/70 hover:text-white transition"
-            >
-              Home
-            </Link>
-            <Link
-              href="/what-we-do"
-              className="text-sm font-medium text-white/70 hover:text-white transition"
-            >
-              What We Do
-            </Link>
-            <Link
-              href="/portfolio"
-              className="text-sm font-medium text-white/70 hover:text-white transition"
-            >
-              Portfolio
-            </Link>
-            <Link
-              href="/company"
-              className="text-sm font-medium text-white/70 hover:text-white transition"
-            >
-              Company
-            </Link>
-            <Link
-              href="/blog"
-              className="text-sm font-medium text-white/70 hover:text-white transition"
-            >
-              Blog
-            </Link>
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-xs uppercase tracking-widest text-white/60 hover:text-white transition-colors duration-300"
+              >
+                {link.label}
+              </Link>
+            ))}
             <Link
               href="/contact"
-              className="text-sm font-medium text-white/70 hover:text-white transition"
+              className="px-6 py-2.5 border border-white/20 text-white/80 rounded-full text-xs uppercase tracking-widest hover:border-white/40 hover:text-white transition-all duration-300"
             >
-              Contact
-            </Link>
-            <Link
-              href="/contact"
-              className="px-6 py-2.5 bg-[#DC2626] text-white rounded-full text-sm font-semibold hover:bg-red-700 transition"
-            >
-              Request Estimate
+              Get in Touch
             </Link>
           </div>
 
@@ -113,54 +94,22 @@ export default function Navbar() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden pb-6 space-y-4 bg-black/95 backdrop-blur-xl -mx-4 px-4 border-t border-white/[0.08]">
-            <Link
-              href="/"
-              className="block text-sm font-medium text-white/70 hover:text-white transition pt-4"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Home
-            </Link>
-            <Link
-              href="/what-we-do"
-              className="block text-sm font-medium text-white/70 hover:text-white transition"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              What We Do
-            </Link>
-            <Link
-              href="/portfolio"
-              className="block text-sm font-medium text-white/70 hover:text-white transition"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Portfolio
-            </Link>
-            <Link
-              href="/company"
-              className="block text-sm font-medium text-white/70 hover:text-white transition"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Company
-            </Link>
-            <Link
-              href="/blog"
-              className="block text-sm font-medium text-white/70 hover:text-white transition"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Blog
-            </Link>
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="block text-xs uppercase tracking-widest text-white/60 hover:text-white transition pt-4"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
             <Link
               href="/contact"
-              className="block text-sm font-medium text-white/70 hover:text-white transition"
+              className="block w-full px-6 py-2.5 border border-white/20 text-white/80 rounded-full text-xs uppercase tracking-widest text-center hover:border-white/40 hover:text-white transition-all duration-300"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Contact
-            </Link>
-            <Link
-              href="/contact"
-              className="block w-full px-6 py-2.5 bg-[#DC2626] text-white rounded-full text-sm font-semibold text-center hover:bg-red-700 transition"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Request Estimate
+              Get in Touch
             </Link>
           </div>
         )}

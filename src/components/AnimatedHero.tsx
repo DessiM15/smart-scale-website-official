@@ -1,7 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
-import { useHeroAnimations } from "@/hooks/useHeroAnimations";
+import { ReactNode, useRef } from "react";
 
 interface AnimatedHeroProps {
   children: ReactNode;
@@ -9,27 +8,22 @@ interface AnimatedHeroProps {
   className?: string;
 }
 
-export default function AnimatedHero({ 
-  children, 
+export default function AnimatedHero({
+  children,
   backgroundElement,
-  className = "min-h-screen overflow-hidden z-10 relative bg-black"
+  className = "min-h-screen overflow-hidden z-10 relative bg-[#0A0A0A]"
 }: AnimatedHeroProps) {
-  const { sectionRef, parallaxStyle, scrollStyle } = useHeroAnimations();
+  const sectionRef = useRef<HTMLElement>(null);
 
   return (
-    <section 
-      ref={sectionRef} 
+    <section
+      ref={sectionRef}
       className={className}
-      style={scrollStyle}
     >
-      {/* Background element */}
       {backgroundElement}
-      
-      {/* Hero Content with parallax */}
-      <div style={parallaxStyle} className="relative z-10">
+      <div className="relative z-10">
         {children}
       </div>
     </section>
   );
 }
-

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import Badge from "@/components/ui/Badge";
 import type { Project } from "@/data/projects";
 
 interface ProjectCardProps {
@@ -15,30 +14,30 @@ export default function ProjectCard({ project }: ProjectCardProps) {
       href={`/portfolio/${project.slug}`}
       className="portfolio-item group block"
     >
-      <div className="relative overflow-hidden rounded-3xl bg-[#161616] border border-white/[0.08] transition-all duration-300 hover:border-white/[0.15] hover:shadow-2xl hover:shadow-[#DC2626]/5">
-        {/* Thumbnail */}
-        <div className="relative aspect-[16/10] overflow-hidden bg-[#111111]">
+      <div className="relative overflow-hidden rounded-2xl bg-[#111111] border border-white/[0.04] transition-all duration-500 hover:border-white/[0.10]">
+        {/* Thumbnail - full bleed */}
+        <div className="relative aspect-[16/10] overflow-hidden">
           <Image
             src={project.thumbnailImage}
             alt={project.title}
             fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
             unoptimized
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#161616] via-transparent to-transparent opacity-60" />
+          {/* Hover overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         </div>
 
         {/* Content */}
         <div className="p-5">
-          <div className="flex items-center gap-2 mb-3 flex-wrap">
-            <Badge variant="accent">{project.serviceType}</Badge>
-            {project.isAIPowered && <Badge variant="ai">AI-Powered</Badge>}
-          </div>
-          <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-[#DC2626] transition-colors duration-300">
+          <span className="text-xs uppercase tracking-widest text-white/35 mb-2 block">
+            {project.serviceType}
+          </span>
+          <h3 className="text-lg font-medium text-white mb-1.5 group-hover:text-white/90 transition-colors duration-300">
             {project.title}
           </h3>
-          <p className="text-sm text-white/50 line-clamp-2">
+          <p className="text-sm text-white/40 line-clamp-2">
             {project.shortDescription}
           </p>
         </div>

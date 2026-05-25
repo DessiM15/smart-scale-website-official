@@ -1,24 +1,17 @@
 import Hero from "@/components/sections/Hero";
-import WhySmartScale from "@/components/sections/WhySmartScale";
-import WhyChooseSmartScale from "@/components/sections/WhyChooseSmartScale";
-import ProcessVisualization from "@/components/sections/ProcessVisualization";
-import IndustriesWeServe from "@/components/sections/IndustriesWeServe";
-import OurClients from "@/components/sections/OurClients";
-import BookACall from "@/components/sections/BookACall";
-import UrgencyCTA from "@/components/sections/UrgencyCTA";
+import SelectedWork from "@/components/sections/SelectedWork";
+import Capabilities from "@/components/sections/Capabilities";
+import SocialProof from "@/components/sections/SocialProof";
+import ContactCTA from "@/components/sections/ContactCTA";
 
 export default function Home() {
   return (
     <>
       <Hero />
-      <WhySmartScale />
-      <WhyChooseSmartScale />
-      <ProcessVisualization />
-      <IndustriesWeServe />
-      <OurClients />
-      <BookACall />
-      <UrgencyCTA />
+      <SelectedWork />
+      <Capabilities />
+      <SocialProof />
+      <ContactCTA />
     </>
   );
 }
-

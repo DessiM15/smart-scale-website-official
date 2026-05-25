@@ -5,69 +5,62 @@ import Link from "next/link";
 import {
   Smartphone,
   Globe,
-  Layers,
   Brain,
   Building2,
   Layout,
   Zap,
 } from "lucide-react";
 import GlowCard from "@/components/ui/GlowCard";
-import HeroCTA from "@/components/HeroCTA";
 
 const capabilities = [
   {
-    title: "Mobile Development",
-    description: "Native and cross-platform mobile applications for iOS and Android.",
-    icon: <Smartphone className="w-8 h-8" />,
-  },
-  {
-    title: "Web Development",
-    description: "Modern, responsive web applications using cutting-edge technologies.",
+    title: "Web Applications",
+    description: "Full-stack platforms built for performance, security, and scale.",
     icon: <Globe className="w-8 h-8" />,
   },
   {
-    title: "Cross-Platform Apps",
-    description: "Unified applications that work seamlessly across all platforms.",
-    icon: <Layers className="w-8 h-8" />,
+    title: "Mobile Development",
+    description: "Native and cross-platform applications for iOS and Android.",
+    icon: <Smartphone className="w-8 h-8" />,
   },
   {
-    title: "AI Workflow Automation",
-    description: "Intelligent automation and AI-powered workflows to streamline operations.",
+    title: "AI Systems",
+    description: "Intelligent automation, NLP, and machine learning integrated into your workflows.",
     icon: <Brain className="w-8 h-8" />,
   },
   {
-    title: "Enterprise Systems",
-    description: "Scalable enterprise software solutions for complex business requirements.",
+    title: "Enterprise Platforms",
+    description: "Mission-critical systems engineered for reliability and scale.",
     icon: <Building2 className="w-8 h-8" />,
   },
   {
-    title: "Web Applications",
-    description: "Full-stack web applications with robust architecture and performance.",
+    title: "Web Development",
+    description: "Modern, responsive websites with meticulous attention to craft.",
     icon: <Layout className="w-8 h-8" />,
   },
   {
-    title: "Integrations & APIs",
-    description: "Seamless integrations and automated workflows to connect your systems.",
+    title: "Integrations & Automation",
+    description: "Seamless API connections and automated data workflows.",
     icon: <Zap className="w-8 h-8" />,
   },
 ];
 
 const technologies = [
-  "JavaScript",
+  "TypeScript",
   "React",
   "Next.js",
   "Node.js",
   "Python",
-  "Postgres",
+  "PostgreSQL",
   "Vercel",
 ];
 
 const processSteps = [
-  { step: "Discovery", description: "Understanding your business needs, goals, and technical requirements." },
-  { step: "Planning", description: "Creating detailed project plans, architecture, and timelines." },
-  { step: "Development", description: "Building your solution with clean, maintainable, and scalable code." },
-  { step: "Testing", description: "Comprehensive testing to ensure quality and reliability." },
-  { step: "Deployment", description: "Smooth deployment and ongoing support for your solution." },
+  { step: "Discovery", description: "Understanding your business, goals, and technical landscape." },
+  { step: "Architecture", description: "Designing systems built for longevity and scale." },
+  { step: "Engineering", description: "Precision development with rigorous quality standards." },
+  { step: "Validation", description: "Comprehensive testing to ensure reliability under load." },
+  { step: "Deployment", description: "Smooth launch with ongoing optimization and support." },
 ];
 
 export default function WhatWeDo() {
@@ -76,30 +69,37 @@ export default function WhatWeDo() {
       {/* Hero */}
       <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 text-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto text-center relative z-10">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 hero-headline">
-            Your MVP in 7 Days.
+          <h1 className="text-5xl sm:text-6xl md:text-7xl mb-6 hero-headline">
+            Engineering Excellence
           </h1>
-          <p className="text-lg sm:text-xl text-white/60 max-w-3xl mx-auto mb-8 hero-subheadline">
-            While others are still writing proposals, we&apos;re already delivering your first working prototype.
+          <p className="text-lg sm:text-xl text-white/50 max-w-3xl mx-auto mb-8 hero-subheadline">
+            End-to-end software development for businesses that demand
+            precision, reliability, and long-term value.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <HeroCTA href="/contact" variant="primary">
-              Schedule Consultation
-            </HeroCTA>
-            <HeroCTA href="/company" variant="secondary">
-              See Our Process
-            </HeroCTA>
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-3 px-8 py-3.5 border border-white/20 rounded-full text-sm uppercase tracking-widest text-white/80 hover:text-white hover:border-white/40 transition-all duration-500"
+            >
+              Start a Conversation
+            </Link>
+            <Link
+              href="/portfolio"
+              className="inline-flex items-center gap-3 px-8 py-3.5 border border-white/10 rounded-full text-sm uppercase tracking-widest text-white/50 hover:text-white/80 hover:border-white/20 transition-all duration-500"
+            >
+              View Our Work
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Capabilities Grid */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0F0F0F]">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-bold mb-12 text-center text-white">
+          <h2 className="text-4xl mb-12 text-center text-white" data-animate="fade-up">
             Capabilities
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-animate="stagger">
             {capabilities.map((capability, index) => (
               <ServiceCard
                 key={index}
@@ -115,15 +115,14 @@ export default function WhatWeDo() {
       {/* Technologies Used */}
       <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-bold mb-12 text-center text-white">
-            Technologies Used
+          <h2 className="text-4xl mb-12 text-center text-white" data-animate="fade-up">
+            Our Stack
           </h2>
-          <div className="flex flex-wrap justify-center gap-4">
+          <div className="flex flex-wrap justify-center gap-4" data-animate="stagger">
             {technologies.map((tech, index) => (
               <span
                 key={index}
-                className="px-6 py-3 rounded-full text-lg font-medium bg-[#161616] text-white/70 border border-white/[0.08] hover:border-[#DC2626]/30 hover:text-white transition-all duration-300"
-                style={{ fontFamily: "var(--font-jetbrains-mono), monospace" }}
+                className="px-6 py-3 rounded-full text-sm font-medium bg-[#161616] text-white/50 border border-white/[0.06] hover:border-white/[0.12] hover:text-white/70 transition-all duration-300 uppercase tracking-widest"
               >
                 {tech}
               </span>
@@ -133,21 +132,21 @@ export default function WhatWeDo() {
       </section>
 
       {/* Process Overview */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0F0F0F]">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-bold mb-12 text-center text-white">
+          <h2 className="text-4xl mb-12 text-center text-white" data-animate="fade-up">
             Our Process
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6" data-animate="stagger">
             {processSteps.map((item, index) => (
               <GlowCard key={index} className="p-6">
-                <div className="text-2xl font-bold text-[#DC2626] mb-2">
-                  {index + 1}
+                <div className="text-sm font-medium text-white/30 mb-2">
+                  0{index + 1}
                 </div>
-                <h3 className="text-xl font-semibold mb-3 text-white">
+                <h3 className="text-xl mb-3 text-white">
                   {item.step}
                 </h3>
-                <p className="text-white/50">{item.description}</p>
+                <p className="text-white/45 text-sm">{item.description}</p>
               </GlowCard>
             ))}
           </div>
@@ -156,19 +155,22 @@ export default function WhatWeDo() {
 
       {/* CTA */}
       <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-6 text-white">
-            Ready to Get Started?
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-4xl mb-6 text-white" data-animate="fade-up">
+            Ready to Begin?
           </h2>
-          <p className="text-xl text-white/60 mb-8">
-            Let&apos;s discuss how we can help transform your business.
+          <p className="text-lg text-white/50 mb-8" data-animate="fade-up">
+            Let&apos;s discuss how precision engineering can transform your
+            business.
           </p>
-          <Link
-            href="/contact"
-            className="inline-block px-8 py-4 bg-[#DC2626] text-white rounded-full text-lg font-semibold hover:bg-red-700 transition"
-          >
-            Request Estimate
-          </Link>
+          <div data-animate="fade-up">
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-3 px-10 py-4 border border-white/20 rounded-full text-sm uppercase tracking-widest text-white/80 hover:text-white hover:border-white/40 transition-all duration-500"
+            >
+              Start a Conversation
+            </Link>
+          </div>
         </div>
       </section>
     </div>

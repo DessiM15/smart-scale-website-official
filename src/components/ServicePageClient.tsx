@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import ServiceNavigation from "@/components/ServiceNavigation";
 import GlowCard from "@/components/ui/GlowCard";
-import HeroCTA from "@/components/HeroCTA";
 
 const iconMap: Record<string, React.ReactNode> = {
   "mobile-development": <Smartphone className="w-12 h-12" />,
@@ -52,19 +51,25 @@ export default function ServicePageClient({ slug }: ServicePageClientProps) {
                 </div>
               </div>
             )}
-            <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 hero-headline">
-              {service.title}: Built with AI-Powered Speed
+            <h1 className="text-5xl sm:text-6xl md:text-7xl mb-6 hero-headline">
+              {service.title}
             </h1>
-            <p className="text-lg sm:text-xl text-white/60 max-w-3xl mb-8 hero-subheadline">
-              See how we deliver {service.title.toLowerCase()} using modern development practices and AI acceleration.
+            <p className="text-lg sm:text-xl text-white/50 max-w-3xl mb-8 hero-subheadline">
+              Precision-engineered {service.title.toLowerCase()} built for performance, reliability, and scale.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <HeroCTA href="/contact" variant="primary" className="cta-button">
-                Build Something Similar
-              </HeroCTA>
-              <HeroCTA href="/portfolio" variant="secondary" className="cta-button">
-                View Next Project
-              </HeroCTA>
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-3 px-8 py-3.5 border border-white/20 rounded-full text-sm uppercase tracking-widest text-white/80 hover:text-white hover:border-white/40 transition-all duration-500"
+              >
+                Start a Conversation
+              </Link>
+              <Link
+                href="/portfolio"
+                className="inline-flex items-center gap-3 px-8 py-3.5 border border-white/10 rounded-full text-sm uppercase tracking-widest text-white/50 hover:text-white/80 hover:border-white/20 transition-all duration-500"
+              >
+                View Our Work
+              </Link>
             </div>
           </div>
         </div>
@@ -142,17 +147,17 @@ export default function ServicePageClient({ slug }: ServicePageClientProps) {
       {/* CTA */}
       <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-6 text-white">
-            Ready to Get Started?
+          <h2 className="text-4xl mb-6 text-white">
+            Ready to Begin?
           </h2>
-          <p className="text-xl text-white/60 mb-8">
-            Let&apos;s discuss how {service.title.toLowerCase()} can transform your business.
+          <p className="text-lg text-white/50 mb-8">
+            Let&apos;s discuss how {service.title.toLowerCase()} can elevate your business.
           </p>
           <Link
             href="/contact"
-            className="request-estimate inline-block px-8 py-4 bg-[#DC2626] text-white rounded-full text-lg font-semibold hover:bg-red-700 transition"
+            className="inline-flex items-center gap-3 px-10 py-4 border border-white/20 rounded-full text-sm uppercase tracking-widest text-white/80 hover:text-white hover:border-white/40 transition-all duration-500"
           >
-            Request Estimate
+            Start a Conversation
           </Link>
         </div>
       </section>

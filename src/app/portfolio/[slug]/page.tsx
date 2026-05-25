@@ -17,8 +17,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!project) return { title: "Project Not Found | Smart Scale" };
 
   return {
-    title: `${project.title} | Smart Scale Portfolio`,
+    title: `${project.title} — Case Study`,
     description: project.shortDescription,
+    openGraph: {
+      title: `${project.title} — Smart Scale Case Study`,
+      description: project.description,
+      images: [
+        {
+          url: project.thumbnailImage,
+          width: 1920,
+          height: 1080,
+          alt: project.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${project.title} — Smart Scale`,
+      description: project.shortDescription,
+      images: [project.thumbnailImage],
+    },
   };
 }
 

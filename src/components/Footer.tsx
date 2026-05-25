@@ -18,81 +18,59 @@ export default function Footer() {
               />
             </Link>
             <p className="text-sm text-white/40 max-w-md">
-              Enterprise software, AI systems, and digital transformation
-              solutions for businesses requiring precision and performance.
+              Precision-engineered enterprise software, AI systems, and digital
+              platforms. Architected for growth, built without compromise.
             </p>
           </div>
           <div>
-            <h4 className="text-sm font-semibold mb-4 text-white">
+            <h4 className="text-xs uppercase tracking-widest font-medium mb-4 text-white/60">
               Navigation
+            </h4>
+            <ul className="space-y-3">
+              {[
+                { href: "/", label: "Home" },
+                { href: "/what-we-do", label: "Services" },
+                { href: "/portfolio", label: "Work" },
+                { href: "/company", label: "About" },
+                { href: "/blog", label: "Journal" },
+              ].map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-white/40 hover:text-white transition-colors duration-300"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-xs uppercase tracking-widest font-medium mb-4 text-white/60">
+              Contact
             </h4>
             <ul className="space-y-3">
               <li>
                 <Link
-                  href="/"
-                  className="text-sm text-white/40 hover:text-[#DC2626] transition"
-                >
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/what-we-do"
-                  className="text-sm text-white/40 hover:text-[#DC2626] transition"
-                >
-                  What We Do
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/portfolio"
-                  className="text-sm text-white/40 hover:text-[#DC2626] transition"
-                >
-                  Portfolio
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/company"
-                  className="text-sm text-white/40 hover:text-[#DC2626] transition"
-                >
-                  Company
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/blog"
-                  className="text-sm text-white/40 hover:text-[#DC2626] transition"
-                >
-                  Blog
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold mb-4 text-white">Contact</h4>
-            <ul className="space-y-3">
-              <li>
-                <Link
                   href="/contact"
-                  className="text-sm text-white/40 hover:text-[#DC2626] transition"
+                  className="text-sm text-white/40 hover:text-white transition-colors duration-300"
                 >
-                  Contact Us
+                  Start a Conversation
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/contact"
-                  className="text-sm text-white/40 hover:text-[#DC2626] transition"
+                <a
+                  href="mailto:project@ssl-mail.com"
+                  className="text-sm text-white/40 hover:text-white transition-colors duration-300"
                 >
-                  Request Estimate
-                </Link>
+                  project@ssl-mail.com
+                </a>
               </li>
             </ul>
           </div>
         </div>
-        <div className="pt-8 border-t border-white/[0.08]">
-          <p className="text-sm text-white/30">
+        <div className="pt-8 border-t border-white/[0.06]">
+          <p className="text-xs text-white/25 tracking-wide">
             &copy; {new Date().getFullYear()} Smart Scale. All rights reserved.
           </p>
         </div>

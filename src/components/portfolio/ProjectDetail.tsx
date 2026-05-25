@@ -80,7 +80,7 @@ export default function ProjectDetail({
                     <span
                       key={tech}
                       className="px-3 py-1.5 rounded-full text-xs font-medium bg-white/[0.06] text-white/70 border border-white/[0.08]"
-                      style={{ fontFamily: "var(--font-jetbrains-mono), monospace" }}
+                      style={{ fontFamily: "monospace" }}
                     >
                       {tech}
                     </span>
@@ -241,19 +241,19 @@ export default function ProjectDetail({
       <section className="px-4 sm:px-6 lg:px-8 pb-24">
         <div className="max-w-4xl mx-auto text-center">
           <div className="rounded-3xl bg-[#161616] border border-white/[0.08] p-12 md:p-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-              Start Your Project
+            <h2 className="text-3xl sm:text-4xl text-white mb-4">
+              Interested in Similar Work?
             </h2>
-            <p className="text-white/60 mb-8 max-w-lg mx-auto">
-              Ready to build something like this? Let&apos;s talk about your
-              vision and make it happen.
+            <p className="text-white/50 mb-8 max-w-lg mx-auto">
+              Every project begins with understanding your vision. Let&apos;s
+              explore what&apos;s possible.
             </p>
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-[#DC2626] text-white rounded-full text-lg font-semibold hover:bg-red-700 transition-colors"
+              className="inline-flex items-center gap-3 px-10 py-4 border border-white/20 rounded-full text-sm uppercase tracking-widest text-white/80 hover:text-white hover:border-white/40 transition-all duration-500"
             >
-              Request Estimate
-              <ArrowRight className="w-5 h-5" />
+              Start a Conversation
+              <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </div>

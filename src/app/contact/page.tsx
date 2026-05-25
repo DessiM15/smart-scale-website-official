@@ -4,7 +4,7 @@ import { useState } from "react";
 import ContactForm from "@/components/ContactForm";
 import TextConsentForm from "@/components/TextConsentForm";
 import VerificationModal from "@/components/VerificationModal";
-import HeroCTA from "@/components/HeroCTA";
+import Link from "next/link";
 
 export default function Contact() {
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
@@ -20,17 +20,20 @@ export default function Contact() {
       {/* Hero */}
       <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 text-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto text-center relative z-10">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 hero-headline">
-            Talk Directly to the Builders
+          <h1 className="text-5xl sm:text-6xl md:text-7xl mb-6 hero-headline">
+            Start a Conversation
           </h1>
-          <p className="text-lg sm:text-xl text-white/60 max-w-3xl mx-auto mb-8 hero-subheadline">
-            No sales team. No account managers. Just the two founders who will
-            personally build your project.
+          <p className="text-lg sm:text-xl text-white/50 max-w-3xl mx-auto mb-8 hero-subheadline">
+            Every great partnership begins with a conversation. Tell us about
+            your vision and we&apos;ll explore how we can bring it to life.
           </p>
           <div className="flex justify-center">
-            <HeroCTA href="#contact-form" variant="secondary">
+            <Link
+              href="#contact-form"
+              className="inline-flex items-center gap-3 px-8 py-3.5 border border-white/20 rounded-full text-sm uppercase tracking-widest text-white/80 hover:text-white hover:border-white/40 transition-all duration-500"
+            >
               Send Project Details
-            </HeroCTA>
+            </Link>
           </div>
         </div>
       </section>
@@ -40,52 +43,52 @@ export default function Contact() {
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div>
-              <h2 className="text-3xl font-bold mb-6 text-white">
+              <h2 className="text-3xl mb-6 text-white">
                 Send us a message
               </h2>
               <ContactForm />
             </div>
 
             <div>
-              <h2 className="text-3xl font-bold mb-6 text-white">
+              <h2 className="text-3xl mb-6 text-white">
                 Contact Information
               </h2>
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold mb-2 text-white">
+                  <h3 className="text-sm uppercase tracking-widest text-white/40 mb-2">
                     Email
                   </h3>
                   <a
                     href="mailto:project@ssl-mail.com"
-                    className="text-[#DC2626] hover:underline text-lg"
+                    className="text-white/70 hover:text-white transition-colors duration-300 text-lg"
                   >
                     project@ssl-mail.com
                   </a>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-2 text-white">
+                  <h3 className="text-sm uppercase tracking-widest text-white/40 mb-2">
                     Phone
                   </h3>
                   <div className="space-y-2">
                     <a
                       href="tel:8324070773"
-                      className="text-[#DC2626] hover:underline text-lg block"
+                      className="text-white/70 hover:text-white transition-colors duration-300 text-lg block"
                     >
                       Jay: 832.407.0773
                     </a>
                     <a
                       href="tel:8327905001"
-                      className="text-[#DC2626] hover:underline text-lg block"
+                      className="text-white/70 hover:text-white transition-colors duration-300 text-lg block"
                     >
                       Dee: 832.790.5001
                     </a>
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-2 text-white">
+                  <h3 className="text-sm uppercase tracking-widest text-white/40 mb-2">
                     Location
                   </h3>
-                  <p className="text-white/60 text-lg">Texas, United States</p>
+                  <p className="text-white/50 text-lg">Texas, United States</p>
                 </div>
               </div>
             </div>
@@ -94,15 +97,15 @@ export default function Contact() {
       </section>
 
       {/* SMS Consent Form Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0F0F0F]">
         <div className="max-w-4xl mx-auto">
-          <div className="rounded-3xl bg-[#161616] border border-white/[0.08] p-8 sm:p-12">
-            <h2 className="text-3xl font-bold mb-4 text-white">
-              Subscribe to Text Updates
+          <div className="rounded-2xl bg-[#161616] border border-white/[0.06] p-8 sm:p-12">
+            <h2 className="text-3xl mb-4 text-white">
+              Subscribe to Updates
             </h2>
-            <p className="text-white/60 mb-8">
-              Stay connected with Smart Scale. Receive important updates,
-              project milestones, and exclusive offers via text message.
+            <p className="text-white/50 mb-8">
+              Stay connected with Smart Scale. Receive project milestones and
+              updates via text message.
             </p>
 
             {isVerified ? (
@@ -122,12 +125,12 @@ export default function Contact() {
                     />
                   </svg>
                   <h3 className="text-xl font-semibold">
-                    Successfully Verified!
+                    Successfully Verified
                   </h3>
                 </div>
                 <p className="text-lg">
-                  Thank you for subscribing! You will now receive text message
-                  updates from Smart Scale.
+                  Thank you for subscribing. You will now receive updates from
+                  Smart Scale.
                 </p>
               </div>
             ) : (

@@ -16,6 +16,8 @@ export interface Project {
   secondaryVercelUrl?: string;
   githubUrl: string;
   isAIPowered?: boolean;
+  featured?: boolean;
+  featuredOrder?: number;
   caseStudy?: {
     challenge: string;
     solution: string;
@@ -46,6 +48,12 @@ export function filterByCategory(
   return projects.filter(
     (p) => SERVICE_TO_FILTER[p.serviceType] === category
   );
+}
+
+export function getFeaturedProjects(): Project[] {
+  return projects
+    .filter((p) => p.featured)
+    .sort((a, b) => (a.featuredOrder ?? 99) - (b.featuredOrder ?? 99));
 }
 
 export const projects: Project[] = [
@@ -140,6 +148,8 @@ export const projects: Project[] = [
     vercelUrl: "https://teachers-retirement-three.vercel.app",
     secondaryVercelUrl: "https://teacher-pension-recruitment.vercel.app",
     githubUrl: "https://github.com/DessiM15/teachers-retirement",
+    featured: true,
+    featuredOrder: 4,
     caseStudy: {
       challenge:
         "A teachers pension organization needed two connected web properties: a main informational site for pension resources and a separate recruitment portal to attract new educators to the profession.",
@@ -166,6 +176,8 @@ export const projects: Project[] = [
     thumbnailImage: "/assets/portfolio/gulf-coast-alloys/thumbnail.webp",
     vercelUrl: "https://gca-2-blond.vercel.app",
     githubUrl: "https://github.com/DessiM15/GCA2",
+    featured: true,
+    featuredOrder: 3,
     caseStudy: {
       challenge:
         "A specialty metals distributor needed a modern web presence that could effectively communicate their product range and capabilities to industrial B2B buyers.",
@@ -192,6 +204,8 @@ export const projects: Project[] = [
     thumbnailImage: "/assets/portfolio/botmakers-crm/thumbnail.webp",
     vercelUrl: "https://botmakers-crm.vercel.app",
     githubUrl: "https://github.com/DessiM15/botmakers-crm",
+    featured: true,
+    featuredOrder: 1,
     caseStudy: {
       challenge:
         "An AI development agency needed a custom CRM that could handle their unique workflow: managing AI project pipelines, tracking client communications, and integrating invoicing.",
@@ -299,6 +313,8 @@ export const projects: Project[] = [
     vercelUrl: "https://repo-911.vercel.app",
     githubUrl: "https://github.com/DessiM15/repo911",
     isAIPowered: true,
+    featured: true,
+    featuredOrder: 2,
     caseStudy: {
       challenge:
         "The repossession dispute space needed a comprehensive platform that could handle case management, document processing, and client communication at scale while leveraging AI for case analysis.",

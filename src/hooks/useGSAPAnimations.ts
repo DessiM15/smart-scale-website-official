@@ -14,8 +14,8 @@ gsap.config({
 });
 
 gsap.defaults({
-  ease: "power2.out",
-  duration: 0.8,
+  ease: "power3.out",
+  duration: 1.0,
 });
 
 export function useGSAPAnimations() {
@@ -26,50 +26,72 @@ export function useGSAPAnimations() {
     initializedRef.current = true;
 
     const setupAnimations = () => {
-      // Set initial states via GSAP (not CSS) to prevent flash-of-invisible-content
+      // Legacy scroll-reveal classes
       const revealElements = document.querySelectorAll(
         ".scroll-reveal, .scroll-reveal-fade, .scroll-reveal-slide"
       );
 
       if (revealElements.length > 0) {
-        gsap.set(revealElements, { opacity: 0, y: 30 });
+        gsap.set(revealElements, { opacity: 0, y: 20 });
 
         ScrollTrigger.batch(revealElements, {
           onEnter: (batch) => {
             gsap.to(batch, {
               opacity: 1,
               y: 0,
-              duration: 0.8,
-              ease: "power2.out",
+              duration: 1.0,
+              ease: "power3.out",
               stagger: 0.15,
             });
           },
-          start: "top 85%",
+          start: "top 88%",
           once: true,
         });
       }
 
-      // Stagger children of stagger containers
+      // New data-animate="fade-up" pattern
+      const fadeUpElements = document.querySelectorAll(
+        '[data-animate="fade-up"]'
+      );
+      if (fadeUpElements.length > 0) {
+        gsap.set(fadeUpElements, { opacity: 0, y: 20 });
+
+        ScrollTrigger.batch(fadeUpElements, {
+          onEnter: (batch) => {
+            gsap.to(batch, {
+              opacity: 1,
+              y: 0,
+              duration: 1.0,
+              ease: "power3.out",
+              stagger: 0.1,
+            });
+          },
+          start: "top 88%",
+          once: true,
+        });
+      }
+
+      // Stagger containers (legacy + new)
       const staggerContainers = document.querySelectorAll(
-        ".scroll-reveal-stagger"
+        '.scroll-reveal-stagger, [data-animate="stagger"]'
       );
       staggerContainers.forEach((container) => {
         const children = container.children;
         if (children.length === 0) return;
 
-        gsap.set(children, { opacity: 0, y: 30 });
+        gsap.set(children, { opacity: 0, y: 20 });
 
         ScrollTrigger.create({
           trigger: container,
-          start: "top 85%",
+          start: "top 88%",
           once: true,
           onEnter: () => {
             gsap.to(children, {
               opacity: 1,
               y: 0,
-              duration: 0.8,
-              ease: "power2.out",
-              stagger: 0.12,
+              duration: 1.0,
+              ease: "power3.out",
+              stagger: 0.1,
             });
           },
         });
@@ -87,12 +109,12 @@ export function useGSAPAnimations() {
             gsap.to(batch, {
               opacity: 1,
               y: 0,
-              duration: 0.6,
-              ease: "power2.out",
+              duration: 0.8,
+              ease: "power3.out",
               stagger: 0.1,
             });
           },
-          start: "top 85%",
+          start: "top 88%",
           once: true,
         });
       }
@@ -100,12 +122,10 @@ export function useGSAPAnimations() {
       ScrollTrigger.refresh();
     };
 
-    // Run after a frame to ensure DOM is painted
     requestAnimationFrame(() => {
       setupAnimations();
     });
 
-    // Refresh when all assets load
     const handleLoad = () => ScrollTrigger.refresh();
     window.addEventListener("load", handleLoad);
 

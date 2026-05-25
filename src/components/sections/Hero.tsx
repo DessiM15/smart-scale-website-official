@@ -1,121 +1,152 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useHeroAnimations } from "@/hooks/useHeroAnimations";
-import FloatingParticles from "@/components/hero-backgrounds/FloatingParticles";
-import HeroCTA from "@/components/HeroCTA";
-import ScrollIndicator from "@/components/hero-backgrounds/ScrollIndicator";
+import { gsap } from "gsap";
+import Link from "next/link";
 
 export default function Hero() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const { sectionRef, parallaxStyle, scrollStyle } = useHeroAnimations();
-  const [shouldLoop, setShouldLoop] = useState(false);
-  const hasScrolledPastRef = useRef(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [videoEnded, setVideoEnded] = useState(false);
 
   useEffect(() => {
-    const section = sectionRef.current;
     const video = videoRef.current;
+    const content = contentRef.current;
+    if (!video || !content) return;
 
-    if (!section || !video) return;
+    const handleEnded = () => {
+      setVideoEnded(true);
+      gsap.to(video, {
+        opacity: 0.15,
+        duration: 1.5,
+        ease: "power3.out",
+      });
+      gsap.to(content, {
+        opacity: 1,
+        y: 0,
+        duration: 1.2,
+        ease: "power3.out",
+        delay: 0.3,
+      });
+    };
 
-    video.loop = false;
+    video.addEventListener("ended", handleEnded);
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          const isVisible = entry.isIntersecting;
-
-          if (!isVisible) {
-            hasScrolledPastRef.current = true;
-            video.loop = false;
-            setShouldLoop(false);
-          } else if (hasScrolledPastRef.current) {
-            video.loop = true;
-            setShouldLoop(true);
-            if (video.ended) {
-              video.play().catch(() => {});
-            }
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
-
-    observer.observe(section);
+    // Fallback: if video doesn't play (autoplay blocked), show content after delay
+    const fallbackTimer = setTimeout(() => {
+      if (!videoEnded) {
+        handleEnded();
+      }
+    }, 8000);
 
     return () => {
-      observer.disconnect();
+      video.removeEventListener("ended", handleEnded);
+      clearTimeout(fallbackTimer);
     };
-  }, []);
+  }, [videoEnded]);
+
+  // Reveal content on scroll even if video hasn't ended
+  useEffect(() => {
+    const section = sectionRef.current;
+    const content = contentRef.current;
+    const video = videoRef.current;
+    if (!section || !content || !video) return;
+
+    const handleScroll = () => {
+      if (videoEnded) return;
+      if (window.scrollY > 80) {
+        setVideoEnded(true);
+        gsap.to(video, {
+          opacity: 0.15,
+          duration: 1.0,
+          ease: "power3.out",
+        });
+        gsap.to(content, {
+          opacity: 1,
+          y: 0,
+          duration: 1.0,
+          ease: "power3.out",
+        });
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [videoEnded]);
 
   return (
     <section
       ref={sectionRef}
-      className="min-h-screen overflow-hidden z-10 relative bg-black"
-      style={scrollStyle}
+      className="relative h-screen overflow-hidden bg-[#0A0A0A]"
     >
-      {/* Video Background */}
+      {/* Vignette overlay */}
+      <div
+        className="absolute inset-0 z-10 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse at center, transparent 50%, rgba(10,10,10,0.7) 100%)",
+        }}
+      />
+
+      {/* Logo video - fullscreen */}
       <video
         ref={videoRef}
         autoPlay
         muted
         playsInline
-        loop={shouldLoop}
-        className="absolute top-0 left-0 w-full h-full object-cover -z-10 hero-bg-fade"
+        className="absolute inset-0 w-full h-full object-contain z-0 md:object-cover"
+        style={{ maxWidth: "100%", maxHeight: "100%" }}
       >
-        <source src="/assets/smart-scale-hero.mp4" type="video/mp4" />
+        <source src="/assets/smart-scale-logo-vid.mp4" type="video/mp4" />
       </video>
 
-      {/* Overlay */}
-      <div className="absolute top-0 left-0 w-full h-full bg-black/50 -z-10 hero-bg-fade" />
+      {/* Mobile: constrain video */}
+      <style jsx>{`
+        @media (max-width: 767px) {
+          video {
+            width: 70% !important;
+            height: auto !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -60%);
+            object-fit: contain !important;
+          }
+        }
+      `}</style>
 
-      {/* Unicorn globe */}
+      {/* Content overlay - revealed after video or on scroll */}
       <div
-        style={{
-          maskImage:
-            "linear-gradient(black 0%, black 60%, transparent 100%)",
-        }}
-        className="hero-bg-fade"
+        ref={contentRef}
+        className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6"
+        style={{ opacity: 0, transform: "translateY(20px)" }}
       >
-        <div
-          className="absolute top-0 left-0 -z-10 w-full h-full"
-          data-us-project="BhoqrigscYbD7NN1fwcp"
-        />
-      </div>
-
-      {/* Floating Particles */}
-      <FloatingParticles count={60} />
-
-      {/* Hero Content */}
-      <div className="md:px-8 md:pt-0 md:pb-0 max-w-7xl mr-auto mb-20 ml-auto pt-6 pr-6 pb-28 pl-6 relative z-10">
-        <div
-          className="hero-content grid place-items-center relative"
-          style={parallaxStyle}
+        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white text-center leading-tight tracking-tight max-w-4xl">
+          Precision Software for Enterprise
+        </h1>
+        <p className="mt-6 text-base md:text-lg text-white/60 text-center max-w-xl">
+          Architected for growth. Built without compromise.
+        </p>
+        <Link
+          href="#work"
+          className="mt-10 inline-flex items-center gap-3 px-8 py-3.5 border border-white/20 rounded-full text-sm uppercase tracking-widest text-white/80 hover:text-white hover:border-white/40 transition-all duration-500"
         >
-          <h1 className="md:mt-10 text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight select-none font-semibold text-white tracking-tight mt-10 text-center px-4 hero-headline">
-            Enterprise Software. AI Systems. Digital Transformation.
-          </h1>
-          <p className="md:text-lg text-base text-white/70 text-center max-w-2xl mt-6 hero-subheadline">
-            Custom-built solutions for businesses requiring precision and
-            performance.
-          </p>
-
-          {/* CTA Buttons — reduced to 2 */}
-          <div className="flex flex-col sm:flex-row gap-4 z-10 max-w-3xl mt-10 mr-auto ml-auto relative px-4">
-            <HeroCTA href="/contact" variant="primary" className="hero-cta">
-              Request Estimate
-            </HeroCTA>
-            <HeroCTA
-              href="/portfolio"
-              variant="secondary"
-              className="hero-cta"
-            >
-              View Portfolio
-            </HeroCTA>
-          </div>
-        </div>
+          Explore Our Work
+          <svg
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            fill="none"
+            className="w-4 h-4"
+          >
+            <path
+              d="M19 9l-7 7-7-7"
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+          </svg>
+        </Link>
       </div>
-      <ScrollIndicator />
     </section>
   );
 }
