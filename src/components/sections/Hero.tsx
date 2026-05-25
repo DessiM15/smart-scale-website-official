@@ -33,7 +33,6 @@ export default function Hero() {
 
     video.addEventListener("ended", handleEnded);
 
-    // Fallback: if video doesn't play (autoplay blocked), show content after delay
     const fallbackTimer = setTimeout(() => {
       if (!videoEnded) {
         handleEnded();
@@ -46,7 +45,6 @@ export default function Hero() {
     };
   }, [videoEnded]);
 
-  // Reveal content on scroll even if video hasn't ended
   useEffect(() => {
     const content = contentRef.current;
     const video = videoRef.current;
@@ -77,13 +75,9 @@ export default function Hero() {
   return (
     <section
       ref={sectionRef}
-      className="relative h-screen overflow-hidden"
-      style={{ backgroundColor: "#000000" }}
+      className="relative h-screen overflow-hidden bg-black"
     >
-      {/* Solid black background layer — prevents alpha-channel grid bleed */}
-      <div className="absolute inset-0 bg-black z-0" />
-
-      {/* Logo video — full screen, blend mode kills alpha checkerboard */}
+      {/* Logo video — full screen on black */}
       <video
         ref={videoRef}
         autoPlay
@@ -92,7 +86,7 @@ export default function Hero() {
         className="absolute inset-0 z-[1] w-full h-full object-cover"
         style={{ mixBlendMode: "lighten" }}
       >
-        <source src="/assets/smart-scale-logo-vid.mp4" type="video/mp4" />
+        <source src="/assets/use-this-logo.mp4" type="video/mp4" />
       </video>
 
       {/* Vignette overlay */}
