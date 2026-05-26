@@ -9,36 +9,42 @@ const capabilities = [
     description:
       "Full-stack platforms built for performance, security, and scale.",
     image: "/assets/portfolio/botmakers-crm/thumbnail.webp",
+    logo: "/assets/client-logos/botmakers.png",
   },
   {
     title: "Mobile",
     description:
       "Native and cross-platform apps that deliver seamless experiences.",
     image: "/assets/portfolio/bloxify-landing/thumbnail.webp",
+    logo: "/assets/client-logos/bloxify.png",
   },
   {
     title: "AI Systems",
     description:
       "Intelligent automation, NLP, and machine learning solutions.",
     image: "/assets/portfolio/repo911/thumbnail.webp",
+    logo: "/assets/client-logos/repo911.svg",
   },
   {
     title: "Enterprise Platforms",
     description:
       "Mission-critical systems engineered for reliability at scale.",
     image: "/assets/portfolio/gulf-coast-alloys/thumbnail.webp",
+    logo: "/assets/client-logos/gulf-coast-alloys.png",
   },
   {
     title: "Integrations",
     description:
       "Seamless API connections and automated data workflows.",
     image: "/assets/portfolio/teachers-pension/thumbnail.webp",
+    logo: "/assets/client-logos/teachers-pension.png",
   },
   {
     title: "Digital Strategy",
     description:
       "Technical architecture and roadmap consulting for growth.",
     image: "/assets/portfolio/valor-financial/thumbnail.webp",
+    logo: "/assets/client-logos/valor-financial.png",
   },
 ];
 
@@ -81,26 +87,36 @@ export default function Capabilities() {
                 }}
                 onMouseEnter={() => setActiveIndex(index)}
               >
-                {/* Background image */}
+                {/* Background image — hidden by default, revealed on hover */}
                 <Image
                   src={cap.image}
                   alt={cap.title}
                   fill
-                  className="object-cover transition-transform duration-700 ease-out"
+                  className="object-cover transition-all duration-700 ease-out"
                   style={{
                     transform: isActive ? "scale(1.05)" : "scale(1)",
+                    opacity: isActive ? 1 : 0,
                   }}
                   sizes="(max-width: 1024px) 100vw, 33vw"
                   unoptimized
                 />
 
-                {/* Dark overlay */}
+                {/* Solid dark background — visible by default */}
+                <div
+                  className="absolute inset-0 transition-opacity duration-700"
+                  style={{
+                    background: "#141414",
+                    opacity: isActive ? 0 : 1,
+                  }}
+                />
+
+                {/* Dark overlay for screenshot on hover */}
                 <div
                   className="absolute inset-0 transition-all duration-600"
                   style={{
                     background: isActive
                       ? "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.2) 100%)"
-                      : "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.65) 100%)",
+                      : "transparent",
                   }}
                 />
 
@@ -110,14 +126,28 @@ export default function Capabilities() {
                   style={{ opacity: isActive ? 1 : 0 }}
                 />
 
-                {/* Content */}
+                {/* Client logo — visible by default, fades on hover */}
+                <div
+                  className="absolute inset-0 flex items-center justify-center p-6 transition-opacity duration-500"
+                  style={{ opacity: isActive ? 0 : 1 }}
+                >
+                  <Image
+                    src={cap.logo}
+                    alt={cap.title}
+                    width={120}
+                    height={60}
+                    className="object-contain max-h-16 w-auto brightness-0 invert opacity-50"
+                    unoptimized
+                  />
+                </div>
+
+                {/* Content — revealed on hover */}
                 <div className="absolute inset-0 flex flex-col justify-end p-6">
                   <h3
                     className="text-white font-medium transition-all duration-500 whitespace-nowrap"
                     style={{
-                      fontSize: isActive ? "1.75rem" : "0.875rem",
-                      letterSpacing: isActive ? "0" : "0.05em",
-                      textTransform: isActive ? "none" : "uppercase",
+                      fontSize: isActive ? "1.75rem" : "0",
+                      opacity: isActive ? 1 : 0,
                       marginBottom: isActive ? "0.75rem" : "0",
                     }}
                   >
@@ -140,7 +170,7 @@ export default function Capabilities() {
           })}
         </div>
 
-        {/* Mobile/Tablet: Stacked cards with images */}
+        {/* Mobile/Tablet: Stacked cards with logos */}
         <div
           className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:hidden"
           data-animate="stagger"
