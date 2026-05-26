@@ -1,0 +1,9 @@
+<svg width="320" height="60" viewBox="0 0 320 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gold Shield -->
+  <path d="M8 8 L30 2 L52 8 L52 32 C52 44 30 56 30 56 C30 56 8 44 8 32 Z" fill="#92710A" stroke="#D4A017" stroke-width="1.5"/>
+  <path d="M16 14 L30 10 L44 14 L44 30 C44 38 30 48 30 48 C30 48 16 38 16 30 Z" fill="#D4A017" fill-opacity="0.3"/>
+  <!-- Text in gold -->
+  <text x="66" y="39" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="28" fill="#D4A017" letter-spacing="1.5">FIGHT MY REPO</text>
+  <!-- Gold underline -->
+  <line x1="66" y1="48" x2="310" y2="48" stroke="#D4A017" stroke-width="2"/>
+</svg>

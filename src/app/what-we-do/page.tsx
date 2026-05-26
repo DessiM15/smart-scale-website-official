@@ -66,8 +66,18 @@ const processSteps = [
 export default function WhatWeDo() {
   return (
     <div className="min-h-screen bg-[#0A0A0A]">
-      {/* Hero */}
+      {/* Hero with gradient mesh */}
       <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 text-white relative overflow-hidden">
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `
+              radial-gradient(ellipse at 20% 60%, rgba(185, 28, 28, 0.08) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 30%, rgba(220, 38, 38, 0.06) 0%, transparent 50%),
+              radial-gradient(ellipse at 50% 90%, rgba(139, 0, 0, 0.05) 0%, transparent 40%)
+            `,
+          }}
+        />
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <h1 className="text-5xl sm:text-6xl md:text-7xl mb-6 hero-headline">
             Engineering Excellence
@@ -94,7 +104,7 @@ export default function WhatWeDo() {
       </section>
 
       {/* Capabilities Grid */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0F0F0F]">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-4xl mb-12 text-center text-white" data-animate="fade-up">
             Capabilities
@@ -132,7 +142,7 @@ export default function WhatWeDo() {
       </section>
 
       {/* Process Overview */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0F0F0F]">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-4xl mb-12 text-center text-white" data-animate="fade-up">
             Our Process

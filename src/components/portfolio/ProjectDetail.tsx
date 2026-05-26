@@ -112,15 +112,6 @@ export default function ProjectDetail({
                     <ExternalLink className="w-4 h-4" />
                   </a>
                 )}
-                <a
-                  href={project.githubUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 text-white rounded-full font-semibold hover:bg-white/20 transition-colors border border-white/[0.08]"
-                >
-                  GitHub
-                  <ExternalLink className="w-4 h-4" />
-                </a>
               </div>
             </div>
           </div>

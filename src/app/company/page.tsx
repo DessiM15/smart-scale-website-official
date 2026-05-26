@@ -53,8 +53,18 @@ const methodologySteps = [
 export default function Company() {
   return (
     <div className="min-h-screen bg-[#0A0A0A]">
-      {/* Hero */}
+      {/* Hero with gradient mesh */}
       <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 text-white relative overflow-hidden">
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `
+              radial-gradient(ellipse at 70% 50%, rgba(185, 28, 28, 0.07) 0%, transparent 50%),
+              radial-gradient(ellipse at 20% 30%, rgba(220, 38, 38, 0.05) 0%, transparent 45%),
+              radial-gradient(ellipse at 40% 80%, rgba(160, 20, 20, 0.06) 0%, transparent 40%)
+            `,
+          }}
+        />
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <h1 className="text-5xl sm:text-6xl md:text-7xl leading-tight mb-6 hero-headline">
             Built on Principle
@@ -75,7 +85,7 @@ export default function Company() {
       </section>
 
       {/* Founder Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0F0F0F]">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
         <div className="max-w-4xl mx-auto" data-animate="fade-up">
           <h2 className="text-4xl sm:text-5xl mb-8 text-white">
             Direct Founder Involvement
@@ -143,7 +153,7 @@ export default function Company() {
       </section>
 
       {/* Methodology */}
-      <section id="methodology" className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0F0F0F]">
+      <section id="methodology" className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16" data-animate="fade-up">
             <h2 className="text-4xl sm:text-5xl mb-4 text-white">
@@ -195,7 +205,7 @@ export default function Company() {
       </section>
 
       {/* CTA */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0F0F0F]">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-4xl sm:text-5xl mb-6 text-white" data-animate="fade-up">
             Let&apos;s Work Together

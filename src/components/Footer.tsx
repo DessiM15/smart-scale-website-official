@@ -7,13 +7,13 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div className="col-span-1 md:col-span-2">
-            <Link href="/" className="inline-block mb-4">
+            <Link href="/" className="inline-block mb-6">
               <Image
                 src="/assets/smart-scale-logo-official.png"
                 alt="Smart Scale"
-                width={180}
-                height={72}
-                className="h-12 w-auto brightness-0 invert"
+                width={320}
+                height={128}
+                className="h-20 w-auto brightness-0 invert"
                 unoptimized
               />
             </Link>

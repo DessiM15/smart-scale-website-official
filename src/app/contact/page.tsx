@@ -17,8 +17,18 @@ export default function Contact() {
 
   return (
     <div className="min-h-screen bg-[#0A0A0A]">
-      {/* Hero */}
+      {/* Hero with gradient mesh */}
       <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 text-white relative overflow-hidden">
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `
+              radial-gradient(ellipse at 30% 40%, rgba(185, 28, 28, 0.07) 0%, transparent 50%),
+              radial-gradient(ellipse at 70% 70%, rgba(220, 38, 38, 0.05) 0%, transparent 45%),
+              radial-gradient(ellipse at 60% 20%, rgba(139, 0, 0, 0.06) 0%, transparent 40%)
+            `,
+          }}
+        />
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <h1 className="text-5xl sm:text-6xl md:text-7xl mb-6 hero-headline">
             Start a Conversation
@@ -39,7 +49,7 @@ export default function Contact() {
       </section>
 
       {/* Contact Form and Info */}
-      <section id="contact-form" className="py-24 px-4 sm:px-6 lg:px-8">
+      <section id="contact-form" className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div>
@@ -97,7 +107,7 @@ export default function Contact() {
       </section>
 
       {/* SMS Consent Form Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0F0F0F]">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]">
         <div className="max-w-4xl mx-auto">
           <div className="rounded-2xl bg-[#161616] border border-white/[0.06] p-8 sm:p-12">
             <h2 className="text-3xl mb-4 text-white">
