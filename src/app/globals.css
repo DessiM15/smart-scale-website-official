@@ -22,6 +22,10 @@
     @apply border-white/[0.08];
   }
 
+  [data-theme="light"] * {
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+
   body {
     @apply bg-[#0A0A0A] text-white antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;

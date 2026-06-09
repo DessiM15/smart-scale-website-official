@@ -2,166 +2,141 @@
 
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
+import Image from "next/image";
 import Link from "next/link";
+import { getFeaturedProjects } from "@/data/projects";
+
+const featured = getFeaturedProjects();
 
 export default function Hero() {
-  const videoRef = useRef<HTMLVideoElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [videoEnded, setVideoEnded] = useState(false);
+  const subtitleRef = useRef<HTMLParagraphElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const galleryRef = useRef<HTMLDivElement>(null);
+  const galleryInnerRef = useRef<HTMLDivElement>(null);
+  const [isPaused, setIsPaused] = useState(false);
 
+  // Entry animations
   useEffect(() => {
-    const video = videoRef.current;
-    const content = contentRef.current;
-    if (!video || !content) return;
-
-    const handleEnded = () => {
-      setVideoEnded(true);
-      gsap.to(video, {
-        opacity: 0.06,
-        duration: 2,
-        ease: "power3.out",
-      });
-      gsap.to(content, {
-        opacity: 1,
-        y: 0,
-        duration: 1.4,
-        ease: "power3.out",
-        delay: 0.3,
-      });
-    };
-
-    video.addEventListener("ended", handleEnded);
-
-    const fallbackTimer = setTimeout(() => {
-      if (!videoEnded) {
-        handleEnded();
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        subtitleRef.current,
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 1, ease: "power3.out", delay: 0.2 }
+      );
+      gsap.fromTo(
+        titleRef.current,
+        { opacity: 0, y: 40 },
+        { opacity: 1, y: 0, duration: 1.2, ease: "power3.out", delay: 0.4 }
+      );
+      if (galleryRef.current) {
+        gsap.fromTo(
+          galleryRef.current,
+          { opacity: 0 },
+          { opacity: 1, duration: 1, ease: "power3.out", delay: 0.6 }
+        );
       }
-    }, 8000);
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  // Auto-scrolling gallery
+  useEffect(() => {
+    const inner = galleryInnerRef.current;
+    if (!inner) return;
+
+    // Calculate single set height (half of duplicated content)
+    const singleSetHeight = inner.scrollHeight / 2;
+
+    const tween = gsap.to(inner, {
+      y: -singleSetHeight,
+      duration: singleSetHeight / 40, // speed: 40px/s
+      ease: "none",
+      repeat: -1,
+      modifiers: {
+        y: gsap.utils.unitize((y: number) => {
+          return parseFloat(y as unknown as string) % singleSetHeight;
+        }),
+      },
+    });
+
+    if (isPaused) {
+      tween.pause();
+    }
 
     return () => {
-      video.removeEventListener("ended", handleEnded);
-      clearTimeout(fallbackTimer);
+      tween.kill();
     };
-  }, [videoEnded]);
+  }, [isPaused]);
 
-  useEffect(() => {
-    const content = contentRef.current;
-    const video = videoRef.current;
-    if (!content || !video) return;
-
-    const handleScroll = () => {
-      if (videoEnded) return;
-      if (window.scrollY > 80) {
-        setVideoEnded(true);
-        gsap.to(video, {
-          opacity: 0.06,
-          duration: 1.0,
-          ease: "power3.out",
-        });
-        gsap.to(content, {
-          opacity: 1,
-          y: 0,
-          duration: 1.0,
-          ease: "power3.out",
-        });
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [videoEnded]);
+  // Duplicate items for seamless loop
+  const galleryItems = [...featured, ...featured];
 
   return (
     <section
       ref={sectionRef}
-      className="relative h-screen overflow-hidden bg-black"
+      className="relative min-h-screen bg-white overflow-hidden"
+      data-theme="light"
     >
-      {/* Logo video — full screen on black, very subdued */}
-      <video
-        ref={videoRef}
-        autoPlay
-        muted
-        playsInline
-        className="absolute inset-0 z-[1] w-full h-full object-cover"
-        style={{ mixBlendMode: "lighten" }}
-      >
-        <source src="/assets/use-this-logo.mp4" type="video/mp4" />
-      </video>
-
-      {/* Gradient overlays for depth and premium darkness */}
-      <div
-        className="absolute inset-0 z-[2] pointer-events-none"
-        style={{
-          background:
-            "linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0.85) 100%)",
-        }}
-      />
-      <div
-        className="absolute inset-0 z-[2] pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.7) 100%)",
-        }}
-      />
-
-      {/* Subtle noise texture for premium feel */}
-      <div
-        className="absolute inset-0 z-[2] pointer-events-none opacity-[0.03]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-          backgroundRepeat: "repeat",
-          backgroundSize: "256px 256px",
-        }}
-      />
-
-      {/* Content overlay — revealed after video ends or on scroll */}
-      <div
-        ref={contentRef}
-        className="absolute inset-0 z-[3] flex flex-col items-center justify-center px-6"
-        style={{ opacity: 0, transform: "translateY(20px)" }}
-      >
-        {/* Thin decorative line */}
-        <div className="w-px h-16 bg-gradient-to-b from-transparent via-white/20 to-transparent mb-10" />
-
-        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl text-white text-center leading-[1.1] tracking-tight max-w-5xl">
-          Precision Software
-          <br />
-          <span className="text-white/90">for Enterprise</span>
-        </h1>
-
-        <p className="mt-8 text-base md:text-lg text-white/50 text-center max-w-lg tracking-wide font-light">
-          Architected for growth. Built without compromise.
-        </p>
-
-        <Link
-          href="#work"
-          className="group mt-12 inline-flex items-center gap-3 px-10 py-4 bg-white/[0.04] border border-white/[0.12] rounded-full text-xs uppercase tracking-[0.2em] text-white/70 hover:text-white hover:bg-white/[0.08] hover:border-white/[0.25] transition-all duration-700 backdrop-blur-sm"
-        >
-          Explore Our Work
-          <svg
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            fill="none"
-            className="w-3.5 h-3.5 transition-transform duration-500 group-hover:translate-y-0.5"
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-screen flex flex-col lg:flex-row items-stretch">
+        {/* Left side — poster typography */}
+        <div className="flex-1 lg:flex-[0_0_60%] flex flex-col justify-between pt-32 pb-12 lg:pb-20 overflow-hidden">
+          <p
+            ref={subtitleRef}
+            className="text-xs sm:text-sm uppercase tracking-[0.25em] text-black/50 font-light opacity-0"
           >
-            <path
-              d="M19 9l-7 7-7-7"
-              strokeWidth="1.5"
-              strokeLinejoin="round"
-              strokeLinecap="round"
-            />
-          </svg>
-        </Link>
-      </div>
+            Precision Software for Enterprise
+          </p>
 
-      {/* Bottom fade to page background */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-32 z-[4] pointer-events-none"
-        style={{
-          background: "linear-gradient(to top, #0A0A0A 0%, transparent 100%)",
-        }}
-      />
+          <h1
+            ref={titleRef}
+            className="font-[var(--font-bebas)] text-[#111111] leading-[0.85] tracking-tight opacity-0 select-none"
+            style={{
+              fontFamily: "var(--font-bebas)",
+              fontSize: "clamp(6rem, 15vw, 16rem)",
+            }}
+          >
+            SMART
+            <br />
+            SCALE
+          </h1>
+        </div>
+
+        {/* Right side — auto-scrolling gallery (hidden on mobile) */}
+        <div
+          ref={galleryRef}
+          className="hidden lg:flex flex-[0_0_40%] items-center justify-center overflow-hidden opacity-0 py-24"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
+          <div className="relative w-full h-full overflow-hidden">
+            <div ref={galleryInnerRef} className="flex flex-col gap-6">
+              {galleryItems.map((project, i) => (
+                <Link
+                  key={`${project.slug}-${i}`}
+                  href={`/portfolio/${project.slug}`}
+                  className="group block flex-shrink-0"
+                >
+                  <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-[#F0F0F0]">
+                    <Image
+                      src={project.thumbnailImage}
+                      alt={project.title}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="(max-width: 1024px) 100vw, 40vw"
+                      unoptimized
+                    />
+                  </div>
+                  <p className="mt-3 text-sm text-black/60 group-hover:text-black transition-colors duration-300">
+                    {project.title}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

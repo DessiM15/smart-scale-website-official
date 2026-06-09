@@ -8,7 +8,7 @@ export default function SelectedWork() {
   const featured = getFeaturedProjects();
 
   return (
-    <section id="work" className="py-32 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]">
+    <section id="work" className="py-32 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]" data-theme="dark">
       <div className="max-w-7xl mx-auto">
         <h2
           className="text-4xl sm:text-5xl md:text-6xl text-white text-center mb-4"

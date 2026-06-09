@@ -52,16 +52,16 @@ export default function Capabilities() {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   return (
-    <section className="py-32 px-4 sm:px-6 lg:px-8 bg-[#111111]">
+    <section className="py-32 px-4 sm:px-6 lg:px-8 bg-white" data-theme="light">
       <div className="max-w-7xl mx-auto">
         <h2
-          className="text-4xl sm:text-5xl md:text-6xl text-white text-center mb-4"
+          className="text-4xl sm:text-5xl md:text-6xl text-[#111111] text-center mb-4"
           data-animate="fade-up"
         >
           Capabilities
         </h2>
         <p
-          className="text-center text-white/50 text-lg mb-20 max-w-2xl mx-auto"
+          className="text-center text-black/50 text-lg mb-20 max-w-2xl mx-auto"
           data-animate="fade-up"
         >
           End-to-end engineering for businesses that demand excellence.
@@ -101,11 +101,11 @@ export default function Capabilities() {
                   unoptimized
                 />
 
-                {/* Solid dark background — visible by default */}
+                {/* Solid light background — visible by default */}
                 <div
                   className="absolute inset-0 transition-opacity duration-700"
                   style={{
-                    background: "#141414",
+                    background: "#F0F0F0",
                     opacity: isActive ? 0 : 1,
                   }}
                 />
@@ -136,7 +136,7 @@ export default function Capabilities() {
                     alt={cap.title}
                     width={120}
                     height={60}
-                    className="object-contain max-h-16 w-auto brightness-0 invert opacity-50"
+                    className="object-contain max-h-16 w-auto brightness-0 opacity-40"
                     unoptimized
                   />
                 </div>

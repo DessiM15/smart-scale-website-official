@@ -4,16 +4,16 @@ import Link from "next/link";
 
 export default function ContactCTA() {
   return (
-    <section className="py-32 px-4 sm:px-6 lg:px-8 bg-[#111111]">
+    <section className="py-32 px-4 sm:px-6 lg:px-8 bg-white" data-theme="light">
       <div className="max-w-3xl mx-auto text-center">
         <h2
-          className="text-4xl sm:text-5xl md:text-6xl text-white mb-6"
+          className="text-4xl sm:text-5xl md:text-6xl text-[#111111] mb-6"
           data-animate="fade-up"
         >
           Let&apos;s Build Something Exceptional
         </h2>
         <p
-          className="text-lg text-white/50 mb-12 max-w-xl mx-auto"
+          className="text-lg text-black/50 mb-12 max-w-xl mx-auto"
           data-animate="fade-up"
         >
           Every engagement begins with understanding your vision. We&apos;d
@@ -22,7 +22,7 @@ export default function ContactCTA() {
         <div data-animate="fade-up">
           <Link
             href="/contact"
-            className="inline-flex items-center gap-3 px-10 py-4 border border-white/20 rounded-full text-sm uppercase tracking-widest text-white/80 hover:text-white hover:border-white/40 transition-all duration-500"
+            className="inline-flex items-center gap-3 px-10 py-4 border border-black/20 rounded-full text-sm uppercase tracking-widest text-[#111111]/80 hover:text-[#111111] hover:border-black/40 transition-all duration-500"
           >
             Start a Conversation
             <svg

@@ -18,7 +18,7 @@ const clientLogos = [
 
 export default function SocialProof() {
   return (
-    <section className="py-32 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]">
+    <section className="py-32 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]" data-theme="dark">
       <div className="max-w-6xl mx-auto">
         <p
           className="text-center text-white/40 text-sm uppercase tracking-widest mb-16"
