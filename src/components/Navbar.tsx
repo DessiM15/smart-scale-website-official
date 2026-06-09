@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+
 import { useState, useEffect, useRef } from "react";
 
 const leftLinks = [
@@ -61,14 +61,22 @@ export default function Navbar() {
           }`}
         >
           <Link href="/" className="flex items-center">
-            <Image
-              src="/assets/smart-scale-logo-official.png"
-              alt="Smart Scale"
-              width={240}
-              height={96}
-              className="h-20 w-auto brightness-0 invert"
-              priority
-              unoptimized
+            <div
+              className="h-12 w-auto"
+              style={{
+                WebkitMaskImage: "url(/assets/smart-scale-logo-official.png)",
+                maskImage: "url(/assets/smart-scale-logo-official.png)",
+                WebkitMaskSize: "contain",
+                maskSize: "contain",
+                WebkitMaskRepeat: "no-repeat",
+                maskRepeat: "no-repeat",
+                WebkitMaskPosition: "center",
+                maskPosition: "center",
+                backgroundColor: "white",
+                aspectRatio: "240 / 96",
+              }}
+              role="img"
+              aria-label="Smart Scale"
             />
           </Link>
 
@@ -154,14 +162,22 @@ export default function Navbar() {
         {/* ===== MOBILE: always same layout ===== */}
         <div className="flex md:hidden items-center justify-between h-20">
           <Link href="/" className="flex items-center">
-            <Image
-              src="/assets/smart-scale-logo-official.png"
-              alt="Smart Scale"
-              width={200}
-              height={80}
-              className="h-16 w-auto brightness-0 invert"
-              priority
-              unoptimized
+            <div
+              className="h-10 w-auto"
+              style={{
+                WebkitMaskImage: "url(/assets/smart-scale-logo-official.png)",
+                maskImage: "url(/assets/smart-scale-logo-official.png)",
+                WebkitMaskSize: "contain",
+                maskSize: "contain",
+                WebkitMaskRepeat: "no-repeat",
+                maskRepeat: "no-repeat",
+                WebkitMaskPosition: "center",
+                maskPosition: "center",
+                backgroundColor: "white",
+                aspectRatio: "200 / 80",
+              }}
+              role="img"
+              aria-label="Smart Scale"
             />
           </Link>
 
