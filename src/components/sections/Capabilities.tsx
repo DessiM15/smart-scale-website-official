@@ -33,11 +33,11 @@ const capabilities = [
     logo: "/assets/client-logos/gulf-coast-alloys.png",
   },
   {
-    title: "Integrations",
+    title: "Web Design",
     description:
-      "Seamless API connections and automated data workflows.",
-    image: "/assets/portfolio/teachers-pension/thumbnail.webp",
-    logo: "/assets/client-logos/teachers-pension.png",
+      "Beautiful, conversion-focused websites crafted with precision.",
+    image: "/assets/portfolio/taylor-made-esthetics/thumbnail.webp",
+    logo: "/assets/client-logos/taylor-made-esthetics.png",
   },
   {
     title: "Digital Strategy",
@@ -126,19 +126,24 @@ export default function Capabilities() {
                   style={{ opacity: isActive ? 1 : 0 }}
                 />
 
-                {/* Client logo — visible by default, fades on hover */}
+                {/* Client logo + capability label — visible by default, fades on hover */}
                 <div
-                  className="absolute inset-0 flex items-center justify-center p-6 transition-opacity duration-500"
+                  className="absolute inset-0 flex flex-col items-center justify-center p-6 transition-opacity duration-500"
                   style={{ opacity: isActive ? 0 : 1 }}
                 >
-                  <Image
-                    src={cap.logo}
-                    alt={cap.title}
-                    width={120}
-                    height={60}
-                    className="object-contain max-h-16 w-auto brightness-0 opacity-40"
-                    unoptimized
-                  />
+                  <div className="flex-1 flex items-center justify-center">
+                    <Image
+                      src={cap.logo}
+                      alt={cap.title}
+                      width={120}
+                      height={60}
+                      className="object-contain max-h-16 w-auto brightness-0 opacity-40"
+                      unoptimized
+                    />
+                  </div>
+                  <p className="text-[#111111]/40 text-xs uppercase tracking-widest font-medium pb-4">
+                    {cap.title}
+                  </p>
                 </div>
 
                 {/* Content — revealed on hover */}

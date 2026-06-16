@@ -135,35 +135,6 @@ export const projects: Project[] = [
     },
   },
   {
-    slug: "teachers-pension",
-    title: "Teachers Pension",
-    clientName: "Teachers Pension",
-    serviceType: "Website",
-    industry: "Education / Finance",
-    techStack: ["Next.js", "TypeScript", "Tailwind CSS", "Node.js", "Vercel"],
-    description:
-      "A comprehensive website for a teachers pension and retirement organization, featuring a recruitment portal and detailed pension information resources for educators.",
-    shortDescription: "Teacher retirement resources and recruitment portal.",
-    thumbnailImage: "/assets/portfolio/teachers-pension/thumbnail.webp",
-    vercelUrl: "https://teachers-retirement-three.vercel.app",
-    secondaryVercelUrl: "https://teacher-pension-recruitment.vercel.app",
-    githubUrl: "https://github.com/DessiM15/teachers-retirement",
-    featured: true,
-    featuredOrder: 4,
-    caseStudy: {
-      challenge:
-        "A teachers pension organization needed two connected web properties: a main informational site for pension resources and a separate recruitment portal to attract new educators to the profession.",
-      solution:
-        "Built two complementary Next.js applications with shared design systems, one focused on pension resources and retirement planning, the other on recruitment with job listings and application flows.",
-      results: [
-        "Two fully functional web properties with shared branding",
-        "Comprehensive pension resource library for educators",
-        "Recruitment portal with job listings and applications",
-        "Responsive design optimized for educator demographics",
-      ],
-    },
-  },
-  {
     slug: "gulf-coast-alloys",
     title: "Gulf Coast Alloys",
     clientName: "Gulf Coast Alloys",

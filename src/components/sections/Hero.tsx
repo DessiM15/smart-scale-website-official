@@ -11,7 +11,7 @@ const featured = getFeaturedProjects();
 export default function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
+  const logoRef = useRef<HTMLDivElement>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
   const galleryInnerRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
@@ -25,7 +25,7 @@ export default function Hero() {
         { opacity: 1, y: 0, duration: 1, ease: "power3.out", delay: 0.2 }
       );
       gsap.fromTo(
-        titleRef.current,
+        logoRef.current,
         { opacity: 0, y: 40 },
         { opacity: 1, y: 0, duration: 1.2, ease: "power3.out", delay: 0.4 }
       );
@@ -80,7 +80,7 @@ export default function Hero() {
       data-theme="light"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-screen flex flex-col lg:flex-row items-stretch">
-        {/* Left side — poster typography */}
+        {/* Left side — logo + subtitle */}
         <div className="flex-1 lg:flex-[0_0_60%] flex flex-col justify-between pt-32 pb-12 lg:pb-20 overflow-hidden">
           <p
             ref={subtitleRef}
@@ -89,18 +89,20 @@ export default function Hero() {
             Precision Software for Enterprise
           </p>
 
-          <h1
-            ref={titleRef}
-            className="font-[var(--font-bebas)] text-[#111111] leading-[0.85] tracking-tight opacity-0 select-none"
-            style={{
-              fontFamily: "var(--font-bebas)",
-              fontSize: "clamp(6rem, 15vw, 16rem)",
-            }}
+          <div
+            ref={logoRef}
+            className="opacity-0 select-none"
           >
-            SMART
-            <br />
-            SCALE
-          </h1>
+            <Image
+              src="/assets/smart-scale-logo-official.png"
+              alt="Smart Scale"
+              width={800}
+              height={800}
+              className="w-full max-w-[500px] lg:max-w-[600px] h-auto"
+              priority
+              unoptimized
+            />
+          </div>
         </div>
 
         {/* Right side — auto-scrolling gallery (hidden on mobile) */}
