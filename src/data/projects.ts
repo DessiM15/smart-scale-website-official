@@ -232,6 +232,8 @@ export const projects: Project[] = [
     thumbnailImage: "/assets/portfolio/taylor-made-esthetics/thumbnail.webp",
     vercelUrl: "https://taylor-made-esthetics.vercel.app",
     githubUrl: "https://github.com/DessiM15/taylor-made-esthetics",
+    featured: true,
+    featuredOrder: 4,
     caseStudy: {
       challenge:
         "A growing esthetics studio needed a premium web presence that reflects their luxury brand positioning and makes it easy for clients to book services online.",

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -21,6 +22,7 @@ const rightLinks = [
 const allLinks = [...leftLinks, ...rightLinks];
 
 export default function Navbar() {
+  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [navTheme, setNavTheme] = useState<"light" | "dark">("light");
@@ -35,29 +37,52 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Section-aware theme detection via ScrollTrigger
+  // Close mobile menu on route change
   useEffect(() => {
-    const sections = document.querySelectorAll("[data-theme]");
-    const triggers: ScrollTrigger[] = [];
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
-    sections.forEach((section) => {
-      const theme = section.getAttribute("data-theme") as "light" | "dark";
+  // Section-aware theme detection via ScrollTrigger
+  // Re-runs on every route change so triggers bind to new page sections
+  useEffect(() => {
+    // Reset to the first section's theme on navigation
+    const firstSection = document.querySelector("[data-theme]");
+    if (firstSection) {
+      setNavTheme(firstSection.getAttribute("data-theme") as "light" | "dark");
+    }
 
-      const st = ScrollTrigger.create({
-        trigger: section,
-        start: "top top",
-        end: "bottom top",
-        onEnter: () => setNavTheme(theme),
-        onEnterBack: () => setNavTheme(theme),
+    // Small delay to let the new page DOM settle after client-side navigation
+    const timeout = setTimeout(() => {
+      const sections = document.querySelectorAll("[data-theme]");
+      const triggers: ScrollTrigger[] = [];
+
+      sections.forEach((section) => {
+        const theme = section.getAttribute("data-theme") as "light" | "dark";
+
+        const st = ScrollTrigger.create({
+          trigger: section,
+          start: "top top",
+          end: "bottom top",
+          onEnter: () => setNavTheme(theme),
+          onEnterBack: () => setNavTheme(theme),
+        });
+
+        triggers.push(st);
       });
 
-      triggers.push(st);
-    });
+      ScrollTrigger.refresh();
+
+      return () => {
+        triggers.forEach((st) => st.kill());
+      };
+    }, 100);
 
     return () => {
-      triggers.forEach((st) => st.kill());
+      clearTimeout(timeout);
+      // Kill all ScrollTrigger instances created by the navbar
+      ScrollTrigger.getAll().forEach((st) => st.kill());
     };
-  }, []);
+  }, [pathname]);
 
   // Derived theme colors
   const isLight = navTheme === "light";

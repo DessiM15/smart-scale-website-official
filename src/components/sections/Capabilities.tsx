@@ -33,13 +33,6 @@ const capabilities = [
     logo: "/assets/client-logos/gulf-coast-alloys.png",
   },
   {
-    title: "Web Design",
-    description:
-      "Beautiful, conversion-focused websites crafted with precision.",
-    image: "/assets/portfolio/taylor-made-esthetics/thumbnail.webp",
-    logo: "/assets/client-logos/taylor-made-esthetics.png",
-  },
-  {
     title: "Digital Strategy",
     description:
       "Technical architecture and roadmap consulting for growth.",
