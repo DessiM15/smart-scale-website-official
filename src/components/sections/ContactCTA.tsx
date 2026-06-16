@@ -19,10 +19,10 @@ export default function ContactCTA() {
           Every engagement begins with understanding your vision. We&apos;d
           love to hear about yours.
         </p>
-        <div data-animate="fade-up">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center" data-animate="fade-up">
           <Link
             href="/contact"
-            className="inline-flex items-center gap-3 px-10 py-4 border border-black/20 rounded-full text-sm uppercase tracking-widest text-[#111111]/80 hover:text-[#111111] hover:border-black/40 transition-all duration-500"
+            className="inline-flex items-center gap-3 px-10 py-4 bg-[#DC2626] text-white rounded-full text-sm uppercase tracking-widest hover:bg-red-700 transition-all duration-500"
           >
             Start a Conversation
             <svg

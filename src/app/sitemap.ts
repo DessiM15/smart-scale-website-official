@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { projects } from "@/data/projects";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://smartscalesoftware.com";
+  const baseUrl = "https://smartscaleagent.com";
 
   const staticPages: MetadataRoute.Sitemap = [
     {
@@ -40,6 +40,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/advertise`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.5,
     },
   ];
 

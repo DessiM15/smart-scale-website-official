@@ -15,6 +15,10 @@
   --color-surface-elevated: #1A1A1A;
   --color-border-subtle: rgba(255, 255, 255, 0.08);
   --color-border-accent: rgba(220, 38, 38, 0.3);
+  --color-surface-light-primary: #FFFFFF;
+  --color-surface-light-secondary: #F5F5F5;
+  --color-surface-light-card: #F5F5F5;
+  --color-border-light-subtle: rgba(0, 0, 0, 0.08);
 }
 
 @layer base {
@@ -147,6 +151,13 @@ html.lenis, html.lenis body {
   contain: layout style;
 }
 
+/* Subpage hero title utility */
+.subpage-hero-title {
+  font-family: var(--font-bebas);
+  font-size: clamp(4rem, 10vw, 10rem);
+  line-height: 0.9;
+}
+
 /* Responsive animation controls */
 @media (max-width: 767px) {
   .hero-headline {
@@ -157,5 +168,37 @@ html.lenis, html.lenis body {
   .hero-subheadline {
     animation-duration: 0.6s;
     animation-delay: 0.5s;
+  }
+}
+
+/* Prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .hero-headline,
+  .hero-subheadline,
+  .hero-cta {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .scroll-reveal,
+  .scroll-reveal-fade,
+  .scroll-reveal-slide,
+  [data-animate="fade-up"],
+  [data-animate="stagger"] > *,
+  .service-card,
+  .capability-card,
+  .portfolio-item {
+    will-change: auto !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .card-hover {
+    transition: none !important;
+  }
+
+  .card-hover:hover {
+    transform: none !important;
   }
 }

@@ -3,6 +3,7 @@ import { getAllBlogPosts } from "@/lib/blog";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
 import BlogHero from "@/components/BlogHero";
 import BlogCoverImage from "@/components/BlogCoverImage";
+import RedSeparator from "@/components/ui/RedSeparator";
 
 export const metadata = {
   title: "Blog | Smart Scale - AI & Software Development Insights",
@@ -13,11 +14,13 @@ export default function BlogPage() {
   const posts = getAllBlogPosts();
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
+    <div className="min-h-screen">
       <BlogHero />
 
-      {/* Blog Posts Grid */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8">
+      <RedSeparator />
+
+      {/* Blog Posts Grid - Dark */}
+      <section data-theme="dark" className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]">
         <div className="max-w-7xl mx-auto">
           {posts.length === 0 ? (
             <div className="text-center py-12">

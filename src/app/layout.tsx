@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display, Bebas_Neue } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import SmoothScrollProvider from "@/components/SmoothScrollProvider";
 import SchemaOrg from "@/components/SchemaOrg";
 
@@ -25,7 +23,7 @@ const bebasNeue = Bebas_Neue({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://smartscalesoftware.com"),
+  metadataBase: new URL("https://smartscaleagent.com"),
   title: {
     default: "Smart Scale | Precision Software for Enterprise",
     template: "%s | Smart Scale",
@@ -45,7 +43,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://smartscalesoftware.com",
+    url: "https://smartscaleagent.com",
     siteName: "Smart Scale",
     title: "Smart Scale | Precision Software for Enterprise",
     description:
@@ -89,9 +87,7 @@ export default function RootLayout({
       <body className="bg-[#0A0A0A] text-white">
         <SchemaOrg />
         <SmoothScrollProvider>
-          <Navbar />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
+          {children}
         </SmoothScrollProvider>
       </body>
     </html>

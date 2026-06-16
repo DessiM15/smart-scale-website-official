@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/api/"],
       },
     ],
-    sitemap: "https://smartscalesoftware.com/sitemap.xml",
+    sitemap: "https://smartscaleagent.com/sitemap.xml",
   };
 }

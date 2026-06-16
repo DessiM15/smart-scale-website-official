@@ -5,6 +5,7 @@ import ContactForm from "@/components/ContactForm";
 import TextConsentForm from "@/components/TextConsentForm";
 import VerificationModal from "@/components/VerificationModal";
 import Link from "next/link";
+import RedSeparator from "@/components/ui/RedSeparator";
 
 export default function Contact() {
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
@@ -16,31 +17,21 @@ export default function Contact() {
   const [isVerified, setIsVerified] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
-      {/* Hero with gradient mesh */}
-      <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 text-white relative overflow-hidden">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: `
-              radial-gradient(ellipse at 30% 40%, rgba(185, 28, 28, 0.07) 0%, transparent 50%),
-              radial-gradient(ellipse at 70% 70%, rgba(220, 38, 38, 0.05) 0%, transparent 45%),
-              radial-gradient(ellipse at 60% 20%, rgba(139, 0, 0, 0.06) 0%, transparent 40%)
-            `,
-          }}
-        />
+    <div className="min-h-screen">
+      {/* Hero - Light */}
+      <section data-theme="light" className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 bg-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto text-center relative z-10">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl mb-6 hero-headline">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl mb-6 hero-headline text-[#111111]">
             Start a Conversation
           </h1>
-          <p className="text-lg sm:text-xl text-white/50 max-w-3xl mx-auto mb-8 hero-subheadline">
+          <p className="text-lg sm:text-xl text-black/50 max-w-3xl mx-auto mb-8 hero-subheadline">
             Every great partnership begins with a conversation. Tell us about
             your vision and we&apos;ll explore how we can bring it to life.
           </p>
           <div className="flex justify-center">
             <Link
               href="#contact-form"
-              className="inline-flex items-center gap-3 px-8 py-3.5 border border-white/20 rounded-full text-sm uppercase tracking-widest text-white/80 hover:text-white hover:border-white/40 transition-all duration-500"
+              className="inline-flex items-center gap-3 px-8 py-3.5 bg-[#DC2626] text-white rounded-full text-sm uppercase tracking-widest hover:bg-red-700 transition-all duration-500"
             >
               Send Project Details
             </Link>
@@ -48,8 +39,10 @@ export default function Contact() {
         </div>
       </section>
 
-      {/* Contact Form and Info */}
-      <section id="contact-form" className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
+      <RedSeparator />
+
+      {/* Contact Form and Info - Dark */}
+      <section id="contact-form" data-theme="dark" className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div>
@@ -106,10 +99,12 @@ export default function Contact() {
         </div>
       </section>
 
-      {/* SMS Consent Form Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]">
+      <RedSeparator />
+
+      {/* SMS Consent Form Section - Light with dark card inset */}
+      <section data-theme="light" className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-4xl mx-auto">
-          <div className="rounded-2xl bg-[#161616] border border-white/[0.06] p-8 sm:p-12">
+          <div className="rounded-2xl bg-[#161616] border border-white/[0.06] p-8 sm:p-12" data-theme="dark">
             <h2 className="text-3xl mb-4 text-white">
               Subscribe to Updates
             </h2>

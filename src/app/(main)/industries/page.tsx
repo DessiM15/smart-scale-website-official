@@ -15,6 +15,7 @@ import {
   Scissors,
 } from "lucide-react";
 import HeroCTA from "@/components/HeroCTA";
+import RedSeparator from "@/components/ui/RedSeparator";
 
 const industries = [
   { name: "Law Firms", description: "Legal practice management and case tracking solutions.", icon: <Scale className="w-7 h-7" /> },
@@ -31,29 +32,31 @@ const industries = [
 
 export default function Industries() {
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
-      {/* Hero */}
-      <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 text-white relative overflow-hidden">
+    <div className="min-h-screen">
+      {/* Hero - Light */}
+      <section data-theme="light" className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 bg-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto text-center relative z-10">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 hero-headline">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 hero-headline text-[#111111]">
             Every Industry Deserves Modern Technology
           </h1>
-          <p className="text-lg sm:text-xl text-white/60 max-w-3xl mx-auto mb-8 hero-subheadline">
+          <p className="text-lg sm:text-xl text-black/50 max-w-3xl mx-auto mb-8 hero-subheadline">
             From financial platforms to restaurant websites, we bring fresh perspectives to established industries.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <HeroCTA href="/contact" variant="primary">
               Discuss Your Industry
             </HeroCTA>
-            <HeroCTA href="/what-we-do" variant="secondary">
+            <HeroCTA href="/what-we-do" variant="secondary" theme="light">
               See Our Approach
             </HeroCTA>
           </div>
         </div>
       </section>
 
-      {/* Industries Grid */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
+      <RedSeparator />
+
+      {/* Industries Grid - Dark */}
+      <section data-theme="dark" className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
@@ -76,13 +79,15 @@ export default function Industries() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]">
+      <RedSeparator />
+
+      {/* CTA - Light */}
+      <section data-theme="light" className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-6 text-white">
+          <h2 className="text-4xl font-bold mb-6 text-[#111111]">
             Ready to Modernize Your Industry?
           </h2>
-          <p className="text-xl text-white/60 mb-8">
+          <p className="text-xl text-black/50 mb-8">
             Let&apos;s discuss how we can bring fresh technology to your established business.
           </p>
           <Link

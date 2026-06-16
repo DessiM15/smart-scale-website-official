@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Zap, Eye, Lightbulb, Target } from "lucide-react";
 import GlowCard from "@/components/ui/GlowCard";
 import HeroCTA from "@/components/HeroCTA";
+import RedSeparator from "@/components/ui/RedSeparator";
 
 const values = [
   {
@@ -30,14 +31,14 @@ const values = [
 
 export default function WhyUs() {
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
-      {/* Hero */}
-      <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 text-white relative overflow-hidden">
+    <div className="min-h-screen">
+      {/* Hero - Light */}
+      <section data-theme="light" className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 bg-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto text-center relative z-10">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 hero-headline">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 hero-headline text-[#111111]">
             Hungry. Fast. Obsessed with Your Success.
           </h1>
-          <p className="text-lg sm:text-xl text-white/60 max-w-3xl mx-auto mb-8 hero-subheadline">
+          <p className="text-lg sm:text-xl text-black/50 max-w-3xl mx-auto mb-8 hero-subheadline">
             Your project gets our full energy and latest innovations.
           </p>
           <HeroCTA href="/contact" variant="primary">
@@ -46,8 +47,10 @@ export default function WhyUs() {
         </div>
       </section>
 
-      {/* Values Grid */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
+      <RedSeparator />
+
+      {/* Values Grid - Dark */}
+      <section data-theme="dark" className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
@@ -72,28 +75,32 @@ export default function WhyUs() {
         </div>
       </section>
 
-      {/* Founder Difference */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]">
+      <RedSeparator />
+
+      {/* Founder Difference - Light */}
+      <section data-theme="light" className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-8 text-white text-center">
+          <h2 className="text-4xl sm:text-5xl font-bold mb-8 text-[#111111] text-center">
             Direct Founder Involvement
           </h2>
-          <div className="space-y-6 text-lg text-white/60 leading-relaxed">
+          <div className="space-y-6 text-lg text-black/50 leading-relaxed">
             <p>
               At Smart Scale, every project is led directly by the company&apos;s founders. This isn&apos;t a sales pitch — it&apos;s our core operating model. When you work with us, you get direct access to decision-makers who understand both the technical and business sides of your project.
             </p>
             <p>
               No account managers, no middle layers, no bureaucracy. Just founders who code, strategize, and deliver. This means faster decisions, clearer communication, and solutions that actually solve your problems.
             </p>
-            <p className="font-semibold text-white text-center">
+            <p className="font-semibold text-[#111111] text-center">
               Enterprise quality. Boutique service. Founder-led execution.
             </p>
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
+      <RedSeparator />
+
+      {/* CTA - Dark */}
+      <section data-theme="dark" className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-white">
             Ready to Experience the Difference?

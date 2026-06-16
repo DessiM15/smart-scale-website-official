@@ -11,6 +11,7 @@ import {
   Zap,
 } from "lucide-react";
 import GlowCard from "@/components/ui/GlowCard";
+import RedSeparator from "@/components/ui/RedSeparator";
 
 const capabilities = [
   {
@@ -65,37 +66,27 @@ const processSteps = [
 
 export default function WhatWeDo() {
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
-      {/* Hero with gradient mesh */}
-      <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 text-white relative overflow-hidden">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: `
-              radial-gradient(ellipse at 20% 60%, rgba(185, 28, 28, 0.08) 0%, transparent 50%),
-              radial-gradient(ellipse at 80% 30%, rgba(220, 38, 38, 0.06) 0%, transparent 50%),
-              radial-gradient(ellipse at 50% 90%, rgba(139, 0, 0, 0.05) 0%, transparent 40%)
-            `,
-          }}
-        />
+    <div className="min-h-screen">
+      {/* Hero - Light */}
+      <section data-theme="light" className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 bg-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto text-center relative z-10">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl mb-6 hero-headline">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl mb-6 hero-headline text-[#111111]">
             Engineering Excellence
           </h1>
-          <p className="text-lg sm:text-xl text-white/50 max-w-3xl mx-auto mb-8 hero-subheadline">
+          <p className="text-lg sm:text-xl text-black/50 max-w-3xl mx-auto mb-8 hero-subheadline">
             End-to-end software development for businesses that demand
             precision, reliability, and long-term value.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/contact"
-              className="inline-flex items-center gap-3 px-8 py-3.5 border border-white/20 rounded-full text-sm uppercase tracking-widest text-white/80 hover:text-white hover:border-white/40 transition-all duration-500"
+              className="inline-flex items-center gap-3 px-8 py-3.5 bg-[#DC2626] text-white rounded-full text-sm uppercase tracking-widest hover:bg-red-700 transition-all duration-500"
             >
               Start a Conversation
             </Link>
             <Link
               href="/portfolio"
-              className="inline-flex items-center gap-3 px-8 py-3.5 border border-white/10 rounded-full text-sm uppercase tracking-widest text-white/50 hover:text-white/80 hover:border-white/20 transition-all duration-500"
+              className="inline-flex items-center gap-3 px-8 py-3.5 border border-black/20 rounded-full text-sm uppercase tracking-widest text-[#111111]/80 hover:text-[#111111] hover:border-black/40 transition-all duration-500"
             >
               View Our Work
             </Link>
@@ -103,8 +94,10 @@ export default function WhatWeDo() {
         </div>
       </section>
 
-      {/* Capabilities Grid */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
+      <RedSeparator />
+
+      {/* Capabilities Grid - Dark */}
+      <section data-theme="dark" className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-4xl mb-12 text-center text-white" data-animate="fade-up">
             Capabilities
@@ -122,17 +115,19 @@ export default function WhatWeDo() {
         </div>
       </section>
 
-      {/* Technologies Used */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]">
+      <RedSeparator />
+
+      {/* Technologies Used - Light */}
+      <section data-theme="light" className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl mb-12 text-center text-white" data-animate="fade-up">
+          <h2 className="text-4xl mb-12 text-center text-[#111111]" data-animate="fade-up">
             Our Stack
           </h2>
           <div className="flex flex-wrap justify-center gap-4" data-animate="stagger">
             {technologies.map((tech, index) => (
               <span
                 key={index}
-                className="px-6 py-3 rounded-full text-sm font-medium bg-[#161616] text-white/50 border border-white/[0.06] hover:border-white/[0.12] hover:text-white/70 transition-all duration-300 uppercase tracking-widest"
+                className="px-6 py-3 rounded-full text-sm font-medium bg-[#F5F5F5] text-[#111111]/60 border border-black/[0.06] hover:border-black/[0.12] hover:text-[#111111]/80 transition-all duration-300 uppercase tracking-widest"
               >
                 {tech}
               </span>
@@ -141,8 +136,10 @@ export default function WhatWeDo() {
         </div>
       </section>
 
-      {/* Process Overview */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
+      <RedSeparator />
+
+      {/* Process Overview - Dark */}
+      <section data-theme="dark" className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-4xl mb-12 text-center text-white" data-animate="fade-up">
             Our Process
@@ -163,22 +160,37 @@ export default function WhatWeDo() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]">
+      <RedSeparator />
+
+      {/* CTA - Light */}
+      <section data-theme="light" className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl mb-6 text-white" data-animate="fade-up">
+          <h2 className="text-4xl mb-6 text-[#111111]" data-animate="fade-up">
             Ready to Begin?
           </h2>
-          <p className="text-lg text-white/50 mb-8" data-animate="fade-up">
+          <p className="text-lg text-black/50 mb-8" data-animate="fade-up">
             Let&apos;s discuss how precision engineering can transform your
             business.
           </p>
           <div data-animate="fade-up">
             <Link
               href="/contact"
-              className="inline-flex items-center gap-3 px-10 py-4 border border-white/20 rounded-full text-sm uppercase tracking-widest text-white/80 hover:text-white hover:border-white/40 transition-all duration-500"
+              className="inline-flex items-center gap-3 px-10 py-4 bg-[#DC2626] text-white rounded-full text-sm uppercase tracking-widest hover:bg-red-700 transition-all duration-500"
             >
               Start a Conversation
+              <svg
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                fill="none"
+                className="w-4 h-4"
+              >
+                <path
+                  d="M5 12h14M12 5l7 7-7 7"
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                />
+              </svg>
             </Link>
           </div>
         </div>
