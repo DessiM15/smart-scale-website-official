@@ -8,13 +8,13 @@ export default function SelectedWork() {
   const featured = getFeaturedProjects();
 
   return (
-    <section id="work" className="py-32 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]" data-theme="dark">
-      <div className="max-w-7xl mx-auto">
+    <section id="work" className="relative py-32 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A] noise-overlay" data-theme="dark">
+      <div className="max-w-7xl mx-auto relative z-10">
         <h2
-          className="text-4xl sm:text-5xl md:text-6xl text-white text-center mb-4"
+          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white text-center mb-4"
           data-animate="fade-up"
         >
-          Selected Work
+          <span className="gradient-text">Selected</span> Work
         </h2>
         <p
           className="text-center text-white/50 text-lg mb-20 max-w-xl mx-auto"
@@ -38,7 +38,7 @@ export default function SelectedWork() {
                   src={project.thumbnailImage}
                   alt={project.title}
                   fill
-                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
                   sizes="(max-width: 768px) 100vw, 50vw"
                   unoptimized
                 />
@@ -46,7 +46,7 @@ export default function SelectedWork() {
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-500" />
                 {/* Title on hover */}
                 <div className="absolute inset-0 flex flex-col justify-end p-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500 translate-y-4 group-hover:translate-y-0">
-                  <span className="text-xs uppercase tracking-widest text-white/60 mb-2">
+                  <span className="text-xs uppercase tracking-widest text-[#DC2626] mb-2">
                     {project.serviceType}
                   </span>
                   <h3 className="text-2xl md:text-3xl text-white">

@@ -26,8 +26,10 @@ export default function PortfolioPage() {
 
       <RedSeparator />
 
-      <div data-theme="dark" className="bg-[#0A0A0A]">
-        <PortfolioGrid />
+      <div data-theme="dark" className="relative bg-[#0A0A0A] noise-overlay">
+        <div className="relative z-10">
+          <PortfolioGrid />
+        </div>
       </div>
     </div>
   );

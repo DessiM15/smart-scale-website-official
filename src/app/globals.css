@@ -117,7 +117,8 @@ html.lenis, html.lenis body {
 }
 
 .card-hover:hover {
-  transform: translateY(-4px);
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
 /* Featured project clip-path reveal */
@@ -138,12 +139,84 @@ html.lenis, html.lenis body {
 }
 
 [data-animate="fade-up"],
-[data-animate="stagger"] > * {
+[data-animate="stagger"] > *,
+[data-animate="slide-left"],
+[data-animate="slide-right"],
+[data-animate="scale-reveal"] {
   will-change: transform, opacity;
 }
 
 .service-card, .capability-card, .portfolio-item {
   will-change: transform, opacity;
+}
+
+/* Word reveal inner */
+.word-reveal-inner {
+  will-change: transform, opacity;
+}
+
+/* Gradient text utility */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #DC2626, #FF6B6B, #DC2626);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 4s ease infinite;
+}
+
+/* Noise overlay for dark sections */
+.noise-overlay {
+  position: relative;
+}
+
+.noise-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Animated separator */
+@keyframes separatorSweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+.animated-separator {
+  position: relative;
+  overflow: hidden;
+}
+
+.animated-separator::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(220, 38, 38, 0.6), transparent);
+  animation: separatorSweep 3s ease-in-out infinite;
+}
+
+/* Enhanced button hover */
+.btn-hover-enhanced {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.3s ease;
+}
+
+.btn-hover-enhanced:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 10px 30px rgba(220, 38, 38, 0.3);
 }
 
 /* Prevent layout shift during animations */
@@ -186,6 +259,11 @@ html.lenis, html.lenis body {
   .scroll-reveal-slide,
   [data-animate="fade-up"],
   [data-animate="stagger"] > *,
+  [data-animate="slide-left"],
+  [data-animate="slide-right"],
+  [data-animate="scale-reveal"],
+  [data-animate="word-reveal"],
+  [data-animate="counter"],
   .service-card,
   .capability-card,
   .portfolio-item {
@@ -199,6 +277,18 @@ html.lenis, html.lenis body {
   }
 
   .card-hover:hover {
+    transform: none !important;
+  }
+
+  .gradient-text {
+    animation: none !important;
+  }
+
+  .animated-separator::after {
+    animation: none !important;
+  }
+
+  .btn-hover-enhanced:hover {
     transform: none !important;
   }
 }

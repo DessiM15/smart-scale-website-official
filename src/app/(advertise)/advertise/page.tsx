@@ -3,6 +3,7 @@
 import { useState, FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useGSAPAnimations } from "@/hooks/useGSAPAnimations";
 
 const plans = [
   {
@@ -47,6 +48,8 @@ export default function AdvertisePage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useGSAPAnimations();
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -71,9 +74,9 @@ export default function AdvertisePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#1a1210]">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-black/5">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#1a1210]/90 backdrop-blur-md border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <Image
             src="/assets/mex-taco-logo.png"
@@ -84,29 +87,44 @@ export default function AdvertisePage() {
           />
           <a
             href="#contact-form"
-            className="px-6 py-2.5 bg-[#DC2626] text-white rounded-full text-sm font-semibold hover:bg-red-700 transition-colors"
+            className="px-6 py-2.5 bg-[#DC2626] text-white rounded-full text-sm font-semibold hover:bg-red-700 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-red-900/30"
           >
             Get Started
           </a>
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-block px-4 py-1.5 bg-[#DC2626]/10 text-[#DC2626] rounded-full text-sm font-semibold mb-6">
+      {/* Hero — Full-bleed background image */}
+      <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 overflow-hidden">
+        {/* Background image */}
+        <Image
+          src="/assets/mex-taco-expansion.webp"
+          alt="Mex Taco House restaurant"
+          fill
+          className="object-cover"
+          priority
+          unoptimized
+        />
+        {/* Dark gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
+
+        <div className="relative z-10 max-w-4xl mx-auto text-center">
+          <div className="inline-block px-5 py-2 bg-white/10 backdrop-blur-sm text-white rounded-full text-sm font-semibold mb-8 border border-white/20">
             Only 10 Spots Available
           </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-[#111111] mb-6 leading-tight" style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>
+          <h1
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white mb-6 leading-tight"
+            style={{ fontFamily: "var(--font-shadows), cursive" }}
+          >
             Advertise at Mex Taco House
           </h1>
-          <p className="text-lg sm:text-xl text-black/60 max-w-2xl mx-auto mb-10">
+          <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto mb-10">
             Put your business in front of a captive audience. Our in-restaurant
             TV screens reach hundreds of hungry diners every single week.
           </p>
           <a
             href="#pricing"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-[#DC2626] text-white rounded-full text-lg font-semibold hover:bg-red-700 transition-all duration-300 hover:scale-105"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-[#DC2626] text-white rounded-full text-lg font-semibold hover:bg-red-700 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-red-900/40"
           >
             View Plans & Pricing
             <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" className="w-5 h-5">
@@ -116,67 +134,102 @@ export default function AdvertisePage() {
         </div>
       </section>
 
-      {/* Stats - Dark */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#111111]">
+      {/* Stats */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#1a1210]">
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div>
-              <div className="text-5xl sm:text-6xl font-bold text-white mb-2" style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>500+</div>
+            <div data-animate="fade-up">
+              <div
+                className="text-5xl sm:text-6xl font-bold text-white mb-2"
+                style={{ fontFamily: "var(--font-shadows), cursive" }}
+                data-animate="counter"
+                data-count-to="500"
+                data-count-suffix="+"
+              >
+                0+
+              </div>
               <p className="text-white/50 text-lg">Diners per week</p>
             </div>
-            <div>
-              <div className="text-5xl sm:text-6xl font-bold text-white mb-2" style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>45+</div>
+            <div data-animate="fade-up">
+              <div
+                className="text-5xl sm:text-6xl font-bold text-white mb-2"
+                style={{ fontFamily: "var(--font-shadows), cursive" }}
+                data-animate="counter"
+                data-count-to="45"
+                data-count-suffix="+"
+              >
+                0+
+              </div>
               <p className="text-white/50 text-lg">Min average dwell time</p>
             </div>
-            <div>
-              <div className="text-5xl sm:text-6xl font-bold text-white mb-2" style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>6</div>
+            <div data-animate="fade-up">
+              <div
+                className="text-5xl sm:text-6xl font-bold text-white mb-2"
+                style={{ fontFamily: "var(--font-shadows), cursive" }}
+                data-animate="counter"
+                data-count-to="6"
+                data-count-suffix=""
+              >
+                0
+              </div>
               <p className="text-white/50 text-lg">Days per week</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* How It Works - Light */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      {/* How It Works */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#221a17]">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold text-[#111111] text-center mb-16" style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>
+          <h2
+            className="text-3xl sm:text-4xl font-bold text-white text-center mb-16"
+            style={{ fontFamily: "var(--font-shadows), cursive" }}
+          >
             How It Works
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10" data-animate="stagger">
             {[
               { num: "1", title: "Pick a Plan", desc: "Choose the package that fits your budget and goals." },
               { num: "2", title: "We Design Your Ad", desc: "Our team creates a professional ad tailored to your business." },
               { num: "3", title: "You're On Screen", desc: "Your ad goes live on our in-restaurant TV screens within days." },
             ].map((step) => (
               <div key={step.num} className="text-center">
-                <div className="w-14 h-14 rounded-full bg-[#DC2626] text-white flex items-center justify-center text-xl font-bold mx-auto mb-5">
+                <div className="w-14 h-14 rounded-full bg-[#DC2626] text-white flex items-center justify-center text-xl font-bold mx-auto mb-5 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-red-900/40">
                   {step.num}
                 </div>
-                <h3 className="text-xl font-bold text-[#111111] mb-3">{step.title}</h3>
-                <p className="text-black/50">{step.desc}</p>
+                <h3
+                  className="text-xl font-bold text-white mb-3"
+                  style={{ fontFamily: "var(--font-shadows), cursive" }}
+                >
+                  {step.title}
+                </h3>
+                <p className="text-white/50">{step.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Pricing Tiers - Dark */}
-      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-[#111111]">
+      {/* Pricing Tiers */}
+      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-[#1a1210]">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white text-center mb-4" style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>
+          <h2
+            className="text-3xl sm:text-4xl font-bold text-white text-center mb-4"
+            style={{ fontFamily: "var(--font-shadows), cursive" }}
+          >
             Simple, Transparent Pricing
           </h2>
           <p className="text-white/50 text-center mb-12 max-w-xl mx-auto">
             3-month initial commitment, then month-to-month. 30-day cancellation notice.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6" data-animate="stagger">
             {plans.map((plan) => (
               <div
                 key={plan.name}
-                className={`rounded-2xl p-8 relative ${
+                className={`rounded-2xl p-8 relative transition-all duration-300 ${
                   plan.popular
                     ? "bg-[#DC2626] text-white ring-2 ring-[#DC2626] scale-105"
-                    : "bg-[#1A1A1A] text-white border border-white/[0.08]"
+                    : "bg-[#221a17] text-white border border-white/[0.08] hover:border-white/[0.15]"
                 }`}
               >
                 {plan.popular && (
@@ -201,10 +254,10 @@ export default function AdvertisePage() {
                 </ul>
                 <a
                   href="#contact-form"
-                  className={`block w-full py-3 rounded-full text-center font-semibold transition-colors ${
+                  className={`block w-full py-3 rounded-full text-center font-semibold transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
                     plan.popular
-                      ? "bg-white text-[#DC2626] hover:bg-white/90"
-                      : "bg-[#DC2626] text-white hover:bg-red-700"
+                      ? "bg-white text-[#DC2626] hover:bg-white/90 hover:shadow-white/20"
+                      : "bg-[#DC2626] text-white hover:bg-red-700 hover:shadow-red-900/30"
                   }`}
                 >
                   Get Started
@@ -215,25 +268,28 @@ export default function AdvertisePage() {
         </div>
       </section>
 
-      {/* Contact Form - Light */}
-      <section id="contact-form" className="py-20 px-4 sm:px-6 lg:px-8">
+      {/* Contact Form */}
+      <section id="contact-form" className="py-20 px-4 sm:px-6 lg:px-8 bg-[#221a17]">
         <div className="max-w-2xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold text-[#111111] text-center mb-4" style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>
+          <h2
+            className="text-3xl sm:text-4xl font-bold text-white text-center mb-4"
+            style={{ fontFamily: "var(--font-shadows), cursive" }}
+          >
             Reserve Your Spot
           </h2>
-          <p className="text-black/50 text-center mb-10">
+          <p className="text-white/50 text-center mb-10">
             Fill out the form below and we&apos;ll get back to you within 24 hours.
           </p>
 
           {isSubmitted ? (
-            <div className="p-8 rounded-2xl bg-green-50 border border-green-200 text-center">
-              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="p-8 rounded-2xl bg-green-900/20 border border-green-500/20 text-center">
+              <div className="w-16 h-16 rounded-full bg-green-900/30 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-green-800 mb-2">Thank You!</h3>
-              <p className="text-green-700">
+              <h3 className="text-2xl font-bold text-green-400 mb-2">Thank You!</h3>
+              <p className="text-green-300/70">
                 We&apos;ve received your inquiry. A member of our team will reach out within 24 hours.
               </p>
             </div>
@@ -243,7 +299,7 @@ export default function AdvertisePage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-[#111111] mb-1.5">
+                  <label htmlFor="name" className="block text-sm font-medium text-white/70 mb-1.5">
                     Name *
                   </label>
                   <input
@@ -251,12 +307,12 @@ export default function AdvertisePage() {
                     id="name"
                     name="name"
                     required
-                    className="w-full px-4 py-3 rounded-xl border border-black/10 bg-[#F5F5F5] text-[#111111] placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-[#DC2626]/30 focus:border-[#DC2626]/30 transition"
+                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-[#1a1210] text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#DC2626]/30 focus:border-[#DC2626]/30 transition"
                     placeholder="Your name"
                   />
                 </div>
                 <div>
-                  <label htmlFor="business" className="block text-sm font-medium text-[#111111] mb-1.5">
+                  <label htmlFor="business" className="block text-sm font-medium text-white/70 mb-1.5">
                     Business Name *
                   </label>
                   <input
@@ -264,7 +320,7 @@ export default function AdvertisePage() {
                     id="business"
                     name="business_name"
                     required
-                    className="w-full px-4 py-3 rounded-xl border border-black/10 bg-[#F5F5F5] text-[#111111] placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-[#DC2626]/30 focus:border-[#DC2626]/30 transition"
+                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-[#1a1210] text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#DC2626]/30 focus:border-[#DC2626]/30 transition"
                     placeholder="Your business name"
                   />
                 </div>
@@ -272,7 +328,7 @@ export default function AdvertisePage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-[#111111] mb-1.5">
+                  <label htmlFor="email" className="block text-sm font-medium text-white/70 mb-1.5">
                     Email *
                   </label>
                   <input
@@ -280,12 +336,12 @@ export default function AdvertisePage() {
                     id="email"
                     name="email"
                     required
-                    className="w-full px-4 py-3 rounded-xl border border-black/10 bg-[#F5F5F5] text-[#111111] placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-[#DC2626]/30 focus:border-[#DC2626]/30 transition"
+                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-[#1a1210] text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#DC2626]/30 focus:border-[#DC2626]/30 transition"
                     placeholder="you@business.com"
                   />
                 </div>
                 <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-[#111111] mb-1.5">
+                  <label htmlFor="phone" className="block text-sm font-medium text-white/70 mb-1.5">
                     Phone *
                   </label>
                   <input
@@ -293,21 +349,21 @@ export default function AdvertisePage() {
                     id="phone"
                     name="phone"
                     required
-                    className="w-full px-4 py-3 rounded-xl border border-black/10 bg-[#F5F5F5] text-[#111111] placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-[#DC2626]/30 focus:border-[#DC2626]/30 transition"
+                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-[#1a1210] text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#DC2626]/30 focus:border-[#DC2626]/30 transition"
                     placeholder="(555) 123-4567"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="package" className="block text-sm font-medium text-[#111111] mb-1.5">
+                <label htmlFor="package" className="block text-sm font-medium text-white/70 mb-1.5">
                   Package Interest *
                 </label>
                 <select
                   id="package"
                   name="package_interest"
                   required
-                  className="w-full px-4 py-3 rounded-xl border border-black/10 bg-[#F5F5F5] text-[#111111] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/30 focus:border-[#DC2626]/30 transition"
+                  className="w-full px-4 py-3 rounded-xl border border-white/10 bg-[#1a1210] text-white focus:outline-none focus:ring-2 focus:ring-[#DC2626]/30 focus:border-[#DC2626]/30 transition"
                 >
                   <option value="">Select a package</option>
                   <option value="Starter - $99/mo">Starter — $99/mo</option>
@@ -317,7 +373,7 @@ export default function AdvertisePage() {
               </div>
 
               <div>
-                <label htmlFor="industry" className="block text-sm font-medium text-[#111111] mb-1.5">
+                <label htmlFor="industry" className="block text-sm font-medium text-white/70 mb-1.5">
                   Industry / What do you sell? *
                 </label>
                 <input
@@ -325,33 +381,33 @@ export default function AdvertisePage() {
                   id="industry"
                   name="industry"
                   required
-                  className="w-full px-4 py-3 rounded-xl border border-black/10 bg-[#F5F5F5] text-[#111111] placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-[#DC2626]/30 focus:border-[#DC2626]/30 transition"
+                  className="w-full px-4 py-3 rounded-xl border border-white/10 bg-[#1a1210] text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#DC2626]/30 focus:border-[#DC2626]/30 transition"
                   placeholder="e.g., Auto Repair, Insurance, Real Estate..."
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
-                  <label htmlFor="has_creative" className="block text-sm font-medium text-[#111111] mb-1.5">
+                  <label htmlFor="has_creative" className="block text-sm font-medium text-white/70 mb-1.5">
                     Have ad creative already?
                   </label>
                   <select
                     id="has_creative"
                     name="has_creative"
-                    className="w-full px-4 py-3 rounded-xl border border-black/10 bg-[#F5F5F5] text-[#111111] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/30 focus:border-[#DC2626]/30 transition"
+                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-[#1a1210] text-white focus:outline-none focus:ring-2 focus:ring-[#DC2626]/30 focus:border-[#DC2626]/30 transition"
                   >
                     <option value="No, need design">No, I need design</option>
                     <option value="Yes">Yes, I have creative ready</option>
                   </select>
                 </div>
                 <div>
-                  <label htmlFor="has_logos" className="block text-sm font-medium text-[#111111] mb-1.5">
+                  <label htmlFor="has_logos" className="block text-sm font-medium text-white/70 mb-1.5">
                     Have logos/branding?
                   </label>
                   <select
                     id="has_logos"
                     name="has_logos"
-                    className="w-full px-4 py-3 rounded-xl border border-black/10 bg-[#F5F5F5] text-[#111111] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/30 focus:border-[#DC2626]/30 transition"
+                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-[#1a1210] text-white focus:outline-none focus:ring-2 focus:ring-[#DC2626]/30 focus:border-[#DC2626]/30 transition"
                   >
                     <option value="Yes">Yes</option>
                     <option value="No">No</option>
@@ -360,14 +416,14 @@ export default function AdvertisePage() {
               </div>
 
               <div>
-                <label htmlFor="message" className="block text-sm font-medium text-[#111111] mb-1.5">
+                <label htmlFor="message" className="block text-sm font-medium text-white/70 mb-1.5">
                   Message (optional)
                 </label>
                 <textarea
                   id="message"
                   name="message"
                   rows={4}
-                  className="w-full px-4 py-3 rounded-xl border border-black/10 bg-[#F5F5F5] text-[#111111] placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-[#DC2626]/30 focus:border-[#DC2626]/30 transition resize-none"
+                  className="w-full px-4 py-3 rounded-xl border border-white/10 bg-[#1a1210] text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#DC2626]/30 focus:border-[#DC2626]/30 transition resize-none"
                   placeholder="Anything else you'd like us to know?"
                 />
               </div>
@@ -375,7 +431,7 @@ export default function AdvertisePage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-4 bg-[#DC2626] text-white rounded-full text-lg font-semibold hover:bg-red-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-4 bg-[#DC2626] text-white rounded-full text-lg font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-700 hover:-translate-y-1 hover:shadow-lg hover:shadow-red-900/30"
               >
                 {isSubmitting ? "Submitting..." : "Submit Inquiry"}
               </button>
@@ -385,7 +441,7 @@ export default function AdvertisePage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 px-4 sm:px-6 lg:px-8 bg-[#111111] text-center">
+      <footer className="py-8 px-4 sm:px-6 lg:px-8 bg-[#1a1210] text-center border-t border-white/5">
         <p className="text-white/40 text-sm">
           Advertising powered by{" "}
           <Link

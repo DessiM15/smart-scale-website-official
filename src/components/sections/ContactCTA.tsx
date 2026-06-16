@@ -7,8 +7,8 @@ export default function ContactCTA() {
     <section className="py-32 px-4 sm:px-6 lg:px-8 bg-white" data-theme="light">
       <div className="max-w-3xl mx-auto text-center">
         <h2
-          className="text-4xl sm:text-5xl md:text-6xl text-[#111111] mb-6"
-          data-animate="fade-up"
+          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-[#111111] mb-6"
+          data-animate="word-reveal"
         >
           Let&apos;s Build Something Exceptional
         </h2>
@@ -22,7 +22,7 @@ export default function ContactCTA() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center" data-animate="fade-up">
           <Link
             href="/contact"
-            className="inline-flex items-center gap-3 px-10 py-4 bg-[#DC2626] text-white rounded-full text-sm uppercase tracking-widest hover:bg-red-700 transition-all duration-500"
+            className="btn-hover-enhanced inline-flex items-center gap-3 px-10 py-4 bg-[#DC2626] text-white rounded-full text-sm uppercase tracking-widest hover:bg-red-700 transition-all duration-500"
           >
             Start a Conversation
             <svg

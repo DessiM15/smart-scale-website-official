@@ -70,7 +70,7 @@ export default function WhatWeDo() {
       {/* Hero - Light */}
       <section data-theme="light" className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 bg-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto text-center relative z-10">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl mb-6 hero-headline text-[#111111]">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl mb-6 text-[#111111]" data-animate="word-reveal">
             Engineering Excellence
           </h1>
           <p className="text-lg sm:text-xl text-black/50 max-w-3xl mx-auto mb-8 hero-subheadline">
@@ -80,7 +80,7 @@ export default function WhatWeDo() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/contact"
-              className="inline-flex items-center gap-3 px-8 py-3.5 bg-[#DC2626] text-white rounded-full text-sm uppercase tracking-widest hover:bg-red-700 transition-all duration-500"
+              className="btn-hover-enhanced inline-flex items-center gap-3 px-8 py-3.5 bg-[#DC2626] text-white rounded-full text-sm uppercase tracking-widest hover:bg-red-700 transition-all duration-500"
             >
               Start a Conversation
             </Link>
@@ -97,9 +97,9 @@ export default function WhatWeDo() {
       <RedSeparator />
 
       {/* Capabilities Grid - Dark */}
-      <section data-theme="dark" className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl mb-12 text-center text-white" data-animate="fade-up">
+      <section data-theme="dark" className="relative py-24 px-4 sm:px-6 lg:px-8 bg-[#111111] noise-overlay">
+        <div className="max-w-7xl mx-auto relative z-10">
+          <h2 className="text-4xl mb-12 text-center text-white" data-animate="slide-left">
             Capabilities
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-animate="stagger">
@@ -139,12 +139,12 @@ export default function WhatWeDo() {
       <RedSeparator />
 
       {/* Process Overview - Dark */}
-      <section data-theme="dark" className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
-        <div className="max-w-7xl mx-auto">
+      <section data-theme="dark" className="relative py-24 px-4 sm:px-6 lg:px-8 bg-[#111111] noise-overlay">
+        <div className="max-w-7xl mx-auto relative z-10">
           <h2 className="text-4xl mb-12 text-center text-white" data-animate="fade-up">
             Our Process
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-6" data-animate="stagger">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6" data-animate="scale-reveal">
             {processSteps.map((item, index) => (
               <GlowCard key={index} className="p-6">
                 <div className="text-sm font-medium text-white/30 mb-2">
@@ -175,7 +175,7 @@ export default function WhatWeDo() {
           <div data-animate="fade-up">
             <Link
               href="/contact"
-              className="inline-flex items-center gap-3 px-10 py-4 bg-[#DC2626] text-white rounded-full text-sm uppercase tracking-widest hover:bg-red-700 transition-all duration-500"
+              className="btn-hover-enhanced inline-flex items-center gap-3 px-10 py-4 bg-[#DC2626] text-white rounded-full text-sm uppercase tracking-widest hover:bg-red-700 transition-all duration-500"
             >
               Start a Conversation
               <svg

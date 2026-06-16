@@ -35,7 +35,7 @@ export default function WhyUs() {
       {/* Hero - Light */}
       <section data-theme="light" className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 bg-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto text-center relative z-10">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 hero-headline text-[#111111]">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 text-[#111111]" data-animate="word-reveal">
             Hungry. Fast. Obsessed with Your Success.
           </h1>
           <p className="text-lg sm:text-xl text-black/50 max-w-3xl mx-auto mb-8 hero-subheadline">
@@ -50,18 +50,18 @@ export default function WhyUs() {
       <RedSeparator />
 
       {/* Values Grid - Dark */}
-      <section data-theme="dark" className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
-        <div className="max-w-7xl mx-auto">
+      <section data-theme="dark" className="relative py-24 px-4 sm:px-6 lg:px-8 bg-[#111111] noise-overlay">
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
+            <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white" data-animate="fade-up">
               Our Values
             </h2>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto">
+            <p className="text-lg text-white/60 max-w-2xl mx-auto" data-animate="fade-up">
               The principles that guide every project and every interaction.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-animate="scale-reveal">
             {values.map((value, index) => (
               <GlowCard key={index} className="p-8">
                 <div className="w-14 h-14 rounded-full bg-[#DC2626] flex items-center justify-center text-white mb-6">
@@ -80,10 +80,10 @@ export default function WhyUs() {
       {/* Founder Difference - Light */}
       <section data-theme="light" className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-8 text-[#111111] text-center">
+          <h2 className="text-4xl sm:text-5xl font-bold mb-8 text-[#111111] text-center" data-animate="fade-up">
             Direct Founder Involvement
           </h2>
-          <div className="space-y-6 text-lg text-black/50 leading-relaxed">
+          <div className="space-y-6 text-lg text-black/50 leading-relaxed" data-animate="slide-left">
             <p>
               At Smart Scale, every project is led directly by the company&apos;s founders. This isn&apos;t a sales pitch — it&apos;s our core operating model. When you work with us, you get direct access to decision-makers who understand both the technical and business sides of your project.
             </p>
@@ -100,17 +100,17 @@ export default function WhyUs() {
       <RedSeparator />
 
       {/* CTA - Dark */}
-      <section data-theme="dark" className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-white">
+      <section data-theme="dark" className="relative py-24 px-4 sm:px-6 lg:px-8 bg-[#111111] noise-overlay">
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-white" data-animate="fade-up">
             Ready to Experience the Difference?
           </h2>
-          <p className="text-xl text-white/60 mb-8">
+          <p className="text-xl text-white/60 mb-8" data-animate="fade-up">
             Get direct access, enterprise quality, and 7-day MVPs — without the agency overhead.
           </p>
           <Link
             href="/contact"
-            className="inline-block px-8 py-4 bg-[#DC2626] text-white rounded-full text-lg font-semibold hover:bg-red-700 transition-all duration-300 hover:scale-105"
+            className="btn-hover-enhanced inline-block px-8 py-4 bg-[#DC2626] text-white rounded-full text-lg font-semibold hover:bg-red-700 transition-all duration-300"
           >
             Request Estimate
           </Link>

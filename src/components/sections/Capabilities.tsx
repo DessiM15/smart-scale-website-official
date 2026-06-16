@@ -33,6 +33,13 @@ const capabilities = [
     logo: "/assets/client-logos/gulf-coast-alloys.png",
   },
   {
+    title: "Web Design",
+    description:
+      "Beautiful, conversion-focused websites crafted with precision.",
+    image: "/assets/portfolio/taylor-made-esthetics/thumbnail.webp",
+    logo: "/assets/client-logos/taylor-made-esthetics.png",
+  },
+  {
     title: "Digital Strategy",
     description:
       "Technical architecture and roadmap consulting for growth.",
@@ -49,7 +56,7 @@ export default function Capabilities() {
       <div className="max-w-7xl mx-auto">
         <h2
           className="text-4xl sm:text-5xl md:text-6xl text-[#111111] text-center mb-4"
-          data-animate="fade-up"
+          data-animate="word-reveal"
         >
           Capabilities
         </h2>
@@ -171,7 +178,7 @@ export default function Capabilities() {
         {/* Mobile/Tablet: Stacked cards with logos */}
         <div
           className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:hidden"
-          data-animate="stagger"
+          data-animate="scale-reveal"
         >
           {capabilities.map((cap) => (
             <div

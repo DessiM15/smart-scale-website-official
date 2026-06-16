@@ -36,7 +36,7 @@ export default function Industries() {
       {/* Hero - Light */}
       <section data-theme="light" className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 bg-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto text-center relative z-10">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 hero-headline text-[#111111]">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 text-[#111111]" data-animate="word-reveal">
             Every Industry Deserves Modern Technology
           </h1>
           <p className="text-lg sm:text-xl text-black/50 max-w-3xl mx-auto mb-8 hero-subheadline">
@@ -56,17 +56,17 @@ export default function Industries() {
       <RedSeparator />
 
       {/* Industries Grid - Dark */}
-      <section data-theme="dark" className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
-        <div className="max-w-7xl mx-auto">
+      <section data-theme="dark" className="relative py-24 px-4 sm:px-6 lg:px-8 bg-[#111111] noise-overlay">
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
+            <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white" data-animate="slide-left">
               Industry Expertise
             </h2>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto">
+            <p className="text-lg text-white/60 max-w-2xl mx-auto" data-animate="fade-up">
               Proven solutions across diverse industries. Enterprise quality, boutique service.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6" data-animate="stagger">
             {industries.map((industry, index) => (
               <IndustryCard
                 key={index}
@@ -84,15 +84,15 @@ export default function Industries() {
       {/* CTA - Light */}
       <section data-theme="light" className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-6 text-[#111111]">
+          <h2 className="text-4xl font-bold mb-6 text-[#111111]" data-animate="fade-up">
             Ready to Modernize Your Industry?
           </h2>
-          <p className="text-xl text-black/50 mb-8">
+          <p className="text-xl text-black/50 mb-8" data-animate="fade-up">
             Let&apos;s discuss how we can bring fresh technology to your established business.
           </p>
           <Link
             href="/contact"
-            className="inline-block px-8 py-4 bg-[#DC2626] text-white rounded-full text-lg font-semibold hover:bg-red-700 transition"
+            className="btn-hover-enhanced inline-block px-8 py-4 bg-[#DC2626] text-white rounded-full text-lg font-semibold hover:bg-red-700 transition-all duration-300"
           >
             Request Estimate
           </Link>

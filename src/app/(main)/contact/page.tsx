@@ -21,7 +21,7 @@ export default function Contact() {
       {/* Hero - Light */}
       <section data-theme="light" className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 bg-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto text-center relative z-10">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl mb-6 hero-headline text-[#111111]">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl mb-6 text-[#111111]" data-animate="word-reveal">
             Start a Conversation
           </h1>
           <p className="text-lg sm:text-xl text-black/50 max-w-3xl mx-auto mb-8 hero-subheadline">
@@ -31,7 +31,7 @@ export default function Contact() {
           <div className="flex justify-center">
             <Link
               href="#contact-form"
-              className="inline-flex items-center gap-3 px-8 py-3.5 bg-[#DC2626] text-white rounded-full text-sm uppercase tracking-widest hover:bg-red-700 transition-all duration-500"
+              className="btn-hover-enhanced inline-flex items-center gap-3 px-8 py-3.5 bg-[#DC2626] text-white rounded-full text-sm uppercase tracking-widest hover:bg-red-700 transition-all duration-500"
             >
               Send Project Details
             </Link>
@@ -42,17 +42,17 @@ export default function Contact() {
       <RedSeparator />
 
       {/* Contact Form and Info - Dark */}
-      <section id="contact-form" data-theme="dark" className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
-        <div className="max-w-4xl mx-auto">
+      <section id="contact-form" data-theme="dark" className="relative py-24 px-4 sm:px-6 lg:px-8 bg-[#111111] noise-overlay">
+        <div className="max-w-4xl mx-auto relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div>
+            <div data-animate="slide-left">
               <h2 className="text-3xl mb-6 text-white">
                 Send us a message
               </h2>
               <ContactForm />
             </div>
 
-            <div>
+            <div data-animate="slide-right">
               <h2 className="text-3xl mb-6 text-white">
                 Contact Information
               </h2>
@@ -104,7 +104,7 @@ export default function Contact() {
       {/* SMS Consent Form Section - Light with dark card inset */}
       <section data-theme="light" className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-4xl mx-auto">
-          <div className="rounded-2xl bg-[#161616] border border-white/[0.06] p-8 sm:p-12" data-theme="dark">
+          <div className="rounded-2xl bg-[#161616] border border-white/[0.06] p-8 sm:p-12" data-theme="dark" data-animate="scale-reveal">
             <h2 className="text-3xl mb-4 text-white">
               Subscribe to Updates
             </h2>

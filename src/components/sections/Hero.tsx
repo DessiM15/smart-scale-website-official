@@ -79,6 +79,9 @@ export default function Hero() {
       className="relative min-h-screen bg-white overflow-hidden"
       data-theme="light"
     >
+      {/* Subtle red gradient orb */}
+      <div className="absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-gradient-radial from-[#DC2626]/5 to-transparent blur-3xl pointer-events-none" />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-screen flex flex-col lg:flex-row items-stretch">
         {/* Left side — logo + subtitle */}
         <div className="flex-1 lg:flex-[0_0_60%] flex flex-col justify-between pt-32 pb-12 lg:pb-20 overflow-hidden">
@@ -98,7 +101,7 @@ export default function Hero() {
               alt="Smart Scale"
               width={800}
               height={800}
-              className="w-full max-w-[500px] lg:max-w-[600px] h-auto"
+              className="w-full max-w-[600px] lg:max-w-[720px] h-auto"
               priority
               unoptimized
             />
@@ -109,6 +112,7 @@ export default function Hero() {
         <div
           ref={galleryRef}
           className="hidden lg:flex flex-[0_0_40%] items-center justify-center overflow-hidden opacity-0 py-24"
+          data-parallax="0.15"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >

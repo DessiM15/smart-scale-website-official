@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display, Bebas_Neue } from "next/font/google";
+import { Inter, Playfair_Display, Bebas_Neue, Shadows_Into_Light } from "next/font/google";
 import "./globals.css";
 import SmoothScrollProvider from "@/components/SmoothScrollProvider";
 import SchemaOrg from "@/components/SchemaOrg";
@@ -20,6 +20,12 @@ const bebasNeue = Bebas_Neue({
   subsets: ["latin"],
   weight: "400",
   variable: "--font-bebas",
+});
+
+const shadowsIntoLight = Shadows_Into_Light({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-shadows",
 });
 
 export const metadata: Metadata = {
@@ -83,7 +89,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable} ${bebasNeue.variable}`}>
+    <html lang="en" className={`${inter.variable} ${playfair.variable} ${bebasNeue.variable} ${shadowsIntoLight.variable}`}>
       <body className="bg-[#0A0A0A] text-white">
         <SchemaOrg />
         <SmoothScrollProvider>

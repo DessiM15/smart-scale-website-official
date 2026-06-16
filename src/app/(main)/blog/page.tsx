@@ -20,19 +20,19 @@ export default function BlogPage() {
       <RedSeparator />
 
       {/* Blog Posts Grid - Dark */}
-      <section data-theme="dark" className="py-24 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]">
-        <div className="max-w-7xl mx-auto">
+      <section data-theme="dark" className="relative py-24 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A] noise-overlay">
+        <div className="max-w-7xl mx-auto relative z-10">
           {posts.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-white/50 text-lg">No blog posts available yet.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" data-animate="stagger">
               {posts.map((post) => (
                 <Link
                   key={post.slug}
                   href={`/blog/${post.slug}`}
-                  className="group block rounded-3xl overflow-hidden bg-[#161616] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-300 hover:shadow-2xl"
+                  className="group block rounded-3xl overflow-hidden bg-[#161616] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-300 hover:shadow-2xl hover:translate-y-[-4px]"
                 >
                   {/* Cover Image */}
                   <div className="h-48 w-full relative overflow-hidden bg-[#111111]">
