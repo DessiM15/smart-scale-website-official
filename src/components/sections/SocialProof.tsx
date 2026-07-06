@@ -43,12 +43,14 @@ export default function SocialProof() {
         {/* Testimonial */}
         <div className="text-center" data-animate="scale-reveal">
           <p className="text-2xl sm:text-3xl md:text-4xl text-white/80 leading-relaxed max-w-3xl mx-auto">
-            &ldquo;Smart Scale delivered a platform that transformed how we
-            operate. Their precision and attention to detail is
-            unmatched.&rdquo;
+            &ldquo;Smart Scale did a fantastic job delivering this website for
+            our business. The quickness of delivery and quality of work is
+            absolutely amazing. I would recommend anyone needing a website, app,
+            or any kind of software to work with the Smart Scale
+            team.&rdquo;
           </p>
           <p className="mt-8 text-sm text-white/40 uppercase tracking-widest">
-            — Enterprise Client
+            — Emily &amp; Corey, Gin &amp; Jack
           </p>
         </div>
       </div>

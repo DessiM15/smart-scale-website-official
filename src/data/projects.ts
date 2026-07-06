@@ -177,8 +177,6 @@ export const projects: Project[] = [
     thumbnailImage: "/assets/portfolio/botmakers-crm/thumbnail.webp",
     vercelUrl: "https://botmakers-crm.vercel.app",
     githubUrl: "https://github.com/DessiM15/botmakers-crm",
-    featured: true,
-    featuredOrder: 1,
     caseStudy: {
       challenge:
         "An AI development agency needed a custom CRM that could handle their unique workflow: managing AI project pipelines, tracking client communications, and integrating invoicing.",
@@ -378,6 +376,34 @@ export const projects: Project[] = [
         "Integrated Uber Eats and Grubhub ordering from website",
         "Analytics tracking to measure website ROI",
         "Mobile-optimized for the majority of restaurant traffic",
+      ],
+    },
+  },
+  {
+    slug: "gin-and-jack",
+    title: "Gin & Jack",
+    clientName: "Emily & Corey",
+    serviceType: "Website",
+    industry: "Hospitality / Events",
+    techStack: ["Next.js", "TypeScript", "Tailwind CSS", "Vercel"],
+    description:
+      "A sophisticated website for Gin & Jack, a Houston-based mobile bartending service specializing in weddings, engagements, and private events. Features elegant design with serif typography, event gallery, service packages, and a booking inquiry flow — all crafted to match the brand's upscale, celebratory identity.",
+    shortDescription: "Mobile bartending service website for weddings and events.",
+    thumbnailImage: "/assets/portfolio/gin-and-jack/thumbnail.webp",
+    vercelUrl: "https://www.ginandjackbar.com",
+    githubUrl: "https://github.com/DessiM15/Gin-Jack-Emily",
+    featured: true,
+    featuredOrder: 1,
+    caseStudy: {
+      challenge:
+        "A growing mobile bartending business needed a premium web presence that conveys the sophistication and celebratory energy of their brand while making it easy for couples and event planners to explore packages and book services.",
+      solution:
+        "Designed and built an elegant, conversion-focused website with refined serif typography, warm gold and cream color palette, event-type showcases for weddings, engagements, and private parties, a detailed service packages section, a curated event gallery, and a streamlined booking inquiry form.",
+      results: [
+        "Elegant design that captures the brand's upscale identity",
+        "Service package showcase driving qualified inquiries",
+        "Event gallery building trust with prospective clients",
+        "Mobile-optimized booking flow for on-the-go event planners",
       ],
     },
   },
