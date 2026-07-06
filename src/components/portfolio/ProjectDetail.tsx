@@ -48,7 +48,7 @@ export default function ProjectDetail({
                 fill
                 className="object-cover"
                 priority
-                unoptimized
+                sizes="(max-width: 1024px) 100vw, 50vw"
               />
             </div>
 

@@ -91,7 +91,6 @@ export default function Capabilities() {
                     opacity: isActive ? 1 : 0,
                   }}
                   sizes="(max-width: 1024px) 100vw, 33vw"
-                  unoptimized
                 />
 
                 {/* Solid light background — visible by default */}
@@ -131,7 +130,6 @@ export default function Capabilities() {
                       width={120}
                       height={60}
                       className="object-contain max-h-16 w-auto brightness-0 opacity-40"
-                      unoptimized
                     />
                   </div>
                   <p className="text-[#111111]/40 text-xs uppercase tracking-widest font-medium pb-4">
@@ -184,7 +182,6 @@ export default function Capabilities() {
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                 sizes="(max-width: 640px) 100vw, 50vw"
-                unoptimized
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
               <div className="absolute inset-0 flex flex-col justify-end p-5">

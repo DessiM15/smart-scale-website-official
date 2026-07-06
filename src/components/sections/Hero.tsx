@@ -103,7 +103,7 @@ export default function Hero() {
               height={800}
               className="w-full max-w-[600px] lg:max-w-[720px] h-auto"
               priority
-              unoptimized
+              sizes="(max-width: 1024px) 100vw, 720px"
             />
           </div>
         </div>
@@ -131,7 +131,6 @@ export default function Hero() {
                       fill
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                       sizes="(max-width: 1024px) 100vw, 40vw"
-                      unoptimized
                     />
                   </div>
                   <p className="mt-3 text-sm text-black/60 group-hover:text-black transition-colors duration-300">

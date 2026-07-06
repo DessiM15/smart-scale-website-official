@@ -47,15 +47,17 @@ const plans = [
 export default function AdvertisePage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useGSAPAnimations();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage("");
 
     const formData = new FormData(e.currentTarget);
-    formData.append("access_key", "YOUR_WEB3FORMS_ACCESS_KEY");
+    formData.append("access_key", "f9fd4eed-280e-4c3e-bf11-579f9ff00522");
 
     try {
       const response = await fetch("https://api.web3forms.com/submit", {
@@ -65,9 +67,11 @@ export default function AdvertisePage() {
 
       if (response.ok) {
         setIsSubmitted(true);
+      } else {
+        setErrorMessage("Something went wrong. Please try again.");
       }
     } catch {
-      // Form submission failed silently
+      setErrorMessage("Failed to submit. Please check your connection and try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -103,7 +107,7 @@ export default function AdvertisePage() {
           fill
           className="object-cover"
           priority
-          unoptimized
+          sizes="100vw"
         />
         {/* Dark gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
@@ -282,16 +286,118 @@ export default function AdvertisePage() {
           </p>
 
           {isSubmitted ? (
-            <div className="p-8 rounded-2xl bg-green-900/20 border border-green-500/20 text-center">
-              <div className="w-16 h-16 rounded-full bg-green-900/30 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <div className="relative p-10 rounded-2xl bg-gradient-to-b from-[#DC2626]/10 via-[#1a1210] to-[#1a1210] border border-[#DC2626]/20 text-center overflow-hidden">
+              {/* Confetti pieces */}
+              {Array.from({ length: 40 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute w-2 h-2 rounded-sm"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: `-5%`,
+                    backgroundColor: [
+                      "#DC2626",
+                      "#F59E0B",
+                      "#10B981",
+                      "#3B82F6",
+                      "#8B5CF6",
+                      "#EC4899",
+                      "#F97316",
+                      "#ffffff",
+                    ][i % 8],
+                    width: `${Math.random() * 8 + 4}px`,
+                    height: `${Math.random() * 8 + 4}px`,
+                    borderRadius: i % 3 === 0 ? "50%" : "2px",
+                    animation: `confetti-fall ${2 + Math.random() * 3}s ease-in forwards`,
+                    animationDelay: `${Math.random() * 1.5}s`,
+                    transform: `rotate(${Math.random() * 360}deg)`,
+                    opacity: 0,
+                  }}
+                />
+              ))}
+
+              {/* Animated checkmark circle */}
+              <div className="relative w-20 h-20 mx-auto mb-6">
+                <svg className="w-20 h-20" viewBox="0 0 80 80">
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="36"
+                    fill="none"
+                    stroke="#DC2626"
+                    strokeWidth="3"
+                    strokeDasharray="226"
+                    strokeDashoffset="226"
+                    className="animate-[circle-draw_0.6s_ease-out_0.3s_forwards]"
+                  />
+                  <path
+                    d="M24 42 L34 52 L56 30"
+                    fill="none"
+                    stroke="#DC2626"
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeDasharray="50"
+                    strokeDashoffset="50"
+                    className="animate-[check-draw_0.4s_ease-out_0.8s_forwards]"
+                  />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-green-400 mb-2">Thank You!</h3>
-              <p className="text-green-300/70">
-                We&apos;ve received your inquiry. A member of our team will reach out within 24 hours.
+
+              <h3
+                className="text-3xl sm:text-4xl font-bold text-white mb-3 animate-[fade-slide-up_0.5s_ease-out_1s_both]"
+                style={{ fontFamily: "var(--font-shadows), cursive" }}
+              >
+                You&apos;re In!
+              </h3>
+              <p className="text-lg text-white/80 mb-2 animate-[fade-slide-up_0.5s_ease-out_1.2s_both]">
+                Your business is about to be on the big screen at{" "}
+                <span className="text-[#DC2626] font-semibold">Mex Taco House</span> —
               </p>
+              <p className="text-lg text-white/80 mb-6 animate-[fade-slide-up_0.5s_ease-out_1.4s_both]">
+                seen by <span className="text-[#DC2626] font-bold">hundreds of diners every week!</span>
+              </p>
+              <p className="text-sm text-white/40 animate-[fade-slide-up_0.5s_ease-out_1.6s_both]">
+                A member of our team will reach out within 24 hours to get you started.
+              </p>
+
+              {/* Keyframe styles */}
+              <style jsx>{`
+                @keyframes confetti-fall {
+                  0% {
+                    opacity: 1;
+                    transform: translateY(0) rotate(0deg) scale(0);
+                  }
+                  10% {
+                    opacity: 1;
+                    transform: translateY(20px) rotate(45deg) scale(1);
+                  }
+                  100% {
+                    opacity: 0;
+                    transform: translateY(500px) rotate(720deg) scale(0.5);
+                  }
+                }
+                @keyframes circle-draw {
+                  to {
+                    stroke-dashoffset: 0;
+                  }
+                }
+                @keyframes check-draw {
+                  to {
+                    stroke-dashoffset: 0;
+                  }
+                }
+                @keyframes fade-slide-up {
+                  from {
+                    opacity: 0;
+                    transform: translateY(15px);
+                  }
+                  to {
+                    opacity: 1;
+                    transform: translateY(0);
+                  }
+                }
+              `}</style>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -427,6 +533,12 @@ export default function AdvertisePage() {
                   placeholder="Anything else you'd like us to know?"
                 />
               </div>
+
+              {errorMessage && (
+                <div className="p-4 rounded-xl bg-red-900/20 text-red-400 border border-red-500/20 text-center">
+                  {errorMessage}
+                </div>
+              )}
 
               <button
                 type="submit"

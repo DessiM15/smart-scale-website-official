@@ -35,7 +35,6 @@ export default function SocialProof() {
                 width={220}
                 height={90}
                 className="object-contain w-auto max-h-24 transition-all duration-500 brightness-0 invert opacity-40 group-hover:opacity-100 group-hover:brightness-100 group-hover:invert-0"
-                unoptimized
               />
             </div>
           ))}
