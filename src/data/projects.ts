@@ -407,4 +407,31 @@ export const projects: Project[] = [
       ],
     },
   },
+  {
+    slug: "the-houston-barber",
+    title: "The Houston Barber",
+    clientName: "The Houston Barber",
+    serviceType: "Website",
+    industry: "Barbershop / Grooming",
+    techStack: ["Next.js", "React", "Tailwind CSS", "Framer Motion", "StyleSeat", "Vercel"],
+    description:
+      "A concept website built for a high-end barbershop, showing how a grooming business can let clients book services directly on their own site. Built in a cinematic black-and-gold theme with an embedded StyleSeat booking flow — clients view real availability and book appointments without leaving the site, and the booking page integrates with the shop's existing StyleSeat system rather than replacing it.",
+    shortDescription: "Concept barbershop website with direct in-site booking.",
+    thumbnailImage: "/assets/portfolio/the-houston-barber/thumbnail.webp",
+    vercelUrl: "https://barber-website-mock.vercel.app",
+    githubUrl: "https://github.com/DessiM15/barber-website-mock",
+    caseStudy: {
+      challenge:
+        "Many barbershops rely on a third-party booking platform like StyleSeat but have no branded website of their own, sending clients off-site to book and losing the chance to build their own identity. The goal was to design a premium web presence that keeps booking on the shop's own site while integrating with the booking system they already use.",
+      solution:
+        "Designed and built a cinematic, multi-page barbershop website in a luxe black-and-gold theme, with an embedded StyleSeat booking flow on a dedicated Book page. Clients can view availability and book services directly through the website; when a browser or plan blocks the inline calendar, an always-working \"Open StyleSeat\" fallback guarantees the booking can still be completed. Rounded out with services and pricing, team, gallery with lightbox, reviews, shop, about, and a contact page with map and hours.",
+      results: [
+        "Direct in-site booking via an embedded StyleSeat flow — no separate system to manage",
+        "Integrates with the shop's existing StyleSeat account instead of replacing it",
+        "Always-working \"Open StyleSeat\" fallback so clients can always complete a booking",
+        "Cinematic black-and-gold design with scroll animations across a full multi-page site",
+        "Fully responsive, statically generated, with per-page SEO metadata",
+      ],
+    },
+  },
 ];

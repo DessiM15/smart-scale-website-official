@@ -24,6 +24,7 @@ const PROJECTS = [
   { slug: "valor-financial", url: "https://phil-valor-recruitment.vercel.app" },
   { slug: "apex-affinity-group", url: "https://apexpulsemarket.com" },
   { slug: "mex-taco-house", url: "https://mextacohouse.com" },
+  { slug: "the-houston-barber", url: "https://barber-website-mock.vercel.app" },
 ];
 
 const OUTPUT_DIR = path.resolve(__dirname, "../public/assets/portfolio");
