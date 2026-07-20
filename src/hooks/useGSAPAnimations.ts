@@ -249,7 +249,7 @@ export function useGSAPAnimations() {
               ease: "power2.out",
               onUpdate: () => {
                 el.textContent =
-                  Math.round(counterObj.val).toString() + suffix;
+                  Math.round(counterObj.val).toLocaleString() + suffix;
               },
             });
           },
