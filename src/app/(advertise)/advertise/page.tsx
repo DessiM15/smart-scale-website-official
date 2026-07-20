@@ -72,6 +72,25 @@ const includedFeatures = [
   "Two rounds of design revisions before launch",
 ];
 
+function HeadingBar({ className = "" }: { className?: string }) {
+  return (
+    <span
+      className={`block w-14 h-1 rounded-full bg-[#DC2626] mx-auto ${className}`}
+      aria-hidden
+    />
+  );
+}
+
+function DiamondDivider({ className = "" }: { className?: string }) {
+  return (
+    <div className={`flex items-center justify-center gap-3 ${className}`} aria-hidden>
+      <span className="h-px w-16 sm:w-24 bg-gradient-to-r from-transparent to-[#DC2626]/30" />
+      <span className="w-2.5 h-2.5 rotate-45 bg-[#f0c674] shadow-sm" />
+      <span className="h-px w-16 sm:w-24 bg-gradient-to-l from-transparent to-[#DC2626]/30" />
+    </div>
+  );
+}
+
 export default function AdvertisePage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -210,8 +229,17 @@ export default function AdvertisePage() {
       </section>
 
       {/* Stats */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#faf6f0]">
-        <div className="max-w-5xl mx-auto">
+      <section className="relative overflow-hidden py-20 px-4 sm:px-6 lg:px-8 bg-[#faf6f0]">
+        {/* soft red/gold spotlight */}
+        <div
+          className="pointer-events-none absolute inset-0"
+          aria-hidden
+          style={{
+            background:
+              "radial-gradient(58% 55% at 50% 40%, rgba(220,38,38,0.08), transparent 70%)",
+          }}
+        />
+        <div className="relative max-w-5xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
             <div data-animate="fade-up">
               <div
@@ -253,8 +281,29 @@ export default function AdvertisePage() {
           <p className="text-center text-[#7a6a5d] mt-12 max-w-2xl mx-auto text-lg">
             Diners are{" "}
             <span className="text-[#1a1210] font-semibold">seated, relaxed, and watching our screens</span>{" "}
-            for a full meal — not a passing glance. A billboard gets a glance;
-            this gets a whole meal.
+            for a full meal — not a passing glance.
+          </p>
+          <DiamondDivider className="mt-12" />
+        </div>
+      </section>
+
+      {/* Pull-quote photo band */}
+      <section className="relative overflow-hidden py-24 px-4 sm:px-6 lg:px-8">
+        <Image
+          src="/assets/mex-taco-expansion.webp"
+          alt="Diners seated at Mex Taco House"
+          fill
+          className="object-cover"
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-[#1a1210]/85" />
+        <div className="relative z-10 max-w-3xl mx-auto text-center" data-animate="fade-up">
+          <p
+            className="text-3xl sm:text-4xl md:text-5xl leading-tight text-[#f0c674]"
+            style={{ fontFamily: "var(--font-shadows), cursive" }}
+          >
+            A billboard gets a glance —
+            <br className="hidden sm:block" /> this gets a whole meal.
           </p>
         </div>
       </section>
@@ -262,42 +311,57 @@ export default function AdvertisePage() {
       {/* Exclusivity callout */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-5xl mx-auto">
-          <div className="rounded-3xl border border-[#DC2626]/15 bg-[#faf6f0] p-8 sm:p-12 text-center relative overflow-hidden" data-animate="fade-up">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#DC2626]/10 text-[#DC2626] text-xs font-bold uppercase tracking-wider mb-6">
-              Category Exclusivity Included
+          <div
+            className="rounded-3xl border border-[#DC2626]/15 bg-[#faf6f0] p-8 sm:p-12 text-center relative overflow-hidden shadow-xl shadow-black/[0.06]"
+            data-animate="fade-up"
+          >
+            {/* spotlight glow inside the card */}
+            <div
+              className="pointer-events-none absolute inset-0"
+              aria-hidden
+              style={{
+                background:
+                  "radial-gradient(50% 60% at 50% 0%, rgba(220,38,38,0.10), transparent 65%)",
+              }}
+            />
+            <div className="relative">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#DC2626]/10 text-[#DC2626] text-xs font-bold uppercase tracking-wider mb-6">
+                Category Exclusivity Included
+              </div>
+              <h2
+                className="text-3xl sm:text-4xl md:text-5xl font-bold mb-5 leading-tight"
+                style={{ fontFamily: "var(--font-playfair), serif" }}
+              >
+                Own your category.
+                <br className="hidden sm:block" /> Lock out the competition.
+              </h2>
+              <p className="text-lg text-[#7a6a5d] max-w-2xl mx-auto">
+                We run <span className="text-[#1a1210] font-semibold">one advertiser per industry</span>.
+                When you&apos;re in, no direct competitor can be — for as long as you
+                hold your spot. Once your category is claimed, it&apos;s gone.
+              </p>
             </div>
-            <h2
-              className="text-3xl sm:text-4xl md:text-5xl font-bold mb-5 leading-tight"
-              style={{ fontFamily: "var(--font-playfair), serif" }}
-            >
-              Own your category.
-              <br className="hidden sm:block" /> Lock out the competition.
-            </h2>
-            <p className="text-lg text-[#7a6a5d] max-w-2xl mx-auto">
-              We run <span className="text-[#1a1210] font-semibold">one advertiser per industry</span>.
-              When you&apos;re in, no direct competitor can be — for as long as you
-              hold your spot. Once your category is claimed, it&apos;s gone.
-            </p>
           </div>
         </div>
       </section>
 
       {/* How It Works */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#faf6f0]">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#f2e8d9]">
         <div className="max-w-5xl mx-auto">
           <h2
-            className="text-3xl sm:text-4xl font-bold text-center mb-16"
+            className="text-3xl sm:text-4xl font-bold text-center mb-4"
             style={{ fontFamily: "var(--font-playfair), serif" }}
           >
             How It Works
           </h2>
+          <HeadingBar className="mb-16" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10" data-animate="stagger">
             {[
               { num: "1", title: "Claim Your Category", desc: "Pick a plan and lock your industry before a competitor does." },
               { num: "2", title: "We Design Your Ad", desc: "Our team creates your 10-second spot — no artwork needed on your end." },
               { num: "3", title: "You're On Screen", desc: "Your ad goes live on the dining-room screens within days." },
             ].map((step) => (
-              <div key={step.num} className="text-center">
+              <div key={step.num} className="text-center rounded-2xl bg-white border border-black/[0.05] p-8 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
                 <div className="w-14 h-14 rounded-full bg-[#DC2626] text-white flex items-center justify-center text-xl font-bold mx-auto mb-5 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-red-900/30">
                   {step.num}
                 </div>
@@ -315,7 +379,7 @@ export default function AdvertisePage() {
       </section>
 
       {/* Pricing Tiers */}
-      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-[#faf6f0]">
         <div className="max-w-6xl mx-auto">
           <h2
             className="text-3xl sm:text-4xl font-bold text-center mb-4"
@@ -323,6 +387,7 @@ export default function AdvertisePage() {
           >
             Choose Your Plan
           </h2>
+          <HeadingBar className="mb-5" />
           <p className="text-[#7a6a5d] text-center mb-12 max-w-xl mx-auto">
             Every plan includes design, category exclusivity, and quarterly
             reporting. Longer commitments cost less per month.
@@ -333,8 +398,8 @@ export default function AdvertisePage() {
                 key={plan.name}
                 className={`rounded-2xl p-7 relative transition-all duration-300 flex flex-col ${
                   plan.popular
-                    ? "bg-[#DC2626] text-white ring-2 ring-[#DC2626] shadow-xl shadow-red-900/20 lg:scale-[1.03]"
-                    : "bg-[#faf6f0] text-[#1a1210] border border-black/[0.07] hover:border-[#DC2626]/25 hover:-translate-y-1"
+                    ? "bg-[#DC2626] text-white ring-2 ring-[#DC2626] shadow-2xl shadow-red-600/30 lg:scale-[1.05] lg:-translate-y-1"
+                    : "bg-white text-[#1a1210] border border-black/[0.06] shadow-md shadow-black/[0.04] hover:shadow-lg hover:border-[#DC2626]/25 hover:-translate-y-1"
                 }`}
               >
                 {plan.popular && (
@@ -385,19 +450,20 @@ export default function AdvertisePage() {
       </section>
 
       {/* Included with every plan */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#faf6f0]">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-[#f2e8d9]">
         <div className="max-w-4xl mx-auto">
           <h2
-            className="text-3xl sm:text-4xl font-bold text-center mb-12"
+            className="text-3xl sm:text-4xl font-bold text-center mb-4"
             style={{ fontFamily: "var(--font-playfair), serif" }}
           >
             Included With Every Plan
           </h2>
+          <HeadingBar className="mb-12" />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" data-animate="stagger">
             {includedFeatures.map((feature, i) => (
               <div
                 key={i}
-                className="flex items-start gap-3 p-5 rounded-xl bg-white border border-black/[0.06]"
+                className="flex items-start gap-3 p-5 rounded-xl bg-white border border-black/[0.05] shadow-sm hover:shadow-md transition-shadow duration-300"
               >
                 <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#DC2626] text-white flex items-center justify-center">
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -420,6 +486,7 @@ export default function AdvertisePage() {
           >
             Claim Your Spot
           </h2>
+          <HeadingBar className="mb-6" />
           <p className="text-[#7a6a5d] text-center mb-6">
             Spots go to whoever claims first. Fill out the form and we&apos;ll get
             back to you within 24 hours.
