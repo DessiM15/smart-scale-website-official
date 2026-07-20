@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useGSAPAnimations } from "@/hooks/useGSAPAnimations";
@@ -97,6 +97,14 @@ export default function AdvertisePage() {
   const [errorMessage, setErrorMessage] = useState("");
 
   useGSAPAnimations();
+
+  // Always start at the top on load/refresh instead of restoring scroll position.
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
