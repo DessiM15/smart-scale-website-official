@@ -123,6 +123,8 @@ export const projects: Project[] = [
     thumbnailImage: "/assets/portfolio/the-houston-barber/thumbnail.webp",
     vercelUrl: "https://barber-website-mock.vercel.app",
     githubUrl: "https://github.com/DessiM15/barber-website-mock",
+    featured: true,
+    featuredOrder: 6,
     caseStudy: {
       challenge:
         "Many barbershops rely on a third-party booking platform like StyleSeat but have no branded website of their own, sending clients off-site to book and losing the chance to build their own identity. The goal was to design a premium web presence that keeps booking on the shop's own site while integrating with the booking system they already use.",
@@ -377,6 +379,36 @@ export const projects: Project[] = [
         "Integrated Uber Eats and Grubhub ordering from website",
         "Analytics tracking to measure website ROI",
         "Mobile-optimized for the majority of restaurant traffic",
+      ],
+    },
+  },
+  {
+    slug: "dos-tacos",
+    title: "Dos Tacos",
+    clientName: "Dos Tacos (Concept)",
+    serviceType: "Website",
+    industry: "Food Service",
+    techStack: ["Next.js 16", "React 19", "TypeScript", "Tailwind CSS v4", "Motion", "Vercel"],
+    description:
+      "A concept website refresh built for Dos Tacos, an authentic taqueria in Katy, TX with a 4.9-star rating and over 1,000 Google reviews. Rather than pitching a single direction, the build ships four complete hero concepts at once — Taco Cannon, Build-A-Taco, Loteria, and Color Block — switchable live from the home page so the owners can experience each one and pick a direction instead of judging it from a static mockup.",
+    shortDescription: "Concept taqueria refresh with four live-switchable hero designs.",
+    thumbnailImage: "/assets/portfolio/dos-tacos/thumbnail.webp",
+    vercelUrl: "https://dos-tacos.vercel.app",
+    githubUrl: "https://github.com/DessiM15/dos-tacos",
+    featured: true,
+    featuredOrder: 5,
+    caseStudy: {
+      challenge:
+        "A neighborhood taqueria had built genuine local reputation — 1,020 five-star Google reviews, a loyal Katy following, and one of the better vegan menus in the area — but none of it showed up online. The harder problem was the pitch itself: restaurant owners rarely respond to a flat mockup, and picking a creative direction from a PDF asks them to imagine motion, texture, and personality that isn't on the page.",
+      solution:
+        "Designed and built a full multi-page site in Next.js 16 with four entirely distinct hero concepts shipped simultaneously, switchable in real time from a floating control on the home page with the choice persisted to localStorage. Each hero is a genuine design direction — kinetic type with parallax ingredients, a taco that assembles itself as you scroll, a vintage mercado poster with animated papel picado, and hover-expanding color panels. The rest of the site turns the restaurant's real assets into conversion: a browsable menu with the full lineup, verbatim Google reviews as social proof, a dedicated vegan section, a catering inquiry form, and a location block with hours and directions.",
+      results: [
+        "Four complete hero directions shipped in one build — owners switch live and choose, no imagination required",
+        "1,020 five-star Google reviews turned into on-page social proof instead of an off-site number",
+        "Full menu browser, dedicated vegan section, and catering inquiry flow",
+        "Built on Next.js 16 and React 19 with Tailwind v4 and Motion-driven animation throughout",
+        "Location, hours, and directions surfaced for local search intent",
+        "Per-page SEO metadata with generated sitemap and robots configuration",
       ],
     },
   },
