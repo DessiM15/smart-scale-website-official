@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -24,7 +24,6 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [navTheme, setNavTheme] = useState<"light" | "dark">("light");
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   // Scroll detection
   useEffect(() => {
@@ -60,18 +59,6 @@ export default function Navbar() {
     };
   }, []);
 
-  // Play/pause the navbar video based on scroll state
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    if (scrolled) {
-      video.play().catch(() => {});
-    } else {
-      video.pause();
-      video.currentTime = 0;
-    }
-  }, [scrolled]);
-
   // Derived theme colors
   const isLight = navTheme === "light";
   const textColor = isLight ? "text-[#111111]/60" : "text-white/60";
@@ -84,6 +71,22 @@ export default function Navbar() {
   const scrolledBg = isLight ? "bg-white/80" : "bg-black/80";
   const scrolledBorder = isLight ? "border-black/[0.08]" : "border-white/[0.08]";
   const hamburgerColor = isLight ? "text-[#111111]" : "text-white";
+
+  // The logo is a mask tinted to the active section theme, so one PNG works on
+  // both light and dark bands. The source art is square (1024x1024) — callers
+  // set height only and let the ratio size the box to the mark.
+  const logoMask: React.CSSProperties = {
+    WebkitMaskImage: "url(/assets/smart-scale-logo-official.png)",
+    maskImage: "url(/assets/smart-scale-logo-official.png)",
+    WebkitMaskSize: "contain",
+    maskSize: "contain",
+    WebkitMaskRepeat: "no-repeat",
+    maskRepeat: "no-repeat",
+    WebkitMaskPosition: "center",
+    maskPosition: "center",
+    backgroundColor: logoColor,
+    aspectRatio: "1 / 1",
+  };
 
   return (
     <header
@@ -105,18 +108,7 @@ export default function Navbar() {
           <Link href="/" className="flex items-center">
             <div
               className="h-12 w-auto transition-colors duration-300"
-              style={{
-                WebkitMaskImage: "url(/assets/smart-scale-logo-official.png)",
-                maskImage: "url(/assets/smart-scale-logo-official.png)",
-                WebkitMaskSize: "contain",
-                maskSize: "contain",
-                WebkitMaskRepeat: "no-repeat",
-                maskRepeat: "no-repeat",
-                WebkitMaskPosition: "center",
-                maskPosition: "center",
-                backgroundColor: logoColor,
-                aspectRatio: "240 / 96",
-              }}
+              style={logoMask}
               role="img"
               aria-label="Smart Scale"
             />
@@ -141,7 +133,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* ===== SCROLLED STATE: links left | video center | links right ===== */}
+        {/* ===== SCROLLED STATE: links left | logo center | links right ===== */}
         <div
           className={`items-center justify-between h-20 transition-all duration-500 hidden md:flex ${
             scrolled
@@ -162,23 +154,17 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Center video logo */}
+          {/* Center logo */}
           <Link
             href="/"
             className="relative flex items-center justify-center mx-6"
           >
-            <div className="relative w-14 h-14 rounded-full overflow-hidden bg-black">
-              <video
-                ref={videoRef}
-                muted
-                playsInline
-                loop
-                className="w-full h-full object-cover"
-                style={{ mixBlendMode: "lighten" }}
-              >
-                <source src="/assets/use-this-logo.mp4" type="video/mp4" />
-              </video>
-            </div>
+            <div
+              className="h-12 w-auto transition-colors duration-300"
+              style={logoMask}
+              role="img"
+              aria-label="Smart Scale"
+            />
           </Link>
 
           {/* Right links + CTA */}
@@ -206,18 +192,7 @@ export default function Navbar() {
           <Link href="/" className="flex items-center">
             <div
               className="h-10 w-auto transition-colors duration-300"
-              style={{
-                WebkitMaskImage: "url(/assets/smart-scale-logo-official.png)",
-                maskImage: "url(/assets/smart-scale-logo-official.png)",
-                WebkitMaskSize: "contain",
-                maskSize: "contain",
-                WebkitMaskRepeat: "no-repeat",
-                maskRepeat: "no-repeat",
-                WebkitMaskPosition: "center",
-                maskPosition: "center",
-                backgroundColor: logoColor,
-                aspectRatio: "200 / 80",
-              }}
+              style={logoMask}
               role="img"
               aria-label="Smart Scale"
             />
