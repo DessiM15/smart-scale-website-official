@@ -10,21 +10,8 @@ const PHONE_HREF = "tel:+18324070773";
 
 const plans = [
   {
-    name: "Month-to-Month",
-    price: "$275",
-    period: "/mo",
-    term: "Rolling — cancel with 30 days' notice",
-    setup: "$99 one-time setup",
-    popular: false,
-    features: [
-      "Maximum flexibility, no long commitment",
-      "Your 10-second spot in every rotation",
-      "One business per industry — locked",
-    ],
-  },
-  {
     name: "Short Term",
-    price: "$235",
+    price: "$500",
     period: "/mo",
     term: "3-month term",
     setup: "$99 one-time setup",
@@ -32,12 +19,12 @@ const plans = [
     features: [
       "Great for a seasonal or launch push",
       "Your 10-second spot in every rotation",
-      "One business per industry — locked",
+      "One business per category — locked",
     ],
   },
   {
     name: "Standard",
-    price: "$200",
+    price: "$450",
     period: "/mo",
     term: "6-month term",
     setup: "Setup fee waived",
@@ -45,20 +32,20 @@ const plans = [
     features: [
       "Our most popular term",
       "Your 10-second spot in every rotation",
-      "One business per industry — locked",
+      "One business per category — locked",
     ],
   },
   {
-    name: "Annual Prepay",
-    price: "$2,000",
+    name: "Annual",
+    price: "$4,500",
     period: "/yr",
-    term: "12 months · about $167/mo",
+    term: "12 months · works out to $375/mo",
     setup: "Setup fee waived",
     popular: true,
-    badge: "Best Value",
+    badge: "2 Months Free",
     features: [
-      "Lowest monthly rate — lock it for a year",
-      "Own your category for 12 full months",
+      "Two months free against the 6-month rate",
+      "Own your category for a full year",
       "Setup waived + priority onboarding",
     ],
   },
@@ -70,7 +57,74 @@ const includedFeatures = [
   "One free creative refresh per quarter",
   "Quarterly report on display days & rotation size",
   "Two rounds of design revisions before launch",
+  "Setup fee waived on 6-month and annual terms",
 ];
+
+/**
+ * Popular-times data traced from Google's public listing for Mex Taco House.
+ * Google publishes these as a relative curve with no numeric axis, so these
+ * values are shape-only — rendered without a y-axis, exactly as Google shows them.
+ * Index 0 = 6am through index 8 = 2pm. null = closed.
+ */
+const HOURS = ["6a", "7a", "8a", "9a", "10a", "11a", "12p", "1p", "2p"];
+
+const popularTimes = [
+  {
+    key: "tue",
+    short: "Tue",
+    label: "Tuesday",
+    wait: "No wait",
+    waitRange: null,
+    levels: [22, 34, 48, 58, 63, 60, 54, 43, 28],
+  },
+  {
+    key: "wed",
+    short: "Wed",
+    label: "Wednesday",
+    wait: "No wait",
+    waitRange: null,
+    levels: [24, 37, 54, 60, 64, 62, 56, 46, 30],
+  },
+  {
+    key: "thu",
+    short: "Thu",
+    label: "Thursday",
+    wait: "No wait",
+    waitRange: null,
+    levels: [21, 39, 51, 57, 67, 63, 53, 41, 27],
+  },
+  {
+    key: "fri",
+    short: "Fri",
+    label: "Friday",
+    wait: "Up to 15 min wait · 8:00–11:30 AM",
+    waitRange: [2, 5],
+    levels: [26, 44, 57, 66, 72, 68, 59, 47, 31],
+  },
+  {
+    key: "sat",
+    short: "Sat",
+    label: "Saturday",
+    wait: "Up to 45 min wait · 9:30–10:30 AM",
+    waitRange: [3, 4],
+    levels: [19, 36, 62, 79, 87, 85, 71, 56, 39],
+  },
+  {
+    key: "sun",
+    short: "Sun",
+    label: "Sunday",
+    wait: "Up to 30 min wait · 9:00 AM–12:30 PM",
+    waitRange: [3, 6],
+    levels: [null, null, 36, 53, 71, 84, 79, 63, 46],
+  },
+];
+
+function busyLabel(level: number) {
+  if (level >= 75) return "Very busy";
+  if (level >= 55) return "Busy";
+  if (level >= 30) return "A little busy";
+  return "Not too busy";
+}
 
 function HeadingBar({ className = "" }: { className?: string }) {
   return (
@@ -87,6 +141,100 @@ function DiamondDivider({ className = "" }: { className?: string }) {
       <span className="h-px w-16 sm:w-24 bg-gradient-to-r from-transparent to-[#DC2626]/30" />
       <span className="w-2.5 h-2.5 rotate-45 bg-[#f0c674] shadow-sm" />
       <span className="h-px w-16 sm:w-24 bg-gradient-to-l from-transparent to-[#DC2626]/30" />
+    </div>
+  );
+}
+
+function PopularTimesChart() {
+  const [active, setActive] = useState("sat");
+  const day = popularTimes.find((d) => d.key === active) ?? popularTimes[4];
+
+  return (
+    <div className="rounded-3xl bg-white border border-black/[0.06] shadow-lg shadow-black/[0.04] p-6 sm:p-8">
+      <div className="flex flex-wrap items-center justify-center gap-2 mb-8">
+        {popularTimes.map((d) => {
+          const isActive = d.key === active;
+          return (
+            <button
+              key={d.key}
+              type="button"
+              onClick={() => setActive(d.key)}
+              aria-pressed={isActive}
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                isActive
+                  ? "bg-[#DC2626] text-white shadow-md shadow-red-900/20"
+                  : "bg-[#faf6f0] text-[#7a6a5d] border border-black/[0.06] hover:border-[#DC2626]/30 hover:text-[#1a1210]"
+              }`}
+            >
+              {d.short}
+            </button>
+          );
+        })}
+      </div>
+
+      <div
+        role="img"
+        aria-label={`Google popular times for Mex Taco House on ${day.label}. Steady traffic from 6 AM to 2 PM, busiest between 9 AM and 1 PM. ${day.wait}.`}
+      >
+        <div className="grid grid-cols-9 gap-[3px] items-end h-44 sm:h-52">
+          {day.levels.map((lvl, i) => (
+            <div key={i} className="relative h-full flex items-end group">
+              {lvl === null ? (
+                <div className="w-full h-[3px] rounded-full bg-black/[0.05]" />
+              ) : (
+                <>
+                  <div
+                    className="w-full rounded-t-[4px] bg-[#DC2626]/80 group-hover:bg-[#DC2626] transition-colors duration-200"
+                    style={{ height: `${lvl}%` }}
+                  />
+                  <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                    <span className="block whitespace-nowrap rounded-lg bg-[#1a1210] text-white text-xs px-2.5 py-1.5 shadow-lg">
+                      <span className="font-semibold">{HOURS[i]}</span>
+                      <span className="text-white/50"> · </span>
+                      {busyLabel(lvl)}
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-9 gap-[3px] mt-2.5">
+          {HOURS.map((h) => (
+            <span key={h} className="text-center text-[10px] sm:text-xs text-[#9a8b7d]">
+              {h}
+            </span>
+          ))}
+        </div>
+
+        {day.waitRange && (
+          <div className="grid grid-cols-9 gap-[3px] mt-2">
+            <span
+              className="h-[3px] rounded-full bg-[#f0c674]"
+              style={{ gridColumn: `${day.waitRange[0] + 1} / ${day.waitRange[1] + 2}` }}
+            />
+          </div>
+        )}
+      </div>
+
+      <div className="mt-6 pt-5 border-t border-black/[0.06] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <p className="text-sm text-[#5c4f45]">
+          <span className="font-semibold text-[#1a1210]">{day.label}</span> — busiest 9 AM to 1 PM
+        </p>
+        <p className="text-sm flex items-center gap-2">
+          {day.waitRange && (
+            <span className="w-2 h-2 rotate-45 bg-[#f0c674] flex-shrink-0" aria-hidden />
+          )}
+          <span className={day.waitRange ? "text-[#DC2626] font-semibold" : "text-[#7a6a5d]"}>
+            {day.wait}
+          </span>
+        </p>
+      </div>
+      <p className="mt-3 text-xs text-[#9a8b7d]">
+        Source: Google popular times for Mex Taco House. Guests typically spend
+        10–45 minutes here. Closed Mondays.
+      </p>
     </div>
   );
 }
@@ -196,7 +344,7 @@ export default function AdvertisePage() {
           <p className="text-lg sm:text-xl text-white/75 max-w-2xl mx-auto mb-10">
             Own your category on our dining-room screens. A 10-second spot in
             front of every guest, every visit — and only{" "}
-            <span className="text-white font-semibold">one business per industry</span>.
+            <span className="text-white font-semibold">one business per category</span> in the whole rotation.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
@@ -225,11 +373,11 @@ export default function AdvertisePage() {
       <section className="bg-[#DC2626] text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <ul className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-center text-sm sm:text-base font-semibold uppercase tracking-wide">
-            <li className="flex items-center gap-2"><span className="text-[#f0c674]">●</span> Limited Spots</li>
+            <li className="flex items-center gap-2"><span className="text-[#f0c674]">●</span> Only 16 Spots</li>
             <li className="hidden sm:block text-white/40">·</li>
             <li className="flex items-center gap-2"><span className="text-[#f0c674]">●</span> Seen by 5,000+ / Month</li>
             <li className="hidden sm:block text-white/40">·</li>
-            <li className="flex items-center gap-2"><span className="text-[#f0c674]">●</span> One Business Per Industry</li>
+            <li className="flex items-center gap-2"><span className="text-[#f0c674]">●</span> One Business Per Category</li>
             <li className="hidden sm:block text-white/40">·</li>
             <li className="flex items-center gap-2"><span className="text-[#f0c674]">●</span> First Come, First Serve</li>
           </ul>
@@ -248,48 +396,31 @@ export default function AdvertisePage() {
           }}
         />
         <div className="relative max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
-            <div data-animate="fade-up">
-              <div
-                className="text-5xl sm:text-6xl font-bold text-[#DC2626] mb-2"
-                style={{ fontFamily: "var(--font-playfair), serif" }}
-                data-animate="counter"
-                data-count-to="5000"
-                data-count-suffix="+"
-              >
-                0+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10 text-center">
+            {[
+              { to: "4800", suffix: "", initial: "0", label: "Times your ad plays each month" },
+              { to: "45000", suffix: "", initial: "0", label: "Ad views per month" },
+              { to: "5000", suffix: "+", initial: "0+", label: "Average monthly visitors" },
+              { to: "16", suffix: "", initial: "0", label: "Advertiser spots — that's all" },
+            ].map((stat) => (
+              <div key={stat.label} data-animate="fade-up">
+                <div
+                  className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#DC2626] mb-2"
+                  style={{ fontFamily: "var(--font-playfair), serif" }}
+                  data-animate="counter"
+                  data-count-to={stat.to}
+                  data-count-suffix={stat.suffix}
+                >
+                  {stat.initial}
+                </div>
+                <p className="text-[#7a6a5d] text-base sm:text-lg">{stat.label}</p>
               </div>
-              <p className="text-[#7a6a5d] text-lg">Average monthly visitors</p>
-            </div>
-            <div data-animate="fade-up">
-              <div
-                className="text-5xl sm:text-6xl font-bold text-[#DC2626] mb-2"
-                style={{ fontFamily: "var(--font-playfair), serif" }}
-                data-animate="counter"
-                data-count-to="60"
-                data-count-suffix=" min"
-              >
-                0 min
-              </div>
-              <p className="text-[#7a6a5d] text-lg">Seated, on average — a full meal</p>
-            </div>
-            <div data-animate="fade-up">
-              <div
-                className="text-5xl sm:text-6xl font-bold text-[#DC2626] mb-2"
-                style={{ fontFamily: "var(--font-playfair), serif" }}
-                data-animate="counter"
-                data-count-to="10"
-                data-count-suffix=""
-              >
-                0
-              </div>
-              <p className="text-[#7a6a5d] text-lg">Advertisers max — then it&apos;s full</p>
-            </div>
+            ))}
           </div>
           <p className="text-center text-[#7a6a5d] mt-12 max-w-2xl mx-auto text-lg">
             Diners are{" "}
             <span className="text-[#1a1210] font-semibold">seated, relaxed, and watching our screens</span>{" "}
-            for a full meal — not a passing glance.
+            for 10 to 45 minutes at a time — not a passing glance.
           </p>
           <DiamondDivider className="mt-12" />
         </div>
@@ -313,6 +444,79 @@ export default function AdvertisePage() {
             A billboard gets a glance —
             <br className="hidden sm:block" /> this gets a whole meal.
           </p>
+        </div>
+      </section>
+
+      {/* Why Advertise Here */}
+      <section id="why" className="py-20 px-4 sm:px-6 lg:px-8 bg-[#f2e8d9]">
+        <div className="max-w-5xl mx-auto">
+          <h2
+            className="text-3xl sm:text-4xl font-bold text-center mb-4"
+            style={{ fontFamily: "var(--font-playfair), serif" }}
+          >
+            Why Advertise Here
+          </h2>
+          <HeadingBar className="mb-5" />
+          <p className="text-[#7a6a5d] text-center mb-12 max-w-xl mx-auto">
+            You don&apos;t have to take our word for it. This is Google&apos;s own
+            foot-traffic data for Mex Taco House.
+          </p>
+
+          <div data-animate="fade-up">
+            <PopularTimesChart />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8" data-animate="stagger">
+            {[
+              {
+                stat: "10–45 min",
+                title: "They aren't going anywhere",
+                desc: "Google clocks a typical visit at ten to forty-five minutes. Your ad comes back around every three minutes — so one guest sees it 3 to 15 times before they leave.",
+              },
+              {
+                stat: "45-min waits",
+                title: "A wait is undivided attention",
+                desc: "Saturday mornings back up to a 45-minute wait. That's a room of people with nothing to do but look at the screen — fifteen plays of your ad, each.",
+              },
+              {
+                stat: "6 AM – 2 PM",
+                title: "Busy from open to close",
+                desc: "There's no dead hour to buy around. Traffic climbs from the moment we open and peaks between 9 AM and 1 PM, every single day.",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="rounded-2xl bg-white border border-black/[0.05] p-7 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300"
+              >
+                <div
+                  className="text-2xl font-bold text-[#DC2626] mb-3"
+                  style={{ fontFamily: "var(--font-playfair), serif" }}
+                >
+                  {item.stat}
+                </div>
+                <h3 className="text-lg font-bold mb-2">{item.title}</h3>
+                <p className="text-[#7a6a5d] text-sm leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-10 rounded-2xl bg-[#1a1210] text-white p-8 sm:p-10 text-center relative overflow-hidden">
+            <div
+              className="pointer-events-none absolute inset-0"
+              aria-hidden
+              style={{
+                background:
+                  "radial-gradient(60% 70% at 50% 0%, rgba(220,38,38,0.30), transparent 65%)",
+              }}
+            />
+            <p className="relative text-lg sm:text-xl text-white/80 max-w-2xl mx-auto leading-relaxed">
+              18 slides. 10 seconds each. Your ad returns every{" "}
+              <span className="text-[#f0c674] font-semibold">three minutes</span>,{" "}
+              <span className="text-white font-semibold">20 times an hour</span>, from
+              open to close — about{" "}
+              <span className="text-white font-semibold">4,800 plays a month</span>.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -344,9 +548,15 @@ export default function AdvertisePage() {
                 <br className="hidden sm:block" /> Lock out the competition.
               </h2>
               <p className="text-lg text-[#7a6a5d] max-w-2xl mx-auto">
-                We run <span className="text-[#1a1210] font-semibold">one advertiser per industry</span>.
-                When you&apos;re in, no direct competitor can be — for as long as you
-                hold your spot. Once your category is claimed, it&apos;s gone.
+                We run{" "}
+                <span className="text-[#1a1210] font-semibold">one business per category</span>.
+                When you&apos;re in, no direct competitor joins the rotation — for as
+                long as you hold your spot. There are only 16 spots, and once your
+                category is claimed, it&apos;s gone.
+              </p>
+              <p className="text-sm text-[#9a8b7d] max-w-xl mx-auto mt-5">
+                Renew before your term ends and the category stays yours. Let it
+                lapse and it goes back on the market.
               </p>
             </div>
           </div>
@@ -365,7 +575,7 @@ export default function AdvertisePage() {
           <HeadingBar className="mb-16" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10" data-animate="stagger">
             {[
-              { num: "1", title: "Claim Your Category", desc: "Pick a plan and lock your industry before a competitor does." },
+              { num: "1", title: "Claim Your Category", desc: "Pick a plan and lock your category before a competitor can take it." },
               { num: "2", title: "We Design Your Ad", desc: "Our team creates your 10-second spot — no artwork needed on your end." },
               { num: "3", title: "You're On Screen", desc: "Your ad goes live on the dining-room screens within days." },
             ].map((step) => (
@@ -386,7 +596,7 @@ export default function AdvertisePage() {
         </div>
       </section>
 
-      {/* Pricing Tiers */}
+      {/* Plans */}
       <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-[#faf6f0]">
         <div className="max-w-6xl mx-auto">
           <h2
@@ -396,17 +606,24 @@ export default function AdvertisePage() {
             Choose Your Plan
           </h2>
           <HeadingBar className="mb-5" />
-          <p className="text-[#7a6a5d] text-center mb-12 max-w-xl mx-auto">
-            Every plan includes design, category exclusivity, and quarterly
-            reporting. Longer commitments cost less per month.
+          <p className="text-[#7a6a5d] text-center mb-3 max-w-xl mx-auto">
+            Every plan buys the same thing — your 10-second spot in the rotation,
+            all day, every day we&apos;re open. The only question is how long you
+            lock it in.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-animate="stagger">
+          <p className="text-[#9a8b7d] text-center text-sm mb-12 max-w-xl mx-auto">
+            The longer the term, the lower the rate — and there are only{" "}
+            <span className="text-[#DC2626] font-bold">16 spots</span> in the whole
+            rotation.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-7 items-start" data-animate="stagger">
             {plans.map((plan) => (
               <div
                 key={plan.name}
-                className={`rounded-2xl p-7 relative transition-all duration-300 flex flex-col ${
+                className={`rounded-2xl p-7 sm:p-8 relative transition-all duration-300 flex flex-col ${
                   plan.popular
-                    ? "bg-[#DC2626] text-white ring-2 ring-[#DC2626] shadow-2xl shadow-red-600/30 lg:scale-[1.05] lg:-translate-y-1"
+                    ? "bg-[#DC2626] text-white ring-2 ring-[#DC2626] shadow-2xl shadow-red-600/30 md:scale-[1.04] md:-translate-y-1"
                     : "bg-white text-[#1a1210] border border-black/[0.06] shadow-md shadow-black/[0.04] hover:shadow-lg hover:border-[#DC2626]/25 hover:-translate-y-1"
                 }`}
               >
@@ -416,14 +633,21 @@ export default function AdvertisePage() {
                   </div>
                 )}
                 <h3 className="text-xl font-bold mb-1">{plan.name}</h3>
-                <p className={`text-sm mb-4 ${plan.popular ? "text-white/70" : "text-[#7a6a5d]"}`}>
+                <p className={`text-sm mb-5 ${plan.popular ? "text-white/70" : "text-[#7a6a5d]"}`}>
                   {plan.term}
                 </p>
-                <div className="flex items-baseline gap-1 mb-1">
-                  <span className="text-4xl font-bold">{plan.price}</span>
-                  <span className={plan.popular ? "text-white/70" : "text-[#7a6a5d]"}>{plan.period}</span>
+                <div className="flex items-baseline gap-1.5 mb-1">
+                  <span
+                    className="text-5xl font-bold leading-none"
+                    style={{ fontFamily: "var(--font-playfair), serif" }}
+                  >
+                    {plan.price}
+                  </span>
+                  <span className={plan.popular ? "text-white/70" : "text-[#7a6a5d]"}>
+                    {plan.period}
+                  </span>
                 </div>
-                <p className={`text-xs mb-6 ${plan.popular ? "text-white/70" : "text-[#7a6a5d]"}`}>
+                <p className={`text-xs mb-7 ${plan.popular ? "text-white/70" : "text-[#9a8b7d]"}`}>
                   {plan.setup}
                 </p>
                 <ul className="space-y-3 mb-8 flex-1">
@@ -444,15 +668,17 @@ export default function AdvertisePage() {
                       : "bg-[#DC2626] text-white hover:bg-red-700 hover:shadow-red-900/20"
                   }`}
                 >
-                  Get Started
+                  Claim This Spot
                 </a>
               </div>
             ))}
           </div>
-          <p className="text-center text-xs text-[#9a8b7d] mt-8 max-w-2xl mx-auto">
-            Billed to a card on file. Prices held for your term; renewal at
-            then-current rate with 30 days&apos; notice. All creative subject to
-            restaurant approval.
+
+          <p className="text-center text-xs text-[#9a8b7d] mt-12 max-w-2xl mx-auto">
+            Billed to a card on file. Your rate is held for the full term; renewal
+            at the then-current rate with 30 days&apos; notice. Spots are first
+            come, first serve and held once your agreement is signed. All creative
+            subject to restaurant approval.
           </p>
         </div>
       </section>
@@ -702,10 +928,9 @@ export default function AdvertisePage() {
                   className="w-full px-4 py-3 rounded-xl border border-black/10 bg-[#faf6f0] text-[#1a1210] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/25 focus:border-[#DC2626]/40 transition"
                 >
                   <option value="">Select a plan</option>
-                  <option value="Annual Prepay - $2,000/yr">Annual Prepay — $2,000/yr (~$167/mo)</option>
-                  <option value="Standard - $200/mo (6 months)">Standard — $200/mo (6 months)</option>
-                  <option value="Short Term - $235/mo (3 months)">Short Term — $235/mo (3 months)</option>
-                  <option value="Month-to-Month - $275/mo">Month-to-Month — $275/mo</option>
+                  <option value="Annual - $4,500/yr">Annual — $4,500/yr (2 months free)</option>
+                  <option value="Standard - $450/mo (6 months)">Standard — $450/mo (6 months)</option>
+                  <option value="Short Term - $500/mo (3 months)">Short Term — $500/mo (3 months)</option>
                   <option value="Not sure yet">Not sure yet — help me choose</option>
                 </select>
               </div>
