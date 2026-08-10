@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -22,10 +21,10 @@ const rightLinks = [
 const allLinks = [...leftLinks, ...rightLinks];
 
 export default function Navbar() {
-  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [navTheme, setNavTheme] = useState<"light" | "dark">("light");
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   // Scroll detection
   useEffect(() => {
@@ -37,52 +36,41 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu on route change
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [pathname]);
-
   // Section-aware theme detection via ScrollTrigger
-  // Re-runs on every route change so triggers bind to new page sections
   useEffect(() => {
-    // Reset to the first section's theme on navigation
-    const firstSection = document.querySelector("[data-theme]");
-    if (firstSection) {
-      setNavTheme(firstSection.getAttribute("data-theme") as "light" | "dark");
-    }
+    const sections = document.querySelectorAll("[data-theme]");
+    const triggers: ScrollTrigger[] = [];
 
-    // Small delay to let the new page DOM settle after client-side navigation
-    const timeout = setTimeout(() => {
-      const sections = document.querySelectorAll("[data-theme]");
-      const triggers: ScrollTrigger[] = [];
+    sections.forEach((section) => {
+      const theme = section.getAttribute("data-theme") as "light" | "dark";
 
-      sections.forEach((section) => {
-        const theme = section.getAttribute("data-theme") as "light" | "dark";
-
-        const st = ScrollTrigger.create({
-          trigger: section,
-          start: "top top",
-          end: "bottom top",
-          onEnter: () => setNavTheme(theme),
-          onEnterBack: () => setNavTheme(theme),
-        });
-
-        triggers.push(st);
+      const st = ScrollTrigger.create({
+        trigger: section,
+        start: "top top",
+        end: "bottom top",
+        onEnter: () => setNavTheme(theme),
+        onEnterBack: () => setNavTheme(theme),
       });
 
-      ScrollTrigger.refresh();
-
-      return () => {
-        triggers.forEach((st) => st.kill());
-      };
-    }, 100);
+      triggers.push(st);
+    });
 
     return () => {
-      clearTimeout(timeout);
-      // Kill all ScrollTrigger instances created by the navbar
-      ScrollTrigger.getAll().forEach((st) => st.kill());
+      triggers.forEach((st) => st.kill());
     };
-  }, [pathname]);
+  }, []);
+
+  // Play/pause the navbar video based on scroll state
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (scrolled) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+      video.currentTime = 0;
+    }
+  }, [scrolled]);
 
   // Derived theme colors
   const isLight = navTheme === "light";
@@ -106,14 +94,34 @@ export default function Navbar() {
       }`}
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* ===== UNSCROLLED STATE: no logo, links right ===== */}
+        {/* ===== UNSCROLLED STATE: logo left, links right ===== */}
         <div
-          className={`items-center justify-end h-24 transition-all duration-500 hidden md:flex ${
+          className={`items-center justify-between h-24 transition-all duration-500 hidden md:flex ${
             scrolled
               ? "opacity-0 pointer-events-none absolute inset-x-0 px-4 sm:px-6 lg:px-8"
               : "opacity-100"
           }`}
         >
+          <Link href="/" className="flex items-center">
+            <div
+              className="h-12 w-auto transition-colors duration-300"
+              style={{
+                WebkitMaskImage: "url(/assets/smart-scale-logo-official.png)",
+                maskImage: "url(/assets/smart-scale-logo-official.png)",
+                WebkitMaskSize: "contain",
+                maskSize: "contain",
+                WebkitMaskRepeat: "no-repeat",
+                maskRepeat: "no-repeat",
+                WebkitMaskPosition: "center",
+                maskPosition: "center",
+                backgroundColor: logoColor,
+                aspectRatio: "240 / 96",
+              }}
+              role="img"
+              aria-label="Smart Scale"
+            />
+          </Link>
+
           <div className="flex items-center gap-12">
             {allLinks.map((link) => (
               <Link
@@ -133,7 +141,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* ===== SCROLLED STATE: links left | logo center | links right ===== */}
+        {/* ===== SCROLLED STATE: links left | video center | links right ===== */}
         <div
           className={`items-center justify-between h-20 transition-all duration-500 hidden md:flex ${
             scrolled
@@ -154,28 +162,23 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Center logo (same as hero) */}
+          {/* Center video logo */}
           <Link
             href="/"
             className="relative flex items-center justify-center mx-6"
           >
-            <div
-              className="h-12 w-auto transition-colors duration-300"
-              style={{
-                WebkitMaskImage: "url(/assets/smart-scale-logo-official.png)",
-                maskImage: "url(/assets/smart-scale-logo-official.png)",
-                WebkitMaskSize: "contain",
-                maskSize: "contain",
-                WebkitMaskRepeat: "no-repeat",
-                maskRepeat: "no-repeat",
-                WebkitMaskPosition: "center",
-                maskPosition: "center",
-                backgroundColor: logoColor,
-                aspectRatio: "240 / 96",
-              }}
-              role="img"
-              aria-label="Smart Scale"
-            />
+            <div className="relative w-14 h-14 rounded-full overflow-hidden bg-black">
+              <video
+                ref={videoRef}
+                muted
+                playsInline
+                loop
+                className="w-full h-full object-cover"
+                style={{ mixBlendMode: "lighten" }}
+              >
+                <source src="/assets/use-this-logo.mp4" type="video/mp4" />
+              </video>
+            </div>
           </Link>
 
           {/* Right links + CTA */}

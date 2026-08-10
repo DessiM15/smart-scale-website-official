@@ -39,10 +39,10 @@ export default function ServicePageClient({ slug }: ServicePageClientProps) {
   const icon = iconMap[service.slug];
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
-      {/* Hero */}
-      <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 text-white relative overflow-hidden">
-        <div className="max-w-7xl mx-auto relative z-10">
+    <div className="min-h-screen">
+      {/* Hero — LIGHT */}
+      <section data-theme="light" className="bg-white min-h-[70vh] flex items-center pt-32 pb-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto relative z-10 w-full">
           <div className="flex flex-col items-center text-center">
             {icon && (
               <div className="mb-8 flex justify-center items-center">
@@ -51,22 +51,22 @@ export default function ServicePageClient({ slug }: ServicePageClientProps) {
                 </div>
               </div>
             )}
-            <h1 className="text-5xl sm:text-6xl md:text-7xl mb-6 hero-headline">
+            <h1 className="subpage-hero-title text-[#111111] mb-6 hero-headline">
               {service.title}
             </h1>
-            <p className="text-lg sm:text-xl text-white/50 max-w-3xl mb-8 hero-subheadline">
+            <p className="text-lg text-black/50 max-w-3xl mb-8 hero-subheadline">
               Precision-engineered {service.title.toLowerCase()} built for performance, reliability, and scale.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
                 href="/contact"
-                className="inline-flex items-center gap-3 px-8 py-3.5 border border-white/20 rounded-full text-sm uppercase tracking-widest text-white/80 hover:text-white hover:border-white/40 transition-all duration-500"
+                className="inline-flex items-center gap-3 px-8 py-3.5 border border-black/20 rounded-full text-sm uppercase tracking-widest text-[#111111]/80 hover:text-[#111111] hover:border-black/40 transition-all duration-500"
               >
                 Start a Conversation
               </Link>
               <Link
                 href="/portfolio"
-                className="inline-flex items-center gap-3 px-8 py-3.5 border border-white/10 rounded-full text-sm uppercase tracking-widest text-white/50 hover:text-white/80 hover:border-white/20 transition-all duration-500"
+                className="inline-flex items-center gap-3 px-8 py-3.5 border border-black/10 rounded-full text-sm uppercase tracking-widest text-black/50 hover:text-[#111111]/80 hover:border-black/20 transition-all duration-500"
               >
                 View Our Work
               </Link>
@@ -75,8 +75,8 @@ export default function ServicePageClient({ slug }: ServicePageClientProps) {
         </div>
       </section>
 
-      {/* Extended Description */}
-      <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-[#111111]">
+      {/* Extended Description — DARK */}
+      <section data-theme="dark" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-[#111111]">
         <div className="max-w-4xl mx-auto">
           <p className="text-lg text-white/60 leading-relaxed">
             {service.extendedDescription}
@@ -86,20 +86,20 @@ export default function ServicePageClient({ slug }: ServicePageClientProps) {
 
       <ServiceNavigation />
 
-      {/* Key Features */}
-      <section id="key-features" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]">
+      {/* Key Features — LIGHT */}
+      <section id="key-features" data-theme="light" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-12 text-center text-white">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-12 text-center text-[#111111]">
             Key Features
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {service.keyFeatures.map((feature, index) => (
-              <GlowCard key={index} className="p-6">
+              <GlowCard key={index} theme="light" className="p-6">
                 <div className="flex items-start">
                   <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#DC2626] flex items-center justify-center mr-4 mt-0.5">
                     <div className="w-2 h-2 rounded-full bg-white" />
                   </div>
-                  <p className="text-white/70 text-lg">{feature}</p>
+                  <p className="text-black/60 text-lg">{feature}</p>
                 </div>
               </GlowCard>
             ))}
@@ -107,8 +107,8 @@ export default function ServicePageClient({ slug }: ServicePageClientProps) {
         </div>
       </section>
 
-      {/* Benefits */}
-      <section id="benefits" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-[#111111]">
+      {/* Benefits — DARK */}
+      <section id="benefits" data-theme="dark" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-[#111111]">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl sm:text-4xl font-bold mb-12 text-center text-white">
             Benefits
@@ -123,20 +123,20 @@ export default function ServicePageClient({ slug }: ServicePageClientProps) {
         </div>
       </section>
 
-      {/* Use Cases */}
-      <section id="use-cases" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]">
+      {/* Use Cases — LIGHT */}
+      <section id="use-cases" data-theme="light" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-12 text-center text-white">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-12 text-center text-[#111111]">
             Use Cases
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {service.useCases.map((useCase, index) => (
-              <GlowCard key={index} className="p-6">
+              <GlowCard key={index} theme="light" className="p-6">
                 <div className="flex items-start">
                   <div className="flex-shrink-0 text-[#DC2626] font-bold text-xl mr-4">
                     {index + 1}.
                   </div>
-                  <p className="text-white/70 text-lg">{useCase}</p>
+                  <p className="text-black/60 text-lg">{useCase}</p>
                 </div>
               </GlowCard>
             ))}
@@ -144,8 +144,8 @@ export default function ServicePageClient({ slug }: ServicePageClientProps) {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
+      {/* CTA — DARK */}
+      <section data-theme="dark" className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl mb-6 text-white">
             Ready to Begin?

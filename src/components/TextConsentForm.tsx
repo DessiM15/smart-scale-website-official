@@ -4,9 +4,10 @@ import { useState } from "react";
 
 interface TextConsentFormProps {
   onVerificationSent: (phone: string, name: string, email: string) => void;
+  theme?: "dark" | "light";
 }
 
-export default function TextConsentForm({ onVerificationSent }: TextConsentFormProps) {
+export default function TextConsentForm({ onVerificationSent, theme = "dark" }: TextConsentFormProps) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -58,18 +59,29 @@ export default function TextConsentForm({ onVerificationSent }: TextConsentFormP
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const inputClasses =
-    "w-full px-4 py-3 bg-[#111111] border border-white/[0.08] rounded-xl text-white placeholder-white/30 focus:ring-2 focus:ring-[#DC2626] focus:border-[#DC2626] outline-none transition";
+  const isLight = theme === "light";
+
+  const inputClasses = isLight
+    ? "w-full px-4 py-3 bg-white border border-black/[0.12] rounded-xl text-[#111111] placeholder-black/30 focus:ring-2 focus:ring-[#DC2626] focus:border-[#DC2626] outline-none transition"
+    : "w-full px-4 py-3 bg-[#111111] border border-white/[0.08] rounded-xl text-white placeholder-white/30 focus:ring-2 focus:ring-[#DC2626] focus:border-[#DC2626] outline-none transition";
+
+  const labelClasses = isLight
+    ? "block text-sm font-medium mb-2 text-[#111111]/70"
+    : "block text-sm font-medium mb-2 text-white/70";
+
+  const descriptionClasses = isLight
+    ? "text-sm text-black/50 mb-4"
+    : "text-sm text-white/50 mb-4";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <p className="text-sm text-white/50 mb-4">
+        <p className={descriptionClasses}>
           Subscribe to receive text message updates and notifications from Smart Scale.
         </p>
       </div>
       <div>
-        <label htmlFor="consent-name" className="block text-sm font-medium mb-2 text-white/70">
+        <label htmlFor="consent-name" className={labelClasses}>
           Name
         </label>
         <input
@@ -83,7 +95,7 @@ export default function TextConsentForm({ onVerificationSent }: TextConsentFormP
         />
       </div>
       <div>
-        <label htmlFor="consent-email" className="block text-sm font-medium mb-2 text-white/70">
+        <label htmlFor="consent-email" className={labelClasses}>
           Email
         </label>
         <input
@@ -97,7 +109,7 @@ export default function TextConsentForm({ onVerificationSent }: TextConsentFormP
         />
       </div>
       <div>
-        <label htmlFor="consent-phone" className="block text-sm font-medium mb-2 text-white/70">
+        <label htmlFor="consent-phone" className={labelClasses}>
           Phone Number
         </label>
         <input

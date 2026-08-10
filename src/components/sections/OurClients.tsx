@@ -5,6 +5,7 @@ import SectionHeading from "@/components/ui/SectionHeading";
 const clientNames = [
   "Bloxify",
   "Lomeli Financial Group",
+  "Teachers Pension",
   "Gulf Coast Alloys",
   "Botmakers",
   "Taylor Made Esthetics",
