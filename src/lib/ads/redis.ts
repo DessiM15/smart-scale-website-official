@@ -25,6 +25,19 @@ export function isRedisConfigured(): boolean {
   return credentials() !== null;
 }
 
+/**
+ * Whether the database actually answers — not just whether the variables exist.
+ *
+ * These are different failures and they look identical from the outside. The
+ * common one is a token rotated in the Upstash console while Vercel still holds
+ * the old value: every variable is present, so a configuration check passes,
+ * and then every write silently fails.
+ */
+export async function isRedisReachable(): Promise<boolean> {
+  const [pong] = await redisPipeline([["PING"]], 3000);
+  return typeof pong === "string" && pong.toUpperCase() === "PONG";
+}
+
 /** Runs a batch of commands in one round trip. Returns [] on any failure. */
 export async function redisPipeline(
   commands: RedisCommand[],

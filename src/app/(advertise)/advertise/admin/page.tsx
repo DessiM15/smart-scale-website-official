@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { isAdminConfigured, isSignedIn } from "@/lib/ads/auth";
-import { isRedisConfigured } from "@/lib/ads/redis";
+import { isRedisConfigured, isRedisReachable } from "@/lib/ads/redis";
 import { AD_LINKS } from "@/lib/ads/advertisers";
 import {
   formatDate,
@@ -810,7 +810,7 @@ export default async function AdminPage({
     );
   }
 
-  const [advertisers, prospects, dueNotices, schedule, runs, replies] =
+  const [advertisers, prospects, dueNotices, schedule, runs, replies, databaseReachable] =
     await Promise.all([
       listAdvertisers(),
       listProspects(),
@@ -818,6 +818,7 @@ export default async function AdminPage({
       upcomingSchedule(),
       recentRuns(),
       listResponses(),
+      isRedisReachable(),
     ]);
   const summary = summarize(advertisers);
   const editing = params.edit
@@ -860,7 +861,7 @@ export default async function AdminPage({
           </div>
         </header>
 
-        {!isRedisConfigured() && (
+        {!isRedisConfigured() ? (
           <div className="rounded-2xl border border-[#f0c674] bg-[#fdf6e6] px-5 py-4 mb-6">
             <p className="text-sm font-semibold text-[#1a1210]">
               No database connected — nothing you enter here will save.
@@ -870,6 +871,21 @@ export default async function AdminPage({
               project, then redeploy.
             </p>
           </div>
+        ) : (
+          !databaseReachable && (
+            <div className="rounded-2xl border border-[#DC2626]/30 bg-[#fdecec] px-5 py-4 mb-6">
+              <p className="text-sm font-semibold text-[#8f1d1d]">
+                The database is configured but isn&apos;t responding — nothing will save.
+              </p>
+              <p className="mt-1 text-sm text-[#5c4f45]">
+                Usually this means the token was rotated in Upstash but Vercel still has
+                the old one. In Vercel: Storage → your database → reveal the current
+                values, make sure{" "}
+                <code className="font-mono text-xs">KV_REST_API_TOKEN</code> matches, then
+                redeploy.
+              </p>
+            </div>
+          )
         )}
 
         <Banner
