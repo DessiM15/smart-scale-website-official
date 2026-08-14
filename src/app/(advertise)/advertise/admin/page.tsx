@@ -14,8 +14,22 @@ import {
   type Prospect,
 } from "@/lib/ads/roster";
 import {
+  alertRecipients,
+  isAlertingConfigured,
+  isSmsConfigured,
+  recentRuns,
+  type RunLogEntry,
+} from "@/lib/ads/notify";
+import {
+  findDueNotices,
+  upcomingSchedule,
+  type PendingNotice,
+  type ScheduledNotice,
+} from "@/lib/ads/renewals";
+import {
   deleteAdvertiserAction,
   deleteProspectAction,
+  runAlertsAction,
   saveAdvertiserAction,
   saveProspectAction,
   signInAction,
@@ -120,13 +134,29 @@ function Tile({
   );
 }
 
-function Banner({ msg, err, clash }: { msg?: string; err?: string; clash?: string }) {
+function Banner({
+  msg,
+  err,
+  clash,
+  sent,
+  checked,
+}: {
+  msg?: string;
+  err?: string;
+  clash?: string;
+  sent?: string;
+  checked?: string;
+}) {
   const notices: Record<string, string> = {
     added: "Advertiser added.",
     updated: "Changes saved.",
     removed: "Advertiser removed.",
     prospect: "Saved to the interested list.",
     prospectRemoved: "Removed from the interested list.",
+    alerts:
+      Number(checked ?? 0) === 0
+        ? "Renewal check ran — nothing due today."
+        : `Renewal check ran — ${sent ?? 0} of ${checked} notice${checked === "1" ? "" : "s"} sent.`,
   };
   const errors: Record<string, string> = {
     badkey: "That access key didn't work.",
@@ -481,12 +511,206 @@ function ProspectList({ prospects }: { prospects: Prospect[] }) {
   );
 }
 
+
+/* ------------------------------ renewal watch ----------------------------- */
+
+const NOTICE_LABEL =
+  "30, 14, 7 and 3 days out, on the final day, then again if it lapses";
+
+/** Last four digits only — enough to confirm the right phone, not a leak. */
+function maskPhone(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  return digits.length >= 4 ? `···${digits.slice(-4)}` : phone;
+}
+
+/** Names a threshold — used for what's scheduled, not what's happening now. */
+function noticeLabel(point: number): string {
+  if (point > 0) return `${point}-day warning`;
+  if (point === 0) return "final day";
+  return `${Math.abs(point)} days overdue`;
+}
+
+/**
+ * The advertiser's actual position, for the queue. The milestone that triggered
+ * a notice is rarely the true number — something 15 days past its end date
+ * trips the 7-day-overdue threshold, and reading "7 days overdue" there is
+ * simply wrong.
+ */
+function currentStanding(daysRemaining: number): string {
+  if (daysRemaining > 1) return `${daysRemaining} days left`;
+  if (daysRemaining === 1) return "1 day left";
+  if (daysRemaining === 0) return "ends today";
+  return `${Math.abs(daysRemaining)} days overdue`;
+}
+
+function RenewalWatch({
+  due,
+  schedule,
+  runs,
+}: {
+  due: PendingNotice[];
+  schedule: ScheduledNotice[];
+  runs: RunLogEntry[];
+}) {
+  const armed = isAlertingConfigured();
+  const recipients = alertRecipients();
+  const lastRun = runs[0];
+
+  const missing: string[] = [];
+  if (!isSmsConfigured()) missing.push("TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_PHONE_NUMBER");
+  if (recipients.length === 0) missing.push("ADS_ALERT_PHONES");
+
+  return (
+    <section className="rounded-3xl bg-white border border-black/[0.06] shadow-lg shadow-black/[0.04] p-6 sm:p-8 mb-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold text-[#1a1210]">Renewal watch</h2>
+          <p className="mt-1 text-sm text-[#7a6a5d]">
+            Checks every morning and texts the team as a term winds down —
+            {" "}
+            {NOTICE_LABEL}.
+          </p>
+        </div>
+        <form action={runAlertsAction}>
+          <button
+            type="submit"
+            className="rounded-xl bg-[#1a1210] text-white text-sm font-semibold px-5 py-2.5 hover:bg-black transition-colors"
+          >
+            Run check now
+          </button>
+        </form>
+      </div>
+
+      <div className="mt-5 flex flex-wrap items-center gap-3 text-sm">
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+            armed ? "bg-[#eef7ee] text-[#1f5130]" : "bg-[#fdecec] text-[#8f1d1d]"
+          }`}
+        >
+          {armed ? "Armed" : "Not sending"}
+        </span>
+        {armed ? (
+          <span className="text-[#7a6a5d]">
+            Texting {recipients.map(maskPhone).join(", ")}
+          </span>
+        ) : (
+          <span className="text-[#8f1d1d]">
+            Set {missing.join(" and ")} in Vercel, then redeploy.
+          </span>
+        )}
+        {lastRun && (
+          <span className="text-[#9a8b7d]">
+            Last checked{" "}
+            {new Intl.DateTimeFormat("en-US", {
+              timeZone: "America/Chicago",
+              month: "short",
+              day: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+            }).format(new Date(lastRun.at))}{" "}
+            ({lastRun.trigger})
+          </span>
+        )}
+      </div>
+
+      {due.length > 0 && (
+        <div className="mt-6 rounded-2xl bg-[#fdf6e6] border border-[#f0c674] px-5 py-4">
+          <p className="text-sm font-semibold text-[#1a1210]">
+            Waiting to send ({due.length})
+          </p>
+          <ul className="mt-2 space-y-1.5">
+            {due.map((n) => (
+              <li key={`${n.advertiser.id}-${n.milestone}`} className="text-sm text-[#5c4f45]">
+                <span className="font-semibold text-[#1a1210]">
+                  {n.advertiser.business}
+                </span>{" "}
+                — {currentStanding(n.advertiser.daysRemaining)}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs text-[#7a6a5d]">
+            These go out on the next check. Run it now if you don&apos;t want to wait
+            for the morning.
+          </p>
+        </div>
+      )}
+
+      <div className="grid md:grid-cols-2 gap-8 mt-6">
+        <div>
+          <p className={labelClass}>Coming up</p>
+          {schedule.length === 0 ? (
+            <p className="text-sm text-[#9a8b7d]">
+              No notices scheduled — every active term is either past its last
+              reminder or there are no advertisers yet.
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {schedule.slice(0, 6).map((s) => (
+                <li
+                  key={s.advertiser.id}
+                  className="flex items-baseline justify-between gap-3 text-sm"
+                >
+                  <span className="text-[#1a1210]">{s.advertiser.business}</span>
+                  <span className="text-[#9a8b7d] text-xs tabular-nums whitespace-nowrap">
+                    {noticeLabel(s.nextPoint)} in {s.inDays}d
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div>
+          <p className={labelClass}>Recent checks</p>
+          {runs.length === 0 ? (
+            <p className="text-sm text-[#9a8b7d]">
+              Hasn&apos;t run yet. Use &ldquo;Run check now&rdquo; to try it.
+            </p>
+          ) : (
+            <ul className="space-y-2 max-h-44 overflow-y-auto pr-1">
+              {runs.map((run, i) => (
+                <li key={`${run.at}-${i}`} className="text-xs">
+                  <span className="text-[#5c4f45]">
+                    {new Intl.DateTimeFormat("en-US", {
+                      timeZone: "America/Chicago",
+                      month: "short",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                    }).format(new Date(run.at))}
+                  </span>
+                  <span className="text-[#9a8b7d]">
+                    {" "}
+                    · {run.sent} sent
+                    {run.failed > 0 ? `, ${run.failed} failed` : ""}
+                  </span>
+                  {run.notes.length > 0 && (
+                    <p className="text-[#9a8b7d] mt-0.5">{run.notes[0]}</p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
 /* --------------------------------- the page -------------------------------- */
 
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ msg?: string; err?: string; clash?: string; edit?: string }>;
+  searchParams: Promise<{
+    msg?: string;
+    err?: string;
+    clash?: string;
+    edit?: string;
+    sent?: string;
+    checked?: string;
+  }>;
 }) {
   const params = await searchParams;
 
@@ -496,9 +720,12 @@ export default async function AdminPage({
     );
   }
 
-  const [advertisers, prospects] = await Promise.all([
+  const [advertisers, prospects, dueNotices, schedule, runs] = await Promise.all([
     listAdvertisers(),
     listProspects(),
+    findDueNotices(),
+    upcomingSchedule(),
+    recentRuns(),
   ]);
   const summary = summarize(advertisers);
   const editing = params.edit
@@ -553,7 +780,13 @@ export default async function AdminPage({
           </div>
         )}
 
-        <Banner msg={params.msg} err={params.err} clash={params.clash} />
+        <Banner
+          msg={params.msg}
+          err={params.err}
+          clash={params.clash}
+          sent={params.sent}
+          checked={params.checked}
+        />
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
           <Tile
@@ -616,6 +849,8 @@ export default async function AdminPage({
             </ul>
           </section>
         )}
+
+        <RenewalWatch due={dueNotices} schedule={schedule} runs={runs} />
 
         <section className="rounded-3xl bg-white border border-black/[0.06] shadow-lg shadow-black/[0.04] p-6 sm:p-8 mb-6">
           <h2 className="text-lg font-semibold text-[#1a1210] mb-4">The rotation</h2>

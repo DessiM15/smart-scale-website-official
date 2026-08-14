@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { isSignedIn, signIn, signOut } from "@/lib/ads/auth";
+import { runRenewalCheck } from "@/lib/ads/renewals";
 import {
   categoryConflict,
   deleteAdvertiser,
@@ -123,4 +124,16 @@ export async function deleteProspectAction(data: FormData) {
   if (!(await deleteProspect(id))) back({ err: "save" });
   revalidatePath(PAGE);
   back({ msg: "prospectRemoved" });
+}
+
+export async function runAlertsAction() {
+  await requireAdmin();
+  const result = await runRenewalCheck("manual");
+  revalidatePath(PAGE);
+  back({
+    msg: "alerts",
+    sent: String(result.sent),
+    checked: String(result.checked),
+    failed: String(result.failed),
+  });
 }

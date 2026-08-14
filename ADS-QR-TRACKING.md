@@ -2,8 +2,9 @@
 
 Two tools, one database:
 
-- **`/advertise/admin`** — the ad tracker. Who's running, what's open, what's expiring, who's waiting.
+- **`/advertise/admin`** — the ad tracker. Who's running, what's open, what's expiring, who's waiting. Also where the renewal watch reports in.
 - **`/advertise/stats`** — the scan report. What the QR codes are actually producing.
+- **`/api/ads/cron`** — the daily job. Runs the renewal watch; nothing to visit by hand.
 
 ---
 
@@ -240,3 +241,83 @@ scheduled nightly export is worth adding before this holds real money.
 | `src/lib/ads/redis.ts` | Shared Upstash transport for the roster and the scan counters |
 | `src/lib/ads/auth.ts` | Sign-in for the admin page |
 | `src/app/(advertise)/advertise/admin/` | The tracker page and its save/delete actions |
+
+---
+
+## The renewal watch (daily alerts)
+
+A term that lapses quietly costs a category and the revenue behind it. Every
+morning a scheduled job walks the roster and texts the team as each advertiser
+approaches the end of their term.
+
+### When it fires
+
+Per advertiser, once each: **30, 14, 7 and 3 days out**, on the **final day**,
+and then again at **1, 7 and 21 days overdue** if the record is still marked
+Running after its end date.
+
+It picks the smallest threshold already reached rather than requiring an exact
+match — so a morning the job doesn't run doesn't drop a warning, it just arrives
+a day late. It also won't fire a stale 30-day notice when someone is 5 days out;
+you get the 3-day one, which is the one that matters.
+
+### Setup
+
+Twilio is already configured for the contact form, so only two new variables:
+
+```
+ADS_ALERT_PHONES = 8324070773,+1832XXXXXXX      # you and Jay, comma-separated
+CRON_SECRET      = <a long random string>
+```
+
+`CRON_SECRET` is what makes the daily job run at all. Vercel attaches it to
+scheduled invocations automatically once the variable exists — and **without it
+the endpoint refuses everything**, deliberately: an open URL that sends SMS is an
+open URL that can run up a Twilio bill.
+
+The schedule lives in `vercel.json` — `0 13 * * *`, which is 8am Central during
+daylight saving (7am in winter). Vercel triggers daily crons within the hour, so
+treat it as "some time in the 8 o'clock hour", not 8:00 sharp.
+
+### Verify it works
+
+After you deploy with those variables set, open `/advertise/admin` and check the
+Renewal watch panel says **Armed** and lists the right last-four digits. Then
+press **Run check now** and confirm the text actually arrives on both phones.
+Do this once — a delivery problem you find by testing costs nothing, and one you
+find because a renewal was missed costs a category.
+
+If a Twilio trial account is still in use, recipient numbers must be verified in
+the Twilio console first or sends will fail.
+
+### How it behaves
+
+- **A notice fires once.** The ledger keys on advertiser + term end date +
+  threshold, so re-running the check is a no-op — but renew someone, and their
+  new term gets a fresh set of notices automatically.
+- **A failed send is not a lost warning.** Notices are only marked as sent once
+  they've actually reached somebody. If Twilio is down, the check reports the
+  failure and tries again tomorrow.
+- **Run check now** does the same work on demand, and is logged as `manual` so
+  it doesn't look like a scheduled run.
+- The panel shows what's queued, what's coming and when, and the last ten checks.
+
+### Troubleshooting
+
+**Panel says "Not sending."** It names the missing variables. Set them and redeploy.
+
+**Cron never runs.** `CRON_SECRET` isn't set, or the deployment predates
+`vercel.json`. Check Vercel → your project → Cron Jobs; the last run and its
+status code are listed there. A 401 means the secret is missing or mismatched.
+
+**Alerts arrive but nobody acts on them.** That's Phase 3 — letting the
+advertiser answer renew / change / cancel themselves.
+
+### Files
+
+| File | What it does |
+|---|---|
+| `src/lib/ads/renewals.ts` | Which notice is due, the message copy, the daily run |
+| `src/lib/ads/notify.ts` | Twilio sending, the once-only ledger, the run log |
+| `src/app/api/ads/cron/route.ts` | The scheduled endpoint |
+| `vercel.json` | The schedule |
