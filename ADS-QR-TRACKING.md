@@ -76,38 +76,49 @@ To test on your machine: `vercel env pull .env.local`
 
 ---
 
-## Adding an advertiser
+## Making a QR code
 
-1. Open `src/lib/ads/advertisers.ts` and add a block:
+All of this happens in the tracker at **/advertise/admin → QR codes**. No code
+changes, no waiting on a developer.
 
-```ts
-{
-  code: "plumb",                                  // short — it's in the QR
-  advertiser: "Rio Grande Plumbing",
-  category: "Plumbing",
-  destination: "https://riograndeplumbing.com",   // where the scan lands
-  active: true,
-  startedOn: "2026-09-01",
-},
-```
+1. **New QR code** → pick a short **code** (`plumb`), say what it's **for**, and
+   paste the **web address** the scan should go to.
+2. Optionally upload the client's **logo** — it goes in the middle of the code.
+3. **Create QR code**, then download the **SVG** (best for print) or **PNG**.
+4. On the advertiser's record, pick that code from the **QR code** dropdown.
 
-2. Generate the QR: `npm run qr` → writes `assets/qr/plumb.svg` and `.png`
-3. Commit and push. Vercel deploys in about a minute.
-4. **Scan the code with your own phone before it goes on screen.** Then add
-   `?nolog=1` to the URL if you want to test again without polluting the count.
-5. Drop the SVG into the slide artwork.
+**Scan the artwork with your own phone before it goes on a screen.** Every time.
 
-### Rules that matter
+### The rules, and why
 
-- **Never change a `code` once the ad is live.** The QR is already on screen.
-  Changing the code turns every printed QR into a dead link.
-- **To end a campaign**, set `active: false`. History is kept and late scans go
-  to `/advertise` instead of an ex-client's site.
-- **To change where an ad points** (new landing page, seasonal offer), edit
-  `destination` and redeploy. The QR on screen keeps working — that's the whole
-  point of owning the redirect.
+- **The code is permanent.** `plumb` can never be reassigned to a different
+  business, because it is printed and out in the world. Codes are retired, never
+  deleted — a retired code still resolves, it just lands on the advertise page.
+- **The destination is editable forever.** New landing page, seasonal offer,
+  changed website — edit it and the printed code keeps working. That is the
+  entire reason we own the redirect.
+- **Tagging is on by default.** The link appends `utm_source=mex-taco-house`, so
+  the advertiser sees this traffic in their own Google Analytics and does not
+  have to take our word for the numbers.
 
----
+### About logos
+
+A logo covers about 22% of the code's middle. To survive that, the code switches
+to the highest error-correction level, which makes it **denser** — more, smaller
+squares.
+
+That matters because these are scanned off a TV from across a room. A logo code
+needs to be printed **larger** than a plain one to read from the same distance.
+Tested down to 120px with blur and it still decodes, but give it room on the
+slide.
+
+Logos must be PNG, JPEG, WebP or SVG and under 200KB. Square, on a transparent or
+white background, works best.
+
+### If the database is down
+
+`src/lib/ads/advertisers.ts` holds a small seed list that the redirect falls back
+to, so `/go/<code>` keeps resolving during an outage. You do not need to edit it.
 
 ## Reading the report
 

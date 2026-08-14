@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { isAdminConfigured, isSignedIn } from "@/lib/ads/auth";
 import { isRedisConfigured, isRedisReachable } from "@/lib/ads/redis";
-import { AD_LINKS } from "@/lib/ads/advertisers";
+import { listLinks, type AdLinkRecord } from "@/lib/ads/link-store";
+import { getCodeStats } from "@/lib/ads/scan-store";
 import {
   formatDate,
   listAdvertisers,
@@ -32,6 +33,8 @@ import { listResponses, type RenewalResponse } from "@/lib/ads/responses";
 import {
   clearResponseAction,
   deleteAdvertiserAction,
+  saveLinkAction,
+  toggleLinkActiveAction,
   deleteProspectAction,
   runAlertsAction,
   saveAdvertiserAction,
@@ -144,12 +147,14 @@ function Banner({
   clash,
   sent,
   checked,
+  detail,
 }: {
   msg?: string;
   err?: string;
   clash?: string;
   sent?: string;
   checked?: string;
+  detail?: string;
 }) {
   const notices: Record<string, string> = {
     added: "Advertiser added.",
@@ -158,6 +163,10 @@ function Banner({
     prospect: "Saved to the interested list.",
     prospectRemoved: "Removed from the interested list.",
     replyCleared: "Reply cleared.",
+    linkAdded: "QR code created — download the artwork below.",
+    linkSaved: "QR code updated.",
+    linkOn: "QR code switched back on.",
+    linkOff: "QR code retired. Scans now land on the advertise page.",
     alerts:
       Number(checked ?? 0) === 0
         ? "Renewal check ran — nothing due today."
@@ -171,6 +180,12 @@ function Banner({
     category: `${clash ?? "Another advertiser"} already owns that category. End their run first, or use a different category.`,
     save: "Could not write to the database. Check that Upstash is connected, then try again.",
     missing: "Nothing to remove.",
+    code: detail ?? "That code isn't valid.",
+    destination: detail ?? "That web address isn't valid.",
+    codetaken: `"${detail}" is already in use. Codes can never be reassigned — pick a different one.`,
+    codemissing: `There's no QR code named "${detail}".`,
+    logotype: "Logos must be a PNG, JPEG, WebP or SVG.",
+    logosize: "That logo is over 200KB. Export a smaller version and try again.",
   };
 
   const text = err ? errors[err] : msg ? notices[msg] : undefined;
@@ -264,7 +279,7 @@ function StatusPill({ view }: { view: AdvertiserView }) {
 }
 
 function RosterRow({ view, knownCodes }: { view: AdvertiserView; knownCodes: Set<string> }) {
-  const qrMissing = view.qrCode && !knownCodes.has(view.qrCode);
+  const qrMissing = Boolean(view.qrCode) && !knownCodes.has(view.qrCode);
   return (
     <tr className="border-t border-black/[0.06] align-top">
       <td className="px-4 py-3">
@@ -336,10 +351,10 @@ function RosterRow({ view, knownCodes }: { view: AdvertiserView; knownCodes: Set
 
 function AdvertiserForm({
   editing,
-  knownCodes,
+  codes,
 }: {
   editing?: AdvertiserView;
-  knownCodes: string[];
+  codes: LinkView[];
 }) {
   return (
     <section
@@ -375,19 +390,23 @@ function AdvertiserForm({
             <label className={labelClass} htmlFor="qrCode">
               QR code
             </label>
-            <input
+            <select
               id="qrCode"
               name="qrCode"
-              list="known-codes"
-              defaultValue={editing?.qrCode}
-              placeholder="plumb"
+              defaultValue={editing?.qrCode ?? ""}
               className={inputClass}
-            />
-            <datalist id="known-codes">
-              {knownCodes.map((code) => (
-                <option key={code} value={code} />
+            >
+              <option value="">— none —</option>
+              {codes.map((link) => (
+                <option key={link.code} value={link.code}>
+                  /go/{link.code} — {link.label}
+                  {link.active ? "" : " (retired)"}
+                </option>
               ))}
-            </datalist>
+            </select>
+            <p className="mt-1 text-xs text-[#9a8b7d]">
+              Create codes in the QR codes section above.
+            </p>
           </div>
         </div>
 
@@ -788,6 +807,238 @@ function RenewalWatch({
 }
 
 
+
+/* -------------------------------- QR codes -------------------------------- */
+
+type LinkView = AdLinkRecord & { scans: number };
+
+function QrCodes({
+  links,
+  editing,
+}: {
+  links: LinkView[];
+  editing?: LinkView;
+}) {
+  return (
+    <section
+      id="qr"
+      className="rounded-3xl bg-white border border-black/[0.06] shadow-lg shadow-black/[0.04] p-6 sm:p-8 mb-6"
+    >
+      <h2 className="text-lg font-semibold text-[#1a1210]">QR codes</h2>
+      <p className="mt-1 mb-6 text-sm text-[#7a6a5d]">
+        Each code is a short link on our own domain that counts the scan, then
+        forwards to the advertiser. Because we own the link, you can change where
+        an ad points long after the artwork is printed.
+      </p>
+
+      {links.length > 0 && (
+        <div className="overflow-x-auto -mx-6 sm:-mx-8 px-6 sm:px-8 mb-8">
+          <table className="w-full text-sm min-w-[48rem]">
+            <thead>
+              <tr className="text-left text-[11px] uppercase tracking-[0.12em] text-[#9a8b7d]">
+                <th className="px-4 py-2 font-semibold">Code</th>
+                <th className="px-4 py-2 font-semibold">Sends people to</th>
+                <th className="px-4 py-2 font-semibold text-right">Scans</th>
+                <th className="px-4 py-2 font-semibold">Artwork</th>
+                <th className="px-4 py-2 font-semibold" />
+              </tr>
+            </thead>
+            <tbody>
+              {links.map((link) => (
+                <tr key={link.code} className="border-t border-black/[0.06] align-top">
+                  <td className="px-4 py-3">
+                    <p className="font-mono text-[#DC2626]">/go/{link.code}</p>
+                    <p className="text-xs text-[#9a8b7d]">{link.label}</p>
+                    {!link.active && (
+                      <span className="inline-block mt-1 rounded-full bg-black/[0.05] px-2 py-0.5 text-[11px] font-semibold text-[#9a8b7d]">
+                        Retired
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <p className="text-[#5c4f45] break-all">
+                      {link.destination.replace(/^https?:\/\//, "")}
+                    </p>
+                    {link.logoDataUri && (
+                      <p className="text-xs text-[#9a8b7d] mt-0.5">logo in the middle</p>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-right tabular-nums text-[#1a1210]">
+                    {link.scans.toLocaleString()}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <a
+                      href={`/api/ads/qr/${link.code}?format=svg`}
+                      className="text-xs font-semibold text-[#DC2626] hover:underline"
+                    >
+                      SVG
+                    </a>
+                    <a
+                      href={`/api/ads/qr/${link.code}?format=png`}
+                      className="ml-3 text-xs font-semibold text-[#DC2626] hover:underline"
+                    >
+                      PNG
+                    </a>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <a
+                      href={`/advertise/admin?editLink=${encodeURIComponent(link.code)}#qr`}
+                      className="text-xs font-semibold text-[#7a6a5d] hover:text-[#1a1210]"
+                    >
+                      Edit
+                    </a>
+                    <form action={toggleLinkActiveAction} className="inline">
+                      <input type="hidden" name="code" value={link.code} />
+                      <input type="hidden" name="active" value={link.active ? "0" : "1"} />
+                      <button
+                        type="submit"
+                        className="ml-3 text-xs text-[#9a8b7d] hover:text-[#DC2626]"
+                      >
+                        {link.active ? "Retire" : "Restore"}
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <form
+        action={saveLinkAction}
+        encType="multipart/form-data"
+        className="border-t border-black/[0.06] pt-6 space-y-5"
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-[#1a1210]">
+            {editing ? `Edit /go/${editing.code}` : "New QR code"}
+          </h3>
+          {editing && (
+            <a href="/advertise/admin#qr" className="text-xs text-[#9a8b7d] hover:text-[#1a1210]">
+              Cancel
+            </a>
+          )}
+        </div>
+
+        <input type="hidden" name="isNew" value={editing ? "0" : "1"} />
+
+        <div className="grid sm:grid-cols-3 gap-4">
+          <div>
+            <label className={labelClass} htmlFor="code">
+              Code <span className="text-[#DC2626]">*</span>
+            </label>
+            <input
+              id="code"
+              name="code"
+              defaultValue={editing?.code}
+              readOnly={Boolean(editing)}
+              placeholder="plumb"
+              className={`${inputClass} ${editing ? "bg-[#faf6f0] text-[#7a6a5d]" : ""}`}
+            />
+            <p className="mt-1 text-xs text-[#9a8b7d]">
+              {editing
+                ? "Can't change — it's already printed."
+                : "Short and permanent. Becomes smartscaleagent.com/go/…"}
+            </p>
+          </div>
+          <div className="sm:col-span-2">
+            <label className={labelClass} htmlFor="label">
+              What it&apos;s for
+            </label>
+            <input
+              id="label"
+              name="label"
+              defaultValue={editing?.label}
+              placeholder="Rio Grande Plumbing"
+              className={inputClass}
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className={labelClass} htmlFor="destination">
+            Sends people to <span className="text-[#DC2626]">*</span>
+          </label>
+          <input
+            id="destination"
+            name="destination"
+            type="url"
+            defaultValue={editing?.destination}
+            placeholder="https://riograndeplumbing.com"
+            className={inputClass}
+          />
+          <p className="mt-1 text-xs text-[#9a8b7d]">
+            Change this any time — the printed code keeps working.
+          </p>
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelClass} htmlFor="logo">
+              Logo in the middle (optional)
+            </label>
+            <input
+              id="logo"
+              name="logo"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/svg+xml"
+              className="w-full text-sm text-[#5c4f45] file:mr-3 file:rounded-lg file:border-0 file:bg-[#1a1210] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-black"
+            />
+            <p className="mt-1 text-xs text-[#9a8b7d]">
+              PNG, JPEG, WebP or SVG, under 200KB. A square logo on a transparent
+              or white background works best.
+            </p>
+            {editing?.logoDataUri && (
+              <label className="mt-2 flex items-center gap-2 text-xs text-[#5c4f45]">
+                <input type="checkbox" name="removeLogo" value="1" className="accent-[#DC2626]" />
+                Remove the current logo
+              </label>
+            )}
+          </div>
+
+          {editing?.logoDataUri && (
+            <div>
+              <p className={labelClass}>Current logo</p>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={editing.logoDataUri}
+                alt=""
+                className="h-16 w-16 object-contain rounded-lg border border-black/[0.06] bg-white p-1"
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-wrap gap-5">
+          <label className="flex items-center gap-2 text-sm text-[#5c4f45]">
+            <input
+              type="checkbox"
+              name="tagDestination"
+              value="1"
+              defaultChecked={editing ? editing.tagDestination : true}
+              className="accent-[#DC2626]"
+            />
+            Tag the link so the advertiser sees this traffic in their own analytics
+          </label>
+        </div>
+
+        <button
+          type="submit"
+          className="rounded-xl bg-[#DC2626] text-white font-semibold px-6 py-3 hover:bg-[#b91c1c] transition-colors"
+        >
+          {editing ? "Save changes" : "Create QR code"}
+        </button>
+
+        <p className="text-xs text-[#9a8b7d]">
+          Adding a logo makes the code denser, so print it larger. Always scan the
+          artwork with your own phone before it goes on a screen.
+        </p>
+      </form>
+    </section>
+  );
+}
+
 /* --------------------------------- the page -------------------------------- */
 
 export default async function AdminPage({
@@ -800,6 +1051,8 @@ export default async function AdminPage({
     edit?: string;
     sent?: string;
     checked?: string;
+    detail?: string;
+    editLink?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -810,7 +1063,7 @@ export default async function AdminPage({
     );
   }
 
-  const [advertisers, prospects, dueNotices, schedule, runs, replies, databaseReachable] =
+  const [advertisers, prospects, dueNotices, schedule, runs, replies, databaseReachable, rawLinks] =
     await Promise.all([
       listAdvertisers(),
       listProspects(),
@@ -819,13 +1072,23 @@ export default async function AdminPage({
       recentRuns(),
       listResponses(),
       isRedisReachable(),
+      listLinks(),
     ]);
+
+  const links: LinkView[] = await Promise.all(
+    rawLinks.map(async (link) => ({
+      ...link,
+      scans: (await getCodeStats(link.code, 1)).total,
+    })),
+  );
+  const editingLink = params.editLink
+    ? links.find((l) => l.code === params.editLink)
+    : undefined;
+  const knownCodeSet = new Set(links.map((l) => l.code));
   const summary = summarize(advertisers);
   const editing = params.edit
     ? advertisers.find((a) => a.id === params.edit)
     : undefined;
-  const knownCodes = AD_LINKS.map((l) => l.code);
-  const knownCodeSet = new Set(knownCodes);
   const needsAttention = [...summary.overdue, ...summary.expiring];
 
   return (
@@ -894,6 +1157,7 @@ export default async function AdminPage({
           clash={params.clash}
           sent={params.sent}
           checked={params.checked}
+          detail={params.detail}
         />
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
@@ -1012,8 +1276,10 @@ export default async function AdminPage({
           )}
         </section>
 
+        <QrCodes links={links} editing={editingLink} />
+
         <div className="mb-6">
-          <AdvertiserForm editing={editing} knownCodes={knownCodes} />
+          <AdvertiserForm editing={editing} codes={links} />
         </div>
 
         <section className="rounded-3xl bg-white border border-black/[0.06] shadow-lg shadow-black/[0.04] p-6 sm:p-8">

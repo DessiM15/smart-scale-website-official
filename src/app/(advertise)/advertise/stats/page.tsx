@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
-import {
-  AD_LINKS,
-  type AdLink,
-} from "@/lib/ads/advertisers";
+import { listLinks, type AdLinkRecord } from "@/lib/ads/link-store";
 import {
   getStatsForCodes,
   isScanStoreConfigured,
@@ -240,7 +237,7 @@ function AdvertiserCard({
   stats,
   days,
 }: {
-  link: AdLink;
+  link: AdLinkRecord;
   stats: CodeStats;
   days: number;
 }) {
@@ -249,10 +246,9 @@ function AdvertiserCard({
     <section className="rounded-3xl bg-white border border-black/[0.06] shadow-lg shadow-black/[0.04] p-6 sm:p-8">
       <header className="flex flex-wrap items-start justify-between gap-4 pb-5 border-b border-black/[0.06]">
         <div>
-          <h2 className="text-xl font-semibold text-[#1a1210]">{link.advertiser}</h2>
+          <h2 className="text-xl font-semibold text-[#1a1210]">{link.label}</h2>
           <p className="mt-1 text-sm text-[#7a6a5d]">
-            {link.category}
-            {link.startedOn && ` · live since ${link.startedOn}`}
+            {link.createdAt ? `Created ${link.createdAt.slice(0, 10)}` : "QR link"}
           </p>
         </div>
         <div className="text-right">
@@ -359,8 +355,9 @@ export default async function StatsPage({
     ? Number(params.days)
     : 30;
 
-  const active = AD_LINKS.filter((l) => l.active);
-  const retired = AD_LINKS.filter((l) => !l.active);
+  const allLinks = await listLinks();
+  const active = allLinks.filter((l) => l.active);
+  const retired = allLinks.filter((l) => !l.active);
   const configured = isScanStoreConfigured();
   // Fetched unconditionally: with no database wired up the store returns zeroed
   // stats, which still renders every advertiser card. An empty page would look

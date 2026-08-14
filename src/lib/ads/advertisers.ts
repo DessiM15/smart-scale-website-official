@@ -1,18 +1,11 @@
 /**
- * QR link registry for the Mex Taco House ad rotation.
+ * Seed QR links, and the fallback the redirect uses when the database can't be
+ * reached.
  *
- * Every ad in the rotation gets a short, trackable URL that lives on our own
- * domain — smartscaleagent.com/go/<code> — instead of pointing the QR straight
- * at the advertiser. The redirect route counts the scan, then forwards the
- * phone on to the advertiser's real page. The guest never notices; we get the
- * only number that proves the screens work.
- *
- * TO ADD AN ADVERTISER: copy a block below, pick a short code, paste their URL,
- * commit, and regenerate the QR with `node scripts/make-qr.mjs`.
- *
- * NEVER change or reuse a `code` once the ad is printed/on screen — the QR is
- * already out in the world. Retire a link by flipping `active` to false, which
- * keeps its history and sends late scans to the fallback instead of a dead page.
+ * QR codes are created and edited in the tracker now — see ./link-store. This
+ * file is no longer where you add an advertiser. It exists so that /go/<code>
+ * still resolves during an outage, and so the very first codes exist before
+ * anything has been entered.
  */
 
 export type AdLink = {
@@ -70,26 +63,4 @@ export const AD_LINKS: AdLink[] = [
   // },
 ];
 
-export function findAdLink(code: string): AdLink | undefined {
-  const wanted = code.trim().toLowerCase();
-  return AD_LINKS.find((l) => l.code.toLowerCase() === wanted);
-}
 
-/**
- * The destination with campaign tags attached, so the advertiser's own
- * analytics attributes the visit to the restaurant screens.
- */
-export function resolveDestination(link: AdLink): string {
-  if (link.tagDestination === false) return link.destination;
-  try {
-    const url = new URL(link.destination);
-    if (!url.searchParams.has("utm_source")) {
-      url.searchParams.set("utm_source", "mex-taco-house");
-      url.searchParams.set("utm_medium", "qr-instore-screen");
-      url.searchParams.set("utm_campaign", link.code);
-    }
-    return url.toString();
-  } catch {
-    return link.destination;
-  }
-}

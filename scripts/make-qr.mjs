@@ -1,7 +1,12 @@
 /**
- * Generates print-ready QR codes for every active ad link.
+ * Generates print-ready QR codes for the SEED links only.
  *
  *   npm run qr
+ *
+ * This is no longer the main way to make a QR code. Codes are created in the
+ * tracker at /advertise/admin, which generates the artwork on demand and
+ * supports a logo in the middle. This script covers only the fallback links
+ * committed in src/lib/ads/advertisers.ts, and is kept for offline use.
  *
  * Writes assets/qr/<code>.svg (vector — use this for the slide artwork) and
  * assets/qr/<code>.png (2000px — for anything that can't take an SVG).
@@ -67,7 +72,10 @@ for (const link of links) {
 }
 
 console.log(`
-Done. Before printing or loading a slide:
+These are the seed links only — create real advertiser codes in the tracker at
+/advertise/admin, where you can also add a logo and download the artwork.
+
+Before printing or loading a slide:
   1. Scan the PNG off your own screen with your phone — confirm it lands right.
   2. On the slide, keep the QR at least 15% of the frame width and leave the
      white border intact. Never place it on a photo or a colored panel.

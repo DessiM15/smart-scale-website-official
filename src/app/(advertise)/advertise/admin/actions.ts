@@ -6,6 +6,14 @@ import { isSignedIn, signIn, signOut } from "@/lib/ads/auth";
 import { runRenewalCheck } from "@/lib/ads/renewals";
 import { clearResponse } from "@/lib/ads/responses";
 import {
+  getLink,
+  normalizeCode,
+  saveLink,
+  setLinkActive,
+  validateCode,
+  validateDestination,
+} from "@/lib/ads/link-store";
+import {
   categoryConflict,
   deleteAdvertiser,
   deleteProspect,
@@ -147,4 +155,76 @@ export async function clearResponseAction(data: FormData) {
   if (!(await clearResponse(advertiserId, endDate))) back({ err: "save" });
   revalidatePath(PAGE);
   back({ msg: "replyCleared" });
+}
+
+/* ------------------------------- QR codes -------------------------------- */
+
+const LOGO_MAX_BYTES = 200 * 1024;
+const LOGO_TYPES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
+
+/**
+ * Turns an uploaded logo into a data URI. Kept small deliberately — it is
+ * embedded in every generated QR and stored alongside the link.
+ */
+async function readLogo(
+  data: FormData,
+): Promise<{ dataUri?: string; error?: string }> {
+  const file = data.get("logo");
+  if (!(file instanceof File) || file.size === 0) return {};
+  if (!LOGO_TYPES.includes(file.type)) {
+    return { error: "logotype" };
+  }
+  if (file.size > LOGO_MAX_BYTES) {
+    return { error: "logosize" };
+  }
+  const buffer = Buffer.from(await file.arrayBuffer());
+  return { dataUri: `data:${file.type};base64,${buffer.toString("base64")}` };
+}
+
+export async function saveLinkAction(data: FormData) {
+  await requireAdmin();
+
+  const isNew = field(data, "isNew") === "1";
+  const code = normalizeCode(field(data, "code"));
+  const destination = field(data, "destination");
+  const label = field(data, "label");
+
+  const codeError = validateCode(code);
+  if (codeError) back({ err: "code", detail: codeError });
+
+  const destError = validateDestination(destination);
+  if (destError) back({ err: "destination", detail: destError });
+
+  const existing = await getLink(code);
+  // The code is what gets printed, so it can never be reassigned to something
+  // else — a new one must be a genuinely new name.
+  if (isNew && existing) back({ err: "codetaken", detail: code });
+  if (!isNew && !existing) back({ err: "codemissing", detail: code });
+
+  const logo = await readLogo(data);
+  if (logo.error) back({ err: logo.error });
+
+  const removeLogo = field(data, "removeLogo") === "1";
+
+  const ok = await saveLink({
+    code,
+    label: label || code,
+    destination,
+    active: field(data, "active") !== "0",
+    tagDestination: field(data, "tagDestination") !== "0",
+    logoDataUri: removeLogo ? null : logo.dataUri,
+  });
+
+  if (!ok) back({ err: "save" });
+  revalidatePath(PAGE);
+  back({ msg: isNew ? "linkAdded" : "linkSaved", who: code });
+}
+
+export async function toggleLinkActiveAction(data: FormData) {
+  await requireAdmin();
+  const code = normalizeCode(field(data, "code"));
+  const active = field(data, "active") === "1";
+  if (!(await setLinkActive(code, active))) back({ err: "save" });
+  revalidatePath(PAGE);
+  back({ msg: active ? "linkOn" : "linkOff", who: code });
 }
