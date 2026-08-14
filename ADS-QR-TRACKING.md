@@ -1,4 +1,13 @@
-# QR Scan Tracking — Mex Taco House Screens
+# Ad Operations — Mex Taco House Screens
+
+Two tools, one database:
+
+- **`/advertise/admin`** — the ad tracker. Who's running, what's open, what's expiring, who's waiting.
+- **`/advertise/stats`** — the scan report. What the QR codes are actually producing.
+
+---
+
+## QR scan tracking
 
 Every ad in the rotation gets a QR code that points at **our** domain, not the
 advertiser's. We count the scan, then forward the phone on. The guest notices
@@ -163,3 +172,71 @@ Change `ADS_STATS_KEY` in Vercel and redeploy. The old link stops working.
 | `src/app/go/[code]/route.ts` | The redirect the QR points at |
 | `src/app/(advertise)/advertise/stats/page.tsx` | The report |
 | `scripts/make-qr.mjs` | `npm run qr` — print-ready SVG + PNG |
+
+---
+
+## The ad tracker (`/advertise/admin`)
+
+The internal book of record for the rotation. Sign in once and the session lasts
+30 days.
+
+### Setup
+
+Add one environment variable in Vercel alongside the ones above:
+
+```
+ADS_ADMIN_KEY = <a long passphrase you make up — different from ADS_STATS_KEY>
+```
+
+Redeploy, then go to **smartscaleagent.com/advertise/admin** and sign in. Give
+Jay the same passphrase. Unlike the scan report, this page can *change* data, so
+it uses a real login rather than a key in the URL — nothing sensitive ends up in
+browser history or a screenshot.
+
+### What it tracks
+
+| | |
+|---|---|
+| **Advertisers** | Business, contact, category, package, start date, status, notes, and which QR code is theirs |
+| **Packages** | Short Term (3mo/$500), Standard (6mo/$450), Annual (12mo/$375), plus Free Starter (internal only) |
+| **End dates** | Calculated from the package term — you never type one. Month-end is handled correctly (a term starting Jan 31 ends Feb 28) |
+| **Slots** | 16 sellable of the 18-slide loop. Open slots update as you add and end advertisers |
+| **Categories** | Every locked category, listed. Two active advertisers cannot hold the same one — the form refuses and tells you who already has it |
+| **Needs attention** | Anything ending within 60 days, plus anything whose end date has already passed, with a tap-to-call link |
+| **Money** | Monthly revenue from active advertisers, and total left to invoice across current terms |
+| **Interested list** | Businesses waiting on a slot or a category, ranked hot → contacted → new → passed |
+
+### Day-to-day
+
+- **New advertiser** → fill the form at the bottom. Category and start date are
+  what matter; everything else can be filled in later.
+- **Signed but artwork isn't ready** → status "Signed, not live yet". They don't
+  consume a slot or count toward revenue until you set them to Running.
+- **Term is up** → they renew (change the start date and package to the new
+  term) or they don't (set status to Ended). Ended advertisers stay on the record
+  and release their category.
+- **Someone asks about advertising** → put them on the Interested list right
+  then, with the category they want. When that category frees up you have a call
+  list instead of a memory.
+
+### Two things to know
+
+**The QR field is a cross-reference, not the source of truth.** QR codes live in
+`src/lib/ads/advertisers.ts` and stay in code on purpose — a code that's printed
+and on a screen should be governed by something reviewed, not editable in a
+browser. If you type a code here that isn't in that file, the tracker flags it in
+red, because scanning it would fall through to the advertise page.
+
+**Back it up.** The roster lives in Upstash's free tier. It is not a system of
+record you'd trust a business to, and it's cheap insurance to keep a copy —
+`exportRoster()` in `src/lib/ads/roster.ts` returns the whole thing as JSON. A
+scheduled nightly export is worth adding before this holds real money.
+
+### Files
+
+| File | What it does |
+|---|---|
+| `src/lib/ads/roster.ts` | Advertisers, waitlist, term math, slot and category rules |
+| `src/lib/ads/redis.ts` | Shared Upstash transport for the roster and the scan counters |
+| `src/lib/ads/auth.ts` | Sign-in for the admin page |
+| `src/app/(advertise)/advertise/admin/` | The tracker page and its save/delete actions |

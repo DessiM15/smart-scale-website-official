@@ -1,17 +1,13 @@
 /**
- * Scan storage for QR redirects, backed by Upstash Redis over its REST API.
+ * Scan storage for QR redirects, backed by Upstash Redis.
  *
- * Deliberately dependency-free: Upstash speaks plain HTTPS, so this is `fetch`
- * and nothing else. It also degrades safely — if the env vars are missing the
- * redirect still works, it just doesn't count. A guest scanning an ad must
- * never see an error because our analytics is down.
- *
- * Env (either naming works; Vercel's Upstash integration sets one or the other):
- *   UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN
- *   KV_REST_API_URL        / KV_REST_API_TOKEN
+ * Degrades safely — if the database isn't configured the redirect still works,
+ * it just doesn't count. A guest scanning an ad must never see an error because
+ * our analytics is down. The transport lives in ./redis.
  */
 
 import { createHash } from "crypto";
+import { redisPipeline, isRedisConfigured } from "./redis";
 
 /** Restaurant local time. Bucketing days in UTC would split the lunch rush. */
 export const TZ = "America/Chicago";
@@ -21,42 +17,11 @@ const KEY = "qr";
 const DAY_TTL_SECONDS = 400 * 24 * 60 * 60;
 const RECENT_LIMIT = 60;
 
-type Command = (string | number)[];
-
-function credentials(): { url: string; token: string } | null {
-  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
-  const token =
-    process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
-  if (!url || !token) return null;
-  return { url: url.replace(/\/$/, ""), token };
-}
-
 export function isScanStoreConfigured(): boolean {
-  return credentials() !== null;
+  return isRedisConfigured();
 }
 
-/** Runs a batch of Redis commands in one round trip. Returns [] on any failure. */
-async function pipeline(commands: Command[], timeoutMs = 2500): Promise<unknown[]> {
-  const creds = credentials();
-  if (!creds || commands.length === 0) return [];
-  try {
-    const res = await fetch(`${creds.url}/pipeline`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${creds.token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(commands),
-      cache: "no-store",
-      signal: AbortSignal.timeout(timeoutMs),
-    });
-    if (!res.ok) return [];
-    const json = (await res.json()) as { result?: unknown; error?: string }[];
-    return Array.isArray(json) ? json.map((r) => r?.result ?? null) : [];
-  } catch {
-    return [];
-  }
-}
+const pipeline = redisPipeline;
 
 /* ---------------------------------- dates --------------------------------- */
 
