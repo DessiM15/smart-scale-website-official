@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { isSignedIn, signIn, signOut } from "@/lib/ads/auth";
 import { runRenewalCheck } from "@/lib/ads/renewals";
+import { clearResponse } from "@/lib/ads/responses";
 import {
   categoryConflict,
   deleteAdvertiser,
@@ -136,4 +137,14 @@ export async function runAlertsAction() {
     checked: String(result.checked),
     failed: String(result.failed),
   });
+}
+
+export async function clearResponseAction(data: FormData) {
+  await requireAdmin();
+  const advertiserId = field(data, "advertiserId");
+  const endDate = field(data, "endDate");
+  if (!advertiserId || !endDate) back({ err: "missing" });
+  if (!(await clearResponse(advertiserId, endDate))) back({ err: "save" });
+  revalidatePath(PAGE);
+  back({ msg: "replyCleared" });
 }

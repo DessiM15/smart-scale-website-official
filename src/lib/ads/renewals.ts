@@ -16,6 +16,10 @@ import {
   sendTeamSms,
   type RunLogEntry,
 } from "./notify";
+import { isEmailConfigured, renewalEmail, sendEmail } from "./email";
+import { isLinkSigningConfigured, renewalUrl } from "./links";
+import { hasResponded } from "./responses";
+import { getCodeStats } from "./scan-store";
 
 const ADMIN_URL = "smartscaleagent.com/advertise/admin";
 
@@ -56,38 +60,71 @@ export function alertMessage(view: AdvertiserView, milestone: number): string {
   return `Mex Taco ads · ${who} ${when}. ${rate}Renew or the category goes back on the market: ${ADMIN_URL}`;
 }
 
+/**
+ * The advertiser hears from us three times, not eight. A heads-up with the
+ * decision buttons, one reminder, and a last call — anything more reads as
+ * pestering a paying customer. The overdue nags stay internal.
+ */
+export const ADVERTISER_EMAIL_POINTS = [30, 7, 0];
+
+/** Email marker for the ledger, kept distinct from the team-text marker. */
+const emailMarker = (milestone: number) => `e${milestone}`;
+
 export type PendingNotice = {
   advertiser: AdvertiserView;
   milestone: number;
   message: string;
+  /** The team text hasn't gone out for this threshold yet. */
+  needsSms: boolean;
+  /** The advertiser email is due, deliverable, and they haven't replied yet. */
+  needsEmail: boolean;
 };
 
 /** Everything due right now that hasn't already gone out for this term. */
 export async function findDueNotices(): Promise<PendingNotice[]> {
   const active = (await listAdvertisers()).filter((a) => a.status === "active");
+  const canEmail = isEmailConfigured() && isLinkSigningConfigured();
 
-  const candidates = active
-    .map((advertiser) => {
+  const notices = await Promise.all(
+    active.map(async (advertiser) => {
       const milestone = milestoneFor(advertiser.daysRemaining);
-      return milestone === null
-        ? null
-        : { advertiser, milestone, message: alertMessage(advertiser, milestone) };
-    })
-    .filter((n): n is PendingNotice => n !== null);
+      if (milestone === null) return null;
 
-  const unsent = await Promise.all(
-    candidates.map(async (notice) =>
-      (await alreadySent(
-        notice.advertiser.id,
-        notice.advertiser.endDate,
-        notice.milestone,
-      ))
-        ? null
-        : notice,
-    ),
+      const needsSms = !(await alreadySent(
+        advertiser.id,
+        advertiser.endDate,
+        milestone,
+      ));
+
+      const emailEligible =
+        canEmail &&
+        Boolean(advertiser.email) &&
+        ADVERTISER_EMAIL_POINTS.includes(milestone);
+
+      // Someone who has already told us what they want shouldn't keep getting
+      // asked; the team still gets its reminders.
+      const needsEmail =
+        emailEligible &&
+        !(await alreadySent(
+          advertiser.id,
+          advertiser.endDate,
+          emailMarker(milestone),
+        )) &&
+        !(await hasResponded(advertiser.id, advertiser.endDate));
+
+      if (!needsSms && !needsEmail) return null;
+
+      return {
+        advertiser,
+        milestone,
+        message: alertMessage(advertiser, milestone),
+        needsSms,
+        needsEmail,
+      };
+    }),
   );
 
-  return unsent
+  return notices
     .filter((n): n is PendingNotice => n !== null)
     .sort((a, b) => a.advertiser.daysRemaining - b.advertiser.daysRemaining);
 }
@@ -131,39 +168,92 @@ export async function runRenewalCheck(trigger: string): Promise<RunLogEntry> {
   let sent = 0;
   let failed = 0;
 
-  if (!isAlertingConfigured()) {
+  const canText = isAlertingConfigured();
+  if (!canText) {
     notes.push(
-      "Alerting is not configured — set TWILIO_* and ADS_ALERT_PHONES. Nothing was sent and nothing was marked as sent.",
+      "Team texts are off — set TWILIO_* and ADS_ALERT_PHONES. Nothing was marked as sent.",
     );
-    return logAndReturn({ trigger, checked: due.length, sent, failed, notes });
+  }
+  if (!isEmailConfigured()) {
+    notes.push("Advertiser email is off — set RESEND_API_KEY.");
+  } else if (!isLinkSigningConfigured()) {
+    notes.push("Advertiser email is off — set ADS_LINK_SECRET to sign reply links.");
   }
 
   for (const notice of due) {
-    const results = await sendTeamSms(notice.message);
-    const delivered = results.filter((r) => r.ok).length;
+    const { advertiser, milestone } = notice;
 
-    if (delivered > 0) {
-      // Only burn the notice once it has actually reached somebody; a Twilio
-      // outage should mean "try again tomorrow", not "warning lost".
-      await markSent(
-        notice.advertiser.id,
-        notice.advertiser.endDate,
-        notice.milestone,
-      );
-      sent += 1;
-      notes.push(
-        `${notice.advertiser.business}: ${notice.milestone}-day notice sent to ${delivered} recipient${delivered === 1 ? "" : "s"}.`,
-      );
-    } else {
-      failed += 1;
-      const why = results.find((r) => r.error)?.error ?? "unknown error";
-      notes.push(`${notice.advertiser.business}: send failed (${why}). Will retry.`);
+    if (notice.needsSms && canText) {
+      const results = await sendTeamSms(notice.message);
+      const delivered = results.filter((r) => r.ok).length;
+      if (delivered > 0) {
+        // Only burn the notice once it has actually reached somebody; a Twilio
+        // outage should mean "try again tomorrow", not "warning lost".
+        await markSent(advertiser.id, advertiser.endDate, milestone);
+        sent += 1;
+        notes.push(
+          `${advertiser.business}: team texted (${delivered} recipient${delivered === 1 ? "" : "s"}).`,
+        );
+      } else {
+        failed += 1;
+        const why = results.find((r) => r.error)?.error ?? "unknown error";
+        notes.push(`${advertiser.business}: text failed (${why}). Will retry.`);
+      }
+    }
+
+    if (notice.needsEmail) {
+      const result = await emailAdvertiser(advertiser);
+      if (result.ok) {
+        await markSent(advertiser.id, advertiser.endDate, emailMarker(milestone));
+        sent += 1;
+        notes.push(`${advertiser.business}: renewal email sent to ${advertiser.email}.`);
+      } else {
+        failed += 1;
+        notes.push(
+          `${advertiser.business}: email failed (${result.error ?? "unknown"}). Will retry.`,
+        );
+      }
     }
   }
 
   if (due.length === 0) notes.push("Nothing due today.");
 
   return logAndReturn({ trigger, checked: due.length, sent, failed, notes });
+}
+
+/**
+ * Builds and sends one advertiser's renewal email. Their scan count goes in
+ * when we have one — it is the most persuasive thing on the page, and it's the
+ * number they're really asking about.
+ */
+async function emailAdvertiser(
+  advertiser: AdvertiserView,
+): Promise<{ ok: boolean; error?: string }> {
+  const links = {
+    renew: renewalUrl(advertiser.id, advertiser.endDate, "renew"),
+    change: renewalUrl(advertiser.id, advertiser.endDate, "change"),
+    cancel: renewalUrl(advertiser.id, advertiser.endDate, "cancel"),
+  };
+  if (!links.renew || !links.change || !links.cancel) {
+    return { ok: false, error: "ADS_LINK_SECRET is not set" };
+  }
+
+  let scanTotal: number | undefined;
+  if (advertiser.qrCode) {
+    try {
+      scanTotal = (await getCodeStats(advertiser.qrCode, 1)).total;
+    } catch {
+      scanTotal = undefined;
+    }
+  }
+
+  const { subject, html, text } = renewalEmail(
+    advertiser,
+    { renew: links.renew, change: links.change, cancel: links.cancel },
+    scanTotal,
+  );
+
+  return sendEmail({ to: advertiser.email, subject, html, text });
 }
 
 async function logAndReturn(

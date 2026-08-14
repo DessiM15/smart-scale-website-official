@@ -4,6 +4,7 @@ Two tools, one database:
 
 - **`/advertise/admin`** — the ad tracker. Who's running, what's open, what's expiring, who's waiting. Also where the renewal watch reports in.
 - **`/advertise/stats`** — the scan report. What the QR codes are actually producing.
+- **`/advertise/renew/…`** — where an advertiser answers a renewal email. Signed link, no login.
 - **`/api/ads/cron`** — the daily job. Runs the renewal watch; nothing to visit by hand.
 
 ---
@@ -321,3 +322,83 @@ advertiser answer renew / change / cancel themselves.
 | `src/lib/ads/notify.ts` | Twilio sending, the once-only ledger, the run log |
 | `src/app/api/ads/cron/route.ts` | The scheduled endpoint |
 | `vercel.json` | The schedule |
+
+---
+
+## Advertiser replies (renewal emails)
+
+The renewal watch texts *you*. This is the other half: the advertiser gets an
+email with three buttons — **Renew**, **Change my package**, **End my run** —
+answers in one tap, and you get a text with their answer.
+
+### Setup
+
+Two more variables, plus DNS for the sending domain:
+
+```
+RESEND_API_KEY  = re_...            # resend.com — free tier covers this easily
+ADS_LINK_SECRET = <a long random string>
+ADS_FROM_EMAIL  = Smart Scale <ads@smartscaleagent.com>   # optional, this is the default
+ADS_REPLY_TO    = you@yourdomain.com                       # optional
+```
+
+**Domain setup at Resend:** add the domain `smartscaleagent.com`, then add the
+DKIM/SPF records it gives you to your DNS. Until the domain verifies, mail either
+won't send or will land in spam. This is the only step that needs anything
+outside Vercel.
+
+`ADS_LINK_SECRET` signs the reply links. Change it and every link already sitting
+in an advertiser's inbox stops working — so set it once and leave it alone.
+
+The tracker's Renewal watch panel shows **Emailing advertisers** once both are
+set, and **Advertiser email off** until then.
+
+### When advertisers hear from us
+
+**Three times, not eight** — at **30 days, 7 days, and the final day.** The
+overdue nags stay internal; a customer whose term lapsed doesn't need a fourth
+robot email, they need a phone call. And once someone replies, the emails stop
+even if the next threshold comes around.
+
+### How a reply works
+
+1. They tap a button in the email.
+2. They land on a page showing their business, when the term ends, and the three
+   options with their choice pre-selected. **Nothing has been recorded yet.**
+3. They confirm.
+4. The answer is saved, and you and Jay get a text.
+5. It appears at the top of the Renewal watch panel as **action needed**, with a
+   **Mark handled** button once you've spoken to them.
+
+**A reply never changes the rotation by itself.** An email tap is not a signed
+contract and money is involved, so the roster only ever changes when a person
+updates it in the tracker. "Renew" means *they want to* — you still confirm the
+term and the invoice, then edit their record.
+
+### Why confirmation is a second step
+
+Mail scanners, corporate security filters, and link previewers all follow links
+in email automatically. If tapping "End my run" recorded a cancellation
+immediately, a spam filter could cancel a contract before the advertiser ever saw
+the message. So the link only ever *shows* a page; recording requires a real
+submit.
+
+### The links
+
+Each link is an HMAC over the advertiser and their current term end date. That
+means:
+
+- Unguessable, so no login is needed.
+- Scoped to one decision — a link for one advertiser does nothing for another.
+- **Self-expiring.** Renew someone and their term end changes, which kills every
+  old link automatically. Expired links land on a friendly "give us a call" page
+  that never explains why, and never leaks whether the advertiser exists.
+
+### Files
+
+| File | What it does |
+|---|---|
+| `src/lib/ads/links.ts` | Signing and verifying reply links |
+| `src/lib/ads/email.ts` | Resend sending and the renewal email template |
+| `src/lib/ads/responses.ts` | Storing, listing and clearing replies |
+| `src/app/(advertise)/advertise/renew/[id]/` | The reply page and its action |

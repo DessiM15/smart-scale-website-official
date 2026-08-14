@@ -26,7 +26,11 @@ import {
   type PendingNotice,
   type ScheduledNotice,
 } from "@/lib/ads/renewals";
+import { isEmailConfigured } from "@/lib/ads/email";
+import { isLinkSigningConfigured } from "@/lib/ads/links";
+import { listResponses, type RenewalResponse } from "@/lib/ads/responses";
 import {
+  clearResponseAction,
   deleteAdvertiserAction,
   deleteProspectAction,
   runAlertsAction,
@@ -153,6 +157,7 @@ function Banner({
     removed: "Advertiser removed.",
     prospect: "Saved to the interested list.",
     prospectRemoved: "Removed from the interested list.",
+    replyCleared: "Reply cleared.",
     alerts:
       Number(checked ?? 0) === 0
         ? "Renewal check ran — nothing due today."
@@ -543,18 +548,89 @@ function currentStanding(daysRemaining: number): string {
   return `${Math.abs(daysRemaining)} days overdue`;
 }
 
+const CHOICE_STYLE = {
+  renew: { label: "Wants to renew", tone: "bg-[#eef7ee] text-[#1f5130]" },
+  change: { label: "Wants to change package", tone: "bg-[#fdf6e6] text-[#8a6d1f]" },
+  cancel: { label: "Wants to end their run", tone: "bg-[#fdecec] text-[#8f1d1d]" },
+} as const;
+
+function Replies({ replies }: { replies: RenewalResponse[] }) {
+  if (replies.length === 0) return null;
+  return (
+    <div className="mt-6 rounded-2xl border border-[#DC2626]/25 bg-[#fdf6f6] px-5 py-4">
+      <p className="text-sm font-semibold text-[#1a1210]">
+        Advertiser replies ({replies.length}) — action needed
+      </p>
+      <ul className="mt-3 space-y-3">
+        {replies.map((r) => {
+          const style = CHOICE_STYLE[r.choice];
+          return (
+            <li
+              key={`${r.advertiserId}-${r.endDate}`}
+              className="flex flex-wrap items-start justify-between gap-3"
+            >
+              <div>
+                <p className="text-sm">
+                  <span className="font-semibold text-[#1a1210]">{r.business}</span>{" "}
+                  <span
+                    className={`ml-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${style.tone}`}
+                  >
+                    {style.label}
+                  </span>
+                </p>
+                <p className="text-xs text-[#7a6a5d] mt-0.5">
+                  Term ending {formatDate(r.endDate)}
+                  {r.requestedPlan ? ` · asked for ${PLAN_LIST.find((p) => p.id === r.requestedPlan)?.name ?? r.requestedPlan}` : ""}
+                  {" · "}
+                  {new Intl.DateTimeFormat("en-US", {
+                    timeZone: "America/Chicago",
+                    month: "short",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                  }).format(new Date(r.at))}
+                </p>
+                {r.note && (
+                  <p className="text-xs text-[#5c4f45] mt-1 italic">&ldquo;{r.note}&rdquo;</p>
+                )}
+              </div>
+              <form action={clearResponseAction}>
+                <input type="hidden" name="advertiserId" value={r.advertiserId} />
+                <input type="hidden" name="endDate" value={r.endDate} />
+                <button
+                  type="submit"
+                  className="text-xs font-semibold text-[#7a6a5d] hover:text-[#DC2626]"
+                >
+                  Mark handled
+                </button>
+              </form>
+            </li>
+          );
+        })}
+      </ul>
+      <p className="mt-3 text-xs text-[#7a6a5d]">
+        Replies are what the advertiser asked for, not a change to the rotation —
+        update their record above once you&apos;ve spoken.
+      </p>
+    </div>
+  );
+}
+
 function RenewalWatch({
   due,
   schedule,
   runs,
+  replies,
 }: {
   due: PendingNotice[];
   schedule: ScheduledNotice[];
   runs: RunLogEntry[];
+  replies: RenewalResponse[];
 }) {
   const armed = isAlertingConfigured();
   const recipients = alertRecipients();
   const lastRun = runs[0];
+  const emailArmed = isEmailConfigured() && isLinkSigningConfigured();
 
   const missing: string[] = [];
   if (!isSmsConfigured()) missing.push("TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_PHONE_NUMBER");
@@ -598,6 +674,18 @@ function RenewalWatch({
             Set {missing.join(" and ")} in Vercel, then redeploy.
           </span>
         )}
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+            emailArmed ? "bg-[#eef7ee] text-[#1f5130]" : "bg-[#f3efe8] text-[#7a6a5d]"
+          }`}
+          title={
+            emailArmed
+              ? "Advertisers get a renewal email at 30, 7 and 0 days"
+              : "Set RESEND_API_KEY and ADS_LINK_SECRET to email advertisers"
+          }
+        >
+          {emailArmed ? "Emailing advertisers" : "Advertiser email off"}
+        </span>
         {lastRun && (
           <span className="text-[#9a8b7d]">
             Last checked{" "}
@@ -612,6 +700,8 @@ function RenewalWatch({
           </span>
         )}
       </div>
+
+      <Replies replies={replies} />
 
       {due.length > 0 && (
         <div className="mt-6 rounded-2xl bg-[#fdf6e6] border border-[#f0c674] px-5 py-4">
@@ -720,13 +810,15 @@ export default async function AdminPage({
     );
   }
 
-  const [advertisers, prospects, dueNotices, schedule, runs] = await Promise.all([
-    listAdvertisers(),
-    listProspects(),
-    findDueNotices(),
-    upcomingSchedule(),
-    recentRuns(),
-  ]);
+  const [advertisers, prospects, dueNotices, schedule, runs, replies] =
+    await Promise.all([
+      listAdvertisers(),
+      listProspects(),
+      findDueNotices(),
+      upcomingSchedule(),
+      recentRuns(),
+      listResponses(),
+    ]);
   const summary = summarize(advertisers);
   const editing = params.edit
     ? advertisers.find((a) => a.id === params.edit)
@@ -850,7 +942,12 @@ export default async function AdminPage({
           </section>
         )}
 
-        <RenewalWatch due={dueNotices} schedule={schedule} runs={runs} />
+        <RenewalWatch
+          due={dueNotices}
+          schedule={schedule}
+          runs={runs}
+          replies={replies}
+        />
 
         <section className="rounded-3xl bg-white border border-black/[0.06] shadow-lg shadow-black/[0.04] p-6 sm:p-8 mb-6">
           <h2 className="text-lg font-semibold text-[#1a1210] mb-4">The rotation</h2>
