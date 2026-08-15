@@ -7,6 +7,8 @@
  */
 
 import { formatDate, type AdvertiserView } from "./roster";
+import type { ReportFacts } from "./report-data";
+import type { Narrative } from "./narrative";
 
 /** Overridable so the send path can be pointed at a local stand-in under test. */
 function resendEndpoint(): string {
@@ -172,6 +174,89 @@ What would you like to do?
 
 Nothing changes until you confirm on the next screen, and we'll follow up personally either way. Questions? Just reply to this email.
 
+Mex Taco House screen advertising is managed by Smart Scale.`;
+
+  return { subject, html, text };
+}
+
+/* ------------------------------ monthly report ---------------------------- */
+
+function statTile(value: string, label: string): string {
+  return `<td style="padding:0 6px;" width="33%" valign="top">
+    <div style="background:#ffffff;border:1px solid rgba(0,0,0,0.06);border-radius:14px;padding:16px 14px;text-align:center;">
+      <div style="font-size:28px;font-weight:600;color:${INK};line-height:1.1;">${value}</div>
+      <div style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#9a8b7d;font-weight:700;margin-top:6px;">${label}</div>
+    </div>
+  </td>`;
+}
+
+/**
+ * The monthly report. Every figure comes from `facts`; the only free text is
+ * the narrative, which has already been checked for invented numbers.
+ */
+export function reportEmail(facts: ReportFacts, narrative: Narrative) {
+  const subject = `${facts.business} — your ${facts.monthName} report`;
+
+  const change =
+    facts.changePercent === null
+      ? ""
+      : `<p style="margin:0 0 18px;font-size:14px;color:${MUTED};">
+           ${facts.changePercent >= 0 ? "Up" : "Down"} ${Math.abs(facts.changePercent)}% on ${facts.previousScans} the month before.
+         </p>`;
+
+  const detail: string[] = [];
+  if (facts.bestDay) {
+    detail.push(`Your busiest day was ${facts.bestDay.label}, with ${facts.bestDay.count} scan${facts.bestDay.count === 1 ? "" : "s"}.`);
+  }
+  if (facts.bestHourWindow) {
+    detail.push(`Most scans happen between ${facts.bestHourWindow}.`);
+  }
+  if (facts.uniquePhones > 0) {
+    detail.push(`${facts.uniquePhones} distinct phone${facts.uniquePhones === 1 ? " has" : "s have"} scanned your code since you started.`);
+  }
+
+  const html = `<!doctype html>
+<html><body style="margin:0;padding:0;background:${CREAM};">
+<div style="max-width:560px;margin:0 auto;padding:32px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:${INK};">
+  <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:${RED};font-weight:700;">Mex Taco House · ${facts.monthName}</p>
+  <h1 style="margin:0 0 6px;font-size:26px;line-height:1.25;font-weight:600;">${narrative.headline}</h1>
+  <p style="margin:0 0 22px;font-size:14px;color:${MUTED};">${facts.business}${facts.category ? ` · our only ${facts.category} advertiser` : ""}</p>
+
+  <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;margin:0 -6px 8px;"><tr>
+    ${statTile(facts.scans.toLocaleString(), "Scans")}
+    ${statTile(facts.plays.toLocaleString(), "Times played")}
+    ${statTile(facts.openDays.toString(), "Days on screen")}
+  </tr></table>
+  ${change}
+
+  <div style="background:#ffffff;border:1px solid rgba(0,0,0,0.06);border-radius:18px;padding:22px 24px;margin-bottom:22px;">
+    <p style="margin:0;font-size:15px;line-height:1.65;">${narrative.body}</p>
+    ${detail.length ? `<p style="margin:14px 0 0;font-size:14px;line-height:1.65;color:${MUTED};">${detail.join(" ")}</p>` : ""}
+  </div>
+
+  <p style="margin:0 0 4px;font-size:13px;line-height:1.6;color:${MUTED};">
+    A "scan" is someone pointing their phone at your code and opening your page — not a view. Times played is how often your ad appeared on the screens.
+  </p>
+  <p style="margin:0;font-size:12px;line-height:1.6;color:#9a8b7d;">
+    Questions, or want to change your artwork? Just reply to this email. Mex Taco House screen advertising is managed by Smart Scale.
+  </p>
+</div>
+</body></html>`;
+
+  const text = `MEX TACO HOUSE - ${facts.monthName.toUpperCase()}
+
+${narrative.headline}
+${facts.business}${facts.category ? ` - our only ${facts.category} advertiser` : ""}
+
+  Scans:          ${facts.scans.toLocaleString()}
+  Times played:   ${facts.plays.toLocaleString()}
+  Days on screen: ${facts.openDays}
+${facts.changePercent === null ? "" : `\n${facts.changePercent >= 0 ? "Up" : "Down"} ${Math.abs(facts.changePercent)}% on ${facts.previousScans} the month before.\n`}
+${narrative.body}
+${detail.length ? `\n${detail.join(" ")}\n` : ""}
+A "scan" is someone pointing their phone at your code and opening your page - not a view. Times played is how often your ad appeared on the screens.
+
+Questions, or want to change your artwork? Just reply to this email.
 Mex Taco House screen advertising is managed by Smart Scale.`;
 
   return { subject, html, text };

@@ -5,7 +5,7 @@ Two tools, one database:
 - **`/advertise/admin`** — the ad tracker. Who's running, what's open, what's expiring, who's waiting. Also where the renewal watch reports in.
 - **`/advertise/stats`** — the scan report. What the QR codes are actually producing.
 - **`/advertise/renew/…`** — where an advertiser answers a renewal email. Signed link, no login.
-- **`/api/ads/cron`** — the daily job. Runs the renewal watch; nothing to visit by hand.
+- **`/api/ads/cron`** — the daily job. Runs the renewal watch and drafts monthly reports; nothing to visit by hand.
 
 ---
 
@@ -413,3 +413,81 @@ means:
 | `src/lib/ads/email.ts` | Resend sending and the renewal email template |
 | `src/lib/ads/responses.ts` | Storing, listing and clearing replies |
 | `src/app/(advertise)/advertise/renew/[id]/` | The reply page and its action |
+
+---
+
+## Monthly reports
+
+On the first of each month, every active advertiser with an email address and a
+QR code gets a report **drafted** — scans, plays, how the month compared to the
+last one, and a short paragraph of commentary written by Claude.
+
+**Nothing sends on its own.** Drafts wait in the tracker under **Monthly
+reports** until you read them and press **Approve & send**. You and Jay get a
+text saying how many are waiting.
+
+### Setup
+
+```
+ANTHROPIC_API_KEY = sk-ant-...
+```
+
+From **console.anthropic.com** → Settings → API Keys. You also need credit on
+the account: Settings → Billing. $5 is the minimum and will last years at this
+volume.
+
+Without the key everything still works — reports are drafted with a plain
+templated summary instead of written commentary. The tracker says which you're
+getting.
+
+### What it costs
+
+About **20 reports a month**, roughly 1,500 tokens in and a few hundred out
+each, on `claude-opus-5` at $5/$25 per million tokens. That is **well under $1 a
+month** — realistically 30–65 cents. This is not a place to economise: a cheaper
+model to save forty cents on a document you send a paying advertiser is a bad
+trade.
+
+### The rule that makes this safe
+
+**Claude never produces a number.** Every figure in a report is measured or
+computed in `report-data.ts` and injected into the template. Claude is given
+those figures and writes commentary around them.
+
+That is then *enforced*, not merely instructed: every number in the draft is
+checked against the exact set of figures the model was shown. If it mentions
+anything else — a percentage it worked out, a total it estimated, a year it
+remembered — **the draft is thrown away** and replaced with the plain templated
+summary. The tracker shows which reports fell back, and why.
+
+Numbers inside words the model was shown are fine — "July 2026", "10am–11am", a
+business called 911 Repo. The test is *"was it shown this number"*, not *"is it
+a statistic"*.
+
+### Reviewing a draft
+
+Each card shows the real figures, the proposed wording, and whether Claude or
+the fallback wrote it. You can **edit the wording in place** before sending —
+edited text is marked as yours, not the model's.
+
+- **Approve & send** — emails the advertiser and marks it sent.
+- **Skip this one** — never sends; useful for someone who started mid-month.
+- **Draft last month now** — generate on demand instead of waiting for the 1st.
+  Safe to press twice; existing drafts are never overwritten or re-sent.
+
+### Keep the approval step for a while
+
+Read the first couple of months properly before trusting it. Once you have seen
+it get the tone right several times, we can switch to sending automatically —
+but a machine mailing something odd to a paying client on the first of the month
+while nobody is looking is exactly the failure worth spending a minute a month
+to avoid.
+
+### Files
+
+| File | What it does |
+|---|---|
+| `src/lib/ads/report-data.ts` | Every measured figure, and the set a narrative may use |
+| `src/lib/ads/narrative.ts` | The Claude call, and the guard that rejects invented numbers |
+| `src/lib/ads/reports.ts` | Drafts, edits, approval, sending |
+| `src/lib/ads/email.ts` | The report email |

@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { runRenewalCheck } from "@/lib/ads/renewals";
+import { runMonthlyReports } from "@/lib/ads/reports";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -33,6 +34,9 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const result = await runRenewalCheck("cron");
-  return NextResponse.json({ ok: true, ...result });
+  const renewals = await runRenewalCheck("cron");
+  // Only does anything on the first of the month; drafts, never sends.
+  const reports = await runMonthlyReports();
+
+  return NextResponse.json({ ok: true, renewals, reports });
 }

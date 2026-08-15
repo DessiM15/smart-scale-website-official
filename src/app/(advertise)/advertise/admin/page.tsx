@@ -30,10 +30,16 @@ import {
 import { isEmailConfigured } from "@/lib/ads/email";
 import { isLinkSigningConfigured } from "@/lib/ads/links";
 import { listResponses, type RenewalResponse } from "@/lib/ads/responses";
+import { listReports, type MonthlyReport } from "@/lib/ads/reports";
+import { isNarrativeConfigured } from "@/lib/ads/narrative";
 import {
   clearResponseAction,
   deleteAdvertiserAction,
+  editReportAction,
+  generateReportsAction,
   saveLinkAction,
+  sendReportAction,
+  skipReportAction,
   toggleLinkActiveAction,
   deleteProspectAction,
   runAlertsAction,
@@ -167,6 +173,13 @@ function Banner({
     linkSaved: "QR code updated.",
     linkOn: "QR code switched back on.",
     linkOff: "QR code retired. Scans now land on the advertise page.",
+    reportsDrafted:
+      Number(sent ?? 0) === 0
+        ? "No new reports to draft."
+        : `Drafted ${sent} report${sent === "1" ? "" : "s"} for review.`,
+    reportSent: "Report sent.",
+    reportSkipped: "Report skipped — it won't be sent.",
+    reportEdited: "Report wording updated.",
     alerts:
       Number(checked ?? 0) === 0
         ? "Renewal check ran — nothing due today."
@@ -186,6 +199,7 @@ function Banner({
     codemissing: `There's no QR code named "${detail}".`,
     logotype: "Logos must be a PNG, JPEG, WebP or SVG.",
     logosize: "That logo is over 200KB. Export a smaller version and try again.",
+    reportsend: detail ?? "Could not send that report.",
   };
 
   const text = err ? errors[err] : msg ? notices[msg] : undefined;
@@ -1039,6 +1053,191 @@ function QrCodes({
   );
 }
 
+
+/* ----------------------------- monthly reports ---------------------------- */
+
+function ReportCard({ report }: { report: MonthlyReport }) {
+  const f = report.facts;
+  const sent = report.status === "sent";
+  const skipped = report.status === "skipped";
+
+  return (
+    <li className="rounded-2xl border border-black/[0.08] bg-[#faf6f0] p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="font-semibold text-[#1a1210]">
+            {report.business}
+            <span className="font-normal text-[#7a6a5d]"> · {f.monthName}</span>
+          </p>
+          <p className="text-xs text-[#9a8b7d]">
+            to {report.email}
+            {report.narrative.source === "claude"
+              ? " · written by Claude"
+              : " · plain summary"}
+            {report.narrative.rejectedReason
+              ? ` (${report.narrative.rejectedReason})`
+              : ""}
+          </p>
+        </div>
+        <span
+          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+            sent
+              ? "bg-[#eef7ee] text-[#1f5130]"
+              : skipped
+                ? "bg-black/[0.05] text-[#9a8b7d]"
+                : "bg-[#fdf6e6] text-[#8a6d1f]"
+          }`}
+        >
+          {sent ? "Sent" : skipped ? "Skipped" : "Awaiting review"}
+        </span>
+      </div>
+
+      <div className="flex flex-wrap gap-5 mt-4 text-sm">
+        <span>
+          <strong className="text-[#1a1210] tabular-nums">{f.scans.toLocaleString()}</strong>{" "}
+          <span className="text-[#7a6a5d]">scans</span>
+        </span>
+        <span>
+          <strong className="text-[#1a1210] tabular-nums">{f.plays.toLocaleString()}</strong>{" "}
+          <span className="text-[#7a6a5d]">plays</span>
+        </span>
+        {f.changePercent !== null && (
+          <span className="text-[#7a6a5d]">
+            {f.changePercent >= 0 ? "up" : "down"} {Math.abs(f.changePercent)}% on{" "}
+            {f.previousScans}
+          </span>
+        )}
+      </div>
+
+      {sent ? (
+        <div className="mt-4 text-sm text-[#5c4f45]">
+          <p className="font-semibold text-[#1a1210]">{report.narrative.headline}</p>
+          <p className="mt-1">{report.narrative.body}</p>
+        </div>
+      ) : (
+        <form action={editReportAction} className="mt-4 space-y-3">
+          <input type="hidden" name="advertiserId" value={report.advertiserId} />
+          <input type="hidden" name="month" value={report.month} />
+          <input
+            name="headline"
+            defaultValue={report.narrative.headline}
+            className={inputClass}
+            aria-label="Report headline"
+          />
+          <textarea
+            name="body"
+            rows={3}
+            defaultValue={report.narrative.body}
+            className={inputClass}
+            aria-label="Report wording"
+          />
+          <button
+            type="submit"
+            className="text-xs font-semibold text-[#7a6a5d] hover:text-[#1a1210]"
+          >
+            Save wording
+          </button>
+        </form>
+      )}
+
+      {!sent && !skipped && (
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <form action={sendReportAction}>
+            <input type="hidden" name="advertiserId" value={report.advertiserId} />
+            <input type="hidden" name="month" value={report.month} />
+            <button
+              type="submit"
+              className="rounded-xl bg-[#DC2626] text-white text-sm font-semibold px-5 py-2.5 hover:bg-[#b91c1c] transition-colors"
+            >
+              Approve &amp; send
+            </button>
+          </form>
+          <form action={skipReportAction}>
+            <input type="hidden" name="advertiserId" value={report.advertiserId} />
+            <input type="hidden" name="month" value={report.month} />
+            <button type="submit" className="text-xs text-[#9a8b7d] hover:text-[#DC2626]">
+              Skip this one
+            </button>
+          </form>
+          <span className="text-xs text-[#9a8b7d]">
+            Read it first — this goes straight to the advertiser.
+          </span>
+        </div>
+      )}
+    </li>
+  );
+}
+
+function MonthlyReports({ reports }: { reports: MonthlyReport[] }) {
+  const waiting = reports.filter((r) => r.status === "draft");
+  const rest = reports.filter((r) => r.status !== "draft").slice(0, 6);
+  const aiOn = isNarrativeConfigured();
+
+  return (
+    <section
+      id="reports"
+      className="rounded-3xl bg-white border border-black/[0.06] shadow-lg shadow-black/[0.04] p-6 sm:p-8 mb-6"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold text-[#1a1210]">Monthly reports</h2>
+          <p className="mt-1 text-sm text-[#7a6a5d]">
+            Drafted on the first of each month. Every figure is measured — the
+            wording is written for you, and nothing sends until you approve it.
+          </p>
+        </div>
+        <form action={generateReportsAction}>
+          <button
+            type="submit"
+            className="rounded-xl bg-[#1a1210] text-white text-sm font-semibold px-5 py-2.5 hover:bg-black transition-colors"
+          >
+            Draft last month now
+          </button>
+        </form>
+      </div>
+
+      <div className="mt-4 mb-6">
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+            aiOn ? "bg-[#eef7ee] text-[#1f5130]" : "bg-[#f3efe8] text-[#7a6a5d]"
+          }`}
+        >
+          {aiOn ? "Claude is writing the commentary" : "Plain summaries (no ANTHROPIC_API_KEY)"}
+        </span>
+      </div>
+
+      {waiting.length === 0 && rest.length === 0 ? (
+        <p className="text-sm text-[#9a8b7d]">
+          No reports yet. They appear on the first of the month for every active
+          advertiser who has an email address and a QR code.
+        </p>
+      ) : (
+        <>
+          {waiting.length > 0 && (
+            <ul className="space-y-4">
+              {waiting.map((r) => (
+                <ReportCard key={`${r.advertiserId}-${r.month}`} report={r} />
+              ))}
+            </ul>
+          )}
+          {rest.length > 0 && (
+            <details className={waiting.length > 0 ? "mt-6" : ""}>
+              <summary className="cursor-pointer text-sm font-semibold text-[#7a6a5d] hover:text-[#1a1210]">
+                Already handled ({rest.length})
+              </summary>
+              <ul className="space-y-4 mt-4">
+                {rest.map((r) => (
+                  <ReportCard key={`${r.advertiserId}-${r.month}`} report={r} />
+                ))}
+              </ul>
+            </details>
+          )}
+        </>
+      )}
+    </section>
+  );
+}
+
 /* --------------------------------- the page -------------------------------- */
 
 export default async function AdminPage({
@@ -1074,6 +1273,7 @@ export default async function AdminPage({
       isRedisReachable(),
       listLinks(),
     ]);
+  const reports = await listReports();
 
   const links: LinkView[] = await Promise.all(
     rawLinks.map(async (link) => ({
@@ -1275,6 +1475,8 @@ export default async function AdminPage({
             </div>
           )}
         </section>
+
+        <MonthlyReports reports={reports} />
 
         <QrCodes links={links} editing={editingLink} />
 

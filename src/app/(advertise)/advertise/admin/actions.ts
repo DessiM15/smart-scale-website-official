@@ -6,6 +6,12 @@ import { isSignedIn, signIn, signOut } from "@/lib/ads/auth";
 import { runRenewalCheck } from "@/lib/ads/renewals";
 import { clearResponse } from "@/lib/ads/responses";
 import {
+  generateReports,
+  sendReport,
+  skipReport,
+  updateNarrative,
+} from "@/lib/ads/reports";
+import {
   getLink,
   normalizeCode,
   saveLink,
@@ -227,4 +233,44 @@ export async function toggleLinkActiveAction(data: FormData) {
   if (!(await setLinkActive(code, active))) back({ err: "save" });
   revalidatePath(PAGE);
   back({ msg: active ? "linkOn" : "linkOff", who: code });
+}
+
+/* ---------------------------- monthly reports ---------------------------- */
+
+export async function generateReportsAction(data: FormData) {
+  await requireAdmin();
+  const month = field(data, "month") || undefined;
+  const result = await generateReports(month);
+  revalidatePath(PAGE);
+  back({ msg: "reportsDrafted", sent: String(result.created), checked: String(result.skipped) });
+}
+
+export async function sendReportAction(data: FormData) {
+  await requireAdmin();
+  const result = await sendReport(field(data, "advertiserId"), field(data, "month"));
+  if (!result.ok) back({ err: "reportsend", detail: result.error ?? "" });
+  revalidatePath(PAGE);
+  back({ msg: "reportSent" });
+}
+
+export async function skipReportAction(data: FormData) {
+  await requireAdmin();
+  if (!(await skipReport(field(data, "advertiserId"), field(data, "month")))) {
+    back({ err: "save" });
+  }
+  revalidatePath(PAGE);
+  back({ msg: "reportSkipped" });
+}
+
+export async function editReportAction(data: FormData) {
+  await requireAdmin();
+  const ok = await updateNarrative(
+    field(data, "advertiserId"),
+    field(data, "month"),
+    field(data, "headline"),
+    field(data, "body"),
+  );
+  if (!ok) back({ err: "save" });
+  revalidatePath(PAGE);
+  back({ msg: "reportEdited" });
 }
