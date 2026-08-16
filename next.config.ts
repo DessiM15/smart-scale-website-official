@@ -11,10 +11,19 @@ const nextConfig: NextConfig = {
     // Add image sizes for different layouts
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
-  // Permanent (301) redirects preserve the link equity of the old URLs after
-  // the /what-we-do -> /services and /company -> /about renames.
+  // Host and path redirects. All are permanent (308) so search engines
+  // transfer ranking signals to the destination.
   async redirects() {
     return [
+      // Send www to the apex. Both hostnames serving the same pages would
+      // split ranking signals between two URLs for every page on the site;
+      // a 308 consolidates them onto the canonical apex domain.
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.smartscaleagent.com" }],
+        destination: "https://smartscaleagent.com/:path*",
+        permanent: true,
+      },
       { source: "/what-we-do", destination: "/services", permanent: true },
       { source: "/company", destination: "/about", permanent: true },
     ];
