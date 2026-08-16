@@ -22,11 +22,15 @@ export const BUSINESS = {
     href: "tel:+18327905001",
     e164: "+18327905001",
   },
-  /** Where the business is based. No streetAddress — service-area business. */
+  /**
+   * Where the business is based. Service-area business with the address
+   * hidden on the Google Business Profile, so no streetAddress and no
+   * postalCode — asserting either would claim a precision the listing
+   * deliberately withholds, and Google cross-checks the two.
+   */
   locality: "Katy",
   region: "TX",
   country: "US",
-  postalCode: "77494",
   /** Approximate centroid of the service area, for geo schema. */
   geo: { latitude: 29.7858, longitude: -95.8245 },
   priceRange: "$$",

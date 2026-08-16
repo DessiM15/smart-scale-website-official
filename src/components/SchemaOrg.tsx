@@ -23,12 +23,12 @@ export default function SchemaOrg() {
     telephone: BUSINESS.phone.e164,
     email: BUSINESS.email,
     priceRange: BUSINESS.priceRange,
-    // Service-area business: locality only, no streetAddress, matching the GBP.
+    // Service-area business: city and state only. The GBP hides the street
+    // address, so the schema must not assert one either.
     address: {
       "@type": "PostalAddress",
       addressLocality: BUSINESS.locality,
       addressRegion: BUSINESS.region,
-      postalCode: BUSINESS.postalCode,
       addressCountry: BUSINESS.country,
     },
     geo: {
