@@ -6,6 +6,7 @@ import TextConsentForm from "@/components/TextConsentForm";
 import VerificationModal from "@/components/VerificationModal";
 import Link from "next/link";
 import RedSeparator from "@/components/ui/RedSeparator";
+import { BUSINESS } from "@/lib/business";
 
 export default function Contact() {
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
@@ -22,11 +23,11 @@ export default function Contact() {
       <section data-theme="light" className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 bg-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <h1 className="text-5xl sm:text-6xl md:text-7xl mb-6 text-[#111111]" data-animate="word-reveal">
-            Start a Conversation
+            Let&apos;s Talk About Your Website
           </h1>
           <p className="text-lg sm:text-xl text-black/50 max-w-3xl mx-auto mb-8 hero-subheadline">
-            Every great partnership begins with a conversation. Tell us about
-            your vision and we&apos;ll explore how we can bring it to life.
+            Tell us about your business and we&apos;ll show you exactly what
+            we&apos;d do. No pressure, no jargon.
           </p>
           <div className="flex justify-center">
             <Link
@@ -62,10 +63,10 @@ export default function Contact() {
                     Email
                   </h3>
                   <a
-                    href="mailto:project@ssl-mail.com"
+                    href="mailto:info@smartscaleagent.com"
                     className="text-white/70 hover:text-white transition-colors duration-300 text-lg"
                   >
-                    project@ssl-mail.com
+                    info@smartscaleagent.com
                   </a>
                 </div>
                 <div>
@@ -73,17 +74,20 @@ export default function Contact() {
                     Phone
                   </h3>
                   <div className="space-y-2">
+                    {/* The Google Business Profile number leads, and comes from
+                        the shared constant so it can never drift from the
+                        footer NAP or the schema. */}
                     <a
-                      href="tel:8324070773"
+                      href={BUSINESS.phone.href}
+                      className="text-white/70 hover:text-white transition-colors duration-300 text-lg block"
+                    >
+                      Dee: {BUSINESS.phone.display}
+                    </a>
+                    <a
+                      href="tel:+18324070773"
                       className="text-white/70 hover:text-white transition-colors duration-300 text-lg block"
                     >
                       Jay: 832.407.0773
-                    </a>
-                    <a
-                      href="tel:8327905001"
-                      className="text-white/70 hover:text-white transition-colors duration-300 text-lg block"
-                    >
-                      Dee: 832.790.5001
                     </a>
                   </div>
                 </div>
@@ -91,7 +95,9 @@ export default function Contact() {
                   <h3 className="text-sm uppercase tracking-widest text-white/40 mb-2">
                     Location
                   </h3>
-                  <p className="text-white/50 text-lg">Texas, United States</p>
+                  <p className="text-white/50 text-lg">
+                    Katy, TX &mdash; serving the Houston metro
+                  </p>
                 </div>
               </div>
             </div>

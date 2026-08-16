@@ -3,6 +3,7 @@ import { Inter, Playfair_Display, Bebas_Neue, Shadows_Into_Light } from "next/fo
 import "./globals.css";
 import SmoothScrollProvider from "@/components/SmoothScrollProvider";
 import SchemaOrg from "@/components/SchemaOrg";
+import { SITE_URL } from "@/lib/business";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,45 +30,38 @@ const shadowsIntoLight = Shadows_Into_Light({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://smartscaleagent.com"),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Smart Scale | Precision Software for Enterprise",
+    default: "Website Design in Katy & Houston, TX | Smart Scale",
     template: "%s | Smart Scale",
   },
   description:
-    "Precision-engineered enterprise software, AI systems, and digital platforms. Architected for growth, built without compromise.",
-  keywords: [
-    "enterprise software development",
-    "AI systems",
-    "custom software",
-    "digital transformation",
-    "web applications",
-    "mobile development",
-    "enterprise platforms",
-    "software consultancy",
-  ],
+    "Custom websites for local businesses across Katy, Cypress, and Houston. Built fast, built to get you found on Google. See our work.",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://smartscaleagent.com",
+    url: SITE_URL,
     siteName: "Smart Scale",
-    title: "Smart Scale | Precision Software for Enterprise",
+    title: "Website Design in Katy & Houston, TX | Smart Scale",
     description:
-      "Precision-engineered enterprise software, AI systems, and digital platforms. Architected for growth, built without compromise.",
+      "Custom websites for local businesses across Katy, Cypress, and Houston. Built fast, built to get you found on Google.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Smart Scale - Precision Software for Enterprise",
+        alt: "Smart Scale \u2014 website design for Houston-area businesses",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Smart Scale | Precision Software for Enterprise",
+    title: "Website Design in Katy & Houston, TX | Smart Scale",
     description:
-      "Precision-engineered enterprise software, AI systems, and digital platforms.",
+      "Custom websites for local businesses across Katy, Cypress, and Houston.",
     images: ["/og-image.png"],
   },
   robots: {

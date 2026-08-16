@@ -1,49 +1,64 @@
-"use client";
-
-import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
+/**
+ * "What We Build" — the homepage service grid.
+ *
+ * Rendered from a single markup block. The previous version shipped two
+ * copies of every card (a desktop flex row and a mobile grid), so each
+ * heading appeared twice in the DOM. Layout now switches with CSS only,
+ * which also lets this be a server component: the hover-to-expand effect
+ * is pure CSS, so it needs no client JS.
+ */
 const capabilities = [
   {
-    title: "Web Applications",
+    title: "Business Websites",
     description:
-      "Full-stack platforms built for performance, security, and scale.",
-    image: "/assets/portfolio/botmakers-crm/thumbnail.webp",
+      "Fast, mobile-first sites that turn visitors into phone calls. Most builds go live in under two weeks.",
+    href: "/services/web-development",
+    image: "/assets/portfolio/taylor-made-esthetics/taylor-made-esthetician-website-design.webp",
+    logo: "/assets/client-logos/taylor-made-esthetics.png",
+    alt: "Taylor Made Esthetics website homepage, built by Smart Scale",
+  },
+  {
+    title: "Local Visibility",
+    description:
+      "Google Business Profile management, local SEO, and monthly optimization so customers find you first.",
+    href: "/services",
+    image: "/assets/portfolio/mex-taco-house/mex-taco-house-restaurant-website-design.webp",
+    logo: "/assets/client-logos/mex-taco-house.png",
+    alt: "Mex Taco House restaurant website, built by Smart Scale in Houston",
+  },
+  {
+    title: "Custom Software & CRM",
+    description:
+      "Tools built around how your business actually runs: scheduling, quoting, customer tracking.",
+    href: "/services/enterprise-systems",
+    image: "/assets/portfolio/botmakers-crm/botmakers-custom-crm-platform.webp",
     logo: "/assets/client-logos/botmakers.png",
+    alt: "Botmakers CRM dashboard showing client pipeline and invoicing",
   },
   {
-    title: "Mobile",
+    title: "Mobile Apps",
     description:
-      "Native and cross-platform apps that deliver seamless experiences.",
-    image: "/assets/portfolio/bloxify-landing/thumbnail.webp",
+      "iOS and Android apps for when a website isn't enough.",
+    href: "/services/mobile-development",
+    image: "/assets/portfolio/bloxify-landing/bloxify-app-landing-page-design.webp",
     logo: "/assets/client-logos/bloxify.png",
+    alt: "Bloxify mobile app landing page with app store download links",
   },
   {
-    title: "AI Systems",
+    title: "Automation & AI",
     description:
-      "Intelligent automation, NLP, and machine learning solutions.",
-    image: "/assets/portfolio/repo911/thumbnail.webp",
+      "Systems that handle the busywork: follow-ups, review requests, lead routing.",
+    href: "/services/ai-enhancement-ai-workflows",
+    image: "/assets/portfolio/repo911/repo911-case-management-platform.webp",
     logo: "/assets/client-logos/repo911.svg",
-  },
-  {
-    title: "Enterprise Platforms",
-    description:
-      "Mission-critical systems engineered for reliability at scale.",
-    image: "/assets/portfolio/gulf-coast-alloys/thumbnail.webp",
-    logo: "/assets/client-logos/gulf-coast-alloys.png",
-  },
-  {
-    title: "Digital Strategy",
-    description:
-      "Technical architecture and roadmap consulting for growth.",
-    image: "/assets/portfolio/valor-financial/thumbnail.webp",
-    logo: "/assets/client-logos/valor-financial.png",
+    alt: "Repo911 case management platform with AI-powered document analysis",
   },
 ];
 
 export default function Capabilities() {
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
-
   return (
     <section className="py-32 px-4 sm:px-6 lg:px-8 bg-white" data-theme="light">
       <div className="max-w-7xl mx-auto">
@@ -51,146 +66,77 @@ export default function Capabilities() {
           className="text-4xl sm:text-5xl md:text-6xl text-[#111111] text-center mb-4"
           data-animate="word-reveal"
         >
-          Capabilities
+          What We Build
         </h2>
         <p
           className="text-center text-black/50 text-lg mb-20 max-w-2xl mx-auto"
           data-animate="fade-up"
         >
-          End-to-end engineering for businesses that demand excellence.
+          Everything a local business needs to get found, look credible, and
+          win the customer.
         </p>
 
-        {/* Desktop: Expanding vertical columns */}
+        {/*
+          One list, two layouts. Below lg it is a stacked grid of fixed-height
+          cards. At lg and up it becomes a row where each panel expands on
+          hover — driven entirely by `flex-grow` transitions and the
+          `group-hover`/`hover` pair, no state required.
+        */}
         <div
-          className="hidden lg:flex h-[520px] gap-[2px] rounded-2xl overflow-hidden"
+          className="group grid grid-cols-1 sm:grid-cols-2 gap-4 lg:flex lg:h-[520px] lg:gap-[2px] lg:rounded-2xl lg:overflow-hidden"
           data-animate="fade-up"
-          onMouseLeave={() => setActiveIndex(null)}
-        >
-          {capabilities.map((cap, index) => {
-            const isActive = activeIndex === index;
-            const isAnyActive = activeIndex !== null;
-
-            return (
-              <div
-                key={cap.title}
-                className="relative overflow-hidden cursor-pointer"
-                style={{
-                  flex: isActive ? 4 : isAnyActive ? 0.6 : 1,
-                  transition: "flex 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
-                }}
-                onMouseEnter={() => setActiveIndex(index)}
-              >
-                {/* Background image — hidden by default, revealed on hover */}
-                <Image
-                  src={cap.image}
-                  alt={cap.title}
-                  fill
-                  className="object-cover transition-all duration-700 ease-out"
-                  style={{
-                    transform: isActive ? "scale(1.05)" : "scale(1)",
-                    opacity: isActive ? 1 : 0,
-                  }}
-                  sizes="(max-width: 1024px) 100vw, 33vw"
-                />
-
-                {/* Solid light background — visible by default */}
-                <div
-                  className="absolute inset-0 transition-opacity duration-700"
-                  style={{
-                    background: "#F0F0F0",
-                    opacity: isActive ? 0 : 1,
-                  }}
-                />
-
-                {/* Dark overlay for screenshot on hover */}
-                <div
-                  className="absolute inset-0 transition-all duration-600"
-                  style={{
-                    background: isActive
-                      ? "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.2) 100%)"
-                      : "transparent",
-                  }}
-                />
-
-                {/* Subtle red accent line on active */}
-                <div
-                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#DC2626] transition-opacity duration-500"
-                  style={{ opacity: isActive ? 1 : 0 }}
-                />
-
-                {/* Client logo + capability label — visible by default, fades on hover */}
-                <div
-                  className="absolute inset-0 flex flex-col items-center justify-center p-6 transition-opacity duration-500"
-                  style={{ opacity: isActive ? 0 : 1 }}
-                >
-                  <div className="flex-1 flex items-center justify-center">
-                    <Image
-                      src={cap.logo}
-                      alt={cap.title}
-                      width={120}
-                      height={60}
-                      className="object-contain max-h-16 w-auto brightness-0 opacity-40"
-                    />
-                  </div>
-                  <p className="text-[#111111]/40 text-xs uppercase tracking-widest font-medium pb-4">
-                    {cap.title}
-                  </p>
-                </div>
-
-                {/* Content — revealed on hover */}
-                <div className="absolute inset-0 flex flex-col justify-end p-6">
-                  <h3
-                    className="text-white font-medium transition-all duration-500 whitespace-nowrap"
-                    style={{
-                      fontSize: isActive ? "1.75rem" : "0",
-                      opacity: isActive ? 1 : 0,
-                      marginBottom: isActive ? "0.75rem" : "0",
-                    }}
-                  >
-                    {cap.title}
-                  </h3>
-                  <p
-                    className="text-white/60 leading-relaxed transition-all duration-500"
-                    style={{
-                      opacity: isActive ? 1 : 0,
-                      maxHeight: isActive ? "80px" : "0",
-                      fontSize: "0.875rem",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {cap.description}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Mobile/Tablet: Stacked cards with logos */}
-        <div
-          className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:hidden"
-          data-animate="scale-reveal"
         >
           {capabilities.map((cap) => (
-            <div
+            <Link
               key={cap.title}
-              className="group relative h-52 rounded-2xl overflow-hidden"
+              href={cap.href}
+              className="cap-panel relative block h-52 overflow-hidden rounded-2xl lg:h-auto lg:rounded-none lg:flex-1 lg:[transition:flex-grow_0.6s_cubic-bezier(0.4,0,0.2,1)] lg:group-hover:flex-grow-[0.6] lg:hover:!flex-grow-[4]"
             >
               <Image
                 src={cap.image}
-                alt={cap.title}
+                alt={cap.alt}
                 fill
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                sizes="(max-width: 640px) 100vw, 50vw"
+                className="object-cover transition-all duration-700 ease-out lg:opacity-0 lg:[.cap-panel:hover_&]:opacity-100 lg:[.cap-panel:hover_&]:scale-105"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
-              <div className="absolute inset-0 flex flex-col justify-end p-5">
-                <h3 className="text-lg text-white mb-1">{cap.title}</h3>
-                <p className="text-xs text-white/50 leading-relaxed">
+
+              {/* Light plate shown at rest on desktop; hidden on mobile where
+                  the screenshot is always visible. */}
+              <div className="hidden lg:block absolute inset-0 bg-[#F0F0F0] transition-opacity duration-700 [.cap-panel:hover_&]:opacity-0" />
+
+              {/* Readability scrim over the screenshot. */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20 lg:opacity-0 lg:transition-opacity lg:duration-700 lg:[.cap-panel:hover_&]:opacity-100" />
+
+              {/* Red accent, desktop hover only. */}
+              <div className="hidden lg:block absolute bottom-0 inset-x-0 h-[2px] bg-[#DC2626] opacity-0 transition-opacity duration-500 [.cap-panel:hover_&]:opacity-100" />
+
+              {/* Resting state on desktop: client logo above the label. */}
+              <div className="hidden lg:flex absolute inset-0 flex-col items-center justify-center p-6 transition-opacity duration-500 [.cap-panel:hover_&]:opacity-0">
+                <div className="flex-1 flex items-center justify-center">
+                  <Image
+                    src={cap.logo}
+                    alt=""
+                    aria-hidden="true"
+                    width={120}
+                    height={60}
+                    className="object-contain max-h-16 w-auto brightness-0 opacity-40"
+                  />
+                </div>
+                <span className="text-[#111111]/40 text-xs uppercase tracking-widest font-medium pb-4">
+                  {cap.title}
+                </span>
+              </div>
+
+              {/* The single copy of each heading in the DOM. */}
+              <div className="absolute inset-0 flex flex-col justify-end p-5 lg:p-6">
+                <h3 className="text-lg lg:text-2xl xl:text-[1.75rem] text-white mb-1 lg:mb-3 lg:whitespace-nowrap lg:opacity-0 lg:transition-opacity lg:duration-500 lg:[.cap-panel:hover_&]:opacity-100">
+                  {cap.title}
+                </h3>
+                <p className="text-xs lg:text-sm text-white/60 leading-relaxed lg:opacity-0 lg:transition-opacity lg:duration-500 lg:[.cap-panel:hover_&]:opacity-100">
                   {cap.description}
                 </p>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

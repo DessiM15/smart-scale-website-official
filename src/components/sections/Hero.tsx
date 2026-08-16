@@ -89,7 +89,7 @@ export default function Hero() {
             ref={subtitleRef}
             className="text-xs sm:text-sm uppercase tracking-[0.25em] text-black/50 font-light opacity-0"
           >
-            Precision Software for Enterprise
+            Web Design &amp; Local SEO &mdash; Katy, TX
           </p>
 
           <div
@@ -98,13 +98,23 @@ export default function Hero() {
           >
             <Image
               src="/assets/smart-scale-logo-official.png"
-              alt="Smart Scale"
+              alt="Smart Scale web design agency logo"
               width={800}
               height={800}
-              className="w-full max-w-[600px] lg:max-w-[720px] h-auto"
+              className="w-full max-w-[420px] lg:max-w-[520px] h-auto"
               priority
-              sizes="(max-width: 1024px) 100vw, 720px"
+              sizes="(max-width: 1024px) 100vw, 520px"
             />
+            {/* The page's single H1. Previously the hero rendered only the
+                logo image, leaving the homepage with no H1 for crawlers. */}
+            <h1 className="mt-8 text-3xl sm:text-4xl lg:text-5xl text-[#111111] leading-[1.1] max-w-[16ch]">
+              Websites That Get Houston Businesses Found
+            </h1>
+            <p className="mt-5 text-base sm:text-lg text-black/55 leading-relaxed max-w-[46ch]">
+              We build fast, mobile-first websites for local businesses across
+              Katy, Cypress, Houston, Sugar Land, Richmond, and Fulshear &mdash;
+              then keep them ranking.
+            </p>
           </div>
         </div>
 
@@ -127,10 +137,10 @@ export default function Hero() {
                   <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-[#F0F0F0]">
                     <Image
                       src={project.thumbnailImage}
-                      alt={project.title}
+                      alt={`${project.title} website designed by Smart Scale \u2014 ${project.industry}`}
                       fill
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="(max-width: 1024px) 100vw, 40vw"
+                      sizes="(max-width: 1024px) 100vw, 512px"
                     />
                   </div>
                   <p className="mt-3 text-sm text-black/60 group-hover:text-black transition-colors duration-300">

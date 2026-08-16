@@ -55,7 +55,7 @@ export default function ServicePageClient({ slug }: ServicePageClientProps) {
               {service.title}
             </h1>
             <p className="text-lg text-black/50 max-w-3xl mb-8 hero-subheadline">
-              Precision-engineered {service.title.toLowerCase()} built for performance, reliability, and scale.
+              {service.title} for businesses across Katy, Cypress, Houston, and the wider Houston metro.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link

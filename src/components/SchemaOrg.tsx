@@ -1,94 +1,80 @@
+import { BUSINESS, SERVICE_AREAS, SITE_URL, SOCIALS } from "@/lib/business";
+
+/**
+ * Site-wide structured data.
+ *
+ * Deliberately does NOT emit Review or AggregateRating. Google disallows
+ * self-serving review markup — reviews about your own business, hosted on
+ * your own domain — and strips the rich result when it finds it. The star
+ * rating in search comes from the Google Business Profile, not from here.
+ */
 export default function SchemaOrg() {
-  const organizationSchema = {
+  const professionalService = {
     "@context": "https://schema.org",
-    "@type": "Organization",
-    name: "Smart Scale",
-    url: "https://smartscalesoftware.com",
-    logo: "https://smartscalesoftware.com/assets/smart-scale-logo-official.png",
+    "@type": "ProfessionalService",
+    "@id": `${SITE_URL}/#business`,
+    name: BUSINESS.name,
+    legalName: BUSINESS.legalName,
+    url: SITE_URL,
+    logo: `${SITE_URL}/assets/smart-scale-logo-official.png`,
+    image: `${SITE_URL}/og-image.png`,
     description:
-      "Precision-engineered enterprise software, AI systems, and digital platforms.",
+      "Website design and local SEO for small businesses across Katy, Cypress, Houston, Sugar Land, Richmond, and Fulshear, Texas.",
+    telephone: BUSINESS.phone.e164,
+    email: BUSINESS.email,
+    priceRange: BUSINESS.priceRange,
+    // Service-area business: locality only, no streetAddress, matching the GBP.
     address: {
       "@type": "PostalAddress",
-      addressRegion: "TX",
-      addressCountry: "US",
+      addressLocality: BUSINESS.locality,
+      addressRegion: BUSINESS.region,
+      postalCode: BUSINESS.postalCode,
+      addressCountry: BUSINESS.country,
     },
-    contactPoint: {
-      "@type": "ContactPoint",
-      email: "project@ssl-mail.com",
-      contactType: "sales",
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: BUSINESS.geo.latitude,
+      longitude: BUSINESS.geo.longitude,
     },
-    sameAs: [],
+    areaServed: SERVICE_AREAS.map((city) => ({
+      "@type": "City",
+      name: `${city.name}, TX`,
+    })),
+    sameAs: SOCIALS.map((s) => s.url),
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: "Web Design & Local SEO Services",
+      itemListElement: [
+        "Business Websites",
+        "Local SEO & Google Business Profile Management",
+        "Custom Software & CRM",
+        "Mobile Apps",
+        "Automation & AI",
+      ].map((name) => ({
+        "@type": "Offer",
+        itemOffered: { "@type": "Service", name },
+      })),
+    },
   };
 
-  const serviceSchema = {
+  const website = {
     "@context": "https://schema.org",
-    "@type": "Service",
-    serviceType: "Software Development",
-    provider: {
-      "@type": "Organization",
-      name: "Smart Scale",
-    },
-    description:
-      "Enterprise software development, AI systems, web applications, mobile development, and digital strategy consulting.",
-    areaServed: "US",
-  };
-
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: "https://smartscalesoftware.com",
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: "Work",
-        item: "https://smartscalesoftware.com/portfolio",
-      },
-      {
-        "@type": "ListItem",
-        position: 3,
-        name: "Services",
-        item: "https://smartscalesoftware.com/what-we-do",
-      },
-      {
-        "@type": "ListItem",
-        position: 4,
-        name: "About",
-        item: "https://smartscalesoftware.com/company",
-      },
-      {
-        "@type": "ListItem",
-        position: 5,
-        name: "Contact",
-        item: "https://smartscalesoftware.com/contact",
-      },
-    ],
+    "@type": "WebSite",
+    "@id": `${SITE_URL}/#website`,
+    url: SITE_URL,
+    name: BUSINESS.name,
+    publisher: { "@id": `${SITE_URL}/#business` },
   };
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(organizationSchema),
-        }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(professionalService) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(serviceSchema),
-        }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(breadcrumbSchema),
-        }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(website) }}
       />
     </>
   );

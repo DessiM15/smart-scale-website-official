@@ -8,6 +8,13 @@ export interface Project {
   clientName: string;
   serviceType: ServiceType;
   industry: string;
+  /**
+   * Local-SEO fields. Optional on purpose: only populated where the client's
+   * city and category are actually known. Guessing a city here would put a
+   * fabricated business fact into a public page title.
+   */
+  businessType?: string;
+  city?: string;
   techStack: string[];
   description: string;
   shortDescription: string;
@@ -67,7 +74,7 @@ export const projects: Project[] = [
     description:
       "Bloxify is a premium mobile block-puzzle game built around fair play — satisfying drop-and-clear gameplay, fair RNG (no rigged piece bags), and no forced ads. It pairs a relaxing core loop with a full 360-level adventure campaign, a live seasonal system, and an original soundtrack. Available on Android (Google Play), with iOS in development.",
     shortDescription: "Premium block-puzzle game — Drop. Clear. Climb.",
-    thumbnailImage: "/assets/portfolio/bloxify/thumbnail.webp",
+    thumbnailImage: "/assets/portfolio/bloxify/bloxify-gaming-mobile-app-design.webp",
     githubUrl: "https://github.com/DessiM15/Bloxify",
     caseStudy: {
       challenge:
@@ -94,7 +101,7 @@ export const projects: Project[] = [
     description:
       "A high-converting landing page for the Bloxify mobile game, designed to drive Google Play downloads and communicate the game's core value: fair-play block-puzzle gameplay with no forced ads.",
     shortDescription: "Landing page for the Bloxify block-puzzle game.",
-    thumbnailImage: "/assets/portfolio/bloxify-landing/thumbnail.webp",
+    thumbnailImage: "/assets/portfolio/bloxify-landing/bloxify-app-landing-page-design.webp",
     vercelUrl: "https://bloxify.app",
     githubUrl: "https://github.com/DessiM15/bloxify-landing",
     caseStudy: {
@@ -112,6 +119,8 @@ export const projects: Project[] = [
   },
   {
     slug: "the-houston-barber",
+    businessType: "Barbershop",
+    city: "Houston, TX",
     title: "The Houston Barber",
     clientName: "The Houston Barber",
     serviceType: "Website",
@@ -120,7 +129,7 @@ export const projects: Project[] = [
     description:
       "A concept website built for a high-end barbershop, showing how a grooming business can let clients book services directly on their own site. Built in a cinematic black-and-gold theme with an embedded StyleSeat booking flow — clients view real availability and book appointments without leaving the site, and the booking page integrates with the shop's existing StyleSeat system rather than replacing it.",
     shortDescription: "Concept barbershop website with direct in-site booking.",
-    thumbnailImage: "/assets/portfolio/the-houston-barber/thumbnail.webp",
+    thumbnailImage: "/assets/portfolio/the-houston-barber/houston-barbershop-website-design.webp",
     vercelUrl: "https://barber-website-mock.vercel.app",
     githubUrl: "https://github.com/DessiM15/barber-website-mock",
     featured: true,
@@ -141,6 +150,8 @@ export const projects: Project[] = [
   },
   {
     slug: "gulf-coast-alloys",
+    businessType: "Industrial",
+    city: "Houston, TX",
     title: "Gulf Coast Alloys",
     clientName: "Gulf Coast Alloys",
     serviceType: "Website",
@@ -149,7 +160,7 @@ export const projects: Project[] = [
     description:
       "A corporate website for a specialty metals and alloys distributor, showcasing their product catalog, capabilities, and industry expertise to B2B buyers.",
     shortDescription: "Industrial metals distributor corporate website.",
-    thumbnailImage: "/assets/portfolio/gulf-coast-alloys/thumbnail.webp",
+    thumbnailImage: "/assets/portfolio/gulf-coast-alloys/gulf-coast-alloys-industrial-website-design.webp",
     vercelUrl: "https://gca-2-blond.vercel.app",
     githubUrl: "https://github.com/DessiM15/GCA2",
     featured: true,
@@ -177,7 +188,7 @@ export const projects: Project[] = [
     description:
       "A full-featured CRM platform built for Botmakers.ai, managing client relationships, project pipelines, invoicing, and team collaboration for an AI development agency.",
     shortDescription: "Full-featured CRM for an AI development agency.",
-    thumbnailImage: "/assets/portfolio/botmakers-crm/thumbnail.webp",
+    thumbnailImage: "/assets/portfolio/botmakers-crm/botmakers-custom-crm-platform.webp",
     vercelUrl: "https://botmakers-crm.vercel.app",
     githubUrl: "https://github.com/DessiM15/botmakers-crm",
     caseStudy: {
@@ -203,7 +214,7 @@ export const projects: Project[] = [
     description:
       "The corporate website for Botmakers.ai, an AI development agency. Features AI-powered chatbot integration, service showcases, and conversion-optimized design for enterprise clients.",
     shortDescription: "AI development agency website with chatbot integration.",
-    thumbnailImage: "/assets/portfolio/botmakers-website/thumbnail.webp",
+    thumbnailImage: "/assets/portfolio/botmakers-website/botmakers-ai-agency-website-design.webp",
     vercelUrl: "https://botmakers.ai",
     githubUrl: "https://github.com/DessiM15/botmakers-website",
     isAIPowered: true,
@@ -222,6 +233,8 @@ export const projects: Project[] = [
   },
   {
     slug: "taylor-made-esthetics",
+    businessType: "Esthetician",
+    city: "Houston, TX",
     title: "Taylor Made Esthetics",
     clientName: "Taylor Made Esthetics",
     serviceType: "Website",
@@ -230,7 +243,7 @@ export const projects: Project[] = [
     description:
       "A premium website for an esthetics studio, featuring service menus, online booking integration, before/after galleries, and a design aesthetic that matches the luxury brand experience.",
     shortDescription: "Premium esthetics studio website with booking integration.",
-    thumbnailImage: "/assets/portfolio/taylor-made-esthetics/thumbnail.webp",
+    thumbnailImage: "/assets/portfolio/taylor-made-esthetics/taylor-made-esthetician-website-design.webp",
     vercelUrl: "https://taylor-made-esthetics.vercel.app",
     githubUrl: "https://github.com/DessiM15/taylor-made-esthetics",
     featured: true,
@@ -258,7 +271,7 @@ export const projects: Project[] = [
     description:
       "An AI-powered landing page for a vehicle repossession dispute service, using artificial intelligence to help consumers understand their rights and fight wrongful repossessions.",
     shortDescription: "AI-powered repossession dispute landing page.",
-    thumbnailImage: "/assets/portfolio/fight-my-repo/thumbnail.webp",
+    thumbnailImage: "/assets/portfolio/fight-my-repo/fight-my-repo-legal-landing-page.webp",
     vercelUrl: "https://fight-my-repo.vercel.app",
     githubUrl: "https://github.com/DessiM15/fight-my-repo",
     isAIPowered: true,
@@ -285,7 +298,7 @@ export const projects: Project[] = [
     description:
       "A full platform for managing vehicle repossession disputes at scale, with AI-powered case analysis, document management, client portals, and automated workflow processing.",
     shortDescription: "AI-powered repossession dispute management platform.",
-    thumbnailImage: "/assets/portfolio/repo911/thumbnail.webp",
+    thumbnailImage: "/assets/portfolio/repo911/repo911-case-management-platform.webp",
     vercelUrl: "https://repo-911.vercel.app",
     githubUrl: "https://github.com/DessiM15/repo911",
     isAIPowered: true,
@@ -314,7 +327,7 @@ export const projects: Project[] = [
     description:
       "A professional website for a financial advisory firm, with a recruitment-focused design to attract top financial advisors while also serving as an informational resource for prospective clients.",
     shortDescription: "Financial advisory firm website with recruitment focus.",
-    thumbnailImage: "/assets/portfolio/valor-financial/thumbnail.webp",
+    thumbnailImage: "/assets/portfolio/valor-financial/valor-financial-advisor-website-design.webp",
     vercelUrl: "https://phil-valor-recruitment.vercel.app",
     githubUrl: "https://github.com/DessiM15/phil-valor-recruitment",
     caseStudy: {
@@ -340,7 +353,7 @@ export const projects: Project[] = [
     description:
       "A corporate website for APEX Affinity Group, a business services and market solutions company providing consulting, analytics, and strategic partnership services.",
     shortDescription: "Business services and market solutions corporate website.",
-    thumbnailImage: "/assets/portfolio/apex-affinity-group/thumbnail.webp",
+    thumbnailImage: "/assets/portfolio/apex-affinity-group/apex-affinity-business-services-website.webp",
     vercelUrl: "https://apexpulsemarket.com",
     githubUrl: "https://github.com/DessiM15/apex-demos",
     caseStudy: {
@@ -366,7 +379,7 @@ export const projects: Project[] = [
     description:
       "A complete digital presence for a popular Houston taco restaurant, featuring online ordering integration with Uber Eats and Grubhub, menu showcase, and location information.",
     shortDescription: "Houston restaurant website with delivery integrations.",
-    thumbnailImage: "/assets/portfolio/mex-taco-house/thumbnail.webp",
+    thumbnailImage: "/assets/portfolio/mex-taco-house/mex-taco-house-restaurant-website-design.webp",
     vercelUrl: "https://mextacohouse.com",
     githubUrl: "https://github.com/DessiM15/mex-taco-house-website",
     caseStudy: {
@@ -384,6 +397,8 @@ export const projects: Project[] = [
   },
   {
     slug: "dos-tacos",
+    businessType: "Restaurant",
+    city: "Houston, TX",
     title: "Dos Tacos",
     clientName: "Dos Tacos (Concept)",
     serviceType: "Website",
@@ -392,7 +407,7 @@ export const projects: Project[] = [
     description:
       "A concept website refresh built for Dos Tacos, an authentic taqueria in Katy, TX with a 4.9-star rating and over 1,000 Google reviews. Rather than pitching a single direction, the build ships four complete hero concepts at once — Taco Cannon, Build-A-Taco, Loteria, and Color Block — switchable live from the home page so the owners can experience each one and pick a direction instead of judging it from a static mockup.",
     shortDescription: "Concept taqueria refresh with four live-switchable hero designs.",
-    thumbnailImage: "/assets/portfolio/dos-tacos/thumbnail.webp",
+    thumbnailImage: "/assets/portfolio/dos-tacos/dos-tacos-restaurant-website-design.webp",
     vercelUrl: "https://dos-tacos.vercel.app",
     githubUrl: "https://github.com/DessiM15/dos-tacos",
     featured: true,
@@ -414,6 +429,8 @@ export const projects: Project[] = [
   },
   {
     slug: "gin-and-jack",
+    businessType: "Mobile Bar",
+    city: "Houston, TX",
     title: "Gin & Jack",
     clientName: "Emily & Corey",
     serviceType: "Website",
@@ -422,7 +439,7 @@ export const projects: Project[] = [
     description:
       "A sophisticated website for Gin & Jack, a Houston-based mobile bartending service specializing in weddings, engagements, and private events. Features elegant design with serif typography, event gallery, service packages, and a booking inquiry flow — all crafted to match the brand's upscale, celebratory identity.",
     shortDescription: "Mobile bartending service website for weddings and events.",
-    thumbnailImage: "/assets/portfolio/gin-and-jack/thumbnail.webp",
+    thumbnailImage: "/assets/portfolio/gin-and-jack/gin-and-jack-mobile-bar-website-design.webp",
     vercelUrl: "https://www.ginandjackbar.com",
     githubUrl: "https://github.com/DessiM15/Gin-Jack-Emily",
     featured: true,
@@ -450,7 +467,7 @@ export const projects: Project[] = [
     description:
       "A professional landing page for a financial advisory group, designed to build trust and generate qualified leads from high-net-worth individuals seeking financial guidance.",
     shortDescription: "Professional financial advisory landing page.",
-    thumbnailImage: "/assets/portfolio/lomeli-financial/thumbnail.webp",
+    thumbnailImage: "/assets/portfolio/lomeli-financial/lomeli-financial-landing-page-design.webp",
     vercelUrl: "https://jorge-lomeli-financial.vercel.app",
     githubUrl: "https://github.com/DessiM15/jorge-lomeli-financial",
     caseStudy: {

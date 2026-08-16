@@ -213,7 +213,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             src={post.coverImage}
             alt={post.coverImageAlt}
             priority={true}
-            sizes="100vw"
+            sizes="(max-width: 1536px) 100vw, 1536px"
           />
           <div className="absolute inset-0 bg-black/20" />
         </section>

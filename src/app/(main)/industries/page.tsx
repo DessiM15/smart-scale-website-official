@@ -46,7 +46,7 @@ export default function Industries() {
             <HeroCTA href="/contact" variant="primary">
               Discuss Your Industry
             </HeroCTA>
-            <HeroCTA href="/what-we-do" variant="secondary" theme="light">
+            <HeroCTA href="/services" variant="secondary" theme="light">
               See Our Approach
             </HeroCTA>
           </div>
@@ -63,7 +63,7 @@ export default function Industries() {
               Industry Expertise
             </h2>
             <p className="text-lg text-white/60 max-w-2xl mx-auto" data-animate="fade-up">
-              Proven solutions across diverse industries. Enterprise quality, boutique service.
+              Proven work across the industries we see most in the Houston metro.
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6" data-animate="stagger">

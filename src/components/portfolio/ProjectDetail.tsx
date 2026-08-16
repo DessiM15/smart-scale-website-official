@@ -63,8 +63,15 @@ export default function ProjectDetail({
               </div>
 
               <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-                {project.title}
+                {project.businessType
+                  ? `${project.businessType} Website Design — ${project.title}`
+                  : project.title}
               </h1>
+              {project.city && (
+                <p className="text-sm uppercase tracking-widest text-white/40 mb-4">
+                  {project.industry} · {project.city}
+                </p>
+              )}
 
               <p className="text-lg text-white/60 mb-8 leading-relaxed">
                 {project.description}

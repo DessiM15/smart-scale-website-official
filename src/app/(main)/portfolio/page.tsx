@@ -3,9 +3,10 @@ import PortfolioGrid from "@/components/portfolio/PortfolioGrid";
 import RedSeparator from "@/components/ui/RedSeparator";
 
 export const metadata: Metadata = {
-  title: "Work",
+  title: { absolute: "Our Work | Website Design for Houston-Area Businesses" },
   description:
-    "A selection of enterprise platforms, AI systems, and digital experiences crafted with precision.",
+    "Websites we've built for local businesses across Katy, Cypress, and Houston \u2014 restaurants, barbershops, estheticians, and more.",
+  alternates: { canonical: "/portfolio" },
 };
 
 export default function PortfolioPage() {
@@ -15,11 +16,11 @@ export default function PortfolioPage() {
       <section data-theme="light" className="pt-32 pb-12 px-4 sm:px-6 lg:px-8 bg-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <h1 className="text-5xl sm:text-6xl md:text-7xl text-[#111111] mb-6 hero-headline">
-            Our Work
+            Websites We&apos;ve Built for Local Businesses
           </h1>
           <p className="text-lg sm:text-xl text-black/50 max-w-2xl mx-auto hero-subheadline">
-            A selection of enterprise platforms, AI systems, and digital
-            experiences.
+            Real websites for real businesses across the Houston metro \u2014
+            restaurants, barbershops, estheticians, and industrial suppliers.
           </p>
         </div>
       </section>

@@ -20,7 +20,7 @@ export default function SelectedWork() {
           className="text-center text-white/50 text-lg mb-20 max-w-xl mx-auto"
           data-animate="fade-up"
         >
-          Enterprise platforms, AI systems, and digital experiences — built with precision.
+          Real websites for real businesses across the Houston metro.
         </p>
 
         <div
@@ -36,7 +36,7 @@ export default function SelectedWork() {
               <div className="relative aspect-[16/10] overflow-hidden">
                 <Image
                   src={project.thumbnailImage}
-                  alt={project.title}
+                  alt={`${project.title} \u2014 ${project.industry} website designed by Smart Scale`}
                   fill
                   className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
                   sizes="(max-width: 768px) 100vw, 50vw"

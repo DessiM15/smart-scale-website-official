@@ -292,3 +292,50 @@ html.lenis, html.lenis body {
     transform: none !important;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Google reviews marquee (src/components/sections/Reviews.tsx)
+
+   Two duplicated tracks translate by exactly -100% of their own width, so the
+   seam between the original and its copy is invisible. Pure CSS — no client
+   JS, and no layout thrash.
+--------------------------------------------------------------------------- */
+
+@keyframes review-marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.review-marquee-track {
+  animation: review-marquee-scroll 60s linear infinite;
+  will-change: transform;
+}
+
+.review-marquee-track--reverse {
+  animation-direction: reverse;
+}
+
+/* Pause the whole row when the visitor hovers it, so a review can be read. */
+.review-marquee:hover .review-marquee-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Degrade to a plain scrollable strip rather than animating. */
+  .review-marquee {
+    overflow-x: auto;
+  }
+
+  .review-marquee-track {
+    animation: none;
+  }
+
+  /* The duplicate copy exists only to hide the animation seam. */
+  .review-marquee-track:nth-child(2) {
+    display: none;
+  }
+}

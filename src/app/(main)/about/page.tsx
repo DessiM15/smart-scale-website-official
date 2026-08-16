@@ -24,7 +24,7 @@ const values = [
   {
     icon: <Target className="w-6 h-6" />,
     title: "Excellence",
-    description: "Enterprise-grade quality in every engagement, without compromise.",
+    description: "The same standard of work on a barbershop site as on a platform build.",
   },
 ];
 
@@ -58,11 +58,11 @@ export default function Company() {
       <section data-theme="light" className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 bg-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <h1 className="text-5xl sm:text-6xl md:text-7xl leading-tight mb-6 text-[#111111]" data-animate="word-reveal">
-            Built on Principle
+            A Web Design Agency Built for Local Businesses
           </h1>
           <p className="text-xl sm:text-2xl text-black/50 max-w-3xl mx-auto mb-8 hero-subheadline">
-            A boutique consultancy where every project receives founder-level
-            attention and enterprise-grade engineering.
+            A small team in Katy, TX. Every project gets founder-level
+            attention — you talk to the people who build your site.
           </p>
           <div className="flex justify-center">
             <Link
@@ -98,7 +98,7 @@ export default function Company() {
               problems.
             </p>
             <p className="text-white/70">
-              Enterprise quality. Boutique attention. Founder-led execution.
+              Big-agency quality. Small-shop attention. Founder-led execution.
             </p>
           </div>
         </div>
@@ -212,7 +212,7 @@ export default function Company() {
             Let&apos;s Work Together
           </h2>
           <p className="text-lg text-white/50 mb-8" data-animate="fade-up">
-            Direct access to founders, enterprise-grade engineering, and a
+            Direct access to the founders, serious engineering, and a
             genuine commitment to your success.
           </p>
           <div data-animate="fade-up">

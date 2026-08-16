@@ -11,7 +11,7 @@ export default function NotFound() {
           The service you're looking for doesn't exist or has been moved.
         </p>
         <Link
-          href="/what-we-do"
+          href="/services"
           className="inline-flex items-center gap-2 px-6 py-3 bg-[#DC2626] text-white rounded-full font-semibold hover:bg-red-700 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />

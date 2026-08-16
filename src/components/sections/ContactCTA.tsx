@@ -10,14 +10,14 @@ export default function ContactCTA() {
           className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-[#111111] mb-6"
           data-animate="word-reveal"
         >
-          Let&apos;s Build Something Exceptional
+          Ready to Get Found Online?
         </h2>
         <p
           className="text-lg text-black/50 mb-12 max-w-xl mx-auto"
           data-animate="fade-up"
         >
-          Every engagement begins with understanding your vision. We&apos;d
-          love to hear about yours.
+          Tell us about your business and we&apos;ll show you exactly what
+          we&apos;d do. No pressure, no jargon.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center" data-animate="fade-up">
           <Link

@@ -30,8 +30,8 @@ const capabilities = [
     icon: <Brain className="w-8 h-8" />,
   },
   {
-    title: "Enterprise Platforms",
-    description: "Mission-critical systems engineered for reliability and scale.",
+    title: "Custom Software & CRM",
+    description: "Scheduling, quoting, and customer tracking built around how your business actually runs.",
     icon: <Building2 className="w-8 h-8" />,
   },
   {
@@ -71,11 +71,11 @@ export default function WhatWeDo() {
       <section data-theme="light" className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 bg-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <h1 className="text-5xl sm:text-6xl md:text-7xl mb-6 text-[#111111]" data-animate="word-reveal">
-            Engineering Excellence
+            Web Design &amp; Local SEO for Houston-Area Businesses
           </h1>
           <p className="text-lg sm:text-xl text-black/50 max-w-3xl mx-auto mb-8 hero-subheadline">
-            End-to-end software development for businesses that demand
-            precision, reliability, and long-term value.
+            Websites, local search, and custom tools for businesses in Katy,
+            Cypress, Houston, Sugar Land, Richmond, and Fulshear.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

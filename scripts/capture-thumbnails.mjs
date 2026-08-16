@@ -29,8 +29,42 @@ const PROJECTS = [
 
 const OUTPUT_DIR = path.resolve(__dirname, "../public/assets/portfolio");
 
+/**
+ * Portfolio images have descriptive filenames (e.g.
+ * houston-barbershop-website-design.webp) because Google reads the image path
+ * as a relevance signal. Those names live in src/data/projects.ts, so read
+ * them from there rather than hardcoding one — otherwise a capture run
+ * reintroduces thumbnail.webp and orphans the real file.
+ */
+const THUMBNAIL_PATHS = (() => {
+  const src = fs.readFileSync(
+    path.resolve(__dirname, "../src/data/projects.ts"),
+    "utf8",
+  );
+  const map = {};
+  const re = /slug:\s*"([^"]+)"[\s\S]*?thumbnailImage:\s*"([^"]+)"/g;
+  let m;
+  while ((m = re.exec(src)) !== null) map[m[1]] = m[2];
+  return map;
+})();
+
+function outputPathFor(slug) {
+  const known = THUMBNAIL_PATHS[slug];
+  if (!known) {
+    // Skip rather than throw: one stale slug shouldn't abort a whole run.
+    console.warn(
+      `  [skip] "${slug}" has no thumbnailImage in src/data/projects.ts — ` +
+        `add it there first so the filename stays in sync.`,
+    );
+    return null;
+  }
+  // thumbnailImage is a public-relative URL like /assets/portfolio/x/y.webp
+  return path.resolve(__dirname, "../public", known.replace(/^\//, ""));
+}
+
 async function generatePlaceholder(slug, title) {
-  const outputPath = path.join(OUTPUT_DIR, slug, "thumbnail.webp");
+  const outputPath = outputPathFor(slug);
+  if (!outputPath) return;
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 
   const safeName = title.replace(/&/g, "&amp;").replace(/</g, "&lt;");
@@ -49,7 +83,8 @@ async function generatePlaceholder(slug, title) {
 }
 
 async function captureScreenshot(browser, slug, url) {
-  const outputPath = path.join(OUTPUT_DIR, slug, "thumbnail.webp");
+  const outputPath = outputPathFor(slug);
+  if (!outputPath) return;
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 
   const page = await browser.newPage();

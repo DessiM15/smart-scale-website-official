@@ -25,7 +25,7 @@ const values = [
   {
     icon: <Target className="w-6 h-6" />,
     title: "Results",
-    description: "Enterprise-quality solutions that drive measurable business outcomes.",
+    description: "Work that drives measurable business outcomes \u2014 more calls, more bookings, more customers.",
   },
 ];
 
@@ -91,7 +91,7 @@ export default function WhyUs() {
               No account managers, no middle layers, no bureaucracy. Just founders who code, strategize, and deliver. This means faster decisions, clearer communication, and solutions that actually solve your problems.
             </p>
             <p className="font-semibold text-[#111111] text-center">
-              Enterprise quality. Boutique service. Founder-led execution.
+              Big-agency quality. Small-shop service. Founder-led execution.
             </p>
           </div>
         </div>
@@ -106,7 +106,7 @@ export default function WhyUs() {
             Ready to Experience the Difference?
           </h2>
           <p className="text-xl text-white/60 mb-8" data-animate="fade-up">
-            Get direct access, enterprise quality, and 7-day MVPs — without the agency overhead.
+            Get direct access, serious quality, and 7-day MVPs — without the agency overhead.
           </p>
           <Link
             href="/contact"

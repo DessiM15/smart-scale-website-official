@@ -31,7 +31,7 @@ export default function Error({
             Try again
           </button>
           <Link
-            href="/what-we-do"
+            href="/services"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 border-2 border-[#DC2626] text-[#DC2626] rounded-full font-semibold hover:bg-[#DC2626] hover:text-white transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />

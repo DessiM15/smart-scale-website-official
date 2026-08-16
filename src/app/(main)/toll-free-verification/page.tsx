@@ -7,7 +7,7 @@ import VerificationModal from "@/components/VerificationModal";
 export default function TollFreeVerification() {
   const phoneNumber = "+18335885916";
   const companyName = "Smart Scale";
-  const companyEmail = "project@ssl-mail.com";
+  const companyEmail = "info@smartscaleagent.com";
   
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
   const [verificationData, setVerificationData] = useState<{

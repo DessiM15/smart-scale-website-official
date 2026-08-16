@@ -16,12 +16,12 @@ export default function SocialProof() {
           className="text-center text-white/40 text-sm uppercase tracking-widest mb-16"
           data-animate="fade-up"
         >
-          Trusted by forward-thinking companies
+          Trusted by businesses across the Houston metro
         </p>
 
         {/* Client logos */}
         <div
-          className="flex items-center justify-center gap-16 sm:gap-20 md:gap-28 mb-24"
+          className="flex items-center justify-center gap-16 sm:gap-20 md:gap-28"
           data-animate="stagger"
         >
           {clientLogos.map((client) => (
@@ -31,27 +31,13 @@ export default function SocialProof() {
             >
               <Image
                 src={client.src}
-                alt={client.name}
+                alt={`${client.name} \u2014 Smart Scale client`}
                 width={220}
                 height={90}
                 className="object-contain w-auto max-h-24 transition-all duration-500 brightness-0 invert opacity-40 group-hover:opacity-100 group-hover:brightness-100 group-hover:invert-0"
               />
             </div>
           ))}
-        </div>
-
-        {/* Testimonial */}
-        <div className="text-center" data-animate="scale-reveal">
-          <p className="text-2xl sm:text-3xl md:text-4xl text-white/80 leading-relaxed max-w-3xl mx-auto">
-            &ldquo;Smart Scale did a fantastic job delivering this website for
-            our business. The quickness of delivery and quality of work is
-            absolutely amazing. I would recommend anyone needing a website, app,
-            or any kind of software to work with the Smart Scale
-            team.&rdquo;
-          </p>
-          <p className="mt-8 text-sm text-white/40 uppercase tracking-widest">
-            — Emily &amp; Corey, Gin &amp; Jack
-          </p>
         </div>
       </div>
     </section>
