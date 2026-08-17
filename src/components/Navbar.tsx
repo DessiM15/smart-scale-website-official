@@ -1,11 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
+
+// The nav has to know which theme sits under it *before* the browser
+// paints, otherwise the homepage shows one frame of dark-on-dark. On the
+// server there is no layout to measure, so fall back to useEffect there.
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 const leftLinks = [
   { href: "/", label: "Home" },
@@ -37,9 +43,21 @@ export default function Navbar() {
   }, []);
 
   // Section-aware theme detection via ScrollTrigger
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const sections = document.querySelectorAll("[data-theme]");
     const triggers: ScrollTrigger[] = [];
+
+    const themeOf = (el: Element): "light" | "dark" =>
+      el.getAttribute("data-theme") === "dark" ? "dark" : "light";
+
+    // Resolve the theme under the navbar up front. ScrollTrigger only fires on
+    // a crossing, so the section already sitting at the top of the viewport at
+    // load never announces itself — which left the nav painting its default
+    // light styling on top of a dark hero.
+    const list = Array.from(sections);
+    const passed = list.filter((s) => s.getBoundingClientRect().top <= 1);
+    const initial = passed[passed.length - 1] ?? list[0];
+    if (initial) setNavTheme(themeOf(initial));
 
     sections.forEach((section) => {
       const theme = section.getAttribute("data-theme") as "light" | "dark";

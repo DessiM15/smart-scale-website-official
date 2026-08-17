@@ -32,6 +32,26 @@ export interface Review {
 
 export const REVIEWS: Review[] = [
   {
+    author: "Taylor Heathcoo",
+    rating: 5,
+    date: "2026-08-16",
+    text:
+      "Dessiah goes over and beyond, I can't speak highly enough about her " +
+      "knowledge and professionalism. I promise her and her team will take " +
+      "care of everything for you.",
+  },
+  {
+    author: "Jorge Figueroa",
+    rating: 5,
+    date: "2026-08-13",
+    text:
+      "I'm really pleased with the page I received. It looks clean, " +
+      "professional, and gives my business the look I was going for. " +
+      "Dessiah was easy to work with, answered my questions quickly, and " +
+      "made the whole process pretty simple. Definitely recommend them if " +
+      "you need a landing page or website!",
+  },
+  {
     author: "Kira Rai Daniel",
     rating: 5,
     date: "2026-08-12",

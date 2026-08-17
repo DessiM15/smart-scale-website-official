@@ -88,7 +88,7 @@ function ReviewCard({
     <figure
       className={`relative flex h-full flex-col rounded-2xl border border-white/[0.08] bg-[#111111] transition-colors duration-500 hover:border-white/20 ${
         isStatic
-          ? "w-full p-8 sm:p-9"
+          ? "w-full p-7 sm:p-8"
           : "flex-shrink-0 w-[340px] sm:w-[380px] p-7"
       }`}
     >
@@ -161,6 +161,8 @@ export default function Reviews() {
 
   const useMarquee = REVIEWS.length >= MARQUEE_MIN;
   const midpoint = Math.ceil(REVIEWS.length / 2);
+  // Three reviews in a two-column grid leaves an orphan on its own row.
+  const threeUp = REVIEWS.length === 3;
 
   return (
     <section
@@ -199,11 +201,19 @@ export default function Reviews() {
           />
         </div>
       ) : (
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div
+          className={`mx-auto px-4 sm:px-6 lg:px-8 relative z-10 ${
+            threeUp ? "max-w-6xl" : "max-w-5xl"
+          }`}
+        >
           {/* items-stretch keeps a short review's card the same height as a
-              long one, so the row reads as a pair rather than a mistake. */}
+              long one, so the row reads as a pair rather than a mistake.
+              An odd count goes three-up rather than leaving the last card
+              stranded alone on a second row. */}
           <div
-            className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch"
+            className={`grid grid-cols-1 gap-6 items-stretch ${
+              threeUp ? "lg:grid-cols-3" : "md:grid-cols-2"
+            }`}
             data-animate="stagger"
           >
             {REVIEWS.map((review, i) => (
