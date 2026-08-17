@@ -10,14 +10,34 @@ import Link from "next/link";
  * which also lets this be a server component: the hover-to-expand effect
  * is pure CSS, so it needs no client JS.
  */
-const capabilities = [
+/**
+ * `logoMono` forces a black silhouette. Only for marks that contain white —
+ * Botmakers and Repo911 both do, and they would otherwise disappear against
+ * the light resting plate. Everything else shows in its real brand colour,
+ * which is the whole point of a client logo.
+ *
+ * `logoBoxed` is for artwork with its own solid background rather than a
+ * transparent one.
+ */
+type Capability = {
+  title: string;
+  description: string;
+  href: string;
+  image: string;
+  logo: string;
+  alt: string;
+  logoMono?: boolean;
+  logoBoxed?: boolean;
+};
+
+const capabilities: Capability[] = [
   {
     title: "Business Websites",
     description:
       "Fast, mobile-first sites that turn visitors into phone calls. Most builds go live in under two weeks.",
     href: "/services/web-development",
     image: "/assets/portfolio/taylor-made-esthetics/taylor-made-esthetician-website-design.webp",
-    logo: "/assets/client-logos/taylor-made-esthetics.png",
+    logo: "/assets/client-logos/taylor-made-esthetics-badge.png",
     alt: "Taylor Made Esthetics website homepage, built by Smart Scale",
   },
   {
@@ -26,7 +46,10 @@ const capabilities = [
       "Google Business Profile management, local SEO, and monthly optimization so customers find you first.",
     href: "/services",
     image: "/assets/portfolio/mex-taco-house/mex-taco-house-restaurant-website-design.webp",
-    logo: "/assets/client-logos/mex-taco-house.png",
+    logo: "/assets/mex-taco-logo-ss.jpg",
+    // Solid-red lockup rather than a transparent mark, so it needs a corner
+    // radius to read as a badge instead of a stray rectangle.
+    logoBoxed: true,
     alt: "Mex Taco House restaurant website, built by Smart Scale in Houston",
   },
   {
@@ -35,7 +58,8 @@ const capabilities = [
       "Tools built around how your business actually runs: scheduling, quoting, customer tracking.",
     href: "/services/enterprise-systems",
     image: "/assets/portfolio/botmakers-crm/botmakers-custom-crm-platform.webp",
-    logo: "/assets/client-logos/botmakers.png",
+    logo: "/assets/client-logos/botmakers-mark.png",
+    logoMono: true,
     alt: "Botmakers CRM dashboard showing client pipeline and invoicing",
   },
   {
@@ -44,7 +68,7 @@ const capabilities = [
       "iOS and Android apps for when a website isn't enough.",
     href: "/services/mobile-development",
     image: "/assets/portfolio/bloxify-landing/bloxify-app-landing-page-design.webp",
-    logo: "/assets/client-logos/bloxify.png",
+    logo: "/assets/client-logos/bloxify-mark.png",
     alt: "Bloxify mobile app landing page with app store download links",
   },
   {
@@ -54,6 +78,7 @@ const capabilities = [
     href: "/services/ai-enhancement-ai-workflows",
     image: "/assets/portfolio/repo911/repo911-case-management-platform.webp",
     logo: "/assets/client-logos/repo911.svg",
+    logoMono: true,
     alt: "Repo911 case management platform with AI-powered document analysis",
   },
 ];
@@ -117,12 +142,16 @@ export default function Capabilities() {
                     src={cap.logo}
                     alt=""
                     aria-hidden="true"
-                    width={120}
-                    height={60}
-                    className="object-contain max-h-16 w-auto brightness-0 opacity-40"
+                    width={400}
+                    height={200}
+                    className={`object-contain w-auto max-h-28 max-w-[200px] ${
+                      cap.logoMono
+                        ? "brightness-0 opacity-70"
+                        : "opacity-100"
+                    } ${cap.logoBoxed ? "rounded-xl" : ""}`}
                   />
                 </div>
-                <span className="text-[#111111]/40 text-xs uppercase tracking-widest font-medium pb-4">
+                <span className="text-[#111111]/60 text-xs uppercase tracking-widest font-medium pb-4">
                   {cap.title}
                 </span>
               </div>
