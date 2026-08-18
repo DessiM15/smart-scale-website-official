@@ -70,6 +70,11 @@ https://smartscaleagent.com/advertise/stats?key=<that key>
 Bookmark that URL. Anyone with it can read the report, so treat it like a
 password — don't paste it into a group chat.
 
+If you are already signed in to the ad tracker on that browser, you don't need
+the key at all — **/advertise/stats** opens straight from the "Scan report"
+button, and the report links back with "← Ad Tracker". The `?key=` link stays
+for anyone you share the report with who has no tracker sign-in.
+
 ### 3. Pull the credentials locally (optional)
 
 To test on your machine: `vercel env pull .env.local`
@@ -172,7 +177,8 @@ Known crawlers and link previewers are filtered out. Also, some phones aggressiv
 cache; a second scan from the same phone within seconds may be served locally.
 
 **Someone got the report URL.**
-Change `ADS_STATS_KEY` in Vercel and redeploy. The old link stops working.
+Change `ADS_STATS_KEY` in Vercel and redeploy. The old link stops working. Your
+own access is unaffected — signed-in tracker sessions don't use that key.
 
 ---
 
@@ -180,7 +186,8 @@ Change `ADS_STATS_KEY` in Vercel and redeploy. The old link stops working.
 
 | File | What it does |
 |---|---|
-| `src/lib/ads/advertisers.ts` | The link registry — **the only file you edit routinely** |
+| `src/lib/ads/link-store.ts` | The link registry — **edited in the tracker's QR codes tab, not in code** |
+| `src/lib/ads/advertisers.ts` | Seed codes, and the fallback `/go/<code>` uses when the database is down |
 | `src/lib/ads/scan-store.ts` | Counting and reading, over Upstash's REST API |
 | `src/app/go/[code]/route.ts` | The redirect the QR points at |
 | `src/app/(advertise)/advertise/stats/page.tsx` | The report |
@@ -206,6 +213,20 @@ Jay the same passphrase. Unlike the scan report, this page can *change* data, so
 it uses a real login rather than a key in the URL — nothing sensitive ends up in
 browser history or a screenshot.
 
+The page is split into five tabs, and the tab is in the URL — bookmark
+`?tab=advertisers` if that's where you always start.
+
+| Tab | What's there |
+|---|---|
+| **Overview** | The four numbers, who needs a call today, and the renewal watch |
+| **Advertisers** | The rotation table, locked categories, and the add/edit form |
+| **Reports** | Monthly reports awaiting approval |
+| **QR codes** | The link registry and artwork downloads |
+| **Prospects** | The interested list |
+
+The badge on a tab is how many items sit behind it; a red badge means something
+is waiting on you.
+
 ### What it tracks
 
 | | |
@@ -221,8 +242,8 @@ browser history or a screenshot.
 
 ### Day-to-day
 
-- **New advertiser** → fill the form at the bottom. Category and start date are
-  what matter; everything else can be filled in later.
+- **New advertiser** → Advertisers tab → "Add an advertiser". Category and start
+  date are what matter; everything else can be filled in later.
 - **Signed but artwork isn't ready** → status "Signed, not live yet". They don't
   consume a slot or count toward revenue until you set them to Running.
 - **Term is up** → they renew (change the start date and package to the new
@@ -234,11 +255,15 @@ browser history or a screenshot.
 
 ### Two things to know
 
-**The QR field is a cross-reference, not the source of truth.** QR codes live in
-`src/lib/ads/advertisers.ts` and stay in code on purpose — a code that's printed
-and on a screen should be governed by something reviewed, not editable in a
-browser. If you type a code here that isn't in that file, the tracker flags it in
-red, because scanning it would fall through to the advertise page.
+**The QR field is a cross-reference, not the source of truth.** Codes are created
+on the tracker's **QR codes** tab and stored in the link registry
+(`src/lib/ads/link-store.ts`). The field on an advertiser only points at one. If
+it names a code that isn't in the registry, the tracker flags it in red, because
+scanning it would fall through to the advertise page — create the code on the QR
+codes tab first, then pick it here.
+
+`src/lib/ads/advertisers.ts` is no longer where codes are added. It holds the
+seed codes and the fallback the redirect uses during a database outage.
 
 **Back it up.** The roster lives in Upstash's free tier. It is not a system of
 record you'd trust a business to, and it's cheap insurance to keep a copy —

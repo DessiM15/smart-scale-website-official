@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { isSignedIn } from "@/lib/ads/auth";
 import { listLinks, type AdLinkRecord } from "@/lib/ads/link-store";
 import {
   getStatsForCodes,
@@ -347,7 +348,13 @@ export default async function StatsPage({
   const params = await searchParams;
   const expected = process.env.ADS_STATS_KEY;
 
-  if (!expected || !params.key || params.key !== expected) {
+  // Two ways in: the shareable `?key=` link, or an admin already signed in on
+  // this browser. The admin session is the stronger credential of the two, so
+  // holding it should never mean re-typing a second password.
+  const viaKey = Boolean(expected && params.key && params.key === expected);
+  const viaSession = await isSignedIn();
+
+  if (!viaKey && !viaSession) {
     return <LockScreen wrong={Boolean(params.key)} />;
   }
 
@@ -373,8 +380,12 @@ export default async function StatsPage({
   const allTime = stats.reduce((sum, s) => sum + s.total, 0);
   const generatedAt = localStamp();
 
+  // Carry the key only when that is how the reader got in — an admin browsing
+  // on their session should never put the shared key into their history.
   const rangeHref = (d: number) =>
-    `/advertise/stats?key=${encodeURIComponent(params.key!)}&days=${d}`;
+    viaKey
+      ? `/advertise/stats?key=${encodeURIComponent(params.key!)}&days=${d}`
+      : `/advertise/stats?days=${d}`;
 
   return (
     <main className="min-h-screen bg-[#faf6f0] px-5 sm:px-8 py-12">
@@ -392,21 +403,31 @@ export default async function StatsPage({
               (restaurant time).
             </p>
           </div>
-          <nav className="flex gap-2" aria-label="Date range">
-            {RANGES.map((r) => (
+          <div className="flex flex-wrap items-center gap-2">
+            {viaSession && (
               <a
-                key={r}
-                href={rangeHref(r)}
-                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-                  r === days
-                    ? "bg-[#DC2626] text-white shadow-md shadow-red-900/20"
-                    : "bg-white text-[#7a6a5d] border border-black/[0.06] hover:border-[#DC2626]/30 hover:text-[#1a1210]"
-                }`}
+                href="/advertise/admin"
+                className="px-4 py-2 rounded-full text-sm font-semibold bg-white text-[#7a6a5d] border border-black/[0.06] hover:border-[#DC2626]/30 hover:text-[#1a1210] transition-all"
               >
-                {r} days
+                ← Ad Tracker
               </a>
-            ))}
-          </nav>
+            )}
+            <nav className="flex gap-2" aria-label="Date range">
+              {RANGES.map((r) => (
+                <a
+                  key={r}
+                  href={rangeHref(r)}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
+                    r === days
+                      ? "bg-[#DC2626] text-white shadow-md shadow-red-900/20"
+                      : "bg-white text-[#7a6a5d] border border-black/[0.06] hover:border-[#DC2626]/30 hover:text-[#1a1210]"
+                  }`}
+                >
+                  {r} days
+                </a>
+              ))}
+            </nav>
+          </div>
         </header>
 
         {!configured && <SetupNotice />}
