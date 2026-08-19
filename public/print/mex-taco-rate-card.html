@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mex Taco House — Advertising Rate Card</title>
+<!--
+  Print source for ads-rate-card.pdf. Letter portrait, 8.5x11.
+
+  To regenerate the PDF:
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+      --headless --disable-gpu --no-pdf-header-footer \
+      --print-to-pdf=ads-rate-card.pdf \
+      public/print/mex-taco-rate-card.html
+
+  Prices here must match the plans array in
+  src/app/(advertise)/advertise/page.tsx. Change both together.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --red:#DC2626;
+    --ink:#1a1210;
+    --muted:#7a6a5d;
+    --faint:#9a8b7d;
+    --cream:#faf6f0;
+    --gold:#f0c674;
+    --rule:rgba(26,18,16,0.12);
+  }
+  body{
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    background:#fff; color:var(--ink);
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+  @page{ size:letter portrait; margin:0; }
+  .page{
+    width:8.5in; height:11in; margin:0 auto; padding:0.45in 0.5in;
+    display:flex; flex-direction:column;
+  }
+
+  /* ---- header ---- */
+  .top{ display:flex; justify-content:space-between; align-items:flex-start; }
+  .eyebrow{
+    font-size:8pt; font-weight:800; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--muted);
+  }
+  .top-right{ text-align:right; }
+  .rate-card-label{
+    font-family:'Playfair Display',serif; font-size:15pt; font-weight:800;
+    letter-spacing:.04em; color:var(--red); line-height:1;
+  }
+  .top-right .eyebrow{ margin-top:3pt; font-size:7pt; letter-spacing:.12em; }
+  .rule{ height:2.5pt; background:var(--red); width:44pt; border-radius:2pt; margin:10pt 0 0; }
+
+  /* ---- headline ---- */
+  h1{
+    font-family:'Playfair Display',serif; font-size:29pt; font-weight:800;
+    line-height:1.12; margin:12pt 0 7pt; letter-spacing:-0.01em;
+  }
+  .lede{ font-size:10.5pt; line-height:1.5; color:var(--muted); max-width:5.6in; }
+  .lede b{ color:var(--ink); font-weight:600; }
+
+  /* ---- two columns ---- */
+  .cols{ display:flex; gap:28pt; margin-top:22pt; }
+  .col-left{ width:2.95in; flex-shrink:0; }
+  .col-right{ flex:1; }
+
+  /* ---- stats ---- */
+  .stats{ display:grid; grid-template-columns:1fr 1fr; gap:17pt 10pt; }
+  .stat-num{
+    font-family:'Playfair Display',serif; font-size:23pt; font-weight:800;
+    color:var(--red); line-height:1;
+  }
+  .stat-label{
+    font-size:7pt; font-weight:800; letter-spacing:.11em; text-transform:uppercase;
+    color:var(--faint); margin-top:4pt; line-height:1.35;
+  }
+
+  /* ---- exclusivity ---- */
+  .excl{
+    margin-top:20pt; padding:13pt 14pt; border-radius:9pt;
+    background:var(--cream); border:1px solid rgba(220,38,38,0.18);
+  }
+  .excl-head{ display:flex; gap:7pt; align-items:center; }
+  .tick{
+    width:13pt; height:13pt; border-radius:50%; background:var(--red); color:#fff;
+    font-size:8pt; font-weight:800; display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; line-height:1;
+  }
+  .excl-title{ font-size:10pt; font-weight:800; }
+  .excl-body{ font-size:8.5pt; line-height:1.45; color:var(--muted); margin-top:5pt; }
+
+  /* ---- included list ---- */
+  .section-title{
+    font-size:8.5pt; font-weight:800; letter-spacing:.13em; text-transform:uppercase;
+    color:var(--ink); margin:20pt 0 10pt;
+  }
+  .incl{ list-style:none; }
+  .incl li{
+    font-size:8.5pt; line-height:1.45; color:var(--muted);
+    padding-left:13pt; position:relative; margin-bottom:8pt;
+  }
+  .incl li::before{
+    content:"✓"; position:absolute; left:0; top:0;
+    color:var(--red); font-weight:800; font-size:8pt;
+  }
+
+  /* ---- pricing ---- */
+  .price-head{ display:flex; justify-content:space-between; align-items:baseline; }
+  .price-title{ font-family:'Playfair Display',serif; font-size:17pt; font-weight:800; }
+  .price-note{
+    font-size:6.5pt; font-weight:800; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--red);
+  }
+  table{ width:100%; border-collapse:collapse; margin-top:9pt; }
+  th{
+    font-size:6.5pt; font-weight:800; letter-spacing:.11em; text-transform:uppercase;
+    color:var(--faint); text-align:left; padding-bottom:6pt;
+    border-bottom:1px solid var(--rule);
+  }
+  th.num, td.num{ text-align:right; }
+  td{ padding:12pt 0; border-bottom:1px solid var(--rule); vertical-align:top; }
+  .plan-name{ font-size:11pt; font-weight:700; line-height:1.2; }
+  .plan-tag{
+    font-size:6pt; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--red); margin-top:3pt;
+  }
+  .plan-term{ font-size:9pt; color:var(--muted); }
+  .plan-price{ font-size:14pt; font-weight:800; line-height:1.15; }
+  .plan-sub{ font-size:6.5pt; color:var(--faint); font-weight:600; margin-top:2pt; }
+  .plan-setup{ font-size:9pt; color:var(--muted); }
+  tr.best td{ background:rgba(220,38,38,0.05); }
+  tr.best .plan-price{ color:var(--red); }
+
+  /* ---- add-ons ---- */
+  .addons{ display:grid; grid-template-columns:1fr 1fr; gap:9pt 16pt; margin-top:11pt; }
+  .addon{
+    display:flex; justify-content:space-between; gap:8pt;
+    font-size:8.5pt; color:var(--muted); padding-bottom:6pt;
+    border-bottom:1px dotted var(--rule);
+  }
+  .addon b{ color:var(--ink); font-weight:700; white-space:nowrap; }
+  .fineprint{ font-size:7.5pt; color:var(--faint); line-height:1.45; margin-top:8pt; }
+
+  /* ---- bundle ---- */
+  .bundle{
+    margin-top:18pt; padding:13pt 14pt; border-radius:9pt;
+    background:var(--ink); color:#fff;
+  }
+  .bundle-title{ font-size:10pt; font-weight:800; }
+  .bundle-title span{ color:var(--gold); }
+  .bundle-body{ font-size:8pt; line-height:1.45; color:rgba(255,255,255,0.72); margin-top:4pt; }
+
+
+  /* ---- how it works ---- */
+  .steps{
+    display:flex; gap:14pt; margin-top:24pt;
+    border-top:1px solid var(--rule); padding-top:16pt;
+  }
+  .step{ flex:1; display:flex; gap:9pt; align-items:flex-start; }
+  .step-num{
+    width:19pt; height:19pt; border-radius:50%; background:var(--red); color:#fff;
+    font-size:9.5pt; font-weight:800; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; line-height:1;
+  }
+  .step-title{ font-size:9.5pt; font-weight:800; line-height:1.2; }
+  .step-body{ font-size:7.5pt; line-height:1.45; color:var(--muted); margin-top:3pt; }
+
+  /* ---- footer ---- */
+  .terms{
+    font-size:7pt; line-height:1.5; color:var(--faint);
+    border-top:1px solid var(--rule); padding-top:10pt; margin-top:auto;
+  }
+  .terms b{
+    color:var(--muted); font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+  }
+  .foot{ display:flex; justify-content:space-between; align-items:flex-end; margin-top:11pt; }
+  .foot-cta{ font-family:'Playfair Display',serif; font-size:16pt; font-weight:800; }
+  .foot-org{
+    font-size:6.5pt; font-weight:800; letter-spacing:.13em; text-transform:uppercase;
+    color:var(--faint); margin-top:3pt;
+  }
+  .foot-right{ text-align:right; }
+  .foot-names{ font-size:9.5pt; font-weight:700; }
+  .foot-phones{ font-size:9pt; color:var(--muted); margin-top:2pt; }
+  .foot-site{ font-size:9pt; font-weight:700; color:var(--red); margin-top:2pt; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="top">
+    <div>
+      <div class="eyebrow">Advertise at Mex Taco House · Cypress, TX</div>
+      <div class="rule"></div>
+    </div>
+    <div class="top-right">
+      <div class="rate-card-label">RATE CARD</div>
+      <div class="eyebrow">In-Restaurant Digital Ads · Effective August 2026</div>
+    </div>
+  </div>
+
+  <h1>Own your category.<br>Lock out the competition.</h1>
+  <p class="lede">
+    A <b>10-second ad</b> on the dining-room screens, rotating during every business
+    hour — in front of every guest, every visit.
+  </p>
+
+  <div class="cols">
+    <div class="col-left">
+
+      <div class="stats">
+        <div>
+          <div class="stat-num">10,000</div>
+          <div class="stat-label">Diners / Month</div>
+        </div>
+        <div>
+          <div class="stat-num">90,000</div>
+          <div class="stat-label">Ad Views / Month</div>
+        </div>
+        <div>
+          <div class="stat-num">~3 min</div>
+          <div class="stat-label">Ad Repeats Every</div>
+        </div>
+        <div>
+          <div class="stat-num">10–45</div>
+          <div class="stat-label">Minutes Seated</div>
+        </div>
+      </div>
+
+      <div class="excl">
+        <div class="excl-head">
+          <div class="tick">✓</div>
+          <div class="excl-title">Category exclusivity included</div>
+        </div>
+        <div class="excl-body">
+          One advertiser per category. When you're in, no direct competitor can be —
+          for as long as you hold your spot.
+        </div>
+      </div>
+
+      <div class="section-title">Included with every plan</div>
+      <ul class="incl">
+        <li>Design &amp; production of your ad — no artwork needed</li>
+        <li>No direct competitor in the rotation</li>
+        <li>One free creative refresh per quarter</li>
+        <li>Quarterly report on display days &amp; rotation size</li>
+        <li>Two rounds of design revisions before launch</li>
+      </ul>
+
+    </div>
+
+    <div class="col-right">
+
+      <div class="price-head">
+        <div class="price-title">Pricing</div>
+        <div class="price-note">Design fee waived on most plans</div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Plan</th>
+            <th>Term</th>
+            <th class="num">Monthly</th>
+            <th class="num">Setup</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="plan-name">Short Term</div></td>
+            <td><div class="plan-term">3 months</div></td>
+            <td class="num"><div class="plan-price">$350</div></td>
+            <td class="num"><div class="plan-setup">$99</div></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="plan-name">Standard</div>
+              <div class="plan-tag">Most Popular</div>
+            </td>
+            <td><div class="plan-term">6 months</div></td>
+            <td class="num"><div class="plan-price">$325</div></td>
+            <td class="num"><div class="plan-setup">Waived</div></td>
+          </tr>
+          <tr class="best">
+            <td>
+              <div class="plan-name">Annual</div>
+              <div class="plan-tag">Best Value</div>
+            </td>
+            <td><div class="plan-term">12 months</div></td>
+            <td class="num">
+              <div class="plan-price">$300</div>
+              <div class="plan-sub">$3,600 / year</div>
+            </td>
+            <td class="num"><div class="plan-setup">Waived</div></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="section-title">Optional add-ons</div>
+      <div class="addons">
+        <div class="addon"><span>Double slot</span><b>+60%/mo</b></div>
+        <div class="addon"><span>Extra refresh</span><b>$50 ea</b></div>
+        <div class="addon"><span>Extra revisions</span><b>$35 ea</b></div>
+        <div class="addon"><span>Rush (48h)</span><b>$75</b></div>
+      </div>
+      <p class="fineprint">
+        Your rate is locked for the full term. Spots are limited and go first come,
+        first serve — once a category is claimed, it's gone until that advertiser lapses.
+      </p>
+
+      <div class="bundle">
+        <div class="bundle-title">Need a website? Ask about our <span>Advertising + Website bundle.</span></div>
+        <div class="bundle-body">
+          The same team that designs your spot builds the site those diners land on
+          when they look you up. One point of contact, one brand, start to finish.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <div class="step-title">Claim your category</div>
+        <div class="step-body">Pick a term and lock your category before a competitor takes it.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-title">We design your ad</div>
+        <div class="step-body">Our team builds your 10-second spot — no artwork needed on your end.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <div class="step-title">You're on screen</div>
+        <div class="step-body">Your ad goes live on the dining-room screens within days.</div>
+      </div>
+    </div>
+  </div>
+
+  <p class="terms">
+    <b>Terms</b>&nbsp;&nbsp;Billed monthly to a card on file. Prices held for your term;
+    renewal at then-current rate with 30 days' notice. All creative subject to restaurant
+    approval. Reach figures are the restaurant's reported guest counts, provided in good
+    faith as an estimate.
+  </p>
+
+  <div class="foot">
+    <div>
+      <div class="foot-cta">Lock your category today.</div>
+      <div class="foot-org">Smart Scale · Cypress, TX</div>
+    </div>
+    <div class="foot-right">
+      <div class="foot-names">Jay &amp; Dessiah Maldonado</div>
+      <div class="foot-phones">Dessiah 832.790.5001 · Jay 832.407.0773</div>
+      <div class="foot-site">smartscaleagent.com/advertise</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
