@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mex Taco House — Advertise Here Flyer</title>
+<!--
+  Print source for mex-flyer-print.png. Letter portrait, 8.5x11.
+
+  To regenerate the PNG at 300dpi (2550x3300):
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+      --headless --disable-gpu --hide-scrollbars \
+      --force-device-scale-factor=3 --window-size=850,1100 \
+      --screenshot=mex-flyer-print.png \
+      public/print/mex-taco-flyer.html
+
+  The QR points at /go/spot, which redirects to /advertise and counts the
+  scan in the tracker. See src/lib/ads/advertisers.ts. spot-red.svg is the
+  same code recolored to the flyer's red — regenerate it from spot.svg if
+  the destination ever changes.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Shadows+Into+Light&display=swap" rel="stylesheet">
+<style>
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --red:#DC2626;
+    --ink:#1a1210;
+    --muted:#5c4f45;
+    --faint:#7a6a5d;
+    --cream:#fdfaf5;
+    --gold:#f0c674;
+  }
+  html,body{ background:#fff; }
+  body{
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    color:var(--ink);
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+  @page{ size:letter portrait; margin:0; }
+  .page{
+    width:850px; height:1100px; margin:0 auto;
+    background:var(--cream); position:relative; overflow:hidden;
+    display:flex; flex-direction:column;
+  }
+
+  /* ---- hero photo ---- */
+  .hero{ position:relative; height:288px; flex-shrink:0; overflow:hidden; }
+  .hero img{
+    width:100%; height:100%; object-fit:cover; object-position:50% 58%;
+    display:block;
+  }
+  .hero::after{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(26,18,16,0.34) 0%, rgba(26,18,16,0.12) 30%, rgba(26,18,16,0.55) 62%, rgba(26,18,16,0.78) 100%);
+  }
+  .logo{
+    position:absolute; top:18px; left:50%; transform:translateX(-50%); z-index:2;
+    background:var(--red); color:#fff; border-radius:9px;
+    padding:9px 22px 11px; text-align:center; line-height:1;
+    box-shadow:0 6px 18px rgba(0,0,0,0.28);
+  }
+  .logo-mex{ font-size:31px; font-weight:700; letter-spacing:.01em; }
+  .logo-sub{ font-size:9.5px; font-weight:600; letter-spacing:.19em; margin-top:4px; }
+  .hero-copy{
+    position:absolute; left:0; right:0; bottom:26px; z-index:2; text-align:center;
+  }
+  .script{
+    font-family:'Shadows Into Light',cursive; color:var(--gold);
+    font-size:33px; line-height:1; margin-bottom:4px;
+    text-shadow:0 2px 10px rgba(0,0,0,0.45);
+  }
+  .hero-h1{
+    font-size:59px; font-weight:900; color:#fff; letter-spacing:-0.022em;
+    line-height:1; text-shadow:0 3px 16px rgba(0,0,0,0.45);
+  }
+
+  /* ---- red band ---- */
+  .band{
+    background:var(--red); color:#fff; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; gap:26px;
+    padding:15px 20px;
+    font-size:15.5px; font-weight:800; letter-spacing:.09em; text-transform:uppercase;
+  }
+  .band .dot{ color:var(--gold); font-size:12px; }
+  .band span.item{ display:inline-flex; align-items:center; gap:9px; }
+
+  /* ---- body ---- */
+  .body{
+    flex:1; padding:44px 62px 0; display:flex; flex-direction:column;
+    align-items:center; text-align:center;
+  }
+  .figure-row{
+    display:flex; align-items:center; gap:26px; width:100%; justify-content:center;
+  }
+  .figure-row .line{ flex:1; height:1px; background:rgba(26,18,16,0.16); max-width:170px; }
+  .figure{
+    font-size:96px; font-weight:900; color:var(--red); line-height:0.95;
+    letter-spacing:-0.03em;
+  }
+  .figure-label{
+    font-size:16px; font-weight:800; letter-spacing:.28em; text-transform:uppercase;
+    color:var(--faint); margin-top:14px;
+  }
+  .figure-body{
+    font-size:22px; line-height:1.45; color:var(--muted); margin-top:22px;
+  }
+  .figure-body b{ color:var(--ink); font-weight:700; }
+
+  .chips{
+    display:flex; align-items:center; justify-content:center; gap:18px; margin-top:32px;
+    font-size:14.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+    color:#8c3b1e;
+  }
+  .chips .sep{ color:var(--red); font-size:11px; }
+
+  .pull{
+    font-family:'Shadows Into Light',cursive; color:var(--red);
+    font-size:34px; line-height:1.25; margin-top:40px;
+  }
+
+  /* ---- claim ---- */
+  .claim-head{
+    display:flex; align-items:center; gap:22px; width:100%; margin-top:44px;
+  }
+  .claim-head .line{ flex:1; height:1px; background:rgba(26,18,16,0.16); }
+  .claim-head .label{
+    font-size:15px; font-weight:800; letter-spacing:.3em; text-transform:uppercase;
+  }
+  .claim{
+    display:flex; align-items:center; gap:34px; margin-top:30px; width:100%;
+    justify-content:center; text-align:left;
+  }
+  .qr-wrap{ text-align:center; flex-shrink:0; }
+  .qr-box{
+    width:158px; height:158px; padding:9px; background:#fff;
+    border:2px solid var(--red); border-radius:3px;
+  }
+  .qr-box img{ width:100%; height:100%; display:block; }
+  .qr-cap{
+    font-size:12.5px; font-weight:800; letter-spacing:.19em; text-transform:uppercase;
+    color:var(--red); margin-top:11px;
+  }
+  .claim-divider{ width:1px; align-self:stretch; background:rgba(26,18,16,0.14); }
+  .claim-copy{ padding-left:2px; }
+  .claim-h{ font-size:29px; font-weight:800; line-height:1.2; }
+  .claim-h em{ font-style:normal; color:var(--red); }
+  .claim-url{
+    font-size:19px; font-weight:800; color:#8c3b1e; margin-top:9px;
+  }
+  .claim-name{
+    font-size:15px; font-weight:800; letter-spacing:.16em; text-transform:uppercase;
+    margin-top:20px;
+  }
+  .claim-line{
+    display:flex; align-items:center; gap:10px; font-size:19px; margin-top:9px;
+    color:var(--ink);
+  }
+  .claim-line svg{ width:17px; height:17px; flex-shrink:0; }
+
+  /* ---- footer ---- */
+  .foot{
+    background:var(--ink); color:rgba(255,255,255,0.82); flex-shrink:0;
+    text-align:center; padding:15px 20px;
+    font-size:14px; font-weight:600; letter-spacing:.02em;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <img src="../assets/mex-taco-expansion.webp" alt="">
+    <div class="logo">
+      <div class="logo-mex">MEX</div>
+      <div class="logo-sub">TACO HOUSE</div>
+    </div>
+    <div class="hero-copy">
+      <div class="script">Your business, right here</div>
+      <div class="hero-h1">ADVERTISE HERE</div>
+    </div>
+  </div>
+
+  <div class="band">
+    <span class="item"><span class="dot">●</span> Now On Screen</span>
+    <span class="item"><span class="dot">●</span> Limited Spots</span>
+    <span class="item"><span class="dot">●</span> First Come, First Serve</span>
+  </div>
+
+  <div class="body">
+
+    <div class="figure-row">
+      <span class="line"></span>
+      <span class="figure">10,000</span>
+      <span class="line"></span>
+    </div>
+    <div class="figure-label">Average Monthly Visitors</div>
+
+    <p class="figure-body">
+      Seated, relaxed, and watching our screens<br>
+      for a <b>full meal</b> — not a passing glance.
+    </p>
+
+    <div class="chips">
+      <span>Ad Designed For You</span>
+      <span class="sep">◆</span>
+      <span>On Screen In Days</span>
+      <span class="sep">◆</span>
+      <span>Plans For Every Budget</span>
+    </div>
+
+    <p class="pull">A billboard gets a glance — this gets a whole meal.</p>
+
+    <div class="claim-head">
+      <span class="line"></span>
+      <span class="label">Claim Your Spot</span>
+      <span class="line"></span>
+    </div>
+
+    <div class="claim">
+      <div class="qr-wrap">
+        <div class="qr-box"><img src="../assets/qr/spot-red.svg" alt=""></div>
+        <div class="qr-cap">Scan to Claim</div>
+      </div>
+      <div class="claim-divider"></div>
+      <div class="claim-copy">
+        <div class="claim-h">Spots go to whoever <em>calls first.</em></div>
+        <div class="claim-url">smartscaleagent.com/advertise</div>
+        <div class="claim-name">Jay Maldonado</div>
+        <div class="claim-line">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2">
+            <path d="M3 5a2 2 0 012-2h2.6a1 1 0 01.98.79l1 4a1 1 0 01-.29.95l-1.5 1.5a12 12 0 005.66 5.66l1.5-1.5a1 1 0 01.95-.29l4 1a1 1 0 01.79.98V19a2 2 0 01-2 2h-1C9.7 21 3 14.3 3 6V5z" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          832.407.0773
+        </div>
+        <div class="claim-line">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2">
+            <rect x="2.5" y="4.5" width="19" height="15" rx="2" stroke-linejoin="round"/>
+            <path d="M3 6l9 6 9-6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          jay@m.botmakers.ai
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    Screen advertising at Mex Taco House · 25410 B1 Northwest Fwy, Cypress, TX · Managed by Smart Scale
+  </div>
+
+</div>
+</body>
+</html>
