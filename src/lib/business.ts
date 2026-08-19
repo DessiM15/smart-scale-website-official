@@ -51,6 +51,7 @@ export const CITY_PAGES = SERVICE_AREAS.filter((c) => c.page);
 export const SOCIALS = [
   { name: "Instagram", url: "https://www.instagram.com/smartscaleagent" },
   { name: "TikTok", url: "https://www.tiktok.com/@smartscaleagent" },
+  { name: "Facebook", url: "https://www.facebook.com/smartscalellc" },
 ] as const;
 
 /** Public Google Business Profile link, used for the reviews CTA. */
