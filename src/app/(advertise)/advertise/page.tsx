@@ -11,7 +11,7 @@ const PHONE_HREF = "tel:+18324070773";
 const plans = [
   {
     name: "Short Term",
-    price: "$500",
+    price: "$350",
     period: "/mo",
     term: "3-month term",
     setup: "$99 one-time setup",
@@ -24,7 +24,7 @@ const plans = [
   },
   {
     name: "Standard",
-    price: "$450",
+    price: "$325",
     period: "/mo",
     term: "6-month term",
     setup: "Setup fee waived",
@@ -37,14 +37,14 @@ const plans = [
   },
   {
     name: "Annual",
-    price: "$4,500",
+    price: "$3,600",
     period: "/yr",
-    term: "12 months · works out to $375/mo",
+    term: "12 months · works out to $300/mo",
     setup: "Setup fee waived",
     popular: true,
-    badge: "2 Months Free",
+    badge: "Best Value",
     features: [
-      "Two months free against the 6-month rate",
+      "The lowest rate we offer — $300/mo",
       "Own your category for a full year",
       "Setup waived + priority onboarding",
     ],
@@ -373,9 +373,9 @@ export default function AdvertisePage() {
       <section className="bg-[#DC2626] text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <ul className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-center text-sm sm:text-base font-semibold uppercase tracking-wide">
-            <li className="flex items-center gap-2"><span className="text-[#f0c674]">●</span> Only 16 Spots</li>
+            <li className="flex items-center gap-2"><span className="text-[#f0c674]">●</span> Limited Spots</li>
             <li className="hidden sm:block text-white/40">·</li>
-            <li className="flex items-center gap-2"><span className="text-[#f0c674]">●</span> Seen by 5,000+ / Month</li>
+            <li className="flex items-center gap-2"><span className="text-[#f0c674]">●</span> Seen by 10,000+ / Month</li>
             <li className="hidden sm:block text-white/40">·</li>
             <li className="flex items-center gap-2"><span className="text-[#f0c674]">●</span> One Business Per Category</li>
             <li className="hidden sm:block text-white/40">·</li>
@@ -399,9 +399,9 @@ export default function AdvertisePage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10 text-center">
             {[
               { to: "4800", suffix: "", initial: "0", label: "Times your ad plays each month" },
-              { to: "45000", suffix: "", initial: "0", label: "Ad views per month" },
-              { to: "5000", suffix: "+", initial: "0+", label: "Average monthly visitors" },
-              { to: "16", suffix: "", initial: "0", label: "Advertiser spots — that's all" },
+              { to: "90000", suffix: "", initial: "0", label: "Ad views per month" },
+              { to: "10000", suffix: "+", initial: "0+", label: "Average monthly visitors" },
+              { to: "1", suffix: "", initial: "0", label: "Business per category — locked" },
             ].map((stat) => (
               <div key={stat.label} data-animate="fade-up">
                 <div
@@ -551,7 +551,7 @@ export default function AdvertisePage() {
                 We run{" "}
                 <span className="text-[#1a1210] font-semibold">one business per category</span>.
                 When you&apos;re in, no direct competitor joins the rotation — for as
-                long as you hold your spot. There are only 16 spots, and once your
+                long as you hold your spot. Spots are limited, and once your
                 category is claimed, it&apos;s gone.
               </p>
               <p className="text-sm text-[#9a8b7d] max-w-xl mx-auto mt-5">
@@ -612,9 +612,9 @@ export default function AdvertisePage() {
             lock it in.
           </p>
           <p className="text-[#9a8b7d] text-center text-sm mb-12 max-w-xl mx-auto">
-            The longer the term, the lower the rate — and there are only{" "}
-            <span className="text-[#DC2626] font-bold">16 spots</span> in the whole
-            rotation.
+            The longer the term, the lower the rate — and{" "}
+            <span className="text-[#DC2626] font-bold">spots are limited</span>, first
+            come, first serve.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-7 items-start" data-animate="stagger">
@@ -680,6 +680,85 @@ export default function AdvertisePage() {
             come, first serve and held once your agreement is signed. All creative
             subject to restaurant approval.
           </p>
+        </div>
+      </section>
+
+      {/* Advertising + Website bundle */}
+      <section className="pt-4 pb-20 px-4 sm:px-6 lg:px-8 bg-[#faf6f0]">
+        <div className="max-w-6xl mx-auto">
+          <div
+            className="relative overflow-hidden rounded-3xl bg-[#1a1210] text-white p-8 sm:p-12 shadow-2xl shadow-black/20 ring-1 ring-[#f0c674]/20"
+            data-animate="fade-up"
+          >
+            {/* spotlight glow */}
+            <div
+              className="pointer-events-none absolute inset-0"
+              aria-hidden
+              style={{
+                background:
+                  "radial-gradient(65% 70% at 50% 0%, rgba(220,38,38,0.32), transparent 65%)",
+              }}
+            />
+
+            <div className="relative text-center">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#f0c674] text-[#1a1210] text-xs font-bold uppercase tracking-wider mb-6">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626]" />
+                Advertising + Website Bundle
+              </div>
+
+              <h2
+                className="text-3xl sm:text-4xl md:text-5xl font-bold mb-5 leading-tight"
+                style={{ fontFamily: "var(--font-playfair), serif" }}
+              >
+                Need a website to send them to?
+              </h2>
+
+              <p className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto leading-relaxed">
+                Your ad puts you in front of 10,000+ diners a month. Ask about our{" "}
+                <span className="text-[#f0c674] font-semibold">
+                  Advertising + Website bundle
+                </span>{" "}
+                and we&apos;ll build the site they land on when they look you up.
+              </p>
+
+              <p className="text-white/55 max-w-xl mx-auto mt-4">
+                Same team designing your spot builds your site — one point of contact,
+                one brand, start to finish.
+              </p>
+
+              <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a
+                  href="#contact-form"
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-[#DC2626] text-white rounded-full text-lg font-semibold hover:bg-red-700 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-red-900/40"
+                >
+                  Ask About the Bundle
+                  <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" className="w-5 h-5">
+                    <path d="M5 12h14m0 0l-6-6m6 6l-6 6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </a>
+                <a
+                  href={PHONE_HREF}
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-white/10 backdrop-blur-sm text-white rounded-full text-lg font-semibold border border-white/25 hover:bg-white/20 transition-all duration-300"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-5 h-5">
+                    <path d="M3 5a2 2 0 012-2h2.6a1 1 0 01.98.79l1 4a1 1 0 01-.29.95l-1.5 1.5a12 12 0 005.66 5.66l1.5-1.5a1 1 0 01.95-.29l4 1a1 1 0 01.79.98V19a2 2 0 01-2 2h-1C9.7 21 3 14.3 3 6V5z" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  {PHONE_DISPLAY}
+                </a>
+              </div>
+
+              <div className="mt-10 rounded-2xl overflow-hidden ring-1 ring-white/10 shadow-xl shadow-black/30">
+                <Image
+                  src="/assets/smart-scale-bundle-banner.webp"
+                  alt="Smart Scale — marketing that scales your business. SEO and local SEO, social media management, paid ad management, content creation, reputation management, and automation and AI solutions, shown with website designs we've built."
+                  width={1600}
+                  height={631}
+                  className="w-full h-auto"
+                  sizes="(max-width: 1152px) 100vw, 1100px"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -810,7 +889,7 @@ export default function AdvertisePage() {
                 <span className="text-[#DC2626] font-semibold">Mex Taco House</span> —
               </p>
               <p className="text-lg text-[#5c4f45] mb-6 animate-[fade-slide-up_0.5s_ease-out_1.4s_both]">
-                seen by <span className="text-[#DC2626] font-bold">5,000+ diners every month!</span>
+                seen by <span className="text-[#DC2626] font-bold">10,000+ diners every month!</span>
               </p>
               <p className="text-sm text-[#9a8b7d] animate-[fade-slide-up_0.5s_ease-out_1.6s_both]">
                 A member of our team will reach out within 24 hours to lock your
@@ -928,9 +1007,10 @@ export default function AdvertisePage() {
                   className="w-full px-4 py-3 rounded-xl border border-black/10 bg-[#faf6f0] text-[#1a1210] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/25 focus:border-[#DC2626]/40 transition"
                 >
                   <option value="">Select a plan</option>
-                  <option value="Annual - $4,500/yr">Annual — $4,500/yr (2 months free)</option>
-                  <option value="Standard - $450/mo (6 months)">Standard — $450/mo (6 months)</option>
-                  <option value="Short Term - $500/mo (3 months)">Short Term — $500/mo (3 months)</option>
+                  <option value="Annual - $3,600/yr">Annual — $3,600/yr (best value)</option>
+                  <option value="Standard - $325/mo (6 months)">Standard — $325/mo (6 months)</option>
+                  <option value="Short Term - $350/mo (3 months)">Short Term — $350/mo (3 months)</option>
+                  <option value="Advertising + Website bundle">Advertising + Website bundle — tell me more</option>
                   <option value="Not sure yet">Not sure yet — help me choose</option>
                 </select>
               </div>
