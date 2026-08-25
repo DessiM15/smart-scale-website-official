@@ -12,6 +12,7 @@ import {
 } from "@/lib/ads/notify";
 import { isEmailConfigured } from "@/lib/ads/email";
 import type { BackupEntry } from "@/lib/ads/backup";
+import { tabHref } from "./types";
 import { isLinkSigningConfigured } from "@/lib/ads/links";
 import type { PendingNotice, ScheduledNotice } from "@/lib/ads/renewals";
 import type { RenewalResponse } from "@/lib/ads/responses";
@@ -20,6 +21,7 @@ import {
   PLAN_LIST,
   SELLABLE_SLOTS,
   type AdvertiserView,
+  type Prospect,
   type RosterSummary,
 } from "@/lib/ads/roster";
 import {
@@ -327,6 +329,56 @@ function RenewalWatch({
 /* ---------------------------------- tab ----------------------------------- */
 
 /**
+ * Leads that came in on their own and haven't been picked up yet. The whole
+ * point of the advertise page writing into the roster is that these stop
+ * living in an inbox, so they belong on the front page, not two tabs away.
+ */
+function NewLeads({ leads }: { leads: Prospect[] }) {
+  if (leads.length === 0) return null;
+  return (
+    <Card
+      title={`New ${leads.length === 1 ? "lead" : "leads"} from the advertise page`}
+      lede="Nobody has worked these yet. Marking one contacted or hot takes them off this list."
+      surface="warn"
+      className="mb-5"
+      action={
+        <a href={tabHref("prospects")} className={linkQuiet}>
+          All prospects
+        </a>
+      }
+    >
+      <ul className="divide-y divide-white/[0.06] -my-2">
+        {leads.map((lead) => (
+          <li
+            key={lead.id}
+            className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm"
+          >
+            <span>
+              <span className="font-semibold text-white">{lead.business}</span>
+              <span className="text-white/35">
+                {" "}
+                · {lead.category || "no category given"}
+              </span>
+            </span>
+            <span className="flex items-center gap-4">
+              <span className="text-white/40 text-xs">{stamp(lead.addedAt)}</span>
+              {lead.phone && (
+                <a
+                  href={`tel:${lead.phone.replace(/[^\d+]/g, "")}`}
+                  className="rounded-full border border-[#DC2626]/40 px-3 py-1 text-xs font-semibold text-[#f87171] hover:bg-[#DC2626] hover:text-white hover:border-transparent transition-colors"
+                >
+                  Call
+                </a>
+              )}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
+/**
  * The roster is the one thing here that can't be reconstructed from anything
  * else, so whether it's being copied somewhere safe belongs on the front page
  * rather than buried in a settings screen.
@@ -374,6 +426,7 @@ export function OverviewTab({
   runs,
   replies,
   backups,
+  newLeads,
 }: {
   summary: RosterSummary;
   needsAttention: AdvertiserView[];
@@ -382,6 +435,7 @@ export function OverviewTab({
   runs: RunLogEntry[];
   replies: RenewalResponse[];
   backups: BackupEntry[];
+  newLeads: Prospect[];
 }) {
   return (
     <>
@@ -417,9 +471,14 @@ export function OverviewTab({
 
       <NeedsAttention items={needsAttention} />
 
+      <NewLeads leads={newLeads} />
+
       <Backups entries={backups} />
 
-      {needsAttention.length === 0 && replies.length === 0 && due.length === 0 && (
+      {needsAttention.length === 0 &&
+        replies.length === 0 &&
+        due.length === 0 &&
+        newLeads.length === 0 && (
         <div className="mb-5">
           <Empty>
             Nothing needs you today — no terms winding down, no replies waiting.

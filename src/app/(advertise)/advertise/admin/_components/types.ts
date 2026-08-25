@@ -9,6 +9,7 @@ export const TAB_IDS = [
   "reports",
   "qr",
   "prospects",
+  "setup",
 ] as const;
 
 export type TabId = (typeof TAB_IDS)[number];

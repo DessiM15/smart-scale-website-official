@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { isSignedIn, signIn, signOut } from "@/lib/ads/auth";
+import { isEmailConfigured, sendEmail, testEmail, type TestKind } from "@/lib/ads/email";
+import { runBackup } from "@/lib/ads/backup";
 import { runRenewalCheck } from "@/lib/ads/renewals";
 import { clearResponse } from "@/lib/ads/responses";
 import {
@@ -377,4 +379,41 @@ export async function editReportAction(data: FormData) {
   if (!ok) back({ err: "save" });
   revalidatePath(PAGE);
   back({ msg: "reportEdited" });
+}
+
+/* ------------------------------- test send -------------------------------- */
+
+/**
+ * Sends a sample to whoever asks for it. The only way to find out that email is
+ * broken should not be a client not receiving their renewal notice.
+ */
+export async function sendTestEmailAction(data: FormData) {
+  await requireAdmin();
+
+  const to = field(data, "to");
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) back({ err: "testaddress" });
+  if (!isEmailConfigured()) back({ err: "testunconfigured" });
+
+  const kind = (field(data, "kind") || "delivery") as TestKind;
+  const message = testEmail(kind === "renewal" ? "renewal" : "delivery");
+
+  const result = await sendEmail({ to, ...message });
+  if (!result.ok) back({ err: "testsend", detail: result.error ?? "" });
+
+  back({ msg: "testSent", detail: to });
+}
+
+/* -------------------------------- backups --------------------------------- */
+
+/** Runs the nightly snapshot on demand, so it can be proven rather than waited for. */
+export async function runBackupAction() {
+  await requireAdmin();
+  const result = await runBackup();
+  if (result.skipped) back({ err: "backupoff" });
+  if (!result.ok) back({ err: "backupfailed", detail: result.error ?? "" });
+  revalidatePath(PAGE);
+  back({
+    msg: "backupDone",
+    detail: `${result.entry?.advertisers ?? 0} advertisers, ${result.entry?.prospects ?? 0} prospects`,
+  });
 }

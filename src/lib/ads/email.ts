@@ -6,7 +6,7 @@
  * recorded skip when unconfigured rather than throwing inside the daily job.
  */
 
-import { formatDate, type AdvertiserView } from "./roster";
+import { addMonths, formatDate, toView, type AdvertiserView } from "./roster";
 import type { ReportFacts } from "./report-data";
 import type { Narrative } from "./narrative";
 
@@ -260,4 +260,108 @@ Questions, or want to change your artwork? Just reply to this email.
 Mex Taco House screen advertising is managed by Smart Scale.`;
 
   return { subject, html, text };
+}
+
+/* -------------------------------- test send ------------------------------- */
+
+export type TestKind = "delivery" | "renewal";
+
+/**
+ * A message you send yourself to prove the pipe works before a client is on the
+ * other end of it.
+ *
+ * Two kinds, because they fail differently. "delivery" is the smallest possible
+ * message and answers "did Resend accept it and did DNS let it land?".
+ * "renewal" is the actual template with invented figures, and answers "does it
+ * look right, is the reply address mine, do the buttons render?".
+ *
+ * Everything is marked as a test in the subject, in the first line and in the
+ * plain-text part, so a forwarded copy can't be mistaken for the real thing.
+ */
+export function testEmail(kind: TestKind) {
+  const from = fromAddress();
+  const replyTo = replyToAddress();
+
+  const banner = `<div style="background:${INK};color:#ffffff;padding:14px 18px;border-radius:12px;margin-bottom:20px;font-size:13px;line-height:1.5;">
+    <strong style="letter-spacing:0.08em;text-transform:uppercase;font-size:11px;">Test message</strong><br/>
+    Sent from the Mex Taco ad tracker to check that email is working. No client received this.
+  </div>`;
+
+  if (kind === "renewal") {
+    // A term ending in seven days, so the sample lands on the middle notice —
+    // the one with all three buttons showing.
+    const today = new Date();
+    const end = new Date(today.getTime() + 7 * 86_400_000)
+      .toISOString()
+      .slice(0, 10);
+    const start = addMonths(end, -6);
+
+    const sample = toView({
+      id: "sample",
+      business: "Sample Plumbing Co.",
+      contactName: "Alex",
+      email: "",
+      phone: "",
+      category: "Plumbing",
+      plan: "standard",
+      startDate: start,
+      status: "active",
+      qrCode: "",
+      notes: "",
+      createdAt: "",
+      updatedAt: "",
+    });
+
+    const built = renewalEmail(
+      sample,
+      {
+        // Deliberately inert. A live token would let anyone with the test email
+        // act on a real advertiser's term.
+        renew: "https://smartscaleagent.com/advertise",
+        change: "https://smartscaleagent.com/advertise",
+        cancel: "https://smartscaleagent.com/advertise",
+      },
+      412,
+    );
+
+    return {
+      subject: `[Test] ${built.subject}`,
+      html: built.html.replace(
+        /(<div style="max-width:560px[^>]*>)/,
+        `$1${banner}`,
+      ),
+      text: `*** TEST MESSAGE — no client received this. The figures below are invented. ***\n\n${built.text}`,
+    };
+  }
+
+  const html = `<!doctype html>
+<html><body style="margin:0;padding:0;background:${CREAM};">
+<div style="max-width:560px;margin:0 auto;padding:32px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:${INK};">
+  ${banner}
+  <h1 style="margin:0 0 16px;font-size:24px;line-height:1.3;font-weight:600;">Email is working.</h1>
+  <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">
+    If you are reading this, Resend accepted the message and your domain records let it land. Renewal notices and monthly reports can go out.
+  </p>
+  <div style="background:#ffffff;border:1px solid rgba(0,0,0,0.06);border-radius:14px;padding:18px 20px;font-size:14px;line-height:1.7;">
+    <div><span style="color:${MUTED};">Sent from</span> <strong>${from}</strong></div>
+    <div><span style="color:${MUTED};">Replies go to</span> <strong>${replyTo || "the sending address"}</strong></div>
+  </div>
+  <p style="margin:18px 0 0;font-size:14px;line-height:1.6;color:${MUTED};">
+    One thing worth checking now: hit reply. Every client email invites a reply, so if nothing receives at the address above, those replies bounce.
+  </p>
+</div>
+</body></html>`;
+
+  const text = `*** TEST MESSAGE — no client received this. ***
+
+EMAIL IS WORKING.
+
+If you are reading this, Resend accepted the message and your domain records let it land.
+
+  Sent from:      ${from}
+  Replies go to:  ${replyTo || "the sending address"}
+
+One thing worth checking now: hit reply. Every client email invites a reply, so if nothing receives at the address above, those replies bounce.`;
+
+  return { subject: "[Test] Mex Taco ad tracker — email check", html, text };
 }
