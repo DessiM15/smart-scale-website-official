@@ -186,6 +186,10 @@ export function Field({
   placeholder,
   required,
   hint,
+  // Money and term fields are plain text inputs rather than type="number" —
+  // a number spinner invites scroll-wheel edits on a price — but they should
+  // still bring up a numeric keypad on a phone.
+  inputMode,
 }: {
   label: string;
   name: string;
@@ -195,6 +199,7 @@ export function Field({
   placeholder?: string;
   required?: boolean;
   hint?: string;
+  inputMode?: "text" | "decimal" | "numeric";
 }) {
   return (
     <div>
@@ -209,6 +214,7 @@ export function Field({
         defaultValue={defaultValue}
         placeholder={placeholder}
         required={required}
+        inputMode={inputMode}
         className={inputClass}
       />
       {hint && <p className="mt-1.5 text-xs text-white/30">{hint}</p>}

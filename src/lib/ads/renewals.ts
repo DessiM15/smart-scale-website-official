@@ -19,7 +19,8 @@ import {
 import { isEmailConfigured, renewalEmail, sendEmail } from "./email";
 import { isLinkSigningConfigured, renewalUrl } from "./links";
 import { hasResponded } from "./responses";
-import { getCodeStats } from "./scan-store";
+import { getCombinedStats } from "./scan-store";
+import { codesForAdvertiser } from "./link-store";
 
 const ADMIN_URL = "smartscaleagent.com/advertise/admin";
 
@@ -239,12 +240,15 @@ async function emailAdvertiser(
   }
 
   let scanTotal: number | undefined;
-  if (advertiser.qrCode) {
-    try {
-      scanTotal = (await getCodeStats(advertiser.qrCode, 1)).total;
-    } catch {
-      scanTotal = undefined;
+  try {
+    const codes = await codesForAdvertiser(advertiser.id, advertiser.qrCode);
+    if (codes.length > 0) {
+      scanTotal = (await getCombinedStats(codes, 1)).total;
     }
+  } catch {
+    // The email is worth sending without the scan line; it isn't worth failing
+    // a renewal notice over a stats lookup.
+    scanTotal = undefined;
   }
 
   const { subject, html, text } = renewalEmail(

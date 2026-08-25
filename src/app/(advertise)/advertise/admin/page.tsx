@@ -5,6 +5,7 @@ import { listLinks } from "@/lib/ads/link-store";
 import { getCodeStats } from "@/lib/ads/scan-store";
 import { listAdvertisers, listProspects, summarize } from "@/lib/ads/roster";
 import { recentRuns } from "@/lib/ads/notify";
+import { recentBackups } from "@/lib/ads/backup";
 import { findDueNotices, upcomingSchedule } from "@/lib/ads/renewals";
 import { listResponses } from "@/lib/ads/responses";
 import { listReports } from "@/lib/ads/reports";
@@ -32,12 +33,17 @@ export const metadata: Metadata = {
  */
 const TAB_FOR_RESULT: Record<string, TabId> = {
   added: "advertisers",
+  addedWithCode: "advertisers",
+  addedNoCode: "advertisers",
   updated: "advertisers",
   removed: "advertisers",
   category: "advertisers",
   business: "advertisers",
   plan: "advertisers",
   startdate: "advertisers",
+  dealnote: "advertisers",
+  dealnumber: "advertisers",
+  dealmonths: "advertisers",
   linkAdded: "qr",
   linkSaved: "qr",
   linkOn: "qr",
@@ -170,17 +176,27 @@ export default async function AdminPage({
     );
   }
 
-  const [advertisers, prospects, dueNotices, schedule, runs, replies, databaseReachable, rawLinks] =
-    await Promise.all([
-      listAdvertisers(),
-      listProspects(),
-      findDueNotices(),
-      upcomingSchedule(),
-      recentRuns(),
-      listResponses(),
-      isRedisReachable(),
-      listLinks(),
-    ]);
+  const [
+    advertisers,
+    prospects,
+    dueNotices,
+    schedule,
+    runs,
+    replies,
+    databaseReachable,
+    rawLinks,
+    backups,
+  ] = await Promise.all([
+    listAdvertisers(),
+    listProspects(),
+    findDueNotices(),
+    upcomingSchedule(),
+    recentRuns(),
+    listResponses(),
+    isRedisReachable(),
+    listLinks(),
+    recentBackups(),
+  ]);
   const reports = await listReports();
 
   const links: LinkView[] = await Promise.all(
@@ -283,6 +299,7 @@ export default async function AdminPage({
             schedule={schedule}
             runs={runs}
             replies={replies}
+            backups={backups}
           />
         )}
 

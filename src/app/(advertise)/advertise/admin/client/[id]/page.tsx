@@ -1,0 +1,711 @@
+/**
+ * One client, everything about them, on one screen.
+ *
+ * The tabs on the tracker answer "what's the state of the business?". This
+ * answers "what's going on with this client?" — the deal they're actually on,
+ * every code they've got and what each one pulls, the artwork currently on the
+ * screens, and the paperwork. It reads; contract edits still happen in the
+ * roster editor, because there is one form for that and two would drift.
+ */
+
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
+import { notFound, redirect } from "next/navigation";
+import { isSignedIn } from "@/lib/ads/auth";
+import {
+  artworkAgeDays,
+  isArtworkStoreConfigured,
+  listArtwork,
+  type Artwork,
+} from "@/lib/ads/artwork";
+import { linksForAdvertiser, listLinks, type AdLinkRecord } from "@/lib/ads/link-store";
+import { getCodeStats, type CodeStats } from "@/lib/ads/scan-store";
+import {
+  formatDate,
+  getAdvertiser,
+  toView,
+  type AdvertiserView,
+} from "@/lib/ads/roster";
+import {
+  Card,
+  Empty,
+  Field,
+  Note,
+  Pill,
+  SubHead,
+  Tile,
+  btnGhost,
+  btnPrimary,
+  inputClass,
+  labelClass,
+  linkAction,
+  linkQuiet,
+  money,
+  stamp,
+  type Tone,
+} from "../../_components/ui";
+import { tabHref } from "../../_components/types";
+import {
+  addClientLinkAction,
+  deleteArtworkAction,
+  repointClientLinkAction,
+  saveNotesAction,
+  uploadArtworkAction,
+} from "./actions";
+
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Client",
+  robots: { index: false, follow: false },
+};
+
+/** Slide refreshes get stale quietly, so the age is called out rather than shown. */
+const ARTWORK_STALE_DAYS = 90;
+
+/* --------------------------------- banner --------------------------------- */
+
+const MESSAGES: Record<string, string> = {
+  notesSaved: "Notes saved.",
+  artworkSaved: "Artwork uploaded.",
+  artworkRemoved: "Artwork removed.",
+  linkAdded: "QR code created.",
+  linkSaved: "Destination updated — the printed code still works.",
+};
+
+const ERRORS: Record<string, string> = {
+  missing: "Something didn't come through. Try that again.",
+  save: "The database didn't accept that. Check the connection and retry.",
+  artwork: "That artwork didn't upload.",
+  artworkmissing: "Pick a file first.",
+  destination: "That destination isn't right.",
+  code: "That code isn't valid.",
+  codetaken: "That code already belongs to something else.",
+  codemissing: "There's no code by that name.",
+};
+
+function ResultBanner({
+  msg,
+  err,
+  detail,
+}: {
+  msg?: string;
+  err?: string;
+  detail?: string;
+}) {
+  const text = err ? ERRORS[err] : msg ? MESSAGES[msg] : undefined;
+  if (!text) return null;
+
+  // A code arrives as a bare name; show it the way it gets printed.
+  const isCode = msg === "linkAdded" || msg === "linkSaved" || err === "codetaken";
+  const note = detail ? (isCode ? `/go/${detail}` : detail) : "";
+
+  return (
+    <div className="mb-6">
+      <Note tone={err ? "bad" : "ok"}>
+        <p className="text-sm font-semibold text-white">{text}</p>
+        {note && <p className="mt-1.5 text-sm text-white/55">{note}</p>}
+      </Note>
+    </div>
+  );
+}
+
+/* -------------------------------- the deal -------------------------------- */
+
+function statusTone(view: AdvertiserView): { label: string; tone: Tone } {
+  if (view.overdue) return { label: "Term ended", tone: "brand" };
+  if (view.expiringSoon) return { label: `${view.daysRemaining} days left`, tone: "warn" };
+  if (view.status === "active") return { label: "Running", tone: "ok" };
+  if (view.status === "pending") return { label: "Signed, not live", tone: "neutral" };
+  return { label: "Ended", tone: "neutral" };
+}
+
+function Row({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-baseline justify-between gap-3 py-3 border-t border-white/[0.06] first:border-t-0">
+      <dt className="text-[10px] uppercase tracking-[0.16em] text-white/40 font-semibold">
+        {label}
+      </dt>
+      <dd className="text-sm text-white/75 tabular-nums text-right">{children}</dd>
+    </div>
+  );
+}
+
+function TheDeal({ view }: { view: AdvertiserView }) {
+  return (
+    <Card
+      title="The deal"
+      lede={
+        view.isCustom
+          ? "This client is on a rate of their own — every figure below is what they actually pay."
+          : "Package pricing, straight off the rate card."
+      }
+      action={
+        <a href={`${tabHref("advertisers", { edit: view.id })}#editor`} className={btnGhost}>
+          Edit contract
+        </a>
+      }
+      className="mb-5"
+    >
+      <dl>
+        <Row label="Package">
+          {view.planName}
+          {view.isCustom && (
+            <span className="ml-2">
+              <Pill tone="warn">custom</Pill>
+            </span>
+          )}
+        </Row>
+        <Row label="Monthly">
+          {view.monthly ? `${money(view.monthly)}/mo` : "no charge"}
+          {view.monthly !== view.listMonthly && (
+            <span className="ml-2 text-white/30 line-through">
+              {money(view.listMonthly)}
+            </span>
+          )}
+        </Row>
+        <Row label="Setup">
+          {view.setup ? money(view.setup) : "waived"}
+          {view.setup !== view.listSetup && (
+            <span className="ml-2 text-white/30 line-through">
+              {view.listSetup ? money(view.listSetup) : "waived"}
+            </span>
+          )}
+        </Row>
+        <Row label="Term">
+          {view.months} months
+          {view.months !== view.listMonths && (
+            <span className="ml-2 text-white/30 line-through">{view.listMonths}</span>
+          )}
+        </Row>
+        <Row label="Runs">
+          {formatDate(view.startDate)} → {formatDate(view.endDate)}
+        </Row>
+        <Row label="Whole term">
+          {money(view.termValue)}
+          {view.termValue !== view.listTermValue && (
+            <span className="ml-2 text-white/30 line-through">
+              {money(view.listTermValue)}
+            </span>
+          )}
+        </Row>
+        <Row label="Category">{view.category || "—"}</Row>
+      </dl>
+
+      {view.isCustom && (
+        <div className="mt-5">
+          <Note tone="warn">
+            <p className="text-[10px] uppercase tracking-[0.16em] text-amber-300/70 font-semibold">
+              Why they're not on list price
+            </p>
+            <p className="mt-1.5 text-sm text-white/75">
+              {view.dealNote || "No reason recorded — add one on the contract editor."}
+            </p>
+            {view.monthlyDiscount !== 0 && (
+              <p className="mt-2 text-sm text-white/45 tabular-nums">
+                {view.monthlyDiscount > 0
+                  ? `${money(view.monthlyDiscount)}/mo under list — ${money(
+                      view.monthlyDiscount * view.months,
+                    )} across the term.`
+                  : `${money(-view.monthlyDiscount)}/mo over list.`}
+              </p>
+            )}
+          </Note>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+/* -------------------------------- QR codes -------------------------------- */
+
+/** A plain area chart of the last 30 days. No axis — it's a shape, not a table. */
+function Sparkline({ series }: { series: { date: string; count: number }[] }) {
+  if (series.length < 2) return null;
+  const peak = Math.max(1, ...series.map((p) => p.count));
+  const step = 100 / (series.length - 1);
+  const points = series.map((p, i) => `${i * step},${30 - (p.count / peak) * 30}`);
+
+  return (
+    <svg
+      viewBox="0 0 100 30"
+      preserveAspectRatio="none"
+      className="w-full h-8"
+      aria-hidden
+    >
+      <polygon points={`0,30 ${points.join(" ")} 100,30`} fill="rgba(220,38,38,0.16)" />
+      <polyline
+        points={points.join(" ")}
+        fill="none"
+        stroke="#DC2626"
+        strokeWidth="1.2"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
+function CodeCard({
+  link,
+  stats,
+  advertiserId,
+}: {
+  link: AdLinkRecord;
+  stats: CodeStats;
+  advertiserId: string;
+}) {
+  return (
+    <li className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="font-mono text-sm text-[#f87171]">/go/{link.code}</p>
+          <p className="text-xs text-white/35 mt-0.5">{link.label}</p>
+        </div>
+        {link.active ? <Pill tone="ok">Live</Pill> : <Pill>Retired</Pill>}
+      </div>
+
+      <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+        {[
+          { label: "All time", value: stats.total },
+          { label: "Last 7", value: stats.last7 },
+          { label: "Today", value: stats.today },
+        ].map((s) => (
+          <div key={s.label}>
+            <p className="text-2xl font-semibold text-white tabular-nums">{s.value}</p>
+            <p className="text-[10px] uppercase tracking-[0.14em] text-white/30 font-semibold mt-0.5">
+              {s.label}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-3">
+        <Sparkline series={stats.series} />
+        <p className="text-[10px] uppercase tracking-[0.14em] text-white/25 font-semibold mt-1">
+          Last 30 days
+        </p>
+      </div>
+
+      <form action={repointClientLinkAction} className="mt-4 space-y-2">
+        <input type="hidden" name="id" value={advertiserId} />
+        <input type="hidden" name="code" value={link.code} />
+        <label className={labelClass} htmlFor={`dest-${link.code}`}>
+          Sends people to
+        </label>
+        <input
+          id={`dest-${link.code}`}
+          name="destination"
+          type="url"
+          defaultValue={link.destination}
+          className={inputClass}
+        />
+        <div className="flex flex-wrap items-center gap-4 pt-1">
+          <button type="submit" className={linkAction}>
+            Save destination
+          </button>
+          <a href={`/api/ads/qr/${link.code}?format=png`} className={linkQuiet}>
+            PNG
+          </a>
+          <a href={`/api/ads/qr/${link.code}?format=svg`} className={linkQuiet}>
+            SVG
+          </a>
+          <a href={`${tabHref("qr", { editLink: link.code })}#qr`} className={linkQuiet}>
+            Full settings
+          </a>
+        </div>
+      </form>
+    </li>
+  );
+}
+
+function CodesCard({
+  view,
+  codes,
+}: {
+  view: AdvertiserView;
+  codes: { link: AdLinkRecord; stats: CodeStats }[];
+}) {
+  const total = codes.reduce((sum, c) => sum + c.stats.total, 0);
+
+  return (
+    <Card
+      title="QR codes"
+      lede={
+        codes.length > 1
+          ? "Each placement is counted on its own, so you can tell which one is doing the work."
+          : "Add a code per placement — flyer, window, table tent — and compare them."
+      }
+      className="mb-5"
+    >
+      {codes.length === 0 ? (
+        <Empty>No codes yet. Make their first one below.</Empty>
+      ) : (
+        <>
+          <ul className="grid sm:grid-cols-2 gap-4">
+            {codes.map(({ link, stats }) => (
+              <CodeCard
+                key={link.code}
+                link={link}
+                stats={stats}
+                advertiserId={view.id}
+              />
+            ))}
+          </ul>
+          {codes.length > 1 && (
+            <p className="mt-5 text-sm text-white/45 tabular-nums">
+              {total.toLocaleString()} scans across {codes.length} codes.
+            </p>
+          )}
+        </>
+      )}
+
+      <details className="mt-6 rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden">
+        <summary className="cursor-pointer px-5 py-4 text-sm font-semibold text-white list-none [&::-webkit-details-marker]:hidden hover:bg-white/[0.02]">
+          Add another code
+        </summary>
+        <form action={addClientLinkAction} className="px-5 pb-5 pt-1 space-y-4">
+          <input type="hidden" name="id" value={view.id} />
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Field
+              label="Where it sends people"
+              name="destination"
+              id="newDestination"
+              type="url"
+              placeholder="https://theirsite.com/book"
+              required
+            />
+            <Field
+              label="What it's for"
+              name="label"
+              id="newLabel"
+              placeholder="Flyer, window cling, table tent…"
+            />
+          </div>
+          <Field
+            label="Code"
+            name="code"
+            id="newCode"
+            placeholder="leave blank and we'll name it"
+            hint={`Left blank, it's named from their code and the placement — "flyer" becomes /go/${
+              codes[0]?.link.code ?? "them"
+            }-flyer. It gets printed, so it can never be changed later.`}
+          />
+          <button type="submit" className={btnPrimary}>
+            Create code
+          </button>
+        </form>
+      </details>
+    </Card>
+  );
+}
+
+/* -------------------------------- artwork --------------------------------- */
+
+const fileSize = (bytes: number) =>
+  bytes > 1024 * 1024
+    ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
+    : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+
+function ArtworkCard({
+  view,
+  artwork,
+  configured,
+}: {
+  view: AdvertiserView;
+  artwork: Artwork[];
+  configured: boolean;
+}) {
+  const current = artwork[0] ?? null;
+  const age = artworkAgeDays(current);
+  const history = artwork.slice(1);
+
+  return (
+    <Card
+      title="Ad artwork"
+      lede="The slide that's on the screens, and everything we've run for them before."
+      className="mb-5"
+    >
+      {!configured && (
+        <div className="mb-5">
+          <Note tone="warn">
+            <p className="text-sm font-semibold text-white">
+              No file storage connected — artwork can&apos;t be saved yet.
+            </p>
+            <p className="mt-1.5 text-sm text-white/55">
+              In Vercel: Storage → Create → Blob, connect it to this project, then
+              redeploy. It sets{" "}
+              <code className="font-mono text-xs text-white/75">
+                BLOB_READ_WRITE_TOKEN
+              </code>{" "}
+              for you. Everything else on this page works without it.
+            </p>
+          </Note>
+        </div>
+      )}
+
+      {current ? (
+        <div className="grid sm:grid-cols-[minmax(0,20rem)_1fr] gap-6 items-start">
+          <a
+            href={current.url}
+            target="_blank"
+            rel="noreferrer"
+            className="block rounded-2xl border border-white/[0.07] overflow-hidden bg-black"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={current.url}
+              alt={`Current ad artwork for ${view.business}`}
+              className="w-full h-auto"
+            />
+          </a>
+          <div>
+            <SubHead>On the screens now</SubHead>
+            <p className="text-sm text-white/70">{current.note || current.filename}</p>
+            <p className="mt-1 text-xs text-white/35">
+              Uploaded {stamp(current.uploadedAt)} · {fileSize(current.size)}
+            </p>
+            {age !== null && age >= ARTWORK_STALE_DAYS && (
+              <div className="mt-4">
+                <Note tone="warn">
+                  <p className="text-sm text-white/75">
+                    This slide is {age} days old. Worth asking whether they want it
+                    refreshed — it&apos;s an easy reason to call.
+                  </p>
+                </Note>
+              </div>
+            )}
+            <form action={deleteArtworkAction} className="mt-4">
+              <input type="hidden" name="id" value={view.id} />
+              <input type="hidden" name="artworkId" value={current.id} />
+              <button type="submit" className={linkQuiet}>
+                Remove this version
+              </button>
+            </form>
+          </div>
+        </div>
+      ) : (
+        <Empty>No artwork on file. Upload their slide below.</Empty>
+      )}
+
+      {history.length > 0 && (
+        <div className="mt-7 pt-6 border-t border-white/[0.06]">
+          <SubHead>Previous versions</SubHead>
+          <ul className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {history.map((item) => (
+              <li key={item.id}>
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block rounded-xl border border-white/[0.07] overflow-hidden bg-black"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.url}
+                    alt={item.note || item.filename}
+                    className="w-full h-auto"
+                  />
+                </a>
+                <p className="mt-1.5 text-xs text-white/35 truncate">
+                  {item.note || stamp(item.uploadedAt)}
+                </p>
+                <form action={deleteArtworkAction}>
+                  <input type="hidden" name="id" value={view.id} />
+                  <input type="hidden" name="artworkId" value={item.id} />
+                  <button type="submit" className={linkQuiet}>
+                    Remove
+                  </button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <form
+        action={uploadArtworkAction}
+        className="mt-7 pt-6 border-t border-white/[0.06] space-y-4"
+      >
+        <input type="hidden" name="id" value={view.id} />
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelClass} htmlFor="artwork">
+              New slide
+            </label>
+            <input
+              id="artwork"
+              name="artwork"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              className={`${inputClass} file:mr-3 file:rounded-lg file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white`}
+            />
+            <p className="mt-1.5 text-xs text-white/30">
+              PNG, JPG, WEBP or GIF, up to 4 MB.
+            </p>
+          </div>
+          <Field
+            label="What changed"
+            name="note"
+            id="artworkNote"
+            placeholder="Spring menu, new phone number…"
+          />
+        </div>
+        <button type="submit" className={btnPrimary} disabled={!configured}>
+          Upload artwork
+        </button>
+      </form>
+    </Card>
+  );
+}
+
+/* --------------------------------- page ----------------------------------- */
+
+export default async function ClientProfilePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ msg?: string; err?: string; detail?: string }>;
+}) {
+  if (!(await isSignedIn())) redirect("/advertise/admin");
+
+  const [{ id }, query] = await Promise.all([params, searchParams]);
+
+  const advertiser = await getAdvertiser(id);
+  if (!advertiser) notFound();
+
+  const view = toView(advertiser);
+  const allLinks = await listLinks();
+  const theirLinks = linksForAdvertiser(allLinks, id, advertiser.qrCode);
+
+  const [codes, artwork] = await Promise.all([
+    Promise.all(
+      theirLinks.map(async (link) => ({
+        link,
+        stats: await getCodeStats(link.code, 30),
+      })),
+    ),
+    listArtwork(id),
+  ]);
+
+  const totalScans = codes.reduce((sum, c) => sum + c.stats.total, 0);
+  const status = statusTone(view);
+
+  return (
+    <main className="min-h-screen bg-[#0A0A0A] text-white">
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-x-0 top-0 h-96"
+        style={{
+          background:
+            "radial-gradient(70rem 30rem at 50% -8rem, rgba(220,38,38,0.10), transparent 70%)",
+        }}
+      />
+
+      <header className="sticky top-0 z-20 border-b border-white/[0.07] bg-[#0A0A0A]/85 backdrop-blur-xl">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-6 pb-5">
+          <a href={tabHref("advertisers")} className={`${linkQuiet} inline-block mb-3`}>
+            ← All advertisers
+          </a>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-3xl sm:text-4xl text-white tracking-tight">
+                  {view.business}
+                </h1>
+                <Pill tone={status.tone}>{status.label}</Pill>
+              </div>
+              <p className="mt-2 text-sm text-white/40">
+                {[view.category, view.contactName, view.email, view.phone]
+                  .filter(Boolean)
+                  .join(" · ") || "No contact details yet"}
+              </p>
+            </div>
+            <div className="flex items-center gap-2.5">
+              {view.phone && (
+                <a href={`tel:${view.phone.replace(/[^\d+]/g, "")}`} className={btnGhost}>
+                  Call
+                </a>
+              )}
+              {view.email && (
+                <a href={`mailto:${view.email}`} className={btnGhost}>
+                  Email
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="relative max-w-6xl mx-auto px-5 sm:px-8 py-8 sm:py-10">
+        <ResultBanner msg={query.msg} err={query.err} detail={query.detail} />
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5">
+          <Tile
+            label="Their rate"
+            value={view.monthly ? `${money(view.monthly)}/mo` : "Free"}
+            hint={view.isCustom ? `list is ${money(view.listMonthly)}/mo` : "list price"}
+          />
+          <Tile
+            label="Whole term"
+            value={money(view.termValue)}
+            hint={`${view.months} months${view.setup ? ` + ${money(view.setup)} setup` : ""}`}
+          />
+          <Tile
+            label={view.daysRemaining >= 0 ? "Days left" : "Days overdue"}
+            value={`${Math.abs(view.daysRemaining)}`}
+            hint={`ends ${formatDate(view.endDate)}`}
+            tone={view.overdue || view.expiringSoon ? "alert" : "plain"}
+          />
+          <Tile
+            label="Total scans"
+            value={totalScans.toLocaleString()}
+            hint={codes.length === 1 ? "on their code" : `across ${codes.length} codes`}
+          />
+        </div>
+
+        <TheDeal view={view} />
+        <CodesCard view={view} codes={codes} />
+        <ArtworkCard
+          view={view}
+          artwork={artwork}
+          configured={isArtworkStoreConfigured()}
+        />
+
+        <Card
+          title="Notes"
+          lede="Anything you'd want to remember before you call them."
+          className="mb-5"
+        >
+          <form action={saveNotesAction} className="space-y-4">
+            <input type="hidden" name="id" value={view.id} />
+            <textarea
+              name="notes"
+              rows={4}
+              defaultValue={view.notes}
+              placeholder="Artwork due, renewal conversation, billing quirks…"
+              className={inputClass}
+            />
+            <button type="submit" className={btnPrimary}>
+              Save notes
+            </button>
+          </form>
+        </Card>
+
+        <Card
+          title="Documents"
+          lede="Signed agreements and anything else worth keeping on this client."
+        >
+          <Empty>
+            Nothing here yet — agreements and signing are the next piece of work.
+          </Empty>
+        </Card>
+
+        <p className="mt-12 text-xs text-white/25 max-w-2xl leading-relaxed">
+          A QR code&apos;s name is permanent because it gets printed, but where it sends
+          people can be changed at any time and takes effect on the next scan.
+        </p>
+      </div>
+    </main>
+  );
+}

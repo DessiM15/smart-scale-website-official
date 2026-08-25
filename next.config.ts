@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    // Ad artwork is uploaded through a server action, and the default 1 MB
+    // body limit rejects a normal 1920x1080 slide. 4.5 MB is the ceiling
+    // Vercel's functions accept, so the artwork store caps itself at 4 MB to
+    // leave room for the rest of the form.
+    serverActions: { bodySizeLimit: "4.5mb" },
+  },
   images: {
     // Enable image optimization
     formats: ['image/webp', 'image/avif'],

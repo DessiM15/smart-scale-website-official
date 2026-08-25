@@ -11,6 +11,7 @@ import {
   type RunLogEntry,
 } from "@/lib/ads/notify";
 import { isEmailConfigured } from "@/lib/ads/email";
+import type { BackupEntry } from "@/lib/ads/backup";
 import { isLinkSigningConfigured } from "@/lib/ads/links";
 import type { PendingNotice, ScheduledNotice } from "@/lib/ads/renewals";
 import type { RenewalResponse } from "@/lib/ads/responses";
@@ -91,7 +92,12 @@ function NeedsAttention({ items }: { items: AdvertiserView[] }) {
             className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm"
           >
             <span className="font-semibold text-white">
-              {v.business}
+              <a
+                href={`/advertise/admin/client/${v.id}`}
+                className="hover:text-[#f87171] transition-colors"
+              >
+                {v.business}
+              </a>
               <span className="font-normal text-white/35">
                 {" "}
                 · {v.category || "no category"}
@@ -320,6 +326,46 @@ function RenewalWatch({
 
 /* ---------------------------------- tab ----------------------------------- */
 
+/**
+ * The roster is the one thing here that can't be reconstructed from anything
+ * else, so whether it's being copied somewhere safe belongs on the front page
+ * rather than buried in a settings screen.
+ */
+function Backups({ entries }: { entries: BackupEntry[] }) {
+  const last = entries[0];
+  if (last) {
+    const stale = Date.now() - Date.parse(last.at) > 3 * 86_400_000;
+    if (!stale) return null;
+    return (
+      <div className="mb-5">
+        <Note tone="warn">
+          <p className="text-sm font-semibold text-white">
+            The roster hasn&apos;t been backed up since {stamp(last.at)}.
+          </p>
+          <p className="mt-1.5 text-sm text-white/55">
+            The daily job should be copying it every night. Check that the cron ran.
+          </p>
+        </Note>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mb-5">
+      <Note tone="warn">
+        <p className="text-sm font-semibold text-white">
+          The roster isn&apos;t being backed up.
+        </p>
+        <p className="mt-1.5 text-sm text-white/55">
+          Contracts and rates live in one database on a free plan with no copy
+          anywhere else. In Vercel: Storage → Create → Blob, connect it to this
+          project, then redeploy — the nightly job takes it from there.
+        </p>
+      </Note>
+    </div>
+  );
+}
+
 export function OverviewTab({
   summary,
   needsAttention,
@@ -327,6 +373,7 @@ export function OverviewTab({
   schedule,
   runs,
   replies,
+  backups,
 }: {
   summary: RosterSummary;
   needsAttention: AdvertiserView[];
@@ -334,6 +381,7 @@ export function OverviewTab({
   schedule: ScheduledNotice[];
   runs: RunLogEntry[];
   replies: RenewalResponse[];
+  backups: BackupEntry[];
 }) {
   return (
     <>
@@ -352,7 +400,13 @@ export function OverviewTab({
         <Tile
           label="Monthly revenue"
           value={money(summary.monthlyRevenue)}
-          hint="active advertisers"
+          hint={
+            summary.customDeals > 0
+              ? `${money(summary.listMonthlyRevenue)} at list · ${summary.customDeals} custom deal${
+                  summary.customDeals === 1 ? "" : "s"
+                }`
+              : "active advertisers"
+          }
         />
         <Tile
           label="Contracted"
@@ -362,6 +416,8 @@ export function OverviewTab({
       </div>
 
       <NeedsAttention items={needsAttention} />
+
+      <Backups entries={backups} />
 
       {needsAttention.length === 0 && replies.length === 0 && due.length === 0 && (
         <div className="mb-5">

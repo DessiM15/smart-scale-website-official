@@ -3,8 +3,14 @@
  * `?msg=` or `?err=`, so this is the only feedback channel the page has.
  */
 
-const notices = (sent?: string, checked?: string): Record<string, string> => ({
+const notices = (
+  sent?: string,
+  checked?: string,
+  detail?: string,
+): Record<string, string> => ({
   added: "Advertiser added.",
+  addedWithCode: `Advertiser added, and their QR code is live at /go/${detail}. Download the artwork on the QR codes tab.`,
+  addedNoCode: "Advertiser added, but their QR code couldn't be created. Make it on the QR codes tab.",
   updated: "Changes saved.",
   removed: "Advertiser removed.",
   prospect: "Saved to the interested list.",
@@ -42,6 +48,9 @@ const errors = (clash?: string, detail?: string): Record<string, string> => ({
   logotype: "Logos must be a PNG, JPEG, WebP or SVG.",
   logosize: "That logo is over 200KB. Export a smaller version and try again.",
   reportsend: detail ?? "Could not send that report.",
+  dealnote: "Say why this client isn't on list price — future you will want to know.",
+  dealnumber: `"${detail}" isn't a number I can use. Enter the amount in dollars, like 275.`,
+  dealmonths: "A custom term has to be at least one whole month.",
 });
 
 export function Banner({
@@ -62,7 +71,7 @@ export function Banner({
   const text = err
     ? errors(clash, detail)[err]
     : msg
-      ? notices(sent, checked)[msg]
+      ? notices(sent, checked, detail)[msg]
       : undefined;
   if (!text) return null;
 

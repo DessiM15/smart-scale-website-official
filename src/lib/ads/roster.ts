@@ -28,10 +28,17 @@ export type Plan = {
   internalOnly?: boolean;
 };
 
+/**
+ * The public price list. These are the numbers on /advertise and on the printed
+ * rate card, and they must stay in step with both — a rate here that nobody is
+ * actually charged turns every revenue figure in this tracker into fiction.
+ * A client who pays something else gets a custom rate on their own record
+ * rather than a quiet edit to this table.
+ */
 export const PLANS: Record<PlanId, Plan> = {
-  short: { id: "short", name: "Short Term", months: 3, monthly: 500, setup: 99 },
-  standard: { id: "standard", name: "Standard", months: 6, monthly: 450, setup: 0 },
-  annual: { id: "annual", name: "Annual", months: 12, monthly: 375, setup: 0 },
+  short: { id: "short", name: "Short Term", months: 3, monthly: 350, setup: 99 },
+  standard: { id: "standard", name: "Standard", months: 6, monthly: 325, setup: 0 },
+  annual: { id: "annual", name: "Annual", months: 12, monthly: 300, setup: 0 },
   starter: {
     id: "starter",
     name: "Free Starter",
@@ -58,9 +65,23 @@ export type Advertiser = {
   /** YYYY-MM-DD, restaurant time. */
   startDate: string;
   status: AdvertiserStatus;
-  /** Optional link to a code in ./advertisers, e.g. "plumb". */
+  /**
+   * The client's first QR code, kept for records written before codes carried
+   * an owner. New work should read `linksForAdvertiser` in ./link-store, which
+   * honours this field and finds the rest of their codes too.
+   */
   qrCode: string;
   notes: string;
+  /**
+   * A rate struck with this client instead of the package price. Null or absent
+   * means they pay list. Stored per-client rather than as extra packages so the
+   * price list stays the price list — a one-off deal is not a product.
+   */
+  customMonthly?: number | null;
+  customSetup?: number | null;
+  customMonths?: number | null;
+  /** Why they aren't on list price. Required whenever an override is set. */
+  dealNote?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -125,9 +146,67 @@ export function formatDate(date: string): string {
 
 /* -------------------------------- derived --------------------------------- */
 
-export type AdvertiserView = Advertiser & {
-  planName: string;
+/**
+ * A price override only counts if it is a real, non-negative number. Anything
+ * else — a blank field, a stray string out of Redis, a NaN — falls back to the
+ * package price rather than quietly zeroing someone's revenue.
+ */
+function override(value: number | null | undefined): number | null {
+  if (value === null || value === undefined) return null;
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
+export type Terms = {
+  /** What they actually pay. */
   monthly: number;
+  setup: number;
+  months: number;
+  /** What the package says. */
+  listMonthly: number;
+  listSetup: number;
+  listMonths: number;
+  /** Any of the three has been overridden. */
+  isCustom: boolean;
+  /** Positive when they pay under list, negative when they pay over. */
+  monthlyDiscount: number;
+  /** Whole-term value at the rate they actually pay, setup included. */
+  termValue: number;
+  /** Whole-term value at list price, for comparison. */
+  listTermValue: number;
+};
+
+/**
+ * What a client is really on. Every figure in this tracker goes through here,
+ * so a special deal shows up in the revenue rather than only in someone's memory.
+ */
+export function termsFor(a: Advertiser): Terms {
+  const plan = PLANS[a.plan] ?? PLANS.standard;
+
+  const monthly = override(a.customMonthly) ?? plan.monthly;
+  const setup = override(a.customSetup) ?? plan.setup;
+  // A term of zero months would make the end date the start date, so a custom
+  // length has to be at least one whole month.
+  const customMonths = override(a.customMonths);
+  const months = customMonths && customMonths >= 1 ? Math.round(customMonths) : plan.months;
+
+  return {
+    monthly,
+    setup,
+    months,
+    listMonthly: plan.monthly,
+    listSetup: plan.setup,
+    listMonths: plan.months,
+    isCustom:
+      monthly !== plan.monthly || setup !== plan.setup || months !== plan.months,
+    monthlyDiscount: plan.monthly - monthly,
+    termValue: monthly * months + setup,
+    listTermValue: plan.monthly * plan.months + plan.setup,
+  };
+}
+
+export type AdvertiserView = Advertiser & Terms & {
+  planName: string;
   endDate: string;
   daysRemaining: number;
   /** Term is up within 60 days and they're still active. */
@@ -138,12 +217,15 @@ export type AdvertiserView = Advertiser & {
 
 export function toView(a: Advertiser, asOf = today()): AdvertiserView {
   const plan = PLANS[a.plan] ?? PLANS.standard;
-  const endDate = addMonths(a.startDate, plan.months);
+  const terms = termsFor(a);
+  // The term length can be overridden too, so the end date follows the deal
+  // rather than the package.
+  const endDate = addMonths(a.startDate, terms.months);
   const daysRemaining = daysBetween(asOf, endDate);
   return {
     ...a,
+    ...terms,
     planName: plan.name,
-    monthly: plan.monthly,
     endDate,
     daysRemaining,
     expiringSoon:
@@ -162,7 +244,14 @@ export type RosterSummary = {
   expiring: AdvertiserView[];
   /** Active advertisers whose end date has already passed. */
   overdue: AdvertiserView[];
+  /** What active clients actually pay each month, deals included. */
   monthlyRevenue: number;
+  /** What the same clients would pay at list price. */
+  listMonthlyRevenue: number;
+  /** Monthly give-away: list revenue minus real revenue. Negative if over list. */
+  monthlyDiscount: number;
+  /** How many active clients are on a rate other than the package price. */
+  customDeals: number;
   /** Contracted value still to be invoiced across every active term. */
   contractedRemaining: number;
 };
@@ -181,6 +270,9 @@ export function summarize(views: AdvertiserView[]): RosterSummary {
     expiring: active.filter((v) => v.expiringSoon).sort(byEndDate),
     overdue: active.filter((v) => v.overdue).sort(byEndDate),
     monthlyRevenue: active.reduce((sum, v) => sum + v.monthly, 0),
+    listMonthlyRevenue: active.reduce((sum, v) => sum + v.listMonthly, 0),
+    monthlyDiscount: active.reduce((sum, v) => sum + v.monthlyDiscount, 0),
+    customDeals: active.filter((v) => v.isCustom).length,
     contractedRemaining: active.reduce(
       (sum, v) => sum + v.monthly * Math.max(0, Math.ceil(v.daysRemaining / 30)),
       0,

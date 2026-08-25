@@ -218,3 +218,81 @@ export async function getStatsForCodes(
 ): Promise<CodeStats[]> {
   return Promise.all(codes.map((code) => getCodeStats(code, days)));
 }
+
+/**
+ * One client's codes added together, presented as if they were a single code.
+ *
+ * A client can own several placements — a screen ad, a flyer, a table tent —
+ * and everything customer-facing talks about "your scans", singular. Reporting
+ * only the first code would quietly undercount the very thing they're paying
+ * for.
+ *
+ * Unique phones are counted with a single PFCOUNT across every code's
+ * HyperLogLog, which unions them properly. Adding the per-code figures instead
+ * would count one person twice for scanning two of their codes.
+ */
+export async function getCombinedStats(
+  codes: string[],
+  days: number,
+): Promise<CodeStats> {
+  const unique = [...new Set(codes.filter(Boolean))];
+
+  if (unique.length === 0) {
+    const dates = recentDates(days);
+    return {
+      code: "",
+      total: 0,
+      uniqueDevices: 0,
+      series: dates.map((date) => ({ date, count: 0 })),
+      windowTotal: 0,
+      last7: 0,
+      today: 0,
+      byHour: Array.from({ length: 24 }, () => 0),
+      byWeekday: Array.from({ length: 7 }, () => 0),
+      byDevice: { ios: 0, android: 0, other: 0 },
+      recent: [],
+    };
+  }
+
+  if (unique.length === 1) return getCodeStats(unique[0], days);
+
+  const [parts, unionRaw] = await Promise.all([
+    getStatsForCodes(unique, days),
+    pipeline([["PFCOUNT", ...unique.map((c) => `${KEY}:uniq:${c}`)]]),
+  ]);
+
+  const first = parts[0];
+  const sumAt = (pick: (s: CodeStats) => number[], i: number) =>
+    parts.reduce((sum, s) => sum + (pick(s)[i] ?? 0), 0);
+
+  const unionCount = toInt(unionRaw[0]);
+
+  return {
+    // Not a real code — this is several of them. Callers show the client's
+    // name, not this.
+    code: unique.join("+"),
+    total: parts.reduce((sum, s) => sum + s.total, 0),
+    // Fall back to the per-code sum only if the union query came back empty.
+    uniqueDevices:
+      unionCount || parts.reduce((sum, s) => sum + s.uniqueDevices, 0),
+    series: first.series.map((point, i) => ({
+      date: point.date,
+      count: sumAt((s) => s.series.map((p) => p.count), i),
+    })),
+    windowTotal: parts.reduce((sum, s) => sum + s.windowTotal, 0),
+    last7: parts.reduce((sum, s) => sum + s.last7, 0),
+    today: parts.reduce((sum, s) => sum + s.today, 0),
+    byHour: Array.from({ length: 24 }, (_, i) => sumAt((s) => s.byHour, i)),
+    byWeekday: Array.from({ length: 7 }, (_, i) => sumAt((s) => s.byWeekday, i)),
+    byDevice: {
+      ios: parts.reduce((sum, s) => sum + s.byDevice.ios, 0),
+      android: parts.reduce((sum, s) => sum + s.byDevice.android, 0),
+      other: parts.reduce((sum, s) => sum + s.byDevice.other, 0),
+    },
+    // Newest first across every code, so "recent activity" reads as one stream.
+    recent: parts
+      .flatMap((s) => s.recent)
+      .sort((a, b) => b.t.localeCompare(a.t))
+      .slice(0, RECENT_LIMIT),
+  };
+}

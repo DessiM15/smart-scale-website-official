@@ -13,9 +13,11 @@ import {
 } from "@/lib/ads/reports";
 import {
   getLink,
+  listLinks,
   normalizeCode,
   saveLink,
   setLinkActive,
+  suggestCode,
   validateCode,
   validateDestination,
 } from "@/lib/ads/link-store";
@@ -36,6 +38,23 @@ const PAGE = "/advertise/admin";
 
 const field = (data: FormData, name: string) =>
   String(data.get(name) ?? "").trim();
+
+/**
+ * A money or term field that is allowed to be left blank.
+ *
+ * Blank means "use the package price", which is not the same as zero — a free
+ * spot is a deliberate $0 override, so an empty box must never become one.
+ */
+function optionalNumber(data: FormData, name: string): number | null {
+  const raw = field(data, name).replace(/[$,\s]/g, "");
+  if (!raw) return null;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
+/** True when the box had something in it, whether or not it parsed. */
+const wasFilled = (data: FormData, name: string) =>
+  field(data, name).replace(/[$,\s]/g, "").length > 0;
 
 /** Every mutation re-checks the session — an action is a public endpoint. */
 async function requireAdmin() {
@@ -77,6 +96,53 @@ export async function saveAdvertiserAction(data: FormData) {
     if (clash) back({ err: "category", clash: clash.business });
   }
 
+  /* ---------------------------- the deal ---------------------------- */
+
+  const customMonthly = optionalNumber(data, "customMonthly");
+  const customSetup = optionalNumber(data, "customSetup");
+  const customMonths = optionalNumber(data, "customMonths");
+  const dealNote = field(data, "dealNote");
+
+  // A number that was typed but didn't parse would silently fall back to list
+  // price, which is exactly the kind of quiet wrongness this whole change is
+  // meant to remove.
+  for (const name of ["customMonthly", "customSetup", "customMonths"] as const) {
+    if (wasFilled(data, name) && optionalNumber(data, name) === null) {
+      back({ err: "dealnumber", detail: field(data, name) });
+    }
+  }
+  if (customMonths !== null && customMonths < 1) back({ err: "dealmonths" });
+
+  // Six months from now nobody remembers why this client pays less. Requiring
+  // the reason at the moment of the decision is the only time it's cheap.
+  const hasOverride =
+    customMonthly !== null || customSetup !== null || customMonths !== null;
+  if (hasOverride && !dealNote) back({ err: "dealnote" });
+
+  /* ------------------------- their first QR code ------------------------- */
+
+  // Only offered when adding someone, so an existing client's codes are managed
+  // from their profile rather than silently multiplying on every edit.
+  const chosenCode = normalizeCode(field(data, "qrCode"));
+  const newDestination = id ? "" : field(data, "newLinkDestination");
+  let autoCode = "";
+
+  if (newDestination) {
+    const destError = validateDestination(newDestination);
+    if (destError) back({ err: "destination", detail: destError });
+
+    const existingLinks = await listLinks();
+    const takenCodes = existingLinks.map((l) => l.code);
+    const requested = normalizeCode(field(data, "newLinkCode"));
+
+    autoCode = requested || suggestCode(business, takenCodes);
+    const codeError = validateCode(autoCode);
+    if (codeError) back({ err: "code", detail: codeError });
+    // A printed code can never be reassigned, so a collision is a hard stop
+    // rather than something to resolve by guessing.
+    if (takenCodes.includes(autoCode)) back({ err: "codetaken", detail: autoCode });
+  }
+
   const { ok, id: savedId } = await saveAdvertiser(
     {
       business,
@@ -87,14 +153,52 @@ export async function saveAdvertiserAction(data: FormData) {
       plan,
       startDate,
       status,
-      qrCode: field(data, "qrCode").toLowerCase(),
+      qrCode: autoCode || chosenCode,
       notes: field(data, "notes"),
+      customMonthly,
+      customSetup,
+      customMonths,
+      dealNote: hasOverride ? dealNote : "",
     },
     id,
   );
 
   if (!ok) back({ err: "save" });
+
+  if (autoCode) {
+    const linked = await saveLink({
+      code: autoCode,
+      label: business,
+      destination: newDestination,
+      active: true,
+      tagDestination: true,
+      advertiserId: savedId,
+    });
+    // The client is saved either way; say so plainly rather than pretending
+    // the code exists when it doesn't.
+    if (!linked) {
+      revalidatePath(PAGE);
+      back({ msg: "addedNoCode", who: savedId });
+    }
+  }
+
+  // Picking an existing code from the dropdown claims it for this client, which
+  // quietly migrates records made before codes had an owner. It runs even when a
+  // code was just generated — a client is allowed more than one, so the pick is
+  // kept rather than thrown away.
+  if (chosenCode && chosenCode !== autoCode) {
+    const link = await getLink(chosenCode);
+    if (link && link.advertiserId !== savedId) {
+      await saveLink({
+        ...link,
+        advertiserId: savedId,
+        logoDataUri: link.logoDataUri ?? null,
+      });
+    }
+  }
+
   revalidatePath(PAGE);
+  if (autoCode) back({ msg: "addedWithCode", who: savedId, detail: autoCode });
   back({ msg: id ? "updated" : "added", who: savedId });
 }
 
