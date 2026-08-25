@@ -8,7 +8,8 @@
  * writing to a paying advertiser is a different kind of problem.
  */
 
-import { getCodeStats, localStamp, TZ } from "./scan-store";
+import { getCombinedStats, localStamp, TZ } from "./scan-store";
+import { codesForAdvertiser } from "./link-store";
 import { formatDate, type AdvertiserView } from "./roster";
 
 /**
@@ -98,10 +99,11 @@ export async function buildReportFacts(
   advertiser: AdvertiserView,
   month: MonthKey,
 ): Promise<ReportFacts> {
+  // Every code they own, added together — a client with a flyer code as well as
+  // a screen code is owed both in their report.
+  const codes = await codesForAdvertiser(advertiser.id, advertiser.qrCode);
   // 70 days covers the reported month and the one before it in every case.
-  const stats = advertiser.qrCode
-    ? await getCodeStats(advertiser.qrCode, 70)
-    : null;
+  const stats = codes.length > 0 ? await getCombinedStats(codes, 70) : null;
 
   const series = stats?.series ?? [];
   const inMonth = series.filter((p) => p.date.startsWith(month));

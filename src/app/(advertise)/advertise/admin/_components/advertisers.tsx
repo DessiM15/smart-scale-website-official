@@ -65,11 +65,20 @@ function QrCell({ view, knownCodes }: { view: AdvertiserView; knownCodes: Set<st
   );
 }
 
+/** Everything about one client lives on their own page. */
+const profileHref = (id: string) => `/advertise/admin/client/${id}`;
+
 function RowActions({ id }: { id: string }) {
   return (
     <>
+      <a href={profileHref(id)} className={linkAction}>
+        Open
+      </a>
       {/* The anchor jumps to the editor, which is below the roster. */}
-      <a href={`${tabHref("advertisers", { edit: id })}#editor`} className={linkAction}>
+      <a
+        href={`${tabHref("advertisers", { edit: id })}#editor`}
+        className={`ml-4 ${linkQuiet}`}
+      >
         Edit
       </a>
       <form action={deleteAdvertiserAction} className="inline">
@@ -92,7 +101,12 @@ function RosterRow({
   return (
     <tr className="border-t border-white/[0.06] align-top hover:bg-white/[0.02] transition-colors">
       <td className="px-4 py-4 w-[24%]">
-        <p className="font-semibold text-white">{view.business}</p>
+        <a
+          href={profileHref(view.id)}
+          className="font-semibold text-white hover:text-[#f87171] transition-colors"
+        >
+          {view.business}
+        </a>
         {view.contactName && (
           <p className="text-xs text-white/35 mt-0.5">{view.contactName}</p>
         )}
@@ -107,8 +121,15 @@ function RosterRow({
       </td>
       <td className="px-4 py-4 whitespace-nowrap">
         <p className="text-white/60">{view.planName}</p>
-        <p className="text-xs text-white/30 tabular-nums">
-          {view.monthly ? `${money(view.monthly)}/mo` : "no charge"}
+        <p className="text-xs tabular-nums">
+          <span className={view.isCustom ? "text-amber-300" : "text-white/30"}>
+            {view.monthly ? `${money(view.monthly)}/mo` : "no charge"}
+          </span>
+          {view.isCustom && view.monthly !== view.listMonthly && (
+            <span className="ml-1.5 text-white/25 line-through">
+              {money(view.listMonthly)}
+            </span>
+          )}
         </p>
       </td>
       <td className="px-4 py-4 text-white/60 whitespace-nowrap tabular-nums">
@@ -148,7 +169,12 @@ function RosterCard({
     <li className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-semibold text-white">{view.business}</p>
+          <a
+            href={profileHref(view.id)}
+            className="font-semibold text-white hover:text-[#f87171] transition-colors"
+          >
+            {view.business}
+          </a>
           <p className="text-xs text-white/35 mt-0.5">
             {view.category || "no category"} · {view.planName}
           </p>
@@ -169,8 +195,15 @@ function RosterCard({
           <dt className="text-[10px] uppercase tracking-[0.14em] text-white/30 font-semibold">
             Rate
           </dt>
-          <dd className="text-white/70 tabular-nums mt-0.5">
-            {view.monthly ? `${money(view.monthly)}/mo` : "no charge"}
+          <dd className="tabular-nums mt-0.5">
+            <span className={view.isCustom ? "text-amber-300" : "text-white/70"}>
+              {view.monthly ? `${money(view.monthly)}/mo` : "no charge"}
+            </span>
+            {view.isCustom && view.monthly !== view.listMonthly && (
+              <span className="ml-1.5 text-white/25 line-through">
+                {money(view.listMonthly)}
+              </span>
+            )}
           </dd>
         </div>
       </dl>
@@ -272,7 +305,9 @@ function AdvertiserForm({
                 ))}
               </select>
               <p className="mt-1.5 text-xs text-white/30">
-                Create codes on the QR codes tab.
+                {editing
+                  ? "Add more codes on their profile, where the scan counts are."
+                  : "Or make them a new one below — leave this on \u201cnone\u201d."}
               </p>
             </div>
           </div>
@@ -320,6 +355,110 @@ function AdvertiserForm({
               </select>
             </div>
           </div>
+
+          {/* The deal. Blank means list price, so the common case stays a
+              four-field form and only a real exception costs any typing. */}
+          <details
+            open={Boolean(editing?.isCustom)}
+            className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden"
+          >
+            <summary className="flex cursor-pointer items-center justify-between gap-4 px-5 py-4 list-none [&::-webkit-details-marker]:hidden hover:bg-white/[0.02] transition-colors">
+              <span className="text-sm font-semibold text-white">
+                Custom deal
+                {editing?.isCustom && (
+                  <span className="ml-2">
+                    <Pill tone="warn">in use</Pill>
+                  </span>
+                )}
+              </span>
+              <span className="text-xs text-white/35">
+                leave blank for package pricing
+              </span>
+            </summary>
+
+            <div className="px-5 pb-5 pt-1 space-y-4">
+              <div className="grid sm:grid-cols-3 gap-4">
+                <Field
+                  label="Their monthly"
+                  name="customMonthly"
+                  id="customMonthly"
+                  inputMode="decimal"
+                  defaultValue={
+                    editing?.customMonthly === null ||
+                    editing?.customMonthly === undefined
+                      ? ""
+                      : String(editing.customMonthly)
+                  }
+                  placeholder="275"
+                  hint="Dollars per month. 0 means free."
+                />
+                <Field
+                  label="Their setup fee"
+                  name="customSetup"
+                  id="customSetup"
+                  inputMode="decimal"
+                  defaultValue={
+                    editing?.customSetup === null || editing?.customSetup === undefined
+                      ? ""
+                      : String(editing.customSetup)
+                  }
+                  placeholder="0"
+                  hint="0 waives it."
+                />
+                <Field
+                  label="Their term"
+                  name="customMonths"
+                  id="customMonths"
+                  inputMode="numeric"
+                  defaultValue={
+                    editing?.customMonths === null || editing?.customMonths === undefined
+                      ? ""
+                      : String(editing.customMonths)
+                  }
+                  placeholder="6"
+                  hint="Whole months. Moves the end date."
+                />
+              </div>
+              <Field
+                label="Why"
+                name="dealNote"
+                id="dealNote"
+                defaultValue={editing?.dealNote ?? ""}
+                placeholder="Trade for catering, referral partner, second location…"
+                hint="Required whenever you override a price — it's the only record of why."
+              />
+            </div>
+          </details>
+
+          {/* Only offered on a new client. An existing one's codes are managed
+              on their profile, where the scan counts are. */}
+          {!editing && (
+            <details className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden">
+              <summary className="flex cursor-pointer items-center justify-between gap-4 px-5 py-4 list-none [&::-webkit-details-marker]:hidden hover:bg-white/[0.02] transition-colors">
+                <span className="text-sm font-semibold text-white">
+                  Make their QR code now
+                </span>
+                <span className="text-xs text-white/35">optional</span>
+              </summary>
+              <div className="px-5 pb-5 pt-1 space-y-4">
+                <Field
+                  label="Where should their scan go?"
+                  name="newLinkDestination"
+                  id="newLinkDestination"
+                  type="url"
+                  placeholder="https://theirsite.com"
+                  hint="Their website, booking page, menu, Google profile — anything with a web address."
+                />
+                <Field
+                  label="Code"
+                  name="newLinkCode"
+                  id="newLinkCode"
+                  placeholder="leave blank and we'll name it from the business"
+                  hint="This is the bit after /go/ and it gets printed, so it can never be changed afterwards. The destination can."
+                />
+              </div>
+            </details>
+          )}
 
           <div>
             <label className={labelClass} htmlFor="notes">

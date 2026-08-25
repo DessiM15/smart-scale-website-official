@@ -31,6 +31,12 @@ export type AdLinkRecord = {
   tagDestination: boolean;
   /** Optional logo for the middle of the QR, stored as a data URI. */
   logoDataUri?: string;
+  /**
+   * The client this code belongs to. Optional because Mex Taco's own codes
+   * belong to nobody, and because codes created before ownership existed
+   * are matched by the advertiser's legacy `qrCode` field instead.
+   */
+  advertiserId?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -150,6 +156,8 @@ export type LinkInput = {
   tagDestination: boolean;
   /** undefined leaves an existing logo alone; null clears it. */
   logoDataUri?: string | null;
+  /** undefined leaves the owner alone; null unassigns it. */
+  advertiserId?: string | null;
 };
 
 export async function saveLink(input: LinkInput): Promise<boolean> {
@@ -167,6 +175,10 @@ export async function saveLink(input: LinkInput): Promise<boolean> {
       input.logoDataUri === null
         ? undefined
         : (input.logoDataUri ?? existing?.logoDataUri),
+    advertiserId:
+      input.advertiserId === null
+        ? undefined
+        : (input.advertiserId ?? existing?.advertiserId),
     createdAt: existing?.createdAt || now,
     updatedAt: now,
   };
@@ -188,5 +200,127 @@ export async function setLinkActive(
 ): Promise<boolean> {
   const link = await getLink(code);
   if (!link) return false;
-  return saveLink({ ...link, active, logoDataUri: link.logoDataUri ?? null });
+  return saveLink({
+    ...link,
+    active,
+    logoDataUri: link.logoDataUri ?? null,
+    advertiserId: link.advertiserId ?? null,
+  });
+}
+
+/* ------------------------------ code naming ------------------------------- */
+
+/**
+ * A short code for a new client, derived from their business name.
+ *
+ * Prefers the first distinctive word — "Rio Plumbing & Air" becomes `rio` —
+ * because a printed code is read aloud and typed by hand as often as it is
+ * scanned. Falls back to the fuller slug when the first word is too generic to
+ * stand alone, then to a numeric suffix when the name is already taken.
+ *
+ * The result is a suggestion. It is shown before anything is saved, because a
+ * code is immutable once created and a bad auto-name would be permanent.
+ */
+const GENERIC_FIRST_WORDS = new Set([
+  "the", "a", "an", "my", "your", "best", "big", "new", "all", "top", "pro",
+]);
+
+export function suggestCode(business: string, taken: Iterable<string>): string {
+  const used = new Set([...taken].map((c) => c.toLowerCase()));
+
+  const words = business
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, " ")
+    .split(/[\s-]+/)
+    .filter(Boolean);
+
+  // "The Best Tacos" should suggest `tacos`, not `the-best` — filler words are
+  // dropped before naming, and only put back if that leaves nothing at all.
+  const meaningful = words.filter((w) => !GENERIC_FIRST_WORDS.has(w));
+  const parts = meaningful.length > 0 ? meaningful : words;
+
+  const tidy = (raw: string) => normalizeCode(raw).slice(0, 24).replace(/-+$/, "");
+
+  const candidates = [
+    parts[0] && parts[0].length >= 3 ? tidy(parts[0]) : "",
+    parts.length > 1 ? tidy(parts.slice(0, 2).join("-")) : "",
+    tidy(parts.join("-")),
+  ].filter(Boolean);
+
+  for (const code of candidates) {
+    if (CODE_PATTERN.test(code) && !used.has(code)) return code;
+  }
+
+  // Everything sensible is taken, so number it. Trimmed to leave room for the
+  // suffix without overrunning the 24-character limit.
+  const base = candidates.find((c) => CODE_PATTERN.test(c)) ?? "ad";
+  for (let n = 2; n < 100; n += 1) {
+    const code = `${base.slice(0, 21).replace(/-+$/, "")}-${n}`;
+    if (!used.has(code)) return code;
+  }
+  return `${base.slice(0, 21).replace(/-+$/, "")}-99`;
+}
+
+/**
+ * Every code belonging to one client.
+ *
+ * Ownership is recorded on the link, but records created before that existed
+ * are matched through the advertiser's own `qrCode` field — so an old roster
+ * keeps working without a migration, and claiming the code on next save fixes
+ * it for good.
+ */
+export function linksForAdvertiser(
+  links: AdLinkRecord[],
+  advertiserId: string,
+  legacyCode?: string,
+): AdLinkRecord[] {
+  const legacy = legacyCode ? normalizeCode(legacyCode) : "";
+  return links.filter(
+    (link) => link.advertiserId === advertiserId || (legacy && link.code === legacy),
+  );
+}
+
+/**
+ * A code for an extra placement belonging to a client who already has one.
+ *
+ * Reads as `rio-flyer` rather than `rio-2`, because the whole reason for a
+ * second code is telling placements apart — and a name that says which one it
+ * is survives being printed, filed and asked about six months later.
+ */
+export function suggestPlacementCode(
+  base: string,
+  label: string,
+  taken: Iterable<string>,
+): string {
+  const used = new Set([...taken].map((c) => c.toLowerCase()));
+
+  // Just the first meaningful word of the label: "Window cling" is `window`.
+  const slug = label
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, " ")
+    .split(/[\s-]+/)
+    .filter((w) => w && !GENERIC_FIRST_WORDS.has(w))[0];
+
+  if (slug) {
+    const candidate = normalizeCode(`${base}-${slug}`)
+      .slice(0, 24)
+      .replace(/-+$/, "");
+    if (CODE_PATTERN.test(candidate) && !used.has(candidate)) return candidate;
+  }
+
+  // No usable label, or that name is already out in the world — fall back to
+  // the ordinary rule, which numbers it.
+  return suggestCode(label ? `${base} ${label}` : base, used);
+}
+
+/**
+ * Just the code names belonging to one client, for the places that need to
+ * total a client's scans and don't otherwise care about the link records.
+ */
+export async function codesForAdvertiser(
+  advertiserId: string,
+  legacyCode?: string,
+): Promise<string[]> {
+  const links = await listLinks();
+  return linksForAdvertiser(links, advertiserId, legacyCode).map((l) => l.code);
 }
