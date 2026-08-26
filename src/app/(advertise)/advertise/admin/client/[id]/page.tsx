@@ -47,11 +47,29 @@ import {
 import { tabHref } from "../../_components/types";
 import {
   addClientLinkAction,
+  countersignAgreementAction,
   deleteArtworkAction,
+  prepareAgreementAction,
   repointClientLinkAction,
   saveNotesAction,
+  sendAgreementAction,
   uploadArtworkAction,
+  voidAgreementAction,
 } from "./actions";
+import {
+  activeAgreement,
+  isIntact,
+  listAgreements,
+  pendingAgreement,
+  type Agreement,
+} from "@/lib/ads/agreements";
+import {
+  agreementText,
+  TEMPLATE_REVIEWED,
+  TEMPLATE_VERSION,
+} from "@/lib/ads/agreement-template";
+import { agreementUrl, isLinkSigningConfigured } from "@/lib/ads/links";
+import { isEmailConfigured } from "@/lib/ads/email";
 
 export const dynamic = "force-dynamic";
 
@@ -67,6 +85,10 @@ const ARTWORK_STALE_DAYS = 90;
 
 const MESSAGES: Record<string, string> = {
   notesSaved: "Notes saved.",
+  agreementPrepared: "Agreement drafted. Read it through, then send it.",
+  agreementSent: "Agreement sent.",
+  agreementDone: "Countersigned. The paperwork is complete.",
+  agreementVoided: "Agreement cancelled. It stays on file.",
   artworkSaved: "Artwork uploaded.",
   artworkRemoved: "Artwork removed.",
   linkAdded: "QR code created.",
@@ -82,6 +104,11 @@ const ERRORS: Record<string, string> = {
   code: "That code isn't valid.",
   codetaken: "That code already belongs to something else.",
   codemissing: "There's no code by that name.",
+  agreementNoEmail: "This client has no email address, so there's nowhere to send it. Add one on the contract editor, or copy the signing link and send it yourself.",
+  agreementNoMail: "Email isn't connected yet. Copy the signing link below and send it however you like — the signing page works either way.",
+  agreementNoSecret: "ADS_LINK_SECRET isn't set, so no signing link can be made. It's on the Setup tab.",
+  agreementSend: "The agreement didn't send.",
+  agreementState: "That agreement isn't in a state where that's possible. Reload the page.",
 };
 
 function ResultBanner({
@@ -558,6 +585,287 @@ function ArtworkCard({
   );
 }
 
+/* ------------------------------- agreements ------------------------------- */
+
+const AGREEMENT_STATUS: Record<Agreement["status"], { label: string; tone: Tone }> = {
+  draft: { label: "Draft", tone: "neutral" },
+  sent: { label: "Sent", tone: "warn" },
+  viewed: { label: "Opened", tone: "warn" },
+  signed: { label: "Signed — needs you", tone: "brand" },
+  countersigned: { label: "Complete", tone: "ok" },
+  void: { label: "Cancelled", tone: "neutral" },
+};
+
+/** The signature and the evidence behind it, laid out so it can be read back. */
+function SignatureBlock({ agreement }: { agreement: Agreement }) {
+  const sig = agreement.signature;
+  if (!sig) return null;
+  return (
+    <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] px-5 py-4">
+      <SubHead>Signature on file</SubHead>
+      <p className="text-sm text-white/75">
+        {sig.name} · {stamp(sig.at)}
+      </p>
+      <p className="mt-1 text-xs text-white/35 break-words">
+        {[sig.email, sig.ip && `from ${sig.ip}`].filter(Boolean).join(" · ")}
+      </p>
+      <p className="mt-2 text-[11px] text-white/25 font-mono break-all">
+        {sig.bodyHash.slice(0, 32)}…
+      </p>
+      <p className="mt-1 text-xs text-white/30">
+        {isIntact(agreement)
+          ? "The copy on file still matches what they signed."
+          : "WARNING — the copy on file no longer matches what was signed."}
+      </p>
+      {agreement.countersignature && (
+        <p className="mt-3 pt-3 border-t border-white/[0.06] text-sm text-white/75">
+          Countersigned by {agreement.countersignature.name} ·{" "}
+          {stamp(agreement.countersignature.at)}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function AgreementRow({
+  agreement,
+  advertiserId,
+  signUrl,
+  emailConfigured,
+}: {
+  agreement: Agreement;
+  advertiserId: string;
+  signUrl: string | null;
+  emailConfigured: boolean;
+}) {
+  const status = AGREEMENT_STATUS[agreement.status];
+  const open = agreement.status !== "void" && agreement.status !== "countersigned";
+
+  return (
+    <details
+      open={open}
+      className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden"
+    >
+      <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-3 px-5 py-4 list-none [&::-webkit-details-marker]:hidden hover:bg-white/[0.02] transition-colors">
+        <span className="flex flex-wrap items-center gap-2.5">
+          <span className="text-sm font-semibold text-white">
+            Advertising agreement
+          </span>
+          <Pill tone={status.tone}>{status.label}</Pill>
+          <span className="text-xs text-white/30">{agreement.templateVersion}</span>
+        </span>
+        <span className="text-xs text-white/35 tabular-nums">
+          {stamp(agreement.createdAt)}
+        </span>
+      </summary>
+
+      <div className="px-5 pb-5 pt-1 space-y-4">
+        <dl className="grid sm:grid-cols-2 gap-x-6">
+          {(
+            [
+              ["Rate", agreement.terms.monthly > 0 ? `${money(agreement.terms.monthly)}/mo` : "no charge"],
+              ["Setup", agreement.terms.setup > 0 ? money(agreement.terms.setup) : "waived"],
+              ["Term", `${agreement.terms.months} months`],
+              [
+                "Runs",
+                `${formatDate(agreement.terms.startDate)} → ${formatDate(agreement.terms.endDate)}`,
+              ],
+            ] as [string, string][]
+          ).map(([label, value]) => (
+            <div
+              key={label}
+              className="flex items-baseline justify-between gap-3 py-2 border-b border-white/[0.05]"
+            >
+              <dt className="text-[10px] uppercase tracking-[0.16em] text-white/40 font-semibold">
+                {label}
+              </dt>
+              <dd className="text-sm text-white/75 tabular-nums">{value}</dd>
+            </div>
+          ))}
+        </dl>
+
+        <SignatureBlock agreement={agreement} />
+
+        {agreement.voidReason && (
+          <p className="text-sm text-white/45">Cancelled: {agreement.voidReason}</p>
+        )}
+
+        <details className="rounded-xl border border-white/[0.07] bg-black/20 overflow-hidden">
+          <summary className="cursor-pointer px-4 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-white/40 list-none [&::-webkit-details-marker]:hidden hover:text-white/70">
+            Read the full terms
+          </summary>
+          <pre className="px-4 pb-4 text-[11px] leading-relaxed text-white/55 whitespace-pre-wrap break-words font-mono">
+            {agreementText(agreement.terms)}
+          </pre>
+        </details>
+
+        {/* The signing link is always shown, not just when email works — it is
+            the thing that actually lets a client sign, and it must not be
+            gated behind an integration that isn't switched on yet. */}
+        {signUrl && agreement.status !== "void" && !agreement.signature && (
+          <div>
+            <SubHead>Signing link</SubHead>
+            <p className="text-[11px] text-[#f87171] font-mono break-all leading-relaxed">
+              {signUrl}
+            </p>
+            <p className="mt-1.5 text-xs text-white/30">
+              Anyone with this link can sign. Send it to the client however you
+              like — it works whether or not email is connected.
+            </p>
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center gap-4 pt-1">
+          {agreement.status === "draft" && (
+            <form action={sendAgreementAction}>
+              <input type="hidden" name="id" value={advertiserId} />
+              <input type="hidden" name="agreementId" value={agreement.id} />
+              <button type="submit" className={btnPrimary} disabled={!emailConfigured}>
+                Email it to the client
+              </button>
+            </form>
+          )}
+
+          {agreement.status === "signed" && (
+            <form action={countersignAgreementAction} className="flex flex-wrap items-end gap-3">
+              <input type="hidden" name="id" value={advertiserId} />
+              <input type="hidden" name="agreementId" value={agreement.id} />
+              <div>
+                <label className={labelClass} htmlFor={`cs-${agreement.id}`}>
+                  Countersign as
+                </label>
+                <input
+                  id={`cs-${agreement.id}`}
+                  name="name"
+                  defaultValue="Smart Scale"
+                  className={inputClass}
+                />
+              </div>
+              <button type="submit" className={btnPrimary}>
+                Countersign
+              </button>
+            </form>
+          )}
+
+          {agreement.status !== "void" && agreement.status !== "countersigned" && (
+            <form action={voidAgreementAction} className="flex items-center gap-3">
+              <input type="hidden" name="id" value={advertiserId} />
+              <input type="hidden" name="agreementId" value={agreement.id} />
+              <input
+                name="reason"
+                placeholder="why?"
+                className={`${inputClass} w-40 py-1.5 text-xs`}
+              />
+              <button type="submit" className={linkQuiet}>
+                Cancel it
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+    </details>
+  );
+}
+
+function DocumentsCard({
+  view,
+  agreements,
+  signUrls,
+  emailConfigured,
+  signingConfigured,
+}: {
+  view: AdvertiserView;
+  agreements: Agreement[];
+  signUrls: Record<string, string | null>;
+  emailConfigured: boolean;
+  signingConfigured: boolean;
+}) {
+  const complete = activeAgreement(agreements);
+  const pending = pendingAgreement(agreements);
+  const draft = agreements.find((a) => a.status === "draft");
+
+  return (
+    <Card
+      title="Documents"
+      lede="The advertising agreement, and the record of who signed what and when."
+      action={
+        !draft && !pending ? (
+          <form action={prepareAgreementAction}>
+            <input type="hidden" name="id" value={view.id} />
+            <button type="submit" className={btnGhost}>
+              {complete ? "Prepare a new one" : "Prepare agreement"}
+            </button>
+          </form>
+        ) : undefined
+      }
+    >
+      {!TEMPLATE_REVIEWED && (
+        <div className="mb-5">
+          <Note tone="warn">
+            <p className="text-sm font-semibold text-white">
+              The agreement wording is still a draft ({TEMPLATE_VERSION}).
+            </p>
+            <p className="mt-1.5 text-sm text-white/55">
+              It was written from how the business actually runs, but nobody has
+              reviewed it yet. Read it once before it goes to a paying client. Every
+              signature records which version it was, so replacing the wording later
+              never changes what someone already signed.
+            </p>
+          </Note>
+        </div>
+      )}
+
+      {!signingConfigured && (
+        <div className="mb-5">
+          <Note tone="bad">
+            <p className="text-sm font-semibold text-white">
+              No signing links can be made yet.
+            </p>
+            <p className="mt-1.5 text-sm text-white/55">
+              ADS_LINK_SECRET isn&apos;t set. It&apos;s on the Setup tab, and it&apos;s
+              the same secret the renewal buttons use.
+            </p>
+          </Note>
+        </div>
+      )}
+
+      {view.status === "active" && !complete && (
+        <div className="mb-5">
+          <Note tone="warn">
+            <p className="text-sm font-semibold text-white">
+              This client is running with no signed agreement.
+            </p>
+            <p className="mt-1.5 text-sm text-white/55">
+              {pending
+                ? "One is out with them — chase it before the term gets much further along."
+                : "Prepare one and send it. Nothing here blocks you from running the ad, but the paperwork should catch up."}
+            </p>
+          </Note>
+        </div>
+      )}
+
+      {agreements.length === 0 ? (
+        <Empty>
+          No agreement yet. Preparing one takes the rate, term and dates straight
+          off their contract.
+        </Empty>
+      ) : (
+        <div className="space-y-3">
+          {agreements.map((agreement) => (
+            <AgreementRow
+              key={agreement.id}
+              agreement={agreement}
+              advertiserId={view.id}
+              signUrl={signUrls[agreement.id] ?? null}
+              emailConfigured={emailConfigured}
+            />
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
+
 /* --------------------------------- page ----------------------------------- */
 
 export default async function ClientProfilePage({
@@ -578,7 +886,7 @@ export default async function ClientProfilePage({
   const allLinks = await listLinks();
   const theirLinks = linksForAdvertiser(allLinks, id, advertiser.qrCode);
 
-  const [codes, artwork] = await Promise.all([
+  const [codes, artwork, agreements] = await Promise.all([
     Promise.all(
       theirLinks.map(async (link) => ({
         link,
@@ -586,7 +894,15 @@ export default async function ClientProfilePage({
       })),
     ),
     listArtwork(id),
+    listAgreements(id),
   ]);
+
+  // Built here rather than in the component: the token is derived from a
+  // server-only secret, and a client component should never be handed one.
+  const signUrls: Record<string, string | null> = {};
+  for (const agreement of agreements) {
+    signUrls[agreement.id] = agreementUrl(agreement.id);
+  }
 
   const totalScans = codes.reduce((sum, c) => sum + c.stats.total, 0);
   const status = statusTone(view);
@@ -692,14 +1008,13 @@ export default async function ClientProfilePage({
           </form>
         </Card>
 
-        <Card
-          title="Documents"
-          lede="Signed agreements and anything else worth keeping on this client."
-        >
-          <Empty>
-            Nothing here yet — agreements and signing are the next piece of work.
-          </Empty>
-        </Card>
+        <DocumentsCard
+          view={view}
+          agreements={agreements}
+          signUrls={signUrls}
+          emailConfigured={isEmailConfigured()}
+          signingConfigured={isLinkSigningConfigured()}
+        />
 
         <p className="mt-12 text-xs text-white/25 max-w-2xl leading-relaxed">
           A QR code&apos;s name is permanent because it gets printed, but where it sends

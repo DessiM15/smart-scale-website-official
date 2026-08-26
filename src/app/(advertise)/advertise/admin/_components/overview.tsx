@@ -329,6 +329,48 @@ function RenewalWatch({
 /* ---------------------------------- tab ----------------------------------- */
 
 /**
+ * Clients on the screens with no countersigned agreement covering the term
+ * they're actually running. Not a blocker — a spot often starts on a handshake
+ * — but it is exactly the sort of thing that goes unnoticed for a year.
+ */
+function Unsigned({ items }: { items: AdvertiserView[] }) {
+  if (items.length === 0) return null;
+  return (
+    <Card
+      title="Running without signed paperwork"
+      lede="Nothing is stopping these ads, but there's no agreement on file for the term they're in."
+      surface="warn"
+      className="mb-5"
+    >
+      <ul className="divide-y divide-white/[0.06] -my-2">
+        {items.map((v) => (
+          <li
+            key={v.id}
+            className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm"
+          >
+            <span>
+              <a
+                href={`/advertise/admin/client/${v.id}`}
+                className="font-semibold text-white hover:text-[#f87171] transition-colors"
+              >
+                {v.business}
+              </a>
+              <span className="text-white/35"> · {v.category || "no category"}</span>
+            </span>
+            <a
+              href={`/advertise/admin/client/${v.id}`}
+              className="rounded-full border border-amber-400/40 px-3 py-1 text-xs font-semibold text-amber-300 hover:bg-amber-400/10 transition-colors"
+            >
+              Prepare one
+            </a>
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
+/**
  * Leads that came in on their own and haven't been picked up yet. The whole
  * point of the advertise page writing into the roster is that these stop
  * living in an inbox, so they belong on the front page, not two tabs away.
@@ -473,12 +515,15 @@ export function OverviewTab({
 
       <NewLeads leads={newLeads} />
 
+      <Unsigned items={summary.unsigned} />
+
       <Backups entries={backups} />
 
       {needsAttention.length === 0 &&
         replies.length === 0 &&
         due.length === 0 &&
-        newLeads.length === 0 && (
+        newLeads.length === 0 &&
+        summary.unsigned.length === 0 && (
         <div className="mb-5">
           <Empty>
             Nothing needs you today — no terms winding down, no replies waiting.

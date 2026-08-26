@@ -78,6 +78,9 @@ const MUTED = "#7a6a5d";
 const RED = "#DC2626";
 const CREAM = "#faf6f0";
 
+/** The venue these emails are about, kept in step with the agreement template. */
+const VENUE_NAME = "Mex Taco House";
+
 function button(href: string, label: string, primary: boolean): string {
   const bg = primary ? RED : "#ffffff";
   const color = primary ? "#ffffff" : INK;
@@ -364,4 +367,141 @@ If you are reading this, Resend accepted the message and your domain records let
 One thing worth checking now: hit reply. Every client email invites a reply, so if nothing receives at the address above, those replies bounce.`;
 
   return { subject: "[Test] Mex Taco ad tracker — email check", html, text };
+}
+
+/* ---------------------------- agreement to sign --------------------------- */
+
+/**
+ * The email that carries the agreement.
+ *
+ * Short on purpose. The terms are on the page behind the link, and repeating
+ * them here would create a second version of the document that nobody hashed.
+ * What belongs in the email is the few facts they'd want before clicking, and
+ * a clear statement that clicking does not commit them to anything.
+ */
+export function agreementEmail(
+  terms: {
+    business: string;
+    contactName: string;
+    category: string;
+    planName: string;
+    monthly: number;
+    setup: number;
+    months: number;
+    startDate: string;
+    endDate: string;
+  },
+  signUrl: string,
+) {
+  const subject = `Your ${VENUE_NAME} advertising agreement — ready to sign`;
+  const rate =
+    terms.monthly > 0
+      ? `$${terms.monthly.toLocaleString()}/month`
+      : "no monthly charge";
+
+  const rows: [string, string][] = [
+    ["Business", terms.business],
+    ...(terms.category ? ([["Category held", terms.category]] as [string, string][]) : []),
+    ["Package", `${terms.planName} · ${terms.months} months`],
+    [
+      "Rate",
+      `${rate}${terms.setup > 0 ? ` · $${terms.setup.toLocaleString()} setup` : ""}`,
+    ],
+    ["Runs", `${formatDate(terms.startDate)} → ${formatDate(terms.endDate)}`],
+  ];
+
+  const rowHtml = rows
+    .map(
+      ([label, value]) =>
+        `<tr>
+          <td style="padding:7px 0;font-size:14px;color:${MUTED};">${label}</td>
+          <td style="padding:7px 0;font-size:14px;color:${INK};font-weight:600;text-align:right;">${value}</td>
+        </tr>`,
+    )
+    .join("");
+
+  const html = `<!doctype html>
+<html><body style="margin:0;padding:0;background:${CREAM};">
+<div style="max-width:560px;margin:0 auto;padding:32px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:${INK};">
+  <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:${RED};font-weight:700;">${VENUE_NAME} · Screen Advertising</p>
+  <h1 style="margin:0 0 18px;font-size:26px;line-height:1.25;font-weight:600;">Your agreement is ready</h1>
+
+  <div style="background:#ffffff;border:1px solid rgba(0,0,0,0.06);border-radius:18px;padding:22px 24px;margin-bottom:24px;">
+    <p style="margin:0 0 14px;font-size:15px;line-height:1.6;">Hi${terms.contactName ? ` ${terms.contactName}` : ""}, here is what we agreed:</p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">${rowHtml}</table>
+  </div>
+
+  <div style="margin-bottom:10px;">
+    ${button(signUrl, "Read and sign", true)}
+  </div>
+  <p style="margin:14px 0 0;font-size:13px;line-height:1.6;color:${MUTED};">
+    The full terms are on that page. Nothing is agreed until you type your name and confirm, and you'll get a copy the moment you do. If anything above looks wrong, just reply to this email and we'll fix it before you sign.
+  </p>
+
+  <p style="margin:28px 0 0;font-size:12px;line-height:1.6;color:#9a8b7d;">
+    ${VENUE_NAME} screen advertising is managed by Smart Scale.
+  </p>
+</div>
+</body></html>`;
+
+  const text = `${VENUE_NAME.toUpperCase()} - SCREEN ADVERTISING
+
+Your agreement is ready.
+
+Hi${terms.contactName ? ` ${terms.contactName}` : ""}, here is what we agreed:
+
+${rows.map(([label, value]) => `  ${label}: ${value}`).join("\n")}
+
+Read and sign: ${signUrl}
+
+The full terms are on that page. Nothing is agreed until you type your name and confirm, and you'll get a copy the moment you do. If anything above looks wrong, just reply to this email and we'll fix it before you sign.
+
+${VENUE_NAME} screen advertising is managed by Smart Scale.`;
+
+  return { subject, html, text };
+}
+
+/** The copy the client keeps. Sent to them the moment they sign. */
+export function agreementCopyEmail(
+  business: string,
+  signerName: string,
+  signedAt: string,
+  body: string,
+) {
+  const subject = `Signed — your ${VENUE_NAME} advertising agreement`;
+
+  const html = `<!doctype html>
+<html><body style="margin:0;padding:0;background:${CREAM};">
+<div style="max-width:640px;margin:0 auto;padding:32px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:${INK};">
+  <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:${RED};font-weight:700;">${VENUE_NAME} · Screen Advertising</p>
+  <h1 style="margin:0 0 8px;font-size:26px;line-height:1.25;font-weight:600;">Signed, and here's your copy</h1>
+  <p style="margin:0 0 22px;font-size:15px;line-height:1.6;color:${MUTED};">
+    Signed by ${signerName} on ${signedAt} for ${business}. Keep this email — it is your record of the agreement.
+  </p>
+  <div style="background:#ffffff;border:1px solid rgba(0,0,0,0.06);border-radius:18px;padding:24px;">
+    <pre style="margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.65;color:${INK};white-space:pre-wrap;word-wrap:break-word;">${body
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")}</pre>
+  </div>
+  <p style="margin:22px 0 0;font-size:13px;line-height:1.6;color:${MUTED};">
+    Questions about any of it? Just reply to this email.
+  </p>
+</div>
+</body></html>`;
+
+  const text = `SIGNED - YOUR ${VENUE_NAME.toUpperCase()} ADVERTISING AGREEMENT
+
+Signed by ${signerName} on ${signedAt} for ${business}.
+Keep this email - it is your record of the agreement.
+
+----------------------------------------------------------------
+
+${body}
+
+----------------------------------------------------------------
+
+Questions about any of it? Just reply to this email.`;
+
+  return { subject, html, text };
 }

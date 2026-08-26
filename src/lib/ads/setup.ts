@@ -16,6 +16,7 @@ import { isEmailConfigured, fromAddress, replyToAddress } from "./email";
 import { alertRecipients, isSmsConfigured } from "./notify";
 import { isLinkSigningConfigured } from "./links";
 import { isArtworkStoreConfigured } from "./artwork";
+import { TEMPLATE_REVIEWED, TEMPLATE_VERSION } from "./agreement-template";
 
 export type SetupStatus = "on" | "off" | "partial";
 
@@ -171,6 +172,22 @@ export function setupItems(): SetupItem[] {
       ],
       caution:
         "The model never writes a number — every figure is computed here and checked against the draft before it can be sent.",
+    },
+    {
+      id: "agreement",
+      name: "Agreement wording",
+      unlocks:
+        "Sending advertising agreements to clients for signature. The signing flow works either way — this is about whether the words have been checked.",
+      status: TEMPLATE_REVIEWED ? "on" : "partial",
+      detail: `Currently ${TEMPLATE_VERSION}`,
+      vars: [],
+      steps: [
+        "Open any client's Documents section and read the drafted terms end to end.",
+        "Send the wording you want to Claude, or edit src/lib/ads/agreement-template.ts directly.",
+        "Set TEMPLATE_REVIEWED to true and bump TEMPLATE_VERSION in that file.",
+      ],
+      caution:
+        "Every signature records which version it was, so changing the wording later never changes what someone already signed. That also means the version must be bumped, not edited in place.",
     },
     {
       id: "stats",

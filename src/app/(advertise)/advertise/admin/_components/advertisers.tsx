@@ -49,7 +49,18 @@ function statusOf(view: AdvertiserView): { label: string; tone: Tone } {
 
 function StatusPill({ view }: { view: AdvertiserView }) {
   const { label, tone } = statusOf(view);
-  return <Pill tone={tone}>{label}</Pill>;
+  return (
+    <span className="flex flex-wrap gap-1.5">
+      <Pill tone={tone}>{label}</Pill>
+      {/* Running with no countersigned agreement for this term. Worth seeing
+          from the roster rather than only on the profile. */}
+      {view.needsPaperwork && (
+        <Pill tone="warn" title="No signed agreement covers this term">
+          Unsigned
+        </Pill>
+      )}
+    </span>
+  );
 }
 
 function QrCell({ view, knownCodes }: { view: AdvertiserView; knownCodes: Set<string> }) {

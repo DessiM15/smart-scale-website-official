@@ -63,3 +63,40 @@ export function renewalUrl(
   if (choice) params.set("choice", choice);
   return `${SITE}/advertise/renew/${encodeURIComponent(advertiserId)}?${params}`;
 }
+
+/* ------------------------------- agreements ------------------------------- */
+
+/**
+ * Ties a token to one agreement. The id is a UUID that only exists on our side,
+ * so the token is scoped to a single document and reveals nothing about the
+ * client if it leaks.
+ */
+function agreementPayload(agreementId: string): string {
+  return `agreement:${agreementId}`;
+}
+
+export function agreementToken(agreementId: string): string | null {
+  return sign(agreementPayload(agreementId));
+}
+
+export function verifyAgreementToken(
+  agreementId: string,
+  token: string,
+): boolean {
+  const expected = sign(agreementPayload(agreementId));
+  if (!expected || !token) return false;
+  const a = Buffer.from(expected);
+  const b = Buffer.from(token);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
+}
+
+/**
+ * Where a client goes to read and sign. No account, no password — the link is
+ * the credential, exactly as it is for renewals.
+ */
+export function agreementUrl(agreementId: string): string | null {
+  const token = agreementToken(agreementId);
+  if (!token) return null;
+  return `${SITE}/advertise/agreement/${encodeURIComponent(agreementId)}?t=${token}`;
+}
