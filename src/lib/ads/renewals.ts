@@ -176,7 +176,7 @@ export async function runRenewalCheck(trigger: string): Promise<RunLogEntry> {
     );
   }
   if (!isEmailConfigured()) {
-    notes.push("Advertiser email is off — set RESEND_API_KEY.");
+    notes.push("Advertiser email is off — set PLUNK_API_KEY.");
   } else if (!isLinkSigningConfigured()) {
     notes.push("Advertiser email is off — set ADS_LINK_SECRET to sign reply links.");
   }

@@ -14,7 +14,7 @@
  * entire generated type surface — thousands of .d.ts files for every Twilio
  * product — into the type-check graph of every module that touches alerts,
  * which measurably slows `next build`. It also matches how the rest of this
- * folder talks to Upstash and Resend, and it makes the send path testable.
+ * folder talks to Upstash and Plunk, and it makes the send path testable.
  */
 
 import { redisPipeline, redisWrite } from "./redis";

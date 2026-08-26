@@ -27,7 +27,7 @@ const notices = (
   reportSent: "Report sent.",
   reportSkipped: "Report skipped — it won't be sent.",
   reportEdited: "Report wording updated.",
-  testSent: `Test sent to ${detail}. If it doesn't arrive within a minute, check the spam folder — then check the domain records in Resend.`,
+  testSent: `Test sent to ${detail}. If it doesn't arrive within a minute, check the spam folder — then check the domain records in Plunk.`,
   backupDone: `Backed up — ${detail}.`,
   alerts:
     Number(checked ?? 0) === 0
@@ -53,7 +53,7 @@ const errors = (clash?: string, detail?: string): Record<string, string> => ({
   testaddress: "That doesn't look like an email address.",
   testunconfigured:
     "Email isn't connected yet, so there's nothing to test. Finish the Advertiser email steps first.",
-  testsend: `Resend refused it: ${detail}. Usually the domain isn't verified yet, or the from-address isn't on the verified domain.`,
+  testsend: `Plunk refused it: ${detail}. Usually the domain isn't verified yet, or the from-address isn't on the verified domain.`,
   backupoff: "No file storage connected, so there's nowhere to put a backup.",
   backupfailed: detail ?? "The backup didn't write.",
   dealnote: "Say why this client isn't on list price — future you will want to know.",
