@@ -16,6 +16,7 @@ import { isEmailConfigured, fromAddress, replyToAddress } from "./email";
 import { alertRecipients, isSmsConfigured } from "./notify";
 import { isLinkSigningConfigured } from "./links";
 import { isArtworkStoreConfigured } from "./artwork";
+import { describeBlobEnv } from "./blob";
 import { TEMPLATE_REVIEWED, TEMPLATE_VERSION } from "./agreement-template";
 
 export type SetupStatus = "on" | "off" | "partial";
@@ -149,11 +150,13 @@ export function setupItems(): SetupItem[] {
       unlocks:
         "Ad artwork on client profiles, and the nightly backup of your whole roster.",
       status: flag(isArtworkStoreConfigured()),
+      detail: isArtworkStoreConfigured() ? undefined : describeBlobEnv(),
       vars: ["BLOB_READ_WRITE_TOKEN"],
       steps: [
         "In Vercel: Storage → Create → Blob.",
         "Connect it to this project. Vercel sets the token for you.",
-        "Redeploy.",
+        "Redeploy — a variable added after the last build is invisible until you do.",
+        "If it was connected with an environment-variable prefix, the token arrives under a prefixed name. That is handled automatically, but the line above says what was actually found.",
       ],
       caution:
         "Blob addresses are unguessable but public. Fine for ad artwork; never put a signed contract there.",
@@ -182,9 +185,9 @@ export function setupItems(): SetupItem[] {
       detail: `Currently ${TEMPLATE_VERSION}`,
       vars: [],
       steps: [
-        "Open any client's Documents section and read the drafted terms end to end.",
-        "Send the wording you want to Claude, or edit src/lib/ads/agreement-template.ts directly.",
-        "Set TEMPLATE_REVIEWED to true and bump TEMPLATE_VERSION in that file.",
+        "Open any client's Documents section, expand \u201cRead the full terms\u201d, and compare it line by line against the signed PDF.",
+        "Anything that differs: send the correct wording to Claude, or edit src/lib/ads/agreement-template.ts directly.",
+        "Once it matches, set TEMPLATE_REVIEWED to true in that file. Bump TEMPLATE_VERSION on any later wording change.",
       ],
       caution:
         "Every signature records which version it was, so changing the wording later never changes what someone already signed. That also means the version must be bumped, not edited in place.",

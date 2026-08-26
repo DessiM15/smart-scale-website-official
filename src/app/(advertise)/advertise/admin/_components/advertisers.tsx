@@ -323,7 +323,7 @@ function AdvertiserForm({
             </div>
           </div>
 
-          <div className="grid sm:grid-cols-3 gap-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className={labelClass} htmlFor="plan">
                 Package <span className="text-[#DC2626]">*</span>
@@ -350,6 +350,20 @@ function AdvertiserForm({
               defaultValue={editing?.startDate ?? today()}
               required
             />
+            <div>
+              <label className={labelClass} htmlFor="paymentType">
+                How they pay
+              </label>
+              <select
+                id="paymentType"
+                name="paymentType"
+                defaultValue={editing?.paymentType ?? "monthly"}
+                className={selectClass}
+              >
+                <option value="monthly">Invoiced monthly</option>
+                <option value="prepaid">Whole term up front</option>
+              </select>
+            </div>
             <div>
               <label className={labelClass} htmlFor="status">
                 Status

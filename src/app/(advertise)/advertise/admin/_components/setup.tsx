@@ -12,6 +12,7 @@ import { SubmitButton } from "./submit-button";
 import type { SetupItem } from "@/lib/ads/setup";
 import { setupProgress } from "@/lib/ads/setup";
 import type { BackupEntry } from "@/lib/ads/backup";
+import { describeBlobEnv } from "@/lib/ads/blob";
 import {
   Card,
   Empty,
@@ -249,9 +250,7 @@ function Backups({
           <p className="text-sm font-semibold text-white">
             Nothing is being backed up.
           </p>
-          <p className="mt-1.5 text-sm text-white/55">
-            Connect file storage below — the same store handles this and ad artwork.
-          </p>
+          <p className="mt-1.5 text-sm text-white/55">{describeBlobEnv()}</p>
         </Note>
       ) : !last ? (
         <Empty>

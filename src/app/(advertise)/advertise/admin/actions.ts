@@ -177,6 +177,7 @@ export async function saveAdvertiserAction(data: FormData) {
       customSetup,
       customMonths,
       dealNote: hasOverride ? dealNote : "",
+      paymentType: field(data, "paymentType") === "prepaid" ? "prepaid" : "monthly",
     },
     id,
   );

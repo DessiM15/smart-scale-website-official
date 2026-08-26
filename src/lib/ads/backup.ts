@@ -14,6 +14,7 @@
 import { exportRoster } from "./roster";
 import { listLinks } from "./link-store";
 import { redisPipeline, redisWrite } from "./redis";
+import { blobBase, blobToken, isBlobConfigured } from "./blob";
 
 /** Kept for a month — long enough to notice a bad edit, short enough to be free. */
 const KEEP_DAYS = 30;
@@ -30,15 +31,8 @@ export type BackupEntry = {
   bytes: number;
 };
 
-function blobBase(): string {
-  return (process.env.BLOB_API_BASE || "https://blob.vercel-storage.com").replace(
-    /\/$/,
-    "",
-  );
-}
-
 export function isBackupConfigured(): boolean {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+  return isBlobConfigured();
 }
 
 export type BackupResult = {
@@ -53,8 +47,10 @@ export type BackupResult = {
  * storage hiccup must not take the alerts down with it.
  */
 export async function runBackup(): Promise<BackupResult> {
-  const token = process.env.BLOB_READ_WRITE_TOKEN;
-  if (!token) return { ok: false, skipped: "BLOB_READ_WRITE_TOKEN is not set" };
+  const token = blobToken();
+  if (!token) {
+    return { ok: false, skipped: "No Blob token is visible to this deployment" };
+  }
 
   try {
     const [roster, links] = await Promise.all([exportRoster(), listLinks()]);

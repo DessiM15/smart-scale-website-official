@@ -19,6 +19,7 @@
 
 import { createHash, randomUUID } from "crypto";
 import { redisPipeline, redisWrite } from "./redis";
+import { blobBase, blobToken, isBlobConfigured } from "./blob";
 
 /** Same ceiling as artwork: a server action's body must fit Vercel's limit. */
 export const DOCUMENT_MAX_BYTES = 4 * 1024 * 1024;
@@ -57,14 +58,7 @@ export type DocumentRecord = {
 };
 
 export function isDocumentStoreConfigured(): boolean {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
-}
-
-function blobBase(): string {
-  return (process.env.BLOB_API_BASE || "https://blob.vercel-storage.com").replace(
-    /\/$/,
-    "",
-  );
+  return isBlobConfigured();
 }
 
 export function validateDocument(file: File): string | null {
@@ -120,8 +114,8 @@ export async function uploadDocument(
   const invalid = validateDocument(file);
   if (invalid) return { ok: false, error: invalid };
 
-  const token = process.env.BLOB_READ_WRITE_TOKEN;
-  if (!token) return { ok: false, error: "BLOB_READ_WRITE_TOKEN is not set" };
+  const token = blobToken();
+  if (!token) return { ok: false, error: "No Blob token is visible to this deployment" };
 
   const id = randomUUID();
   const extension = file.name.includes(".")
@@ -188,7 +182,7 @@ export async function uploadDocument(
 }
 
 async function removeBlob(url: string): Promise<void> {
-  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  const token = blobToken();
   if (!token) return;
   try {
     await fetch(`${blobBase()}/delete`, {

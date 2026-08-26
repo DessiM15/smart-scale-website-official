@@ -15,6 +15,7 @@
 
 import { randomUUID } from "crypto";
 import { redisPipeline, redisWrite } from "./redis";
+import { blobBase, blobToken, isBlobConfigured } from "./blob";
 
 /**
  * A server action's whole request body has to fit inside Vercel's 4.5 MB
@@ -49,15 +50,7 @@ export type Artwork = {
 };
 
 export function isArtworkStoreConfigured(): boolean {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
-}
-
-/** Overridable so the upload path can be pointed at a local stand-in under test. */
-function blobBase(): string {
-  return (process.env.BLOB_API_BASE || "https://blob.vercel-storage.com").replace(
-    /\/$/,
-    "",
-  );
+  return isBlobConfigured();
 }
 
 export function validateArtwork(file: File): string | null {
@@ -84,8 +77,8 @@ async function putBlob(
   body: Buffer,
   contentType: string,
 ): Promise<{ ok: true; url: string; pathname: string } | { ok: false; error: string }> {
-  const token = process.env.BLOB_READ_WRITE_TOKEN;
-  if (!token) return { ok: false, error: "BLOB_READ_WRITE_TOKEN is not set" };
+  const token = blobToken();
+  if (!token) return { ok: false, error: "No Blob token is visible to this deployment" };
 
   try {
     const res = await fetch(`${blobBase()}/${path}`, {
@@ -121,7 +114,7 @@ async function putBlob(
 }
 
 async function removeBlob(url: string): Promise<void> {
-  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  const token = blobToken();
   if (!token) return;
   try {
     await fetch(`${blobBase()}/delete`, {
