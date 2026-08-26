@@ -83,6 +83,14 @@ export type Advertiser = {
   /** Why they aren't on list price. Required whenever an override is set. */
   dealNote?: string;
   /**
+   * How this client pays: the whole term up front, or invoiced monthly.
+   *
+   * Lives on the client rather than the plan because it is negotiated per deal
+   * — a promotional term is usually prepaid while a standard one is invoiced —
+   * and it changes what the agreement says they owe and when.
+   */
+  paymentType?: "prepaid" | "monthly";
+  /**
    * The term end date covered by their countersigned agreement.
    *
    * Kept on the advertiser rather than looked up, so the roster can flag

@@ -74,6 +74,7 @@ import {
   listDocuments,
   type DocumentRecord,
 } from "@/lib/ads/documents";
+import { describeBlobEnv } from "@/lib/ads/blob";
 import {
   agreementText,
   TEMPLATE_REVIEWED,
@@ -475,15 +476,12 @@ function ArtworkCard({
         <div className="mb-5">
           <Note tone="warn">
             <p className="text-sm font-semibold text-white">
-              No file storage connected — artwork can&apos;t be saved yet.
+              This deployment can&apos;t see the file storage — artwork can&apos;t be
+              saved yet.
             </p>
-            <p className="mt-1.5 text-sm text-white/55">
-              In Vercel: Storage → Create → Blob, connect it to this project, then
-              redeploy. It sets{" "}
-              <code className="font-mono text-xs text-white/75">
-                BLOB_READ_WRITE_TOKEN
-              </code>{" "}
-              for you. Everything else on this page works without it.
+            <p className="mt-1.5 text-sm text-white/55">{describeBlobEnv()}</p>
+            <p className="mt-2 text-xs text-white/35">
+              Everything else on this page works without it.
             </p>
           </Note>
         </div>
@@ -901,11 +899,17 @@ function UploadAgreement({
         {!configured ? (
           <Note tone="warn">
             <p className="text-sm font-semibold text-white">
-              No file storage connected.
+              This deployment can&apos;t see the file storage.
             </p>
             <p className="mt-1.5 text-sm text-white/55">
-              In Vercel: Storage → Create → Blob, connect it to this project, then
-              redeploy.
+              {describeBlobEnv()}
+            </p>
+            <p className="mt-2 text-xs text-white/35 leading-relaxed">
+              If Vercel shows a Blob store connected and this still says otherwise,
+              it is one of two things: the store was connected after this deployment
+              was built, or it was attached with an environment-variable prefix. A
+              redeploy fixes the first, and the line above names what was found for
+              the second.
             </p>
           </Note>
         ) : (
@@ -1093,13 +1097,17 @@ function DocumentsCard({
         <div className="mb-5">
           <Note tone="warn">
             <p className="text-sm font-semibold text-white">
-              The agreement wording is still a draft ({TEMPLATE_VERSION}).
+              The agreement wording ({TEMPLATE_VERSION}) hasn&apos;t been checked
+              against the original yet.
             </p>
             <p className="mt-1.5 text-sm text-white/55">
-              It was written from how the business actually runs, but nobody has
-              reviewed it yet. Read it once before it goes to a paying client. Every
-              signature records which version it was, so replacing the wording later
-              never changes what someone already signed.
+              This is Smart Scale&apos;s own text, transcribed from the signed PDF —
+              which is exactly the kind of thing that looks right until the one
+              clause that matters is wrong. Open &ldquo;Read the full terms&rdquo;
+              on any agreement below and compare it against the original once, then
+              set TEMPLATE_REVIEWED to true in agreement-template.ts to clear this.
+              Every signature records which version it was, so replacing the wording
+              later never changes what someone already signed.
             </p>
           </Note>
         </div>

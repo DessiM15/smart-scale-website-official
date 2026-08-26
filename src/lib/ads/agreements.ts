@@ -178,6 +178,7 @@ export function termsFromAdvertiser(advertiser: Advertiser): AgreementTerms {
     startDate: view.startDate,
     endDate: view.endDate,
     dealNote: view.isCustom ? view.dealNote || "" : "",
+    paymentType: advertiser.paymentType ?? "monthly",
   };
 }
 
