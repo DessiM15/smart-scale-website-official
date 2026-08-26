@@ -1,5 +1,5 @@
 /**
- * Advertiser-facing email, sent through Resend's REST API.
+ * Advertiser-facing email, sent through Plunk's REST API.
  *
  * Dependency-free on purpose — it's one HTTPS call, and the rest of this
  * folder already talks to Upstash and Twilio the same way. Degrades to a
@@ -11,13 +11,32 @@ import type { ReportFacts } from "./report-data";
 import type { Narrative } from "./narrative";
 
 /** Overridable so the send path can be pointed at a local stand-in under test. */
-function resendEndpoint(): string {
-  const base = (process.env.RESEND_API_BASE || "https://api.resend.com").replace(/\/$/, "");
-  return `${base}/emails`;
+function plunkEndpoint(): string {
+  const base = (process.env.PLUNK_API_BASE || "https://api.useplunk.com").replace(
+    /\/$/,
+    "",
+  );
+  return `${base}/v1/send`;
 }
 
+/** The full "Name <address>" form, for display and for our own templates. */
 export function fromAddress(): string {
   return process.env.ADS_FROM_EMAIL || "Smart Scale <ads@smartscaleagent.com>";
+}
+
+/**
+ * Plunk wants the sender split: a bare address, and the display name beside it.
+ * Accepts either form in ADS_FROM_EMAIL so the variable doesn't have to change
+ * shape depending on who is delivering the mail.
+ */
+function splitFrom(): { address: string; name?: string } {
+  const raw = fromAddress().trim();
+  const bracketed = raw.match(/^(.*)<([^>]+)>\s*$/);
+  if (bracketed) {
+    const name = bracketed[1].trim().replace(/^"|"$/g, "");
+    return { address: bracketed[2].trim(), name: name || undefined };
+  }
+  return { address: raw };
 }
 
 export function replyToAddress(): string | undefined {
@@ -25,34 +44,49 @@ export function replyToAddress(): string | undefined {
 }
 
 export function isEmailConfigured(): boolean {
-  return Boolean(process.env.RESEND_API_KEY);
+  return Boolean(process.env.PLUNK_API_KEY);
 }
 
 export type EmailResult = { ok: boolean; error?: string };
 
+/**
+ * Sends one message through Plunk.
+ *
+ * `text` is accepted and not sent: Plunk's transactional endpoint takes a
+ * single HTML body. The templates still build a plain-text part because it
+ * costs nothing, it is the version a person can actually read back in a log,
+ * and it means the provider underneath can change again without rewriting
+ * every email in this file.
+ */
 export async function sendEmail(message: {
   to: string;
   subject: string;
   html: string;
   text: string;
 }): Promise<EmailResult> {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) return { ok: false, error: "RESEND_API_KEY is not set" };
+  const key = process.env.PLUNK_API_KEY;
+  if (!key) return { ok: false, error: "PLUNK_API_KEY is not set" };
+
+  const sender = splitFrom();
 
   try {
-    const res = await fetch(resendEndpoint(), {
+    const res = await fetch(plunkEndpoint(), {
       method: "POST",
       headers: {
         Authorization: `Bearer ${key}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: fromAddress(),
-        to: [message.to],
-        reply_to: replyToAddress(),
+        to: message.to,
         subject: message.subject,
-        html: message.html,
-        text: message.text,
+        body: message.html,
+        from: sender.address,
+        name: sender.name,
+        reply: replyToAddress(),
+        // These are contract and renewal notices to people we already do
+        // business with. Adding them to a marketing contact list as a side
+        // effect of being sent one is not something they agreed to.
+        subscribed: false,
       }),
       cache: "no-store",
       signal: AbortSignal.timeout(8000),
@@ -60,7 +94,7 @@ export async function sendEmail(message: {
 
     if (!res.ok) {
       const body = await res.text();
-      return { ok: false, error: `Resend ${res.status}: ${body.slice(0, 200)}` };
+      return { ok: false, error: `Plunk ${res.status}: ${body.slice(0, 200)}` };
     }
     return { ok: true };
   } catch (err) {
@@ -274,7 +308,7 @@ export type TestKind = "delivery" | "renewal";
  * other end of it.
  *
  * Two kinds, because they fail differently. "delivery" is the smallest possible
- * message and answers "did Resend accept it and did DNS let it land?".
+ * message and answers "did Plunk accept it and did DNS let it land?".
  * "renewal" is the actual template with invented figures, and answers "does it
  * look right, is the reply address mine, do the buttons render?".
  *
@@ -343,7 +377,7 @@ export function testEmail(kind: TestKind) {
   ${banner}
   <h1 style="margin:0 0 16px;font-size:24px;line-height:1.3;font-weight:600;">Email is working.</h1>
   <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">
-    If you are reading this, Resend accepted the message and your domain records let it land. Renewal notices and monthly reports can go out.
+    If you are reading this, Plunk accepted the message and your domain records let it land. Renewal notices and monthly reports can go out.
   </p>
   <div style="background:#ffffff;border:1px solid rgba(0,0,0,0.06);border-radius:14px;padding:18px 20px;font-size:14px;line-height:1.7;">
     <div><span style="color:${MUTED};">Sent from</span> <strong>${from}</strong></div>
@@ -359,7 +393,7 @@ export function testEmail(kind: TestKind) {
 
 EMAIL IS WORKING.
 
-If you are reading this, Resend accepted the message and your domain records let it land.
+If you are reading this, Plunk accepted the message and your domain records let it land.
 
   Sent from:      ${from}
   Replies go to:  ${replyTo || "the sending address"}
