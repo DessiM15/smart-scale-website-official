@@ -79,7 +79,47 @@ const CHOICE_STYLE: Record<
 
 /* --------------------------------- pieces --------------------------------- */
 
-function NeedsAttention({ items }: { items: AdvertiserView[] }) {
+/**
+ * A renewal note, composed and handed to your own mail client.
+ *
+ * Not a substitute for the automatic emails — it sends from your address, not
+ * the system's, and nothing records that it went. It exists because a term
+ * running out does not wait for an integration to be fixed, and retyping the
+ * same note for every advertiser is how outreach quietly stops happening.
+ */
+function outreachLink(v: AdvertiserView): string {
+  const subject = v.overdue
+    ? `Your ad at Mex Taco House has ended`
+    : `Your ad at Mex Taco House ends ${formatDate(v.endDate)}`;
+
+  const body = [
+    `Hi${v.contactName ? ` ${v.contactName}` : ""},`,
+    ``,
+    `${v.business} has been running on the dining-room screens at Mex Taco House${
+      v.category ? ` as our only ${v.category} advertiser` : ""
+    }. Your ${v.planName} term ${v.overdue ? "ended" : "ends"} on ${formatDate(v.endDate)}.`,
+    ``,
+    `Renewing keeps your category locked. If the term lapses it goes back on the market, and another business in your category can take the spot.`,
+    ``,
+    `Would you like to keep it running?`,
+    ``,
+  ].join("\n");
+
+  return `mailto:${encodeURIComponent(v.email)}?subject=${encodeURIComponent(
+    subject,
+  )}&body=${encodeURIComponent(body)}`;
+}
+
+const pillAction =
+  "rounded-full border px-3 py-1 text-xs font-semibold transition-colors";
+
+function NeedsAttention({
+  items,
+  emailArmed,
+}: {
+  items: AdvertiserView[];
+  emailArmed: boolean;
+}) {
   if (items.length === 0) return null;
   return (
     <Card
@@ -88,36 +128,63 @@ function NeedsAttention({ items }: { items: AdvertiserView[] }) {
       surface="warn"
       className="mb-5"
     >
+      {/* The automatic notices at 30, 7 and 0 days are the safety net under
+          this list. With them off, this list is the only thing standing
+          between a term and a lapsed category, so it says so. */}
+      {!emailArmed && (
+        <div className="mb-5">
+          <Note tone="bad">
+            <p className="text-sm font-semibold text-white">
+              Advertiser emails aren&apos;t sending, so these are yours to make.
+            </p>
+            <p className="mt-1.5 text-sm text-white/55">
+              Normally each of these would get an automatic notice at 30, 7 and 0
+              days. Until email is connected, nothing goes out on its own — the
+              Email button below opens a note already written, from your own
+              mailbox.
+            </p>
+          </Note>
+        </div>
+      )}
+
       <ul className="divide-y divide-white/[0.06] -my-2">
         {items.map((v) => (
-          <li
-            key={v.id}
-            className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm"
-          >
-            <span className="font-semibold text-white">
+          <li key={v.id} className="flex flex-wrap items-start justify-between gap-3 py-3.5 text-sm">
+            <span>
               <a
                 href={`/advertise/admin/client/${v.id}`}
-                className="hover:text-[#f87171] transition-colors"
+                className="font-semibold text-white hover:text-[#f87171] transition-colors"
               >
                 {v.business}
               </a>
-              <span className="font-normal text-white/35">
-                {" "}
-                · {v.category || "no category"}
+              <span className="text-white/35"> · {v.category || "no category"}</span>
+              <span className="block text-xs text-white/35 mt-0.5">
+                {[v.contactName, v.phone, v.email].filter(Boolean).join(" · ") ||
+                  "no contact details on file"}
               </span>
             </span>
-            <span className="flex items-center gap-4">
-              <span className="text-white/50 tabular-nums">
+            <span className="flex flex-wrap items-center gap-3">
+              <span
+                className={`tabular-nums ${v.overdue ? "text-[#f87171] font-semibold" : v.daysRemaining <= 14 ? "text-amber-300" : "text-white/50"}`}
+              >
                 {v.overdue
-                  ? `ended ${formatDate(v.endDate)}`
+                  ? `ended ${formatDate(v.endDate)} · ${Math.abs(v.daysRemaining)} days ago`
                   : `ends ${formatDate(v.endDate)} · ${v.daysRemaining} days`}
               </span>
               {v.phone && (
                 <a
                   href={`tel:${v.phone.replace(/[^\d+]/g, "")}`}
-                  className="rounded-full border border-[#DC2626]/40 px-3 py-1 text-xs font-semibold text-[#f87171] hover:bg-[#DC2626] hover:text-white hover:border-transparent transition-colors"
+                  className={`${pillAction} border-[#DC2626]/40 text-[#f87171] hover:bg-[#DC2626] hover:text-white hover:border-transparent`}
                 >
                   Call
+                </a>
+              )}
+              {v.email && (
+                <a
+                  href={outreachLink(v)}
+                  className={`${pillAction} border-white/15 text-white/70 hover:text-white hover:border-white/40`}
+                >
+                  Email
                 </a>
               )}
             </span>
@@ -512,7 +579,10 @@ export function OverviewTab({
         />
       </div>
 
-      <NeedsAttention items={needsAttention} />
+      <NeedsAttention
+        items={needsAttention}
+        emailArmed={isEmailConfigured() && isLinkSigningConfigured()}
+      />
 
       <NewLeads leads={newLeads} />
 
