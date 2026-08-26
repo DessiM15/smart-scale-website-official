@@ -400,7 +400,9 @@ export async function sendTestEmailAction(data: FormData) {
   const result = await sendEmail({ to, ...message });
   if (!result.ok) back({ err: "testsend", detail: result.error ?? "" });
 
-  back({ msg: "testSent", detail: to });
+  // Carry back what the provider said, so a send that claims to have worked can
+  // be matched against Plunk's own log rather than taken on trust.
+  back({ msg: "testSent", detail: to, sent: result.detail ?? "" });
 }
 
 /* -------------------------------- backups --------------------------------- */

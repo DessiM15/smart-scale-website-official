@@ -27,7 +27,7 @@ const notices = (
   reportSent: "Report sent.",
   reportSkipped: "Report skipped — it won't be sent.",
   reportEdited: "Report wording updated.",
-  testSent: `Test sent to ${detail}. If it doesn't arrive within a minute, check the spam folder — then check the domain records in Plunk.`,
+  testSent: `Test sent to ${detail}${sent ? ` — ${sent}` : ""}. If it doesn't arrive within a minute: check spam, then open Plunk's own log and find that address. Plunk accepting it and Plunk delivering it are two different things, and its log is the only place that tells them apart.`,
   backupDone: `Backed up — ${detail}.`,
   alerts:
     Number(checked ?? 0) === 0
@@ -53,7 +53,7 @@ const errors = (clash?: string, detail?: string): Record<string, string> => ({
   testaddress: "That doesn't look like an email address.",
   testunconfigured:
     "Email isn't connected yet, so there's nothing to test. Finish the Advertiser email steps first.",
-  testsend: `Plunk refused it: ${detail}. Usually the domain isn't verified yet, or the from-address isn't on the verified domain.`,
+  testsend: `${detail} — most often the sending domain isn't verified yet, the from-address isn't on the verified domain, or the key is the public pk_ one instead of the secret sk_ key.`,
   backupoff: "No file storage connected, so there's nowhere to put a backup.",
   backupfailed: detail ?? "The backup didn't write.",
   dealnote: "Say why this client isn't on list price — future you will want to know.",
