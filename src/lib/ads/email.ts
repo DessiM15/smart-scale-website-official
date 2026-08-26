@@ -43,8 +43,46 @@ export function replyToAddress(): string | undefined {
   return process.env.ADS_REPLY_TO || undefined;
 }
 
+/**
+ * The API key, with surrounding whitespace removed.
+ *
+ * A value pasted into a dashboard field routinely arrives with a trailing
+ * newline, and `Bearer sk_x…\n` is refused with the same "incorrect token"
+ * message as a genuinely wrong key — which sends you regenerating keys that
+ * were never the problem. Everything else in this folder trims its secrets;
+ * this had not been, and it cost an evening.
+ */
+function apiKey(): string {
+  return (process.env.PLUNK_API_KEY ?? "").trim();
+}
+
 export function isEmailConfigured(): boolean {
-  return Boolean(process.env.PLUNK_API_KEY);
+  return Boolean(apiKey());
+}
+
+/**
+ * A description of the key this deployment is holding, safe to show on screen.
+ *
+ * Length, the ends, and whether it arrived with whitespace — enough to tell a
+ * truncated paste from a mangled one from a wrong-project key, and not enough
+ * to be worth anything to anyone reading over a shoulder. Shown only when a
+ * send is refused, because that is the only moment it helps.
+ */
+export function keyFingerprint(): string {
+  const raw = process.env.PLUNK_API_KEY ?? "";
+  if (!raw) return "no key set";
+
+  const key = raw.trim();
+  const parts = [
+    `${key.length} chars`,
+    `starts ${key.slice(0, 3)}`,
+    `ends ${key.slice(-3)}`,
+  ];
+  if (raw !== key) parts.push("had surrounding whitespace, now trimmed");
+  if ([...key].some((c) => !/[A-Za-z0-9_-]/.test(c))) {
+    parts.push("contains characters a key shouldn't — looks like a masked copy");
+  }
+  return parts.join(", ");
 }
 
 export type EmailResult = {
@@ -85,7 +123,7 @@ export async function sendEmail(message: {
   html: string;
   text: string;
 }): Promise<EmailResult> {
-  const key = process.env.PLUNK_API_KEY;
+  const key = apiKey();
   if (!key) return { ok: false, error: "PLUNK_API_KEY is not set" };
 
   const sender = splitFrom();

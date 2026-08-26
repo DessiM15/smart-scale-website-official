@@ -3,7 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { isSignedIn, signIn, signOut } from "@/lib/ads/auth";
-import { isEmailConfigured, sendEmail, testEmail, type TestKind } from "@/lib/ads/email";
+import {
+  isEmailConfigured,
+  keyFingerprint,
+  sendEmail,
+  testEmail,
+  type TestKind,
+} from "@/lib/ads/email";
 import { runBackup } from "@/lib/ads/backup";
 import { runRenewalCheck } from "@/lib/ads/renewals";
 import { clearResponse } from "@/lib/ads/responses";
@@ -412,7 +418,13 @@ export async function sendTestEmailAction(data: FormData) {
 
   const result = await sendEmail({ to, ...message });
   if (!result.ok) {
-    back({ err: "testsend", detail: result.error ?? "" }, TEST_ANCHOR);
+    // A refused key looks identical whether it is wrong, truncated, or simply
+    // arrived with a newline attached. Describing the key the server is
+    // actually holding is the difference between diagnosing that and guessing.
+    const note = /401|unauthor|token/i.test(result.error ?? "")
+      ? ` — the key this deployment is using: ${keyFingerprint()}`
+      : "";
+    back({ err: "testsend", detail: `${result.error ?? ""}${note}` }, TEST_ANCHOR);
   }
 
   // Carry back what the provider said, so a send that claims to have worked can
