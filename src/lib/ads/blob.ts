@@ -25,12 +25,20 @@ function candidateNames(): string[] {
 }
 
 /**
- * The Blob token, whatever Vercel decided to call it. The unprefixed name wins
- * when both exist, because that is the one a person would have set deliberately.
+ * The Blob token, whatever Vercel decided to call it.
+ *
+ * The plain name is read as a written-out `process.env.BLOB_READ_WRITE_TOKEN`
+ * and nothing else, because a bundler can substitute a reference it can see
+ * literally in the source and cannot substitute `process.env[name]` built from
+ * a variable. Reaching for the dynamic form first — which is what this did at
+ * first — risks returning nothing for a variable that is plainly set.
+ *
+ * The scan below is only for the prefixed names, which cannot be written out
+ * because we do not know them ahead of time.
  */
 export function blobToken(): string {
-  const exact = (process.env[TOKEN_SUFFIX] ?? "").trim();
-  if (exact) return exact;
+  const direct = (process.env.BLOB_READ_WRITE_TOKEN ?? "").trim();
+  if (direct) return direct;
 
   for (const name of candidateNames()) {
     const value = (process.env[name] ?? "").trim();
@@ -59,9 +67,16 @@ export function blobBase(): string {
  * inside the app and have different fixes.
  */
 export function describeBlobEnv(): string {
+  const direct = (process.env.BLOB_READ_WRITE_TOKEN ?? "").trim();
+  if (direct) return "Found BLOB_READ_WRITE_TOKEN.";
+
   const names = candidateNames();
   if (names.length === 0) {
-    return "This deployment can't see any variable ending in BLOB_READ_WRITE_TOKEN. If the store is connected in Vercel, it was almost certainly connected after this deployment was built — redeploy and it will appear.";
+    // Distinguishes "the variable is absent" from "the variable is present but
+    // this build cannot enumerate it" — the second is invisible otherwise, and
+    // sends you looking at Vercel for something that is already correct there.
+    const visible = Object.keys(process.env).length;
+    return `This deployment can't see any variable ending in BLOB_READ_WRITE_TOKEN, out of ${visible} it can see at all. If Vercel shows the store connected to this project with Production ticked, redeploy — a variable added after a build is invisible until then.`;
   }
 
   const empty = names.filter((n) => !(process.env[n] ?? "").trim());
