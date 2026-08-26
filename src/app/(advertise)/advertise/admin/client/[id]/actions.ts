@@ -18,11 +18,13 @@ import {
 import { getAdvertiser, saveAdvertiser } from "@/lib/ads/roster";
 import {
   countersignAgreement,
+  fileAgreement,
   getAgreement,
   markSent as markAgreementSent,
   prepareAgreement,
   voidAgreement,
 } from "@/lib/ads/agreements";
+import { deleteDocument, uploadDocument } from "@/lib/ads/documents";
 import { agreementEmail, isEmailConfigured, sendEmail } from "@/lib/ads/email";
 import { agreementUrl } from "@/lib/ads/links";
 
@@ -265,4 +267,88 @@ export async function voidAgreementAction(data: FormData) {
   }
   revalidatePath(profilePath(id));
   back(id, { msg: "agreementVoided" });
+}
+
+/* --------------------------- agreements from elsewhere -------------------- */
+
+/**
+ * Files an agreement that was signed somewhere else.
+ *
+ * The file goes to the private store and the record goes straight to `filed`.
+ * Nothing here reads the PDF, so the covered term, the signer and the date are
+ * asked for rather than inferred — a guess on a contract is worse than a blank.
+ */
+export async function uploadAgreementAction(data: FormData) {
+  await requireAdmin();
+  const id = field(data, "id");
+  const advertiser = id ? await getAdvertiser(id) : null;
+  if (!advertiser) back(id, { err: "missing" });
+
+  const file = data.get("document");
+  if (!(file instanceof File) || file.size === 0) back(id, { err: "docmissing" });
+
+  const signedOn = field(data, "signedOn");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(signedOn)) back(id, { err: "docsigneddate" });
+
+  const coversEndDate = field(data, "coversEndDate");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(coversEndDate)) back(id, { err: "doccovers" });
+
+  const signerName = field(data, "signerName");
+  if (signerName.length < 2) back(id, { err: "docsigner" });
+
+  const stored = await uploadDocument(id, file, {
+    kind: "agreement",
+    label: field(data, "label") || "Signed agreement",
+  });
+  if (!stored.ok) back(id, { err: "docupload", detail: stored.error });
+
+  const { ok } = await fileAgreement(advertiser, {
+    documentId: stored.document.id,
+    bodyHash: stored.document.sha256,
+    signerName,
+    signedOn,
+    coversEndDate,
+    note: field(data, "note"),
+  });
+
+  if (!ok) {
+    // The record is what makes the file reachable; an orphan helps nobody.
+    await deleteDocument(stored.document.id);
+    back(id, { err: "save" });
+  }
+
+  // Same stamp the countersign path writes, so the roster stops flagging them.
+  await saveAdvertiser({ ...advertiser, signedAgreementEndDate: coversEndDate }, id);
+
+  revalidatePath(profilePath(id));
+  back(id, { msg: "agreementFiled" });
+}
+
+/** Any other paperwork worth keeping on a client — a W-9, a COI, a scan. */
+export async function uploadDocumentAction(data: FormData) {
+  await requireAdmin();
+  const id = field(data, "id");
+  if (!id) back(id, { err: "missing" });
+
+  const file = data.get("document");
+  if (!(file instanceof File) || file.size === 0) back(id, { err: "docmissing" });
+
+  const stored = await uploadDocument(id, file, {
+    kind: "other",
+    label: field(data, "label") || file.name,
+  });
+  if (!stored.ok) back(id, { err: "docupload", detail: stored.error });
+
+  revalidatePath(profilePath(id));
+  back(id, { msg: "documentSaved" });
+}
+
+export async function deleteDocumentAction(data: FormData) {
+  await requireAdmin();
+  const id = field(data, "id");
+  const documentId = field(data, "documentId");
+  if (!id || !documentId) back(id, { err: "missing" });
+  if (!(await deleteDocument(documentId))) back(id, { err: "save" });
+  revalidatePath(profilePath(id));
+  back(id, { msg: "documentRemoved" });
 }

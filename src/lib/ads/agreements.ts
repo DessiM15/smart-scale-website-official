@@ -33,7 +33,9 @@ const INDEX = (advertiserId: string) => `ads:agreements:${advertiserId}`;
  * sent       — the client has the link.
  * viewed     — they opened it. Useful when chasing.
  * signed     — they signed; waiting on us.
- * countersigned — done. This is the only state that counts as paperwork complete.
+ * countersigned — done. Both signatures captured here.
+ * filed      — an agreement handled outside the portal, uploaded as a record.
+ *              Complete, but nothing here witnessed the signing.
  * void       — cancelled before completion. Kept, never deleted.
  */
 export type AgreementStatus =
@@ -42,7 +44,22 @@ export type AgreementStatus =
   | "viewed"
   | "signed"
   | "countersigned"
+  | "filed"
   | "void";
+
+/**
+ * Where the agreement came from.
+ *
+ * `prepared` is the portal's own: terms rendered from the client's contract,
+ * hashed, signed on a page we control. `uploaded` is a file — signed on paper,
+ * in another tool, or before any of this existed. The distinction matters
+ * because we can say precisely what a prepared agreement says and precisely who
+ * signed it, and about an uploaded one we can only say what the file is and
+ * what you told us. Never present the two as the same kind of record.
+ *
+ * Absent means `prepared` — the only kind that existed before uploads.
+ */
+export type AgreementSource = "prepared" | "uploaded";
 
 export type Signature = {
   /** Typed by the signer. Their intent, in their own words. */
@@ -77,21 +94,58 @@ export type Agreement = {
   countersignature?: Countersignature;
   voidedAt?: string;
   voidReason?: string;
+
+  /* ----------------------------- uploaded only ---------------------------- */
+
+  source?: AgreementSource;
+  /** The file in the private document store. */
+  documentId?: string;
+  /**
+   * The term end date this covers, so the roster can tell whether a client's
+   * current term has paperwork. Entered by hand — nothing here reads the file.
+   */
+  coversEndDate?: string;
+  /** Who signed it and when, as recorded by whoever filed it. */
+  filedSignerName?: string;
+  filedSignedOn?: string;
+  filedNote?: string;
 };
+
+/** Absent source means the record predates uploads, so it was prepared here. */
+export function sourceOf(agreement: Agreement): AgreementSource {
+  return agreement.source ?? "prepared";
+}
 
 /** The fingerprint of a specific set of words. */
 export function hashBody(text: string): string {
   return createHash("sha256").update(text, "utf8").digest("hex");
 }
 
-/** True when the copy on file still matches the text it claims to be. */
+/**
+ * True when the copy on file still matches the text it claims to be.
+ *
+ * Only meaningful for an agreement this portal rendered. An uploaded file's
+ * hash is of the bytes, which nothing here re-derives, so there is nothing to
+ * compare against and the question doesn't apply.
+ */
 export function isIntact(agreement: Agreement): boolean {
+  if (sourceOf(agreement) === "uploaded") return true;
   return hashBody(agreementText(agreement.terms)) === agreement.bodyHash;
 }
 
-/** The paperwork is only finished when both sides have signed. */
+/**
+ * The paperwork is finished — either both sides signed here, or a signed copy
+ * from elsewhere is on file.
+ */
 export function isComplete(agreement: Agreement): boolean {
-  return agreement.status === "countersigned";
+  return agreement.status === "countersigned" || agreement.status === "filed";
+}
+
+/** The term end date an agreement covers, wherever it came from. */
+export function coveredEndDate(agreement: Agreement): string {
+  return sourceOf(agreement) === "uploaded"
+    ? (agreement.coversEndDate ?? "")
+    : agreement.terms.endDate;
 }
 
 /** Whatever is currently in force for this client, if anything. */
@@ -289,4 +343,51 @@ export async function voidAgreement(id: string, reason: string): Promise<boolean
     voidedAt: new Date().toISOString(),
     voidReason: reason.trim().slice(0, 200) || "Cancelled",
   });
+}
+
+/* ------------------------------ filing a copy ----------------------------- */
+
+export type FileAgreementInput = {
+  documentId: string;
+  /** SHA-256 of the uploaded bytes. */
+  bodyHash: string;
+  signerName: string;
+  /** YYYY-MM-DD. When they signed it, wherever that happened. */
+  signedOn: string;
+  /** The term end date this agreement covers. */
+  coversEndDate: string;
+  note: string;
+};
+
+/**
+ * Records an agreement that was signed somewhere else.
+ *
+ * It goes straight to `filed` — there is no signing flow to run, because the
+ * signing already happened and this portal did not witness it. The terms
+ * snapshot is taken from the client's record purely so the card has a business
+ * name to show; it is never presented as the contents of the file, because
+ * nothing here reads the file.
+ */
+export async function fileAgreement(
+  advertiser: Advertiser,
+  input: FileAgreementInput,
+): Promise<{ ok: boolean; agreement?: Agreement }> {
+  const agreement: Agreement = {
+    id: randomUUID(),
+    advertiserId: advertiser.id,
+    status: "filed",
+    source: "uploaded",
+    terms: termsFromAdvertiser(advertiser),
+    templateVersion: "uploaded",
+    bodyHash: input.bodyHash,
+    documentId: input.documentId,
+    coversEndDate: input.coversEndDate,
+    filedSignerName: input.signerName.trim().slice(0, 120),
+    filedSignedOn: input.signedOn,
+    filedNote: input.note.trim().slice(0, 300),
+    createdAt: new Date().toISOString(),
+  };
+
+  const ok = await put(agreement);
+  return { ok, agreement: ok ? agreement : undefined };
 }
