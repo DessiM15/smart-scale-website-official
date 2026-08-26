@@ -8,6 +8,7 @@
  */
 
 import { runBackupAction, sendTestEmailAction } from "../actions";
+import { SubmitButton } from "./submit-button";
 import type { SetupItem } from "@/lib/ads/setup";
 import { setupProgress } from "@/lib/ads/setup";
 import type { BackupEntry } from "@/lib/ads/backup";
@@ -91,13 +92,88 @@ function Item({ item }: { item: SetupItem }) {
 
 /* ------------------------------- test email ------------------------------- */
 
-function TestEmail({ configured }: { configured: boolean }) {
+/**
+ * The outcome, shown where the button is.
+ *
+ * There is a banner at the top of the page too, but this form sits well below
+ * the fold — reloading to a restored scroll position put the reader back in
+ * front of an unchanged form, which reads as nothing having happened at all.
+ */
+function TestResult({
+  msg,
+  err,
+  detail,
+  sent,
+}: {
+  msg?: string;
+  err?: string;
+  detail?: string;
+  sent?: string;
+}) {
+  if (err === "testsend" || err === "testaddress" || err === "testunconfigured") {
+    return (
+      <div className="mb-5">
+        <Note tone="bad">
+          <p className="text-sm font-semibold text-white">That didn&apos;t send.</p>
+          <p className="mt-1.5 text-sm text-white/70 break-words">
+            {err === "testaddress"
+              ? "That doesn't look like an email address."
+              : err === "testunconfigured"
+                ? "Email isn't connected yet."
+                : detail || "No reason came back."}
+          </p>
+          {err === "testsend" && (
+            <p className="mt-2 text-xs text-white/40 leading-relaxed">
+              That wording is Plunk&apos;s, not ours. A 401 means the key was
+              refused — check for a stray space on the value in Vercel, and that
+              it&apos;s the secret sk_ key.
+            </p>
+          )}
+        </Note>
+      </div>
+    );
+  }
+
+  if (msg !== "testSent") return null;
+
+  return (
+    <div className="mb-5">
+      <Note tone="ok">
+        <p className="text-sm font-semibold text-white">
+          Sent to {detail}
+          {sent ? ` — ${sent}` : ""}.
+        </p>
+        <p className="mt-1.5 text-sm text-white/70 leading-relaxed">
+          Plunk accepted it. If it hasn&apos;t landed within a minute, check spam,
+          then find that address in Plunk&apos;s own log — accepted and delivered
+          are different things, and only the log tells them apart.
+        </p>
+      </Note>
+    </div>
+  );
+}
+
+function TestEmail({
+  configured,
+  msg,
+  err,
+  detail,
+  sent,
+}: {
+  configured: boolean;
+  msg?: string;
+  err?: string;
+  detail?: string;
+  sent?: string;
+}) {
   return (
     <Card
+      id="test-email"
       title="Send yourself a test"
       lede="Prove email works against your own inbox before a client is on the other end of it."
       className="mb-5"
     >
+      <TestResult msg={msg} err={err} detail={detail} sent={sent} />
       {!configured ? (
         <Empty>
           Email isn&apos;t connected yet. Finish the Advertiser email steps below,
@@ -129,9 +205,9 @@ function TestEmail({ configured }: { configured: boolean }) {
               </select>
             </div>
           </div>
-          <button type="submit" className={btnPrimary}>
+          <SubmitButton className={btnPrimary} pendingLabel="Sending…">
             Send test
-          </button>
+          </SubmitButton>
           <p className="text-xs text-white/30 leading-relaxed">
             Both are marked as tests in the subject and the first line, and the
             sample renewal&apos;s buttons are inert — no client record can be touched
@@ -161,9 +237,9 @@ function Backups({
       action={
         configured ? (
           <form action={runBackupAction}>
-            <button type="submit" className={linkQuiet}>
+            <SubmitButton className={linkQuiet} pendingLabel="Backing up…">
               Back up now
-            </button>
+            </SubmitButton>
           </form>
         ) : undefined
       }
@@ -208,11 +284,13 @@ export function SetupTab({
   backups,
   emailConfigured,
   storageConfigured,
+  result,
 }: {
   items: SetupItem[];
   backups: BackupEntry[];
   emailConfigured: boolean;
   storageConfigured: boolean;
+  result: { msg?: string; err?: string; detail?: string; sent?: string };
 }) {
   const { on, total, blocked } = setupProgress(items);
 
@@ -245,7 +323,13 @@ export function SetupTab({
         </div>
       </Card>
 
-      <TestEmail configured={emailConfigured} />
+      <TestEmail
+        configured={emailConfigured}
+        msg={result.msg}
+        err={result.err}
+        detail={result.detail}
+        sent={result.sent}
+      />
       <Backups entries={backups} configured={storageConfigured} />
     </>
   );

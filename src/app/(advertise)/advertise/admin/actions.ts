@@ -63,8 +63,18 @@ async function requireAdmin() {
   if (!(await isSignedIn())) redirect(PAGE);
 }
 
-function back(params: Record<string, string>): never {
-  redirect(`${PAGE}?${new URLSearchParams(params)}`);
+/**
+ * Back to the tracker with the result.
+ *
+ * `anchor` matters more than it looks: the result banner sits at the top of the
+ * page, and an action taken from a form halfway down reloads to a restored
+ * scroll position where nothing appears to have changed. Sending the reader
+ * back to the thing they just used is the difference between "it worked" and
+ * "nothing happened".
+ */
+function back(params: Record<string, string>, anchor?: string): never {
+  const hash = anchor ? `#${anchor}` : "";
+  redirect(`${PAGE}?${new URLSearchParams(params)}${hash}`);
 }
 
 export async function signInAction(data: FormData) {
@@ -383,6 +393,9 @@ export async function editReportAction(data: FormData) {
 
 /* ------------------------------- test send -------------------------------- */
 
+/** The id on the test-send card, so a result lands back in view. */
+const TEST_ANCHOR = "test-email";
+
 /**
  * Sends a sample to whoever asks for it. The only way to find out that email is
  * broken should not be a client not receiving their renewal notice.
@@ -391,18 +404,20 @@ export async function sendTestEmailAction(data: FormData) {
   await requireAdmin();
 
   const to = field(data, "to");
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) back({ err: "testaddress" });
-  if (!isEmailConfigured()) back({ err: "testunconfigured" });
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) back({ err: "testaddress" }, TEST_ANCHOR);
+  if (!isEmailConfigured()) back({ err: "testunconfigured" }, TEST_ANCHOR);
 
   const kind = (field(data, "kind") || "delivery") as TestKind;
   const message = testEmail(kind === "renewal" ? "renewal" : "delivery");
 
   const result = await sendEmail({ to, ...message });
-  if (!result.ok) back({ err: "testsend", detail: result.error ?? "" });
+  if (!result.ok) {
+    back({ err: "testsend", detail: result.error ?? "" }, TEST_ANCHOR);
+  }
 
   // Carry back what the provider said, so a send that claims to have worked can
   // be matched against Plunk's own log rather than taken on trust.
-  back({ msg: "testSent", detail: to, sent: result.detail ?? "" });
+  back({ msg: "testSent", detail: to, sent: result.detail ?? "" }, TEST_ANCHOR);
 }
 
 /* -------------------------------- backups --------------------------------- */
