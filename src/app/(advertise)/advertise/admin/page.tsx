@@ -352,6 +352,12 @@ export default async function AdminPage({
             backups={backups}
             emailConfigured={isEmailConfigured()}
             storageConfigured={isArtworkStoreConfigured()}
+            result={{
+              msg: params.msg,
+              err: params.err,
+              detail: params.detail,
+              sent: params.sent,
+            }}
           />
         )}
 

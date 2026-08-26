@@ -4,6 +4,7 @@
  */
 
 import { runAlertsAction, clearResponseAction } from "../actions";
+import { SubmitButton } from "./submit-button";
 import {
   alertRecipients,
   isAlertingConfigured,
@@ -209,9 +210,9 @@ function RenewalWatch({
       lede={`Checks every morning and texts the team as a term winds down — ${NOTICE_LABEL}.`}
       action={
         <form action={runAlertsAction}>
-          <button type="submit" className={btnSolid}>
+          <SubmitButton className={btnSolid} pendingLabel="Checking…">
             Run check now
-          </button>
+          </SubmitButton>
         </form>
       }
     >
