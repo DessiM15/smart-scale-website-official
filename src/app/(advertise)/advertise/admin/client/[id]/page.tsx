@@ -23,6 +23,7 @@ import { getCodeStats, type CodeStats } from "@/lib/ads/scan-store";
 import {
   formatDate,
   getAdvertiser,
+  today,
   toView,
   type AdvertiserView,
 } from "@/lib/ads/roster";
@@ -49,11 +50,14 @@ import {
   addClientLinkAction,
   countersignAgreementAction,
   deleteArtworkAction,
+  deleteDocumentAction,
   prepareAgreementAction,
   repointClientLinkAction,
   saveNotesAction,
   sendAgreementAction,
+  uploadAgreementAction,
   uploadArtworkAction,
+  uploadDocumentAction,
   voidAgreementAction,
 } from "./actions";
 import {
@@ -61,8 +65,15 @@ import {
   isIntact,
   listAgreements,
   pendingAgreement,
+  sourceOf,
   type Agreement,
 } from "@/lib/ads/agreements";
+import {
+  documentHref,
+  isDocumentStoreConfigured,
+  listDocuments,
+  type DocumentRecord,
+} from "@/lib/ads/documents";
 import {
   agreementText,
   TEMPLATE_REVIEWED,
@@ -86,6 +97,9 @@ const ARTWORK_STALE_DAYS = 90;
 const MESSAGES: Record<string, string> = {
   notesSaved: "Notes saved.",
   agreementPrepared: "Agreement drafted. Read it through, then send it.",
+  agreementFiled: "Signed agreement filed. This client's paperwork is covered.",
+  documentSaved: "Document saved.",
+  documentRemoved: "Document removed.",
   agreementSent: "Agreement sent.",
   agreementDone: "Countersigned. The paperwork is complete.",
   agreementVoided: "Agreement cancelled. It stays on file.",
@@ -109,6 +123,11 @@ const ERRORS: Record<string, string> = {
   agreementNoSecret: "ADS_LINK_SECRET isn't set, so no signing link can be made. It's on the Setup tab.",
   agreementSend: "The agreement didn't send.",
   agreementState: "That agreement isn't in a state where that's possible. Reload the page.",
+  docmissing: "Pick a file first.",
+  docupload: "That file didn't upload.",
+  docsigneddate: "When was it signed? Give a date.",
+  doccovers: "Which term does it cover? Give the end date.",
+  docsigner: "Who signed it? A full name.",
 };
 
 function ResultBanner({
@@ -589,6 +608,7 @@ function ArtworkCard({
 
 const AGREEMENT_STATUS: Record<Agreement["status"], { label: string; tone: Tone }> = {
   draft: { label: "Draft", tone: "neutral" },
+  filed: { label: "On file", tone: "ok" },
   sent: { label: "Sent", tone: "warn" },
   viewed: { label: "Opened", tone: "warn" },
   signed: { label: "Signed — needs you", tone: "brand" },
@@ -624,6 +644,95 @@ function SignatureBlock({ agreement }: { agreement: Agreement }) {
         </p>
       )}
     </div>
+  );
+}
+
+function FiledAgreementRow({
+  agreement,
+  advertiserId,
+  document,
+}: {
+  agreement: Agreement;
+  advertiserId: string;
+  document?: DocumentRecord;
+}) {
+  return (
+    <details className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden">
+      <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-3 px-5 py-4 list-none [&::-webkit-details-marker]:hidden hover:bg-white/[0.02] transition-colors">
+        <span className="flex flex-wrap items-center gap-2.5">
+          <span className="text-sm font-semibold text-white">
+            {agreement.filedNote || "Signed agreement"}
+          </span>
+          <Pill tone="ok">On file</Pill>
+          <span className="text-xs text-white/30">signed elsewhere</span>
+        </span>
+        <span className="text-xs text-white/35 tabular-nums">
+          {agreement.filedSignedOn ? formatDate(agreement.filedSignedOn) : ""}
+        </span>
+      </summary>
+
+      <div className="px-5 pb-5 pt-1 space-y-4">
+        <dl>
+          {(
+            [
+              ["Signed by", agreement.filedSignerName || "—"],
+              [
+                "Signed on",
+                agreement.filedSignedOn ? formatDate(agreement.filedSignedOn) : "—",
+              ],
+              [
+                "Covers the term ending",
+                agreement.coversEndDate ? formatDate(agreement.coversEndDate) : "—",
+              ],
+              ["File", document ? `${document.filename} · ${fileSize(document.size)}` : "missing"],
+            ] as [string, string][]
+          ).map(([label, value]) => (
+            <div
+              key={label}
+              className="flex flex-wrap items-baseline justify-between gap-3 py-2 border-b border-white/[0.05]"
+            >
+              <dt className="text-[10px] uppercase tracking-[0.16em] text-white/40 font-semibold">
+                {label}
+              </dt>
+              <dd className="text-sm text-white/75 text-right">{value}</dd>
+            </div>
+          ))}
+        </dl>
+
+        {document && (
+          <div>
+            <a
+              href={documentHref(document.id)}
+              target="_blank"
+              rel="noreferrer"
+              className={btnGhost}
+            >
+              Open the signed copy
+            </a>
+            <p className="mt-2 text-[11px] text-white/25 font-mono break-all">
+              sha256 {document.sha256.slice(0, 32)}…
+            </p>
+            <p className="mt-1 text-xs text-white/30">
+              Signed outside this portal, so the details above are what you recorded
+              rather than anything read from the file itself.
+            </p>
+          </div>
+        )}
+
+        <form action={voidAgreementAction} className="flex items-center gap-3 pt-1">
+          <input type="hidden" name="id" value={advertiserId} />
+          <input type="hidden" name="agreementId" value={agreement.id} />
+          <input
+            name="reason"
+            placeholder="why?"
+            className={`${inputClass} w-40 py-1.5 text-xs`}
+          />
+          <button type="submit" className={linkQuiet}>
+            Mark it void
+          </button>
+        </form>
+      </div>
+    </details>
   );
 }
 
@@ -767,18 +876,199 @@ function AgreementRow({
   );
 }
 
+/**
+ * Filing something signed elsewhere. Deliberately asks for the signer, the date
+ * and the term it covers instead of guessing any of them — nothing here reads
+ * the file, and a wrong guess on a contract is worse than an empty box.
+ */
+function UploadAgreement({
+  view,
+  configured,
+}: {
+  view: AdvertiserView;
+  configured: boolean;
+}) {
+  return (
+    <details className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden">
+      <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-3 px-5 py-4 list-none [&::-webkit-details-marker]:hidden hover:bg-white/[0.02] transition-colors">
+        <span className="text-sm font-semibold text-white">
+          Already signed one elsewhere? File it here
+        </span>
+        <span className="text-xs text-white/35">upload</span>
+      </summary>
+
+      <div className="px-5 pb-5 pt-1">
+        {!configured ? (
+          <Note tone="warn">
+            <p className="text-sm font-semibold text-white">
+              No file storage connected.
+            </p>
+            <p className="mt-1.5 text-sm text-white/55">
+              In Vercel: Storage → Create → Blob, connect it to this project, then
+              redeploy.
+            </p>
+          </Note>
+        ) : (
+          <form action={uploadAgreementAction} className="space-y-4">
+            <input type="hidden" name="id" value={view.id} />
+
+            <div>
+              <label className={labelClass} htmlFor="agreementFile">
+                The signed agreement <span className="text-[#DC2626]">*</span>
+              </label>
+              <input
+                id="agreementFile"
+                name="document"
+                type="file"
+                required
+                accept="application/pdf,image/png,image/jpeg,image/webp,.doc,.docx"
+                className={`${inputClass} file:mr-3 file:rounded-lg file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white`}
+              />
+              <p className="mt-1.5 text-xs text-white/30">
+                PDF, Word or a photo of the signed pages, up to 4 MB.
+              </p>
+            </div>
+
+            <div className="grid sm:grid-cols-3 gap-4">
+              <Field
+                label="Who signed it"
+                name="signerName"
+                id="filedSigner"
+                defaultValue={view.contactName}
+                required
+              />
+              <Field
+                label="Signed on"
+                name="signedOn"
+                id="filedSignedOn"
+                type="date"
+                defaultValue={today()}
+                required
+              />
+              <Field
+                label="Covers term ending"
+                name="coversEndDate"
+                id="filedCovers"
+                type="date"
+                defaultValue={view.endDate}
+                required
+                hint="Their current term ends here."
+              />
+            </div>
+
+            <Field
+              label="What it is"
+              name="note"
+              id="filedNote"
+              placeholder="Signed agreement, countersigned copy, amendment…"
+            />
+
+            <button type="submit" className={btnPrimary}>
+              File this agreement
+            </button>
+            <p className="text-xs text-white/30 leading-relaxed">
+              Filing it counts as covered paperwork for the term you name, and the
+              client stops showing as unsigned. Stored privately — it is only
+              readable while signed in here, never from a public address.
+            </p>
+          </form>
+        )}
+      </div>
+    </details>
+  );
+}
+
+/** Anything else worth keeping — a W-9, a certificate, a scan of something. */
+function OtherDocuments({
+  view,
+  documents,
+  configured,
+}: {
+  view: AdvertiserView;
+  documents: DocumentRecord[];
+  configured: boolean;
+}) {
+  return (
+    <div className="mt-7 pt-6 border-t border-white/[0.06]">
+      <SubHead>Other documents</SubHead>
+
+      {documents.length === 0 ? (
+        <p className="text-sm text-white/35 mb-4">
+          Nothing else on file for this client.
+        </p>
+      ) : (
+        <ul className="divide-y divide-white/[0.06] mb-4">
+          {documents.map((doc) => (
+            <li
+              key={doc.id}
+              className="flex flex-wrap items-center justify-between gap-3 py-2.5"
+            >
+              <a
+                href={documentHref(doc.id)}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm font-semibold text-white hover:text-[#f87171] transition-colors"
+              >
+                {doc.label}
+              </a>
+              <span className="flex items-center gap-4">
+                <span className="text-xs text-white/30 tabular-nums">
+                  {fileSize(doc.size)} · {stamp(doc.uploadedAt)}
+                </span>
+                <form action={deleteDocumentAction}>
+                  <input type="hidden" name="id" value={view.id} />
+                  <input type="hidden" name="documentId" value={doc.id} />
+                  <button type="submit" className={linkQuiet}>
+                    Remove
+                  </button>
+                </form>
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {configured && (
+        <form action={uploadDocumentAction} className="grid sm:grid-cols-[1fr_1fr_auto] gap-4 items-end">
+          <input type="hidden" name="id" value={view.id} />
+          <div>
+            <label className={labelClass} htmlFor="otherDoc">
+              Add a document
+            </label>
+            <input
+              id="otherDoc"
+              name="document"
+              type="file"
+              accept="application/pdf,image/png,image/jpeg,image/webp,.doc,.docx"
+              className={`${inputClass} file:mr-3 file:rounded-lg file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white`}
+            />
+          </div>
+          <Field label="What it is" name="label" id="otherDocLabel" placeholder="W-9, insurance certificate…" />
+          <button type="submit" className={btnGhost}>
+            Save
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}
+
 function DocumentsCard({
   view,
   agreements,
+  documents,
   signUrls,
   emailConfigured,
   signingConfigured,
+  storageConfigured,
 }: {
   view: AdvertiserView;
   agreements: Agreement[];
+  documents: DocumentRecord[];
   signUrls: Record<string, string | null>;
   emailConfigured: boolean;
   signingConfigured: boolean;
+  storageConfigured: boolean;
 }) {
   const complete = activeAgreement(agreements);
   const pending = pendingAgreement(agreements);
@@ -846,22 +1136,41 @@ function DocumentsCard({
 
       {agreements.length === 0 ? (
         <Empty>
-          No agreement yet. Preparing one takes the rate, term and dates straight
-          off their contract.
+          No agreement yet. Prepare one here — the rate, term and dates come
+          straight off their contract — or file a copy you signed elsewhere.
         </Empty>
       ) : (
         <div className="space-y-3">
-          {agreements.map((agreement) => (
-            <AgreementRow
-              key={agreement.id}
-              agreement={agreement}
-              advertiserId={view.id}
-              signUrl={signUrls[agreement.id] ?? null}
-              emailConfigured={emailConfigured}
-            />
-          ))}
+          {agreements.map((agreement) =>
+            sourceOf(agreement) === "uploaded" ? (
+              <FiledAgreementRow
+                key={agreement.id}
+                agreement={agreement}
+                advertiserId={view.id}
+                document={documents.find((d) => d.id === agreement.documentId)}
+              />
+            ) : (
+              <AgreementRow
+                key={agreement.id}
+                agreement={agreement}
+                advertiserId={view.id}
+                signUrl={signUrls[agreement.id] ?? null}
+                emailConfigured={emailConfigured}
+              />
+            ),
+          )}
         </div>
       )}
+
+      <div className="mt-3">
+        <UploadAgreement view={view} configured={storageConfigured} />
+      </div>
+
+      <OtherDocuments
+        view={view}
+        documents={documents.filter((d) => d.kind === "other")}
+        configured={storageConfigured}
+      />
     </Card>
   );
 }
@@ -886,7 +1195,7 @@ export default async function ClientProfilePage({
   const allLinks = await listLinks();
   const theirLinks = linksForAdvertiser(allLinks, id, advertiser.qrCode);
 
-  const [codes, artwork, agreements] = await Promise.all([
+  const [codes, artwork, agreements, documents] = await Promise.all([
     Promise.all(
       theirLinks.map(async (link) => ({
         link,
@@ -895,6 +1204,7 @@ export default async function ClientProfilePage({
     ),
     listArtwork(id),
     listAgreements(id),
+    listDocuments(id),
   ]);
 
   // Built here rather than in the component: the token is derived from a
@@ -1011,9 +1321,11 @@ export default async function ClientProfilePage({
         <DocumentsCard
           view={view}
           agreements={agreements}
+          documents={documents}
           signUrls={signUrls}
           emailConfigured={isEmailConfigured()}
           signingConfigured={isLinkSigningConfigured()}
+          storageConfigured={isDocumentStoreConfigured()}
         />
 
         <p className="mt-12 text-xs text-white/25 max-w-2xl leading-relaxed">
