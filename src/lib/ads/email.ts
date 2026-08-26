@@ -47,7 +47,28 @@ export function isEmailConfigured(): boolean {
   return Boolean(process.env.PLUNK_API_KEY);
 }
 
-export type EmailResult = { ok: boolean; error?: string };
+export type EmailResult = {
+  ok: boolean;
+  error?: string;
+  /** Whatever the provider gave back to identify the send, for cross-checking. */
+  detail?: string;
+};
+
+/**
+ * What Plunk actually said.
+ *
+ * A 200 is not the same as a send. Providers routinely answer 200 with a body
+ * saying the request was understood and refused, so the body is read on every
+ * response and a missing or false `success` is treated as a failure. Reporting
+ * a send that did not happen is the worst outcome available here — it sends you
+ * looking at DNS and spam folders for an email that was never accepted.
+ */
+type PlunkResponse = {
+  success?: boolean;
+  message?: string;
+  error?: string;
+  emails?: { contact?: { email?: string }; email?: string }[];
+};
 
 /**
  * Sends one message through Plunk.
@@ -92,11 +113,41 @@ export async function sendEmail(message: {
       signal: AbortSignal.timeout(8000),
     });
 
-    if (!res.ok) {
-      const body = await res.text();
-      return { ok: false, error: `Plunk ${res.status}: ${body.slice(0, 200)}` };
+    const raw = await res.text();
+    let parsed: PlunkResponse | null = null;
+    try {
+      parsed = raw ? (JSON.parse(raw) as PlunkResponse) : null;
+    } catch {
+      // Not JSON. The raw text is still the most useful thing to report.
     }
-    return { ok: true };
+
+    const said = parsed?.message || parsed?.error || raw.slice(0, 200);
+
+    if (!res.ok) {
+      return { ok: false, error: `Plunk ${res.status}: ${said || "no detail given"}` };
+    }
+
+    // A 200 carrying success:false is a refusal wearing a success code.
+    if (parsed && parsed.success === false) {
+      return {
+        ok: false,
+        error: `Plunk accepted the request but refused the send: ${said || "no reason given"}`,
+      };
+    }
+
+    // No recognisable body at all means we cannot say it sent, so we don't.
+    if (!parsed) {
+      return {
+        ok: false,
+        error: `Plunk answered ${res.status} with nothing we could read: ${raw.slice(0, 200) || "(empty)"}`,
+      };
+    }
+
+    const delivered = parsed.emails?.length ?? 0;
+    return {
+      ok: true,
+      detail: delivered > 0 ? `${delivered} queued by Plunk` : "accepted by Plunk",
+    };
   } catch (err) {
     return {
       ok: false,
