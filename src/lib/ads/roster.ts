@@ -82,6 +82,15 @@ export type Advertiser = {
   customMonths?: number | null;
   /** Why they aren't on list price. Required whenever an override is set. */
   dealNote?: string;
+  /**
+   * The term end date covered by their countersigned agreement.
+   *
+   * Kept on the advertiser rather than looked up, so the roster can flag
+   * missing paperwork without reading an agreement record per client on every
+   * page load. Storing the end date rather than a boolean is what makes a
+   * renewal need fresh paperwork: once the term moves, this no longer matches.
+   */
+  signedAgreementEndDate?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -213,6 +222,8 @@ export type AdvertiserView = Advertiser & Terms & {
   expiringSoon: boolean;
   /** Term end date has passed but nobody has marked them ended. */
   overdue: boolean;
+  /** Running, but no countersigned agreement covers the term they're running. */
+  needsPaperwork: boolean;
 };
 
 export function toView(a: Advertiser, asOf = today()): AdvertiserView {
@@ -231,6 +242,8 @@ export function toView(a: Advertiser, asOf = today()): AdvertiserView {
     expiringSoon:
       a.status === "active" && daysRemaining >= 0 && daysRemaining <= 60,
     overdue: a.status === "active" && daysRemaining < 0,
+    needsPaperwork:
+      a.status === "active" && a.signedAgreementEndDate !== endDate,
   };
 }
 
@@ -254,6 +267,8 @@ export type RosterSummary = {
   customDeals: number;
   /** Contracted value still to be invoiced across every active term. */
   contractedRemaining: number;
+  /** Running clients whose current term has no countersigned agreement. */
+  unsigned: AdvertiserView[];
 };
 
 export function summarize(views: AdvertiserView[]): RosterSummary {
@@ -277,6 +292,7 @@ export function summarize(views: AdvertiserView[]): RosterSummary {
       (sum, v) => sum + v.monthly * Math.max(0, Math.ceil(v.daysRemaining / 30)),
       0,
     ),
+    unsigned: active.filter((v) => v.needsPaperwork).sort(byEndDate),
   };
 }
 

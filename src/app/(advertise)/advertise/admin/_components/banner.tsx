@@ -27,6 +27,8 @@ const notices = (
   reportSent: "Report sent.",
   reportSkipped: "Report skipped — it won't be sent.",
   reportEdited: "Report wording updated.",
+  testSent: `Test sent to ${detail}. If it doesn't arrive within a minute, check the spam folder — then check the domain records in Resend.`,
+  backupDone: `Backed up — ${detail}.`,
   alerts:
     Number(checked ?? 0) === 0
       ? "Renewal check ran — nothing due today."
@@ -48,6 +50,12 @@ const errors = (clash?: string, detail?: string): Record<string, string> => ({
   logotype: "Logos must be a PNG, JPEG, WebP or SVG.",
   logosize: "That logo is over 200KB. Export a smaller version and try again.",
   reportsend: detail ?? "Could not send that report.",
+  testaddress: "That doesn't look like an email address.",
+  testunconfigured:
+    "Email isn't connected yet, so there's nothing to test. Finish the Advertiser email steps first.",
+  testsend: `Resend refused it: ${detail}. Usually the domain isn't verified yet, or the from-address isn't on the verified domain.`,
+  backupoff: "No file storage connected, so there's nowhere to put a backup.",
+  backupfailed: detail ?? "The backup didn't write.",
   dealnote: "Say why this client isn't on list price — future you will want to know.",
   dealnumber: `"${detail}" isn't a number I can use. Enter the amount in dollars, like 275.`,
   dealmonths: "A custom term has to be at least one whole month.",

@@ -6,7 +6,7 @@
  * recorded skip when unconfigured rather than throwing inside the daily job.
  */
 
-import { formatDate, type AdvertiserView } from "./roster";
+import { addMonths, formatDate, toView, type AdvertiserView } from "./roster";
 import type { ReportFacts } from "./report-data";
 import type { Narrative } from "./narrative";
 
@@ -77,6 +77,9 @@ const INK = "#1a1210";
 const MUTED = "#7a6a5d";
 const RED = "#DC2626";
 const CREAM = "#faf6f0";
+
+/** The venue these emails are about, kept in step with the agreement template. */
+const VENUE_NAME = "Mex Taco House";
 
 function button(href: string, label: string, primary: boolean): string {
   const bg = primary ? RED : "#ffffff";
@@ -258,6 +261,247 @@ A "scan" is someone pointing their phone at your code and opening your page - no
 
 Questions, or want to change your artwork? Just reply to this email.
 Mex Taco House screen advertising is managed by Smart Scale.`;
+
+  return { subject, html, text };
+}
+
+/* -------------------------------- test send ------------------------------- */
+
+export type TestKind = "delivery" | "renewal";
+
+/**
+ * A message you send yourself to prove the pipe works before a client is on the
+ * other end of it.
+ *
+ * Two kinds, because they fail differently. "delivery" is the smallest possible
+ * message and answers "did Resend accept it and did DNS let it land?".
+ * "renewal" is the actual template with invented figures, and answers "does it
+ * look right, is the reply address mine, do the buttons render?".
+ *
+ * Everything is marked as a test in the subject, in the first line and in the
+ * plain-text part, so a forwarded copy can't be mistaken for the real thing.
+ */
+export function testEmail(kind: TestKind) {
+  const from = fromAddress();
+  const replyTo = replyToAddress();
+
+  const banner = `<div style="background:${INK};color:#ffffff;padding:14px 18px;border-radius:12px;margin-bottom:20px;font-size:13px;line-height:1.5;">
+    <strong style="letter-spacing:0.08em;text-transform:uppercase;font-size:11px;">Test message</strong><br/>
+    Sent from the Mex Taco ad tracker to check that email is working. No client received this.
+  </div>`;
+
+  if (kind === "renewal") {
+    // A term ending in seven days, so the sample lands on the middle notice —
+    // the one with all three buttons showing.
+    const today = new Date();
+    const end = new Date(today.getTime() + 7 * 86_400_000)
+      .toISOString()
+      .slice(0, 10);
+    const start = addMonths(end, -6);
+
+    const sample = toView({
+      id: "sample",
+      business: "Sample Plumbing Co.",
+      contactName: "Alex",
+      email: "",
+      phone: "",
+      category: "Plumbing",
+      plan: "standard",
+      startDate: start,
+      status: "active",
+      qrCode: "",
+      notes: "",
+      createdAt: "",
+      updatedAt: "",
+    });
+
+    const built = renewalEmail(
+      sample,
+      {
+        // Deliberately inert. A live token would let anyone with the test email
+        // act on a real advertiser's term.
+        renew: "https://smartscaleagent.com/advertise",
+        change: "https://smartscaleagent.com/advertise",
+        cancel: "https://smartscaleagent.com/advertise",
+      },
+      412,
+    );
+
+    return {
+      subject: `[Test] ${built.subject}`,
+      html: built.html.replace(
+        /(<div style="max-width:560px[^>]*>)/,
+        `$1${banner}`,
+      ),
+      text: `*** TEST MESSAGE — no client received this. The figures below are invented. ***\n\n${built.text}`,
+    };
+  }
+
+  const html = `<!doctype html>
+<html><body style="margin:0;padding:0;background:${CREAM};">
+<div style="max-width:560px;margin:0 auto;padding:32px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:${INK};">
+  ${banner}
+  <h1 style="margin:0 0 16px;font-size:24px;line-height:1.3;font-weight:600;">Email is working.</h1>
+  <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">
+    If you are reading this, Resend accepted the message and your domain records let it land. Renewal notices and monthly reports can go out.
+  </p>
+  <div style="background:#ffffff;border:1px solid rgba(0,0,0,0.06);border-radius:14px;padding:18px 20px;font-size:14px;line-height:1.7;">
+    <div><span style="color:${MUTED};">Sent from</span> <strong>${from}</strong></div>
+    <div><span style="color:${MUTED};">Replies go to</span> <strong>${replyTo || "the sending address"}</strong></div>
+  </div>
+  <p style="margin:18px 0 0;font-size:14px;line-height:1.6;color:${MUTED};">
+    One thing worth checking now: hit reply. Every client email invites a reply, so if nothing receives at the address above, those replies bounce.
+  </p>
+</div>
+</body></html>`;
+
+  const text = `*** TEST MESSAGE — no client received this. ***
+
+EMAIL IS WORKING.
+
+If you are reading this, Resend accepted the message and your domain records let it land.
+
+  Sent from:      ${from}
+  Replies go to:  ${replyTo || "the sending address"}
+
+One thing worth checking now: hit reply. Every client email invites a reply, so if nothing receives at the address above, those replies bounce.`;
+
+  return { subject: "[Test] Mex Taco ad tracker — email check", html, text };
+}
+
+/* ---------------------------- agreement to sign --------------------------- */
+
+/**
+ * The email that carries the agreement.
+ *
+ * Short on purpose. The terms are on the page behind the link, and repeating
+ * them here would create a second version of the document that nobody hashed.
+ * What belongs in the email is the few facts they'd want before clicking, and
+ * a clear statement that clicking does not commit them to anything.
+ */
+export function agreementEmail(
+  terms: {
+    business: string;
+    contactName: string;
+    category: string;
+    planName: string;
+    monthly: number;
+    setup: number;
+    months: number;
+    startDate: string;
+    endDate: string;
+  },
+  signUrl: string,
+) {
+  const subject = `Your ${VENUE_NAME} advertising agreement — ready to sign`;
+  const rate =
+    terms.monthly > 0
+      ? `$${terms.monthly.toLocaleString()}/month`
+      : "no monthly charge";
+
+  const rows: [string, string][] = [
+    ["Business", terms.business],
+    ...(terms.category ? ([["Category held", terms.category]] as [string, string][]) : []),
+    ["Package", `${terms.planName} · ${terms.months} months`],
+    [
+      "Rate",
+      `${rate}${terms.setup > 0 ? ` · $${terms.setup.toLocaleString()} setup` : ""}`,
+    ],
+    ["Runs", `${formatDate(terms.startDate)} → ${formatDate(terms.endDate)}`],
+  ];
+
+  const rowHtml = rows
+    .map(
+      ([label, value]) =>
+        `<tr>
+          <td style="padding:7px 0;font-size:14px;color:${MUTED};">${label}</td>
+          <td style="padding:7px 0;font-size:14px;color:${INK};font-weight:600;text-align:right;">${value}</td>
+        </tr>`,
+    )
+    .join("");
+
+  const html = `<!doctype html>
+<html><body style="margin:0;padding:0;background:${CREAM};">
+<div style="max-width:560px;margin:0 auto;padding:32px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:${INK};">
+  <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:${RED};font-weight:700;">${VENUE_NAME} · Screen Advertising</p>
+  <h1 style="margin:0 0 18px;font-size:26px;line-height:1.25;font-weight:600;">Your agreement is ready</h1>
+
+  <div style="background:#ffffff;border:1px solid rgba(0,0,0,0.06);border-radius:18px;padding:22px 24px;margin-bottom:24px;">
+    <p style="margin:0 0 14px;font-size:15px;line-height:1.6;">Hi${terms.contactName ? ` ${terms.contactName}` : ""}, here is what we agreed:</p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">${rowHtml}</table>
+  </div>
+
+  <div style="margin-bottom:10px;">
+    ${button(signUrl, "Read and sign", true)}
+  </div>
+  <p style="margin:14px 0 0;font-size:13px;line-height:1.6;color:${MUTED};">
+    The full terms are on that page. Nothing is agreed until you type your name and confirm, and you'll get a copy the moment you do. If anything above looks wrong, just reply to this email and we'll fix it before you sign.
+  </p>
+
+  <p style="margin:28px 0 0;font-size:12px;line-height:1.6;color:#9a8b7d;">
+    ${VENUE_NAME} screen advertising is managed by Smart Scale.
+  </p>
+</div>
+</body></html>`;
+
+  const text = `${VENUE_NAME.toUpperCase()} - SCREEN ADVERTISING
+
+Your agreement is ready.
+
+Hi${terms.contactName ? ` ${terms.contactName}` : ""}, here is what we agreed:
+
+${rows.map(([label, value]) => `  ${label}: ${value}`).join("\n")}
+
+Read and sign: ${signUrl}
+
+The full terms are on that page. Nothing is agreed until you type your name and confirm, and you'll get a copy the moment you do. If anything above looks wrong, just reply to this email and we'll fix it before you sign.
+
+${VENUE_NAME} screen advertising is managed by Smart Scale.`;
+
+  return { subject, html, text };
+}
+
+/** The copy the client keeps. Sent to them the moment they sign. */
+export function agreementCopyEmail(
+  business: string,
+  signerName: string,
+  signedAt: string,
+  body: string,
+) {
+  const subject = `Signed — your ${VENUE_NAME} advertising agreement`;
+
+  const html = `<!doctype html>
+<html><body style="margin:0;padding:0;background:${CREAM};">
+<div style="max-width:640px;margin:0 auto;padding:32px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:${INK};">
+  <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:${RED};font-weight:700;">${VENUE_NAME} · Screen Advertising</p>
+  <h1 style="margin:0 0 8px;font-size:26px;line-height:1.25;font-weight:600;">Signed, and here's your copy</h1>
+  <p style="margin:0 0 22px;font-size:15px;line-height:1.6;color:${MUTED};">
+    Signed by ${signerName} on ${signedAt} for ${business}. Keep this email — it is your record of the agreement.
+  </p>
+  <div style="background:#ffffff;border:1px solid rgba(0,0,0,0.06);border-radius:18px;padding:24px;">
+    <pre style="margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.65;color:${INK};white-space:pre-wrap;word-wrap:break-word;">${body
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")}</pre>
+  </div>
+  <p style="margin:22px 0 0;font-size:13px;line-height:1.6;color:${MUTED};">
+    Questions about any of it? Just reply to this email.
+  </p>
+</div>
+</body></html>`;
+
+  const text = `SIGNED - YOUR ${VENUE_NAME.toUpperCase()} ADVERTISING AGREEMENT
+
+Signed by ${signerName} on ${signedAt} for ${business}.
+Keep this email - it is your record of the agreement.
+
+----------------------------------------------------------------
+
+${body}
+
+----------------------------------------------------------------
+
+Questions about any of it? Just reply to this email.`;
 
   return { subject, html, text };
 }

@@ -260,6 +260,14 @@ export default function AdvertisePage() {
     setErrorMessage("");
 
     const formData = new FormData(e.currentTarget);
+
+    // The lead also goes into the ad tracker so it lands on the interested list
+    // instead of only in an inbox. Fired first and deliberately not awaited
+    // with the send below — Web3Forms is what decides whether this person sees
+    // a thank-you, and our own endpoint must never be able to hold that up or
+    // turn into an error in front of them.
+    void fetch("/api/ads/lead", { method: "POST", body: formData }).catch(() => {});
+
     formData.append("access_key", "f9fd4eed-280e-4c3e-bf11-579f9ff00522");
 
     try {
@@ -937,6 +945,20 @@ export default function AdvertisePage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
               <input type="hidden" name="subject" value="New Mex Taco House Advertising Inquiry" />
+
+              {/* Spam trap. Sits off-screen rather than hidden, because a
+                  display:none field is the first thing a bot learns to skip.
+                  Anything submitted in it is treated as automated. */}
+              <div aria-hidden className="absolute left-[-9999px] w-px h-px overflow-hidden">
+                <label htmlFor="company_website">Company website</label>
+                <input
+                  type="text"
+                  id="company_website"
+                  name="company_website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                />
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>

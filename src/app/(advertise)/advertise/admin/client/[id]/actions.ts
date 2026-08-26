@@ -16,6 +16,15 @@ import {
   validateDestination,
 } from "@/lib/ads/link-store";
 import { getAdvertiser, saveAdvertiser } from "@/lib/ads/roster";
+import {
+  countersignAgreement,
+  getAgreement,
+  markSent as markAgreementSent,
+  prepareAgreement,
+  voidAgreement,
+} from "@/lib/ads/agreements";
+import { agreementEmail, isEmailConfigured, sendEmail } from "@/lib/ads/email";
+import { agreementUrl } from "@/lib/ads/links";
 
 const profilePath = (id: string) => `/advertise/admin/client/${id}`;
 
@@ -166,4 +175,94 @@ export async function repointClientLinkAction(data: FormData) {
   if (!ok) back(id, { err: "save" });
   revalidatePath(profilePath(id));
   back(id, { msg: "linkSaved", detail: code });
+}
+
+/* ------------------------------- agreements ------------------------------- */
+
+/**
+ * Builds a fresh draft from whatever the client is on right now.
+ *
+ * Re-preparing is the way to fix a wrong number: the old draft is voided and a
+ * new one takes its place, rather than the terms being edited underneath a
+ * document someone may already be reading.
+ */
+export async function prepareAgreementAction(data: FormData) {
+  await requireAdmin();
+  const id = field(data, "id");
+  const advertiser = id ? await getAdvertiser(id) : null;
+  if (!advertiser) back(id, { err: "missing" });
+
+  const { ok } = await prepareAgreement(advertiser);
+  if (!ok) back(id, { err: "save" });
+  revalidatePath(profilePath(id));
+  back(id, { msg: "agreementPrepared" });
+}
+
+export async function sendAgreementAction(data: FormData) {
+  await requireAdmin();
+  const id = field(data, "id");
+  const agreementId = field(data, "agreementId");
+  if (!id || !agreementId) back(id, { err: "missing" });
+
+  const agreement = await getAgreement(agreementId);
+  if (!agreement) back(id, { err: "missing" });
+  if (!agreement.terms.email) back(id, { err: "agreementNoEmail" });
+  if (!isEmailConfigured()) back(id, { err: "agreementNoMail" });
+
+  const url = agreementUrl(agreementId);
+  if (!url) back(id, { err: "agreementNoSecret" });
+
+  // Marked sent before the send, so a client who receives it can always open
+  // it — a record still sitting in `draft` refuses to be signed.
+  if (!(await markAgreementSent(agreementId))) back(id, { err: "agreementState" });
+
+  const message = agreementEmail(agreement.terms, url);
+  const result = await sendEmail({ to: agreement.terms.email, ...message });
+  if (!result.ok) back(id, { err: "agreementSend", detail: result.error ?? "" });
+
+  revalidatePath(profilePath(id));
+  back(id, { msg: "agreementSent", detail: agreement.terms.email });
+}
+
+/**
+ * Our half of the signature. Only reachable once the client has signed, which
+ * is what makes the countersignature mean anything.
+ */
+export async function countersignAgreementAction(data: FormData) {
+  await requireAdmin();
+  const id = field(data, "id");
+  const agreementId = field(data, "agreementId");
+  if (!id || !agreementId) back(id, { err: "missing" });
+
+  const agreement = await getAgreement(agreementId);
+  if (!agreement) back(id, { err: "missing" });
+
+  const result = await countersignAgreement(agreementId, field(data, "name"));
+  if (!result.ok) back(id, { err: "agreementState", detail: result.error ?? "" });
+
+  // Stamp the term this covers onto the client, so the roster can tell at a
+  // glance who is running without paperwork — and so a renewal, which moves the
+  // end date, correctly starts asking for a fresh agreement.
+  const advertiser = await getAdvertiser(id);
+  if (advertiser) {
+    await saveAdvertiser(
+      { ...advertiser, signedAgreementEndDate: agreement.terms.endDate },
+      id,
+    );
+  }
+
+  revalidatePath(profilePath(id));
+  back(id, { msg: "agreementDone" });
+}
+
+export async function voidAgreementAction(data: FormData) {
+  await requireAdmin();
+  const id = field(data, "id");
+  const agreementId = field(data, "agreementId");
+  if (!id || !agreementId) back(id, { err: "missing" });
+  if (!(await voidAgreement(agreementId, field(data, "reason")))) {
+    back(id, { err: "save" });
+  }
+  revalidatePath(profilePath(id));
+  back(id, { msg: "agreementVoided" });
 }

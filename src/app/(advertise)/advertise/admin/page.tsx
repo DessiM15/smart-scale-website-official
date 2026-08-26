@@ -6,6 +6,9 @@ import { getCodeStats } from "@/lib/ads/scan-store";
 import { listAdvertisers, listProspects, summarize } from "@/lib/ads/roster";
 import { recentRuns } from "@/lib/ads/notify";
 import { recentBackups } from "@/lib/ads/backup";
+import { setupItems } from "@/lib/ads/setup";
+import { isEmailConfigured } from "@/lib/ads/email";
+import { isArtworkStoreConfigured } from "@/lib/ads/artwork";
 import { findDueNotices, upcomingSchedule } from "@/lib/ads/renewals";
 import { listResponses } from "@/lib/ads/responses";
 import { listReports } from "@/lib/ads/reports";
@@ -17,6 +20,7 @@ import { AdvertisersTab } from "./_components/advertisers";
 import { ReportsTab } from "./_components/reports";
 import { QrTab } from "./_components/qr-codes";
 import { ProspectsTab } from "./_components/prospects";
+import { SetupTab } from "./_components/setup";
 import { TAB_IDS, tabHref, type LinkView, type TabId } from "./_components/types";
 import { Note, btnGhost } from "./_components/ui";
 
@@ -61,6 +65,13 @@ const TAB_FOR_RESULT: Record<string, TabId> = {
   reportsend: "reports",
   prospect: "prospects",
   prospectRemoved: "prospects",
+  testSent: "setup",
+  testaddress: "setup",
+  testunconfigured: "setup",
+  testsend: "setup",
+  backupDone: "setup",
+  backupoff: "setup",
+  backupfailed: "setup",
 };
 
 const TAB_LABEL: Record<TabId, string> = {
@@ -69,6 +80,7 @@ const TAB_LABEL: Record<TabId, string> = {
   reports: "Reports",
   qr: "QR codes",
   prospects: "Prospects",
+  setup: "Setup",
 };
 
 function isTab(value: string | undefined): value is TabId {
@@ -213,6 +225,13 @@ export default async function AdminPage({
     ? advertisers.find((a) => a.id === params.edit)
     : undefined;
 
+  // Only leads the advertise page produced and nobody has touched yet — a
+  // prospect typed in by hand is one you already know about.
+  const newLeads = prospects.filter(
+    (p) => p.status === "new" && p.source === "Advertise page",
+  );
+  const setup = setupItems();
+  const setupTodo = setup.filter((i) => i.status !== "on").length;
   const knownCodeSet = new Set(links.map((l) => l.code));
   const summary = summarize(advertisers);
   const needsAttention = [...summary.overdue, ...summary.expiring];
@@ -229,7 +248,7 @@ export default async function AdminPage({
           TAB_FOR_RESULT[params.msg ?? ""] ??
           "overview");
 
-  const openItems = needsAttention.length + replies.length;
+  const openItems = needsAttention.length + replies.length + newLeads.length;
 
   return (
     <main className="min-h-screen bg-[#0A0A0A] text-white">
@@ -272,7 +291,14 @@ export default async function AdminPage({
                 advertisers: { value: advertisers.length },
                 reports: { value: draftReports, urgent: draftReports > 0 },
                 qr: { value: links.length },
-                prospects: { value: prospects.length },
+                prospects: {
+                  value: prospects.length,
+                  urgent: newLeads.length > 0,
+                },
+                setup: {
+                  value: setupTodo,
+                  urgent: setup.some((i) => i.essential && i.status !== "on"),
+                },
               }}
             />
           </div>
@@ -300,6 +326,7 @@ export default async function AdminPage({
             runs={runs}
             replies={replies}
             backups={backups}
+            newLeads={newLeads}
           />
         )}
 
@@ -318,6 +345,15 @@ export default async function AdminPage({
         {tab === "qr" && <QrTab links={links} editing={editingLink} />}
 
         {tab === "prospects" && <ProspectsTab prospects={prospects} />}
+
+        {tab === "setup" && (
+          <SetupTab
+            items={setup}
+            backups={backups}
+            emailConfigured={isEmailConfigured()}
+            storageConfigured={isArtworkStoreConfigured()}
+          />
+        )}
 
         <p className="mt-12 text-xs text-white/25 max-w-2xl leading-relaxed">
           End dates are calculated from each package term, in Houston time. QR codes are
