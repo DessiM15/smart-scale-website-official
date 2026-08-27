@@ -402,6 +402,20 @@ function AdvertiserForm({
             </summary>
 
             <div className="px-5 pb-5 pt-1 space-y-4">
+              <Field
+                label="One price for the whole term"
+                name="customTotal"
+                id="customTotal"
+                inputMode="decimal"
+                defaultValue={
+                  editing?.customTotal === null || editing?.customTotal === undefined
+                    ? ""
+                    : String(editing.customTotal)
+                }
+                placeholder="300"
+                hint="For a deal sold as a single figure — $300 for four months, paid once. Set this and it replaces the monthly and setup fields below."
+              />
+
               <div className="grid sm:grid-cols-3 gap-4">
                 <Field
                   label="Their monthly"

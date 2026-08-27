@@ -7,6 +7,8 @@ import { listAdvertisers, listProspects, summarize } from "@/lib/ads/roster";
 import { recentRuns } from "@/lib/ads/notify";
 import { recentBackups } from "@/lib/ads/backup";
 import { setupItems } from "@/lib/ads/setup";
+import { getSettings } from "@/lib/ads/settings";
+import { paymentsInMonth, sumPayments } from "@/lib/ads/payments";
 import { isEmailConfigured } from "@/lib/ads/email";
 import { isArtworkStoreConfigured } from "@/lib/ads/artwork";
 import { findDueNotices, upcomingSchedule } from "@/lib/ads/renewals";
@@ -21,6 +23,7 @@ import { ReportsTab } from "./_components/reports";
 import { QrTab } from "./_components/qr-codes";
 import { ProspectsTab } from "./_components/prospects";
 import { SetupTab } from "./_components/setup";
+import { VenueTab } from "./_components/venue";
 import { TAB_IDS, tabHref, type LinkView, type TabId } from "./_components/types";
 import { Note, btnGhost } from "./_components/ui";
 
@@ -65,6 +68,8 @@ const TAB_FOR_RESULT: Record<string, TabId> = {
   reportsend: "reports",
   prospect: "prospects",
   prospectRemoved: "prospects",
+  venueSaved: "venue",
+  sharepercent: "venue",
   testSent: "setup",
   testaddress: "setup",
   testunconfigured: "setup",
@@ -80,6 +85,7 @@ const TAB_LABEL: Record<TabId, string> = {
   reports: "Reports",
   qr: "QR codes",
   prospects: "Prospects",
+  venue: "Venue",
   setup: "Setup",
 };
 
@@ -230,6 +236,13 @@ export default async function AdminPage({
   const newLeads = prospects.filter(
     (p) => p.status === "new" && p.source === "Advertise page",
   );
+  // The venue tab needs this month's takings; the statement pages compute
+  // their own, so this is the only figure the tracker itself has to fetch.
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const [venueSettings, monthPayments] = await Promise.all([
+    getSettings(),
+    paymentsInMonth(currentMonth),
+  ]);
   const setup = setupItems();
   const setupTodo = setup.filter((i) => i.status !== "on").length;
   const knownCodeSet = new Set(links.map((l) => l.code));
@@ -345,6 +358,14 @@ export default async function AdminPage({
         {tab === "qr" && <QrTab links={links} editing={editingLink} />}
 
         {tab === "prospects" && <ProspectsTab prospects={prospects} />}
+
+        {tab === "venue" && (
+          <VenueTab
+            settings={venueSettings}
+            collectedThisMonth={sumPayments(monthPayments)}
+            currentMonth={currentMonth}
+          />
+        )}
 
         {tab === "setup" && (
           <SetupTab

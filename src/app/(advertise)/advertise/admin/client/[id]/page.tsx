@@ -43,6 +43,7 @@ import {
   linkAction,
   linkQuiet,
   money,
+  selectClass,
   stamp,
   type Tone,
 } from "../../_components/ui";
@@ -54,6 +55,8 @@ import {
   deleteDocumentAction,
   prepareAgreementAction,
   repointClientLinkAction,
+  deletePaymentAction,
+  recordPaymentAction,
   saveNotesAction,
   sendAgreementAction,
   uploadAgreementAction,
@@ -77,6 +80,12 @@ import {
 } from "@/lib/ads/documents";
 import { describeBlobEnv } from "@/lib/ads/blob";
 import {
+  listPayments,
+  standing,
+  PAYMENT_METHODS,
+  type Payment,
+} from "@/lib/ads/payments";
+import {
   agreementText,
   TEMPLATE_REVIEWED,
   TEMPLATE_VERSION,
@@ -98,6 +107,8 @@ const ARTWORK_STALE_DAYS = 90;
 
 const MESSAGES: Record<string, string> = {
   notesSaved: "Notes saved.",
+  paymentRecorded: "Payment recorded.",
+  paymentRemoved: "Payment removed.",
   agreementPrepared: "Agreement drafted. Read it through, then send it.",
   agreementFiled: "Signed agreement filed. This client's paperwork is covered.",
   documentSaved: "Document saved.",
@@ -130,6 +141,7 @@ const ERRORS: Record<string, string> = {
   docsigneddate: "When was it signed? Give a date.",
   doccovers: "Which term does it cover? Give the end date.",
   docsigner: "Who signed it? A full name.",
+  payment: "That payment didn't record.",
 };
 
 function ResultBanner({
@@ -598,6 +610,132 @@ function ArtworkCard({
         <button type="submit" className={btnPrimary} disabled={!configured}>
           Upload artwork
         </button>
+      </form>
+    </Card>
+  );
+}
+
+/* -------------------------------- payments -------------------------------- */
+
+const methodLabel = (id: string) =>
+  PAYMENT_METHODS.find((m) => m.id === id)?.label ?? id;
+
+/**
+ * What this client has actually paid.
+ *
+ * Compared against the whole term rather than a monthly schedule: a prepaid
+ * term settles in one payment and an invoiced one arrives in pieces, and both
+ * end at the same number. The venue owner's share is calculated from these
+ * records, so a payment left untyped is money the statement will not see.
+ */
+function PaymentsCard({
+  view,
+  payments,
+}: {
+  view: AdvertiserView;
+  payments: Payment[];
+}) {
+  const position = standing(payments, view.termValue);
+
+  return (
+    <Card
+      title="Payments"
+      lede={
+        view.soldAsTotal
+          ? "This term was sold as one price, so it settles in a single payment."
+          : "What has actually arrived, against what the term is worth."
+      }
+      className="mb-5"
+    >
+      <div className="grid grid-cols-3 gap-3 mb-6">
+        <Tile label="Paid" value={money(position.paid)} hint={
+          position.lastPaidOn ? `last ${formatDate(position.lastPaidOn)}` : "nothing yet"
+        } />
+        <Tile
+          label={position.overpaid > 0 ? "Overpaid" : "Outstanding"}
+          value={money(position.overpaid > 0 ? position.overpaid : position.outstanding)}
+          tone={position.outstanding > 0 ? "alert" : "plain"}
+          hint={position.overpaid > 0 ? "more than the term is worth" : "still to collect"}
+        />
+        <Tile label="Whole term" value={money(view.termValue)} hint={`${view.months} months`} />
+      </div>
+
+      {payments.length === 0 ? (
+        <Empty>Nothing recorded yet. Add a payment when the money lands.</Empty>
+      ) : (
+        <ul className="divide-y divide-white/[0.06] mb-6">
+          {payments.map((p) => (
+            <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+              <span>
+                <span className="text-sm font-semibold text-white tabular-nums">
+                  {money(p.amount)}
+                </span>
+                <span className="text-xs text-white/35">
+                  {" "}· {formatDate(p.receivedOn)} · {methodLabel(p.method)}
+                </span>
+                {(p.reference || p.note) && (
+                  <span className="block text-xs text-white/30 mt-0.5">
+                    {[p.reference, p.note].filter(Boolean).join(" · ")}
+                  </span>
+                )}
+              </span>
+              <form action={deletePaymentAction}>
+                <input type="hidden" name="id" value={view.id} />
+                <input type="hidden" name="paymentId" value={p.id} />
+                <button type="submit" className={linkQuiet}>
+                  Remove
+                </button>
+              </form>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <form action={recordPaymentAction} className="space-y-4 border-t border-white/[0.06] pt-5">
+        <input type="hidden" name="id" value={view.id} />
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Field
+            label="Amount"
+            name="amount"
+            id="payAmount"
+            inputMode="decimal"
+            placeholder={String(Math.round(view.termValue))}
+            required
+          />
+          <Field
+            label="Date it arrived"
+            name="receivedOn"
+            id="payDate"
+            type="date"
+            defaultValue={today()}
+            required
+          />
+          <div>
+            <label className={labelClass} htmlFor="payMethod">
+              How
+            </label>
+            <select id="payMethod" name="method" className={selectClass} defaultValue="stripe">
+              {PAYMENT_METHODS.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <Field
+            label="Reference"
+            name="reference"
+            id="payRef"
+            placeholder="Stripe id, cheque no."
+          />
+        </div>
+        <button type="submit" className={btnPrimary}>
+          Record payment
+        </button>
+        <p className="text-xs text-white/30 leading-relaxed">
+          The venue owner&apos;s share is calculated from these records, so a payment
+          that isn&apos;t here is money the monthly statement won&apos;t see.
+        </p>
       </form>
     </Card>
   );
@@ -1204,7 +1342,7 @@ export default async function ClientProfilePage({
   const allLinks = await listLinks();
   const theirLinks = linksForAdvertiser(allLinks, id, advertiser.qrCode);
 
-  const [codes, artwork, agreements, documents] = await Promise.all([
+  const [codes, artwork, agreements, documents, payments] = await Promise.all([
     Promise.all(
       theirLinks.map(async (link) => ({
         link,
@@ -1214,6 +1352,7 @@ export default async function ClientProfilePage({
     listArtwork(id),
     listAgreements(id),
     listDocuments(id),
+    listPayments(id),
   ]);
 
   // Built here rather than in the component: the token is derived from a
@@ -1326,6 +1465,8 @@ export default async function ClientProfilePage({
             </button>
           </form>
         </Card>
+
+        <PaymentsCard view={view} payments={payments} />
 
         <DocumentsCard
           view={view}

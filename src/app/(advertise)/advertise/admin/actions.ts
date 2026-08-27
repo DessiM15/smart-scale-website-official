@@ -11,6 +11,11 @@ import {
   type TestKind,
 } from "@/lib/ads/email";
 import { runBackup } from "@/lib/ads/backup";
+import {
+  getSettings,
+  saveSettings,
+  validateSharePercent,
+} from "@/lib/ads/settings";
 import { runRenewalCheck } from "@/lib/ads/renewals";
 import { clearResponse } from "@/lib/ads/responses";
 import {
@@ -119,12 +124,13 @@ export async function saveAdvertiserAction(data: FormData) {
   const customMonthly = optionalNumber(data, "customMonthly");
   const customSetup = optionalNumber(data, "customSetup");
   const customMonths = optionalNumber(data, "customMonths");
+  const customTotal = optionalNumber(data, "customTotal");
   const dealNote = field(data, "dealNote");
 
   // A number that was typed but didn't parse would silently fall back to list
   // price, which is exactly the kind of quiet wrongness this whole change is
   // meant to remove.
-  for (const name of ["customMonthly", "customSetup", "customMonths"] as const) {
+  for (const name of ["customMonthly", "customSetup", "customMonths", "customTotal"] as const) {
     if (wasFilled(data, name) && optionalNumber(data, name) === null) {
       back({ err: "dealnumber", detail: field(data, name) });
     }
@@ -134,7 +140,10 @@ export async function saveAdvertiserAction(data: FormData) {
   // Six months from now nobody remembers why this client pays less. Requiring
   // the reason at the moment of the decision is the only time it's cheap.
   const hasOverride =
-    customMonthly !== null || customSetup !== null || customMonths !== null;
+    customMonthly !== null ||
+    customSetup !== null ||
+    customMonths !== null ||
+    customTotal !== null;
   if (hasOverride && !dealNote) back({ err: "dealnote" });
 
   /* ------------------------- their first QR code ------------------------- */
@@ -176,6 +185,7 @@ export async function saveAdvertiserAction(data: FormData) {
       customMonthly,
       customSetup,
       customMonths,
+      customTotal,
       dealNote: hasOverride ? dealNote : "",
       paymentType: field(data, "paymentType") === "prepaid" ? "prepaid" : "monthly",
     },
@@ -446,4 +456,27 @@ export async function runBackupAction() {
     msg: "backupDone",
     detail: `${result.entry?.advertisers ?? 0} advertisers, ${result.entry?.prospects ?? 0} prospects`,
   });
+}
+
+/* ---------------------------------- venue --------------------------------- */
+
+export async function saveVenueSettingsAction(data: FormData) {
+  await requireAdmin();
+
+  const raw = field(data, "venueSharePercent");
+  // Blank clears the split rather than defaulting to something nobody agreed.
+  const percent = raw ? validateSharePercent(raw) : 0;
+  if (percent === null) back({ err: "sharepercent" }, "venue-split");
+
+  const current = await getSettings();
+  const ok = await saveSettings({
+    ...current,
+    venueSharePercent: percent,
+    venueOwnerName: field(data, "venueOwnerName"),
+    venueOwnerEmail: field(data, "venueOwnerEmail"),
+  });
+
+  if (!ok) back({ err: "save" }, "venue-split");
+  revalidatePath(PAGE);
+  back({ msg: "venueSaved" }, "venue-split");
 }
