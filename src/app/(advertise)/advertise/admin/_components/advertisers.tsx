@@ -23,7 +23,7 @@ import {
   Field,
   Pill,
   SubHead,
-  btnPrimary,
+  btnGhost,
   inputClass,
   labelClass,
   linkAction,
@@ -113,7 +113,7 @@ function RosterRow({
 }) {
   return (
     <tr className="border-t border-white/[0.06] align-top hover:bg-white/[0.02] transition-colors">
-      <td className="px-4 py-4 w-[24%]">
+      <td className="px-3 py-4">
         <a
           href={profileHref(view.id)}
           className="font-semibold text-white hover:text-[#f87171] transition-colors"
@@ -123,16 +123,19 @@ function RosterRow({
         {view.contactName && (
           <p className="text-xs text-white/35 mt-0.5">{view.contactName}</p>
         )}
+        {/* Contact details wrap rather than widen the column — a long email
+            address was pushing the whole table off the side of the window. */}
         {(view.email || view.phone) && (
-          <p className="text-xs text-white/35">
+          <p className="text-xs text-white/30 break-all leading-snug">
             {[view.email, view.phone].filter(Boolean).join(" · ")}
           </p>
         )}
+        <div className="mt-1">
+          <QrCell view={view} knownCodes={knownCodes} />
+        </div>
       </td>
-      <td className="px-4 py-4 text-white/60 whitespace-nowrap">
-        {view.category || "—"}
-      </td>
-      <td className="px-4 py-4 whitespace-nowrap">
+      <td className="px-3 py-4 text-white/60">{view.category || "—"}</td>
+      <td className="px-3 py-4 whitespace-nowrap">
         <p className="text-white/60">{view.planName}</p>
         <p className="text-xs tabular-nums">
           <span className={view.isCustom ? "text-amber-300" : "text-white/30"}>
@@ -144,11 +147,13 @@ function RosterRow({
             </span>
           )}
         </p>
+        {view.soldAsTotal && (
+          <p className="text-xs text-amber-300/70 tabular-nums">
+            {money(view.termValue)} once
+          </p>
+        )}
       </td>
-      <td className="px-4 py-4 text-white/60 whitespace-nowrap tabular-nums">
-        {formatDate(view.startDate)}
-      </td>
-      <td className="px-4 py-4 whitespace-nowrap">
+      <td className="px-3 py-4 whitespace-nowrap">
         <p className="text-white/60 tabular-nums">{formatDate(view.endDate)}</p>
         {view.status === "active" && (
           <p className="text-xs text-white/30 tabular-nums">
@@ -157,14 +162,14 @@ function RosterRow({
               : `${Math.abs(view.daysRemaining)} days ago`}
           </p>
         )}
+        <p className="text-[11px] text-white/20 tabular-nums">
+          from {formatDate(view.startDate)}
+        </p>
       </td>
-      <td className="px-4 py-4">
+      <td className="px-3 py-4">
         <StatusPill view={view} />
       </td>
-      <td className="px-4 py-4">
-        <QrCell view={view} knownCodes={knownCodes} />
-      </td>
-      <td className="px-4 py-4 whitespace-nowrap">
+      <td className="px-3 py-4 whitespace-nowrap text-right">
         <RowActions id={view.id} />
       </td>
     </tr>
@@ -277,46 +282,115 @@ function toEditing(view: AdvertiserView): EditingAdvertiser {
 
 /* ---------------------------------- tab ----------------------------------- */
 
+/**
+ * Filter by anything you'd plausibly remember about a client.
+ *
+ * A plain GET form rather than a live filter: the roster is server-rendered,
+ * the result is a linkable URL, and typing a few letters and pressing enter is
+ * not the part of this job that needs to be instant.
+ */
+function SearchBox({ query }: { query: string }) {
+  return (
+    <form method="get" className="flex flex-wrap items-center gap-2">
+      <input type="hidden" name="tab" value="advertisers" />
+      <input
+        type="search"
+        name="q"
+        defaultValue={query}
+        placeholder="Search name, category, contact, email or code…"
+        aria-label="Search advertisers"
+        className={`${inputClass} w-full sm:w-80 py-2`}
+      />
+      <button type="submit" className={btnGhost}>
+        Search
+      </button>
+      {query && (
+        <a href={tabHref("advertisers")} className={linkQuiet}>
+          Clear
+        </a>
+      )}
+    </form>
+  );
+}
+
+export function matchesQuery(view: AdvertiserView, query: string): boolean {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  return [
+    view.business,
+    view.category,
+    view.contactName,
+    view.email,
+    view.phone,
+    view.qrCode,
+    view.planName,
+  ]
+    .filter(Boolean)
+    .some((field) => field.toLowerCase().includes(q));
+}
+
 export function AdvertisersTab({
   advertisers,
   summary,
   knownCodes,
   links,
   editing,
+  query = "",
 }: {
   advertisers: AdvertiserView[];
   summary: RosterSummary;
   knownCodes: Set<string>;
   links: LinkView[];
   editing?: AdvertiserView;
+  query?: string;
 }) {
+  const shown = advertisers.filter((v) => matchesQuery(v, query));
+
   return (
     <>
       <Card
         title="The rotation"
-        lede="Every business on the screens, in the order they were added."
+        lede={
+          query
+            ? `${shown.length} of ${advertisers.length} match “${query}”.`
+            : "Every business on the screens, in the order they were added."
+        }
+        action={<SearchBox query={query} />}
         className="mb-5"
       >
         {advertisers.length === 0 ? (
           <Empty>No advertisers yet. Add the first one below.</Empty>
+        ) : shown.length === 0 ? (
+          <Empty>
+            Nothing matches “{query}”. Clear the search to see the whole rotation.
+          </Empty>
         ) : (
           <>
-            <div className="hidden md:block overflow-x-auto -mx-6 sm:-mx-8 px-6 sm:px-8">
-              <table className="w-full text-sm min-w-[64rem]">
+            {/* No minimum width and no horizontal scroll: the columns that
+                forced it — a separate QR column and a separate start date —
+                fold into the two they belong beside. */}
+            <div className="hidden md:block">
+              <table className="w-full text-sm table-fixed">
+                <colgroup>
+                  <col className="w-[30%]" />
+                  <col className="w-[16%]" />
+                  <col className="w-[14%]" />
+                  <col className="w-[15%]" />
+                  <col className="w-[13%]" />
+                  <col className="w-[12%]" />
+                </colgroup>
                 <thead>
                   <tr className="text-left text-[10px] uppercase tracking-[0.16em] text-white/35">
-                    <th className="px-4 py-2 font-semibold">Business</th>
-                    <th className="px-4 py-2 font-semibold">Category</th>
-                    <th className="px-4 py-2 font-semibold">Package</th>
-                    <th className="px-4 py-2 font-semibold">Started</th>
-                    <th className="px-4 py-2 font-semibold">Ends</th>
-                    <th className="px-4 py-2 font-semibold">Status</th>
-                    <th className="px-4 py-2 font-semibold">QR</th>
-                    <th className="px-4 py-2 font-semibold" />
+                    <th className="px-3 py-2 font-semibold">Business</th>
+                    <th className="px-3 py-2 font-semibold">Category</th>
+                    <th className="px-3 py-2 font-semibold">Package</th>
+                    <th className="px-3 py-2 font-semibold">Ends</th>
+                    <th className="px-3 py-2 font-semibold">Status</th>
+                    <th className="px-3 py-2 font-semibold" />
                   </tr>
                 </thead>
                 <tbody>
-                  {advertisers.map((view) => (
+                  {shown.map((view) => (
                     <RosterRow key={view.id} view={view} knownCodes={knownCodes} />
                   ))}
                 </tbody>
@@ -324,7 +398,7 @@ export function AdvertisersTab({
             </div>
 
             <ul className="md:hidden space-y-3">
-              {advertisers.map((view) => (
+              {shown.map((view) => (
                 <RosterCard key={view.id} view={view} knownCodes={knownCodes} />
               ))}
             </ul>

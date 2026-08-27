@@ -6,6 +6,7 @@ export type LinkView = AdLinkRecord & { scans: number };
 export const TAB_IDS = [
   "overview",
   "advertisers",
+  "categories",
   "reports",
   "qr",
   "prospects",
