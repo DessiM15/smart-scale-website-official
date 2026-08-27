@@ -19,7 +19,7 @@
 
 import { createHash, randomUUID } from "crypto";
 import { redisPipeline, redisWrite } from "./redis";
-import { blobBase, blobToken, isBlobConfigured } from "./blob";
+import { isBlobConfigured, putBlob, removeBlob } from "./blob";
 
 /** Same ceiling as artwork: a server action's body must fit Vercel's limit. */
 export const DOCUMENT_MAX_BYTES = 4 * 1024 * 1024;
@@ -114,92 +114,45 @@ export async function uploadDocument(
   const invalid = validateDocument(file);
   if (invalid) return { ok: false, error: invalid };
 
-  const token = blobToken();
-  if (!token) return { ok: false, error: "No Blob token is visible to this deployment" };
-
   const id = randomUUID();
   const extension = file.name.includes(".")
     ? file.name.split(".").pop()!.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 5)
     : "pdf";
 
-  try {
-    const bytes = Buffer.from(await file.arrayBuffer());
+  const bytes = Buffer.from(await file.arrayBuffer());
 
-    const res = await fetch(`${blobBase()}/ads/private/${advertiserId}/${id}.${extension}`, {
-      method: "PUT",
-      headers: {
-        authorization: `Bearer ${token}`,
-        "x-api-version": "7",
-        "x-content-type": file.type,
-        // Extra entropy on top of the UUID. The address is the only thing
-        // standing between this file and anyone who guesses at it.
-        "x-add-random-suffix": "1",
-        // Never let a shared cache hold a copy of a contract.
-        "x-cache-control-max-age": "0",
-      },
-      body: new Uint8Array(bytes),
-      cache: "no-store",
-      signal: AbortSignal.timeout(20_000),
-    });
+  const stored = await putBlob(
+    `ads/private/${advertiserId}/${id}.${extension}`,
+    bytes,
+    file.type,
+    // Extra entropy on top of the UUID. Belt and braces on a contract.
+    { randomSuffix: true },
+  );
+  if (!stored.ok) return { ok: false, error: stored.error };
 
-    if (!res.ok) {
-      const detail = await res.text();
-      return { ok: false, error: `Blob ${res.status}: ${detail.slice(0, 200)}` };
-    }
+  const record: DocumentRecord = {
+    id,
+    advertiserId,
+    kind: input.kind,
+    label: input.label.slice(0, 160),
+    filename: file.name.slice(0, 160),
+    contentType: file.type,
+    size: file.size,
+    sha256: createHash("sha256").update(bytes).digest("hex"),
+    blobUrl: stored.url,
+    uploadedAt: new Date().toISOString(),
+  };
 
-    const parsed = (await res.json()) as { url?: string };
-    if (!parsed.url) return { ok: false, error: "Blob returned no address" };
-
-    const record: DocumentRecord = {
-      id,
-      advertiserId,
-      kind: input.kind,
-      label: input.label.slice(0, 160),
-      filename: file.name.slice(0, 160),
-      contentType: file.type,
-      size: file.size,
-      sha256: createHash("sha256").update(bytes).digest("hex"),
-      blobUrl: parsed.url,
-      uploadedAt: new Date().toISOString(),
-    };
-
-    const ok = await redisWrite([
-      ["SET", KEY(id), JSON.stringify(record)],
-      ["SADD", INDEX(advertiserId), id],
-    ]);
-    if (!ok) {
-      await removeBlob(parsed.url);
-      return { ok: false, error: "Saved the file but couldn't record it — try again." };
-    }
-
-    return { ok: true, document: record };
-  } catch (err) {
-    return {
-      ok: false,
-      error: err instanceof Error ? err.message : "upload failed",
-    };
+  const ok = await redisWrite([
+    ["SET", KEY(id), JSON.stringify(record)],
+    ["SADD", INDEX(advertiserId), id],
+  ]);
+  if (!ok) {
+    await removeBlob(stored.url);
+    return { ok: false, error: "Saved the file but couldn't record it — try again." };
   }
-}
 
-async function removeBlob(url: string): Promise<void> {
-  const token = blobToken();
-  if (!token) return;
-  try {
-    await fetch(`${blobBase()}/delete`, {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${token}`,
-        "x-api-version": "7",
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({ urls: [url] }),
-      cache: "no-store",
-      signal: AbortSignal.timeout(8000),
-    });
-  } catch {
-    // A stranded blob costs nothing. Failing the delete over it would leave a
-    // record pointing at a file the reader can no longer be shown.
-  }
+  return { ok: true, document: record };
 }
 
 export async function deleteDocument(id: string): Promise<boolean> {

@@ -14,6 +14,7 @@ import { notFound, redirect } from "next/navigation";
 import { isSignedIn } from "@/lib/ads/auth";
 import {
   artworkAgeDays,
+  artworkHref,
   isArtworkStoreConfigured,
   listArtwork,
   type Artwork,
@@ -490,14 +491,14 @@ function ArtworkCard({
       {current ? (
         <div className="grid sm:grid-cols-[minmax(0,20rem)_1fr] gap-6 items-start">
           <a
-            href={current.url}
+            href={artworkHref(view.id, current.id)}
             target="_blank"
             rel="noreferrer"
             className="block rounded-2xl border border-white/[0.07] overflow-hidden bg-black"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={current.url}
+              src={artworkHref(view.id, current.id)}
               alt={`Current ad artwork for ${view.business}`}
               className="w-full h-auto"
             />
@@ -538,14 +539,14 @@ function ArtworkCard({
             {history.map((item) => (
               <li key={item.id}>
                 <a
-                  href={item.url}
+                  href={artworkHref(view.id, item.id)}
                   target="_blank"
                   rel="noreferrer"
                   className="block rounded-xl border border-white/[0.07] overflow-hidden bg-black"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={item.url}
+                    src={artworkHref(view.id, item.id)}
                     alt={item.note || item.filename}
                     className="w-full h-auto"
                   />

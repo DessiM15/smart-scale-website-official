@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isSignedIn } from "@/lib/ads/auth";
 import { getDocument } from "@/lib/ads/documents";
+import { getBlob } from "@/lib/ads/blob";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,8 +30,8 @@ export async function GET(
     return NextResponse.json({ error: "No such document." }, { status: 404 });
   }
 
-  const upstream = await fetch(record.blobUrl, { cache: "no-store" });
-  if (!upstream.ok || !upstream.body) {
+  const file = await getBlob(record.blobUrl);
+  if (!file) {
     return NextResponse.json(
       { error: "The file is recorded but couldn't be read back." },
       { status: 502 },
@@ -41,11 +42,10 @@ export async function GET(
   // filename is quoted and stripped of anything that could break the header.
   const safeName = record.filename.replace(/[^\w. -]+/g, "_") || "document";
 
-  return new NextResponse(upstream.body, {
+  return new NextResponse(file.stream, {
     headers: {
-      "Content-Type": record.contentType,
+      "Content-Type": file.contentType ?? record.contentType,
       "Content-Disposition": `inline; filename="${safeName}"`,
-      "Content-Length": String(record.size),
       // Never let a proxy or a shared cache keep a copy.
       "Cache-Control": "no-store, private",
       "X-Content-Type-Options": "nosniff",

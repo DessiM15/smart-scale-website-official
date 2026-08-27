@@ -15,7 +15,7 @@
 
 import { randomUUID } from "crypto";
 import { redisPipeline, redisWrite } from "./redis";
-import { blobBase, blobToken, isBlobConfigured } from "./blob";
+import { isBlobConfigured, putBlob, removeBlob } from "./blob";
 
 /**
  * A server action's whole request body has to fit inside Vercel's 4.5 MB
@@ -37,7 +37,10 @@ const KEY = (advertiserId: string) => `ads:artwork:${advertiserId}`;
 export type Artwork = {
   id: string;
   advertiserId: string;
-  /** Public Blob URL. Unguessable, but public — never put a contract here. */
+  /**
+   * The Blob address. Server-side only — the store is private, so this is not
+   * loadable by a browser. Render artwork through `artworkHref` instead.
+   */
   url: string;
   /** Blob's own path, needed to delete it later. */
   pathname: string;
@@ -65,74 +68,6 @@ export function validateArtwork(file: File): string | null {
 }
 
 /* --------------------------------- storage -------------------------------- */
-
-type BlobPutResponse = { url?: string; pathname?: string };
-
-/**
- * Age out nothing and overwrite nothing: every upload is its own object, so
- * last spring's slide is still there when a client asks what we ran for them.
- */
-async function putBlob(
-  path: string,
-  body: Buffer,
-  contentType: string,
-): Promise<{ ok: true; url: string; pathname: string } | { ok: false; error: string }> {
-  const token = blobToken();
-  if (!token) return { ok: false, error: "No Blob token is visible to this deployment" };
-
-  try {
-    const res = await fetch(`${blobBase()}/${path}`, {
-      method: "PUT",
-      headers: {
-        authorization: `Bearer ${token}`,
-        "x-api-version": "7",
-        "x-content-type": contentType,
-        // The path already carries a UUID, so a second random suffix would only
-        // make the URL harder to read.
-        "x-add-random-suffix": "0",
-        "x-cache-control-max-age": "31536000",
-      },
-      body: new Uint8Array(body),
-      cache: "no-store",
-      signal: AbortSignal.timeout(20_000),
-    });
-
-    if (!res.ok) {
-      const detail = await res.text();
-      return { ok: false, error: `Blob ${res.status}: ${detail.slice(0, 200)}` };
-    }
-
-    const parsed = (await res.json()) as BlobPutResponse;
-    if (!parsed.url) return { ok: false, error: "Blob returned no URL" };
-    return { ok: true, url: parsed.url, pathname: parsed.pathname ?? path };
-  } catch (err) {
-    return {
-      ok: false,
-      error: err instanceof Error ? err.message : "upload failed",
-    };
-  }
-}
-
-async function removeBlob(url: string): Promise<void> {
-  const token = blobToken();
-  if (!token) return;
-  try {
-    await fetch(`${blobBase()}/delete`, {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${token}`,
-        "x-api-version": "7",
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({ urls: [url] }),
-      cache: "no-store",
-      signal: AbortSignal.timeout(8000),
-    });
-  } catch {
-    // A stranded blob costs a fraction of a cent and nothing else. Failing the
-    // whole delete over it would leave the record visible with no file behind it.
-  }
-}
 
 /* --------------------------------- records -------------------------------- */
 
@@ -232,4 +167,24 @@ export function artworkAgeDays(artwork: Artwork | null): number | null {
   const then = Date.parse(artwork.uploadedAt);
   if (!Number.isFinite(then)) return null;
   return Math.floor((Date.now() - then) / 86_400_000);
+}
+
+/**
+ * Where the portal loads artwork from. Never the Blob address.
+ *
+ * Carries the client id because artwork is stored as a list per client rather
+ * than keyed by its own id — cheap to read a client's whole history, and the
+ * only lookup anything actually needs.
+ */
+export function artworkHref(advertiserId: string, id: string): string {
+  return `/api/ads/artwork/${encodeURIComponent(advertiserId)}/${encodeURIComponent(id)}`;
+}
+
+/** One artwork record, for the serving route. */
+export async function findArtwork(
+  advertiserId: string,
+  id: string,
+): Promise<Artwork | null> {
+  const all = await listArtwork(advertiserId);
+  return all.find((a) => a.id === id) ?? null;
 }
