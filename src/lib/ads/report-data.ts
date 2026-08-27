@@ -10,7 +10,7 @@
 
 import { getCombinedStats, localStamp, TZ } from "./scan-store";
 import { codesForAdvertiser } from "./link-store";
-import { formatDate, type AdvertiserView } from "./roster";
+import { daysBetween, formatDate, today, type AdvertiserView } from "./roster";
 
 /**
  * The rotation: 18 slides of 10 seconds is a 3-minute loop, so a spot plays 20
@@ -24,6 +24,56 @@ const HOURS = { weekday: 8, sunday: 7 };
 function playsOnWeekday(weekday: number): number {
   if (weekday === 1) return 0;
   return PLAYS_PER_HOUR * (weekday === 0 ? HOURS.sunday : HOURS.weekday);
+}
+
+/**
+ * Plays and open days across a window of dates, inclusive.
+ *
+ * The window is the point. Counting a whole calendar month told an advertiser
+ * who started on the 28th that their ad had played four thousand times that
+ * month, and told one who has not started at all the same thing. A play is a
+ * claim about something that happened on a screen; it can only be counted for
+ * days the ad was actually in the rotation, and only for days that have
+ * happened.
+ */
+function playsBetween(from: string, to: string): { plays: number; openDays: number } {
+  if (!from || !to || from > to) return { plays: 0, openDays: 0 };
+
+  let plays = 0;
+  let openDays = 0;
+
+  const [fy, fm, fd] = from.split("-").map(Number);
+  const total = daysBetween(from, to);
+
+  for (let offset = 0; offset <= total; offset += 1) {
+    const day = new Date(Date.UTC(fy, fm - 1, fd + offset));
+    const dayPlays = playsOnWeekday(day.getUTCDay());
+    if (dayPlays > 0) openDays += 1;
+    plays += dayPlays;
+  }
+
+  return { plays, openDays };
+}
+
+/** The days an ad was actually on screen inside a window, clamped to today. */
+function onScreenWindow(
+  advertiser: AdvertiserView,
+  from: string,
+  to: string,
+): { from: string; to: string } {
+  const start = advertiser.startDate > from ? advertiser.startDate : from;
+  let end = advertiser.endDate < to ? advertiser.endDate : to;
+  // Nothing has played tomorrow.
+  const now = today();
+  if (end > now) end = now;
+  return { from: start, to: end };
+}
+
+/** First and last day of a month, as YYYY-MM-DD. */
+function monthBounds(month: MonthKey): { from: string; to: string } {
+  const [y, m] = month.split("-").map(Number);
+  const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  return { from: `${month}-01`, to: `${month}-${String(last).padStart(2, "0")}` };
 }
 
 export type MonthKey = string; // YYYY-MM
@@ -82,6 +132,19 @@ export type ReportFacts = {
   /** Days the restaurant was open in the month. */
   openDays: number;
 
+  /* ------------------------- the whole run so far ------------------------- */
+
+  /** Plays across every day the ad has been on screen this term. */
+  termPlays: number;
+  termOpenDays: number;
+  /** Scans across the same window. */
+  termScans: number;
+  /** The window those two cover — the term to date, not the term as sold. */
+  termFrom: string;
+  termTo: string;
+  /** The term has run its course, so the figures above are the final ones. */
+  termComplete: boolean;
+
   termEnds: string;
   daysRemaining: number;
 
@@ -102,8 +165,17 @@ export async function buildReportFacts(
   // Every code they own, added together — a client with a flyer code as well as
   // a screen code is owed both in their report.
   const codes = await codesForAdvertiser(advertiser.id, advertiser.qrCode);
-  // 70 days covers the reported month and the one before it in every case.
-  const stats = codes.length > 0 ? await getCombinedStats(codes, 70) : null;
+
+  // Long enough to cover the reported month, the one before it, and the whole
+  // term to date — the term total is asked for at the end of a run, and
+  // fetching it separately would mean two windows that could disagree.
+  const termSoFar = onScreenWindow(advertiser, advertiser.startDate, advertiser.endDate);
+  const termDays = termSoFar.from <= termSoFar.to
+    ? daysBetween(termSoFar.from, termSoFar.to) + 1
+    : 0;
+  const window = Math.min(400, Math.max(75, termDays + 5));
+
+  const stats = codes.length > 0 ? await getCombinedStats(codes, window) : null;
 
   const series = stats?.series ?? [];
   const inMonth = series.filter((p) => p.date.startsWith(month));
@@ -124,16 +196,16 @@ export async function buildReportFacts(
     0,
   );
 
-  const [year, mon] = month.split("-").map(Number);
-  const daysInMonth = new Date(Date.UTC(year, mon, 0)).getUTCDate();
-  let plays = 0;
-  let openDays = 0;
-  for (let day = 1; day <= daysInMonth; day++) {
-    const weekday = new Date(Date.UTC(year, mon - 1, day)).getUTCDay();
-    const dayPlays = playsOnWeekday(weekday);
-    if (dayPlays > 0) openDays += 1;
-    plays += dayPlays;
-  }
+  // Only the days this ad was actually in the rotation, and only days that have
+  // happened. A month is not a run.
+  const bounds = monthBounds(month);
+  const onScreen = onScreenWindow(advertiser, bounds.from, bounds.to);
+  const { plays, openDays } = playsBetween(onScreen.from, onScreen.to);
+
+  const term = playsBetween(termSoFar.from, termSoFar.to);
+  const termScans = series
+    .filter((p) => p.date >= termSoFar.from && p.date <= termSoFar.to)
+    .reduce((sum, p) => sum + p.count, 0);
 
   const changePercent =
     previousScans > 0
@@ -165,6 +237,12 @@ export async function buildReportFacts(
     daysWithScans: inMonth.filter((p) => p.count > 0).length,
     plays,
     openDays,
+    termPlays: term.plays,
+    termOpenDays: term.openDays,
+    termScans,
+    termFrom: termSoFar.from,
+    termTo: termSoFar.to,
+    termComplete: advertiser.daysRemaining <= 0,
     termEnds: advertiser.endDate,
     daysRemaining: advertiser.daysRemaining,
   };
@@ -199,6 +277,9 @@ function collectNumbers(facts: Omit<ReportFacts, "allowedNumbers">): number[] {
     facts.daysWithScans,
     facts.plays,
     facts.openDays,
+    facts.termPlays,
+    facts.termOpenDays,
+    facts.termScans,
     facts.daysRemaining,
     facts.changePercent === null ? undefined : Math.abs(facts.changePercent),
   ].filter((n): n is number => typeof n === "number");
@@ -211,6 +292,8 @@ function collectNumbers(facts: Omit<ReportFacts, "allowedNumbers">): number[] {
     facts.monthName,
     facts.bestHourWindow ?? "",
     facts.bestDay?.label ?? "",
+    formatDate(facts.termFrom),
+    formatDate(facts.termTo),
   ].join(" ");
 
   return [...new Set([...values, ...numbersIn(words)])];
