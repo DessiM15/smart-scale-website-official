@@ -99,7 +99,24 @@ export async function signOutAction() {
   redirect(PAGE);
 }
 
-export async function saveAdvertiserAction(data: FormData) {
+/**
+ * What the advertiser form shows when a save is refused.
+ *
+ * Returned rather than redirected. A redirect on a validation failure throws
+ * away everything typed, collapses the form it came from, and leaves the reason
+ * in a banner above the fold — which reads, correctly, as a button that does
+ * nothing.
+ */
+export type AdvertiserFormState = {
+  err: string;
+  detail?: string;
+  clash?: string;
+} | null;
+
+export async function saveAdvertiserAction(
+  _previous: AdvertiserFormState,
+  data: FormData,
+): Promise<AdvertiserFormState> {
   await requireAdmin();
 
   const id = field(data, "id") || undefined;
@@ -109,14 +126,14 @@ export async function saveAdvertiserAction(data: FormData) {
   const startDate = field(data, "startDate");
   const status = (field(data, "status") || "active") as AdvertiserStatus;
 
-  if (!business) back({ err: "business" });
-  if (!PLANS[plan]) back({ err: "plan" });
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate)) back({ err: "startdate" });
+  if (!business) return { err: "business" };
+  if (!PLANS[plan]) return { err: "plan" };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate)) return { err: "startdate" };
 
   // Category exclusivity is the product — verify it rather than trust the form.
   if (status === "active") {
     const clash = categoryConflict(await listAdvertisers(), category, id);
-    if (clash) back({ err: "category", clash: clash.business });
+    if (clash) return { err: "category", clash: clash.business };
   }
 
   /* ---------------------------- the deal ---------------------------- */
@@ -132,10 +149,10 @@ export async function saveAdvertiserAction(data: FormData) {
   // meant to remove.
   for (const name of ["customMonthly", "customSetup", "customMonths", "customTotal"] as const) {
     if (wasFilled(data, name) && optionalNumber(data, name) === null) {
-      back({ err: "dealnumber", detail: field(data, name) });
+      return { err: "dealnumber", detail: field(data, name) };
     }
   }
-  if (customMonths !== null && customMonths < 1) back({ err: "dealmonths" });
+  if (customMonths !== null && customMonths < 1) return { err: "dealmonths" };
 
   // Six months from now nobody remembers why this client pays less. Requiring
   // the reason at the moment of the decision is the only time it's cheap.
@@ -144,7 +161,7 @@ export async function saveAdvertiserAction(data: FormData) {
     customSetup !== null ||
     customMonths !== null ||
     customTotal !== null;
-  if (hasOverride && !dealNote) back({ err: "dealnote" });
+  if (hasOverride && !dealNote) return { err: "dealnote" };
 
   /* ------------------------- their first QR code ------------------------- */
 
@@ -156,7 +173,7 @@ export async function saveAdvertiserAction(data: FormData) {
 
   if (newDestination) {
     const destError = validateDestination(newDestination);
-    if (destError) back({ err: "destination", detail: destError });
+    if (destError) return { err: "destination", detail: destError };
 
     const existingLinks = await listLinks();
     const takenCodes = existingLinks.map((l) => l.code);
@@ -164,10 +181,10 @@ export async function saveAdvertiserAction(data: FormData) {
 
     autoCode = requested || suggestCode(business, takenCodes);
     const codeError = validateCode(autoCode);
-    if (codeError) back({ err: "code", detail: codeError });
+    if (codeError) return { err: "code", detail: codeError };
     // A printed code can never be reassigned, so a collision is a hard stop
     // rather than something to resolve by guessing.
-    if (takenCodes.includes(autoCode)) back({ err: "codetaken", detail: autoCode });
+    if (takenCodes.includes(autoCode)) return { err: "codetaken", detail: autoCode };
   }
 
   const { ok, id: savedId } = await saveAdvertiser(
@@ -192,7 +209,7 @@ export async function saveAdvertiserAction(data: FormData) {
     id,
   );
 
-  if (!ok) back({ err: "save" });
+  if (!ok) return { err: "save" };
 
   if (autoCode) {
     const linked = await saveLink({

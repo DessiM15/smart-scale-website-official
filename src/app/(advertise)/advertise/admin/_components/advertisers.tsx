@@ -5,7 +5,8 @@
  * card, because eight columns of contract detail can't survive a phone.
  */
 
-import { deleteAdvertiserAction, saveAdvertiserAction } from "../actions";
+import { deleteAdvertiserAction } from "../actions";
+import { AdvertiserForm, type EditingAdvertiser } from "./advertiser-form";
 import {
   formatDate,
   today,
@@ -13,6 +14,7 @@ import {
   type AdvertiserView,
   type RosterSummary,
 } from "@/lib/ads/roster";
+import { money as fmtMoney } from "./ui";
 import type { LinkView } from "./types";
 import { tabHref } from "./types";
 import {
@@ -235,297 +237,42 @@ function RosterCard({
   );
 }
 
-function AdvertiserForm({
-  editing,
-  codes,
-}: {
-  editing?: AdvertiserView;
-  codes: LinkView[];
-}) {
-  return (
-    // Open automatically when an edit is in flight, otherwise closed — the form
-    // is used a few times a month and shouldn't own the screen the rest of it.
-    <details
-      id="editor"
-      open={Boolean(editing)}
-      className="group rounded-3xl border border-white/[0.07] bg-[#131313] overflow-hidden"
-    >
-      <summary className="flex cursor-pointer items-center justify-between gap-4 px-6 sm:px-8 py-5 list-none [&::-webkit-details-marker]:hidden hover:bg-white/[0.02] transition-colors">
-        <span className="text-white font-semibold">
-          {editing ? `Edit ${editing.business}` : "Add an advertiser"}
-        </span>
-        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-white/35 group-open:hidden">
-          Open
-        </span>
-        <span className="hidden text-xs font-semibold uppercase tracking-[0.14em] text-white/35 group-open:inline">
-          Close
-        </span>
-      </summary>
+/**
+ * The form runs in the browser so a refused save keeps what was typed, which
+ * means everything it needs has to cross as plain data — importing plans or
+ * date helpers there would pull Redis and node crypto into the bundle.
+ */
+function planOptions() {
+  return PLAN_LIST.map((plan) => ({
+    id: plan.id,
+    label: `${plan.name} — ${plan.months} mo${
+      plan.monthly ? ` · ${fmtMoney(plan.monthly)}/mo` : " · no charge"
+    }${plan.internalOnly ? " (internal)" : ""}`,
+  }));
+}
 
-      <div className="px-6 sm:px-8 pb-8 pt-2 border-t border-white/[0.06]">
-        {editing && (
-          <a href={tabHref("advertisers")} className={`${linkQuiet} inline-block mb-5`}>
-            Cancel edit
-          </a>
-        )}
-
-        <form action={saveAdvertiserAction} className="space-y-5">
-          {editing && <input type="hidden" name="id" value={editing.id} />}
-
-          <div className="grid sm:grid-cols-2 gap-4">
-            <Field
-              label="Business"
-              name="business"
-              defaultValue={editing?.business}
-              required
-            />
-            <Field
-              label="Category (locked)"
-              name="category"
-              defaultValue={editing?.category}
-              placeholder="Plumbing, Dentistry, Auto Repair…"
-            />
-            <Field
-              label="Contact name"
-              name="contactName"
-              defaultValue={editing?.contactName}
-            />
-            <Field label="Phone" name="phone" type="tel" defaultValue={editing?.phone} />
-            <Field
-              label="Email"
-              name="email"
-              type="email"
-              defaultValue={editing?.email}
-            />
-            <div>
-              <label className={labelClass} htmlFor="qrCode">
-                QR code
-              </label>
-              <select
-                id="qrCode"
-                name="qrCode"
-                defaultValue={editing?.qrCode ?? ""}
-                className={selectClass}
-              >
-                <option value="">— none —</option>
-                {codes.map((link) => (
-                  <option key={link.code} value={link.code}>
-                    /go/{link.code} — {link.label}
-                    {link.active ? "" : " (retired)"}
-                  </option>
-                ))}
-              </select>
-              <p className="mt-1.5 text-xs text-white/30">
-                {editing
-                  ? "Add more codes on their profile, where the scan counts are."
-                  : "Or make them a new one below — leave this on \u201cnone\u201d."}
-              </p>
-            </div>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <label className={labelClass} htmlFor="plan">
-                Package <span className="text-[#DC2626]">*</span>
-              </label>
-              <select
-                id="plan"
-                name="plan"
-                defaultValue={editing?.plan ?? "standard"}
-                className={selectClass}
-              >
-                {PLAN_LIST.map((plan) => (
-                  <option key={plan.id} value={plan.id}>
-                    {plan.name} — {plan.months} mo
-                    {plan.monthly ? ` · ${money(plan.monthly)}/mo` : " · no charge"}
-                    {plan.internalOnly ? " (internal)" : ""}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <Field
-              label="Start date"
-              name="startDate"
-              type="date"
-              defaultValue={editing?.startDate ?? today()}
-              required
-            />
-            <div>
-              <label className={labelClass} htmlFor="paymentType">
-                How they pay
-              </label>
-              <select
-                id="paymentType"
-                name="paymentType"
-                defaultValue={editing?.paymentType ?? "monthly"}
-                className={selectClass}
-              >
-                <option value="monthly">Invoiced monthly</option>
-                <option value="prepaid">Whole term up front</option>
-              </select>
-            </div>
-            <div>
-              <label className={labelClass} htmlFor="status">
-                Status
-              </label>
-              <select
-                id="status"
-                name="status"
-                defaultValue={editing?.status ?? "active"}
-                className={selectClass}
-              >
-                <option value="active">Running</option>
-                <option value="pending">Signed, not live yet</option>
-                <option value="ended">Ended</option>
-              </select>
-            </div>
-          </div>
-
-          {/* The deal. Blank means list price, so the common case stays a
-              four-field form and only a real exception costs any typing. */}
-          <details
-            open={Boolean(editing?.isCustom)}
-            className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden"
-          >
-            <summary className="flex cursor-pointer items-center justify-between gap-4 px-5 py-4 list-none [&::-webkit-details-marker]:hidden hover:bg-white/[0.02] transition-colors">
-              <span className="text-sm font-semibold text-white">
-                Custom deal
-                {editing?.isCustom && (
-                  <span className="ml-2">
-                    <Pill tone="warn">in use</Pill>
-                  </span>
-                )}
-              </span>
-              <span className="text-xs text-white/35">
-                leave blank for package pricing
-              </span>
-            </summary>
-
-            <div className="px-5 pb-5 pt-1 space-y-4">
-              <Field
-                label="One price for the whole term"
-                name="customTotal"
-                id="customTotal"
-                inputMode="decimal"
-                defaultValue={
-                  editing?.customTotal === null || editing?.customTotal === undefined
-                    ? ""
-                    : String(editing.customTotal)
-                }
-                placeholder="300"
-                hint="For a deal sold as a single figure — $300 for four months, paid once. Set this and it replaces the monthly and setup fields below."
-              />
-
-              <div className="grid sm:grid-cols-3 gap-4">
-                <Field
-                  label="Their monthly"
-                  name="customMonthly"
-                  id="customMonthly"
-                  inputMode="decimal"
-                  defaultValue={
-                    editing?.customMonthly === null ||
-                    editing?.customMonthly === undefined
-                      ? ""
-                      : String(editing.customMonthly)
-                  }
-                  placeholder="275"
-                  hint="Dollars per month. 0 means free."
-                />
-                <Field
-                  label="Their setup fee"
-                  name="customSetup"
-                  id="customSetup"
-                  inputMode="decimal"
-                  defaultValue={
-                    editing?.customSetup === null || editing?.customSetup === undefined
-                      ? ""
-                      : String(editing.customSetup)
-                  }
-                  placeholder="0"
-                  hint="0 waives it."
-                />
-                <Field
-                  label="Their term"
-                  name="customMonths"
-                  id="customMonths"
-                  inputMode="numeric"
-                  defaultValue={
-                    editing?.customMonths === null || editing?.customMonths === undefined
-                      ? ""
-                      : String(editing.customMonths)
-                  }
-                  placeholder="6"
-                  hint="Whole months. Moves the end date."
-                />
-              </div>
-              <Field
-                label="Why"
-                name="dealNote"
-                id="dealNote"
-                defaultValue={editing?.dealNote ?? ""}
-                placeholder="Trade for catering, referral partner, second location…"
-                hint="Required whenever you override a price — it's the only record of why."
-              />
-            </div>
-          </details>
-
-          {/* Only offered on a new client. An existing one's codes are managed
-              on their profile, where the scan counts are. */}
-          {!editing && (
-            <details className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden">
-              <summary className="flex cursor-pointer items-center justify-between gap-4 px-5 py-4 list-none [&::-webkit-details-marker]:hidden hover:bg-white/[0.02] transition-colors">
-                <span className="text-sm font-semibold text-white">
-                  Make their QR code now
-                </span>
-                <span className="text-xs text-white/35">optional</span>
-              </summary>
-              <div className="px-5 pb-5 pt-1 space-y-4">
-                <Field
-                  label="Where should their scan go?"
-                  name="newLinkDestination"
-                  id="newLinkDestination"
-                  type="url"
-                  placeholder="https://theirsite.com"
-                  hint="Their website, booking page, menu, Google profile — anything with a web address."
-                />
-                <Field
-                  label="Code"
-                  name="newLinkCode"
-                  id="newLinkCode"
-                  placeholder="leave blank and we'll name it from the business"
-                  hint="This is the bit after /go/ and it gets printed, so it can never be changed afterwards. The destination can."
-                />
-              </div>
-            </details>
-          )}
-
-          <div>
-            <label className={labelClass} htmlFor="notes">
-              Notes
-            </label>
-            <textarea
-              id="notes"
-              name="notes"
-              rows={2}
-              defaultValue={editing?.notes}
-              placeholder="Artwork due, renewal conversation, billing quirks…"
-              className={inputClass}
-            />
-          </div>
-
-          <div className="flex flex-wrap items-center gap-4 pt-1">
-            <button type="submit" className={`${btnPrimary} px-6 py-3`}>
-              {editing ? "Save changes" : "Add advertiser"}
-            </button>
-            <p className="text-xs text-white/30">
-              The end date is calculated from the package term —{" "}
-              {editing ? `currently ${formatDate(editing.endDate)}` : "no need to enter it"}.
-            </p>
-          </div>
-        </form>
-      </div>
-    </details>
-  );
+function toEditing(view: AdvertiserView): EditingAdvertiser {
+  return {
+    id: view.id,
+    business: view.business,
+    category: view.category,
+    contactName: view.contactName,
+    phone: view.phone,
+    email: view.email,
+    qrCode: view.qrCode,
+    plan: view.plan,
+    startDate: view.startDate,
+    status: view.status,
+    paymentType: view.paymentType,
+    notes: view.notes,
+    customMonthly: view.customMonthly,
+    customSetup: view.customSetup,
+    customMonths: view.customMonths,
+    customTotal: view.customTotal,
+    dealNote: view.dealNote,
+    isCustom: view.isCustom,
+    endDateLabel: formatDate(view.endDate),
+  };
 }
 
 /* ---------------------------------- tab ----------------------------------- */
@@ -596,7 +343,12 @@ export function AdvertisersTab({
         )}
       </Card>
 
-      <AdvertiserForm editing={editing} codes={links} />
+      <AdvertiserForm
+        editing={editing ? toEditing(editing) : undefined}
+        codes={links}
+        plans={planOptions()}
+        today={today()}
+      />
     </>
   );
 }
