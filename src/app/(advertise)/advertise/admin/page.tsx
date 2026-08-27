@@ -6,6 +6,7 @@ import { getCodeStats } from "@/lib/ads/scan-store";
 import { listAdvertisers, listProspects, summarize } from "@/lib/ads/roster";
 import { recentRuns } from "@/lib/ads/notify";
 import { recentBackups } from "@/lib/ads/backup";
+import { collectFacts, writeBriefing } from "@/lib/ads/briefing";
 import { setupItems } from "@/lib/ads/setup";
 import { getSettings } from "@/lib/ads/settings";
 import { paymentsInMonth, sumPayments } from "@/lib/ads/payments";
@@ -19,6 +20,7 @@ import { Banner } from "./_components/banner";
 import { LockScreen } from "./_components/lock-screen";
 import { OverviewTab } from "./_components/overview";
 import { AdvertisersTab } from "./_components/advertisers";
+import { CategoriesTab, buildCategories } from "./_components/categories";
 import { ReportsTab } from "./_components/reports";
 import { QrTab } from "./_components/qr-codes";
 import { ProspectsTab } from "./_components/prospects";
@@ -82,6 +84,7 @@ const TAB_FOR_RESULT: Record<string, TabId> = {
 const TAB_LABEL: Record<TabId, string> = {
   overview: "Overview",
   advertisers: "Advertisers",
+  categories: "Categories",
   reports: "Reports",
   qr: "QR codes",
   prospects: "Prospects",
@@ -184,6 +187,7 @@ export default async function AdminPage({
     checked?: string;
     detail?: string;
     editLink?: string;
+    q?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -243,10 +247,24 @@ export default async function AdminPage({
     getSettings(),
     paymentsInMonth(currentMonth),
   ]);
+  const categories = buildCategories(advertisers, prospects);
+
   const setup = setupItems();
   const setupTodo = setup.filter((i) => i.status !== "on").length;
   const knownCodeSet = new Set(links.map((l) => l.code));
   const summary = summarize(advertisers);
+
+  // The briefing is written from the same figures the tiles show, and cached on
+  // a fingerprint of them — so it costs an API call when something changes and
+  // nothing when it hasn't.
+  const briefing = await writeBriefing(
+    collectFacts(summary, {
+      newLeads: newLeads.length,
+      replies: replies.length,
+      unsigned: summary.unsigned.length,
+    }),
+  );
+
   const needsAttention = [...summary.overdue, ...summary.expiring];
   const draftReports = reports.filter((r) => r.status === "draft").length;
 
@@ -302,6 +320,7 @@ export default async function AdminPage({
               counts={{
                 overview: { value: openItems, urgent: true },
                 advertisers: { value: advertisers.length },
+                categories: { value: categories.filter((c) => !c.holder).length },
                 reports: { value: draftReports, urgent: draftReports > 0 },
                 qr: { value: links.length },
                 prospects: {
@@ -340,6 +359,7 @@ export default async function AdminPage({
             replies={replies}
             backups={backups}
             newLeads={newLeads}
+            briefing={briefing}
           />
         )}
 
@@ -350,7 +370,12 @@ export default async function AdminPage({
             knownCodes={knownCodeSet}
             links={links}
             editing={editing}
+            query={params.q ?? ""}
           />
+        )}
+
+        {tab === "categories" && (
+          <CategoriesTab rows={categories} openSlots={summary.openSlots} />
         )}
 
         {tab === "reports" && <ReportsTab reports={reports} />}

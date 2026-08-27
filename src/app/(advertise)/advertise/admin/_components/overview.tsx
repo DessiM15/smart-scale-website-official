@@ -13,6 +13,7 @@ import {
 } from "@/lib/ads/notify";
 import { isEmailConfigured } from "@/lib/ads/email";
 import type { BackupEntry } from "@/lib/ads/backup";
+import type { Briefing } from "@/lib/ads/briefing";
 import { tabHref } from "./types";
 import { isLinkSigningConfigured } from "@/lib/ads/links";
 import type { PendingNotice, ScheduledNotice } from "@/lib/ads/renewals";
@@ -397,6 +398,33 @@ function RenewalWatch({
 /* ---------------------------------- tab ----------------------------------- */
 
 /**
+ * What today is about, in two or three sentences.
+ *
+ * Every figure in it was computed here and checked against the draft before it
+ * was allowed on screen — the model writes the prose, never the numbers. When
+ * that check fails, or the key is missing, the same facts are stated plainly
+ * instead. Either way what you read is true.
+ */
+function TodayBriefing({ briefing }: { briefing: Briefing }) {
+  if (!briefing.text) return null;
+  return (
+    <div className="mb-5 rounded-3xl border border-white/[0.07] bg-gradient-to-br from-white/[0.05] to-transparent px-6 sm:px-8 py-6">
+      <p className="text-[10px] uppercase tracking-[0.18em] text-[#DC2626] font-semibold">
+        Today
+      </p>
+      <p className="mt-2.5 text-lg sm:text-xl text-white/90 leading-relaxed max-w-3xl">
+        {briefing.text}
+      </p>
+      {briefing.rejectedReason && (
+        <p className="mt-3 text-xs text-white/25">
+          Written plainly rather than by the model — {briefing.rejectedReason}.
+        </p>
+      )}
+    </div>
+  );
+}
+
+/**
  * Clients on the screens with no countersigned agreement covering the term
  * they're actually running. Not a blocker — a spot often starts on a handshake
  * — but it is exactly the sort of thing that goes unnoticed for a year.
@@ -537,6 +565,7 @@ export function OverviewTab({
   replies,
   backups,
   newLeads,
+  briefing,
 }: {
   summary: RosterSummary;
   needsAttention: AdvertiserView[];
@@ -546,6 +575,7 @@ export function OverviewTab({
   replies: RenewalResponse[];
   backups: BackupEntry[];
   newLeads: Prospect[];
+  briefing: Briefing;
 }) {
   return (
     <>
@@ -578,6 +608,8 @@ export function OverviewTab({
           hint="left to invoice on current terms"
         />
       </div>
+
+      <TodayBriefing briefing={briefing} />
 
       <NeedsAttention
         items={needsAttention}
