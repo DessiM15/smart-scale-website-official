@@ -330,6 +330,41 @@ export function reportEmail(facts: ReportFacts, narrative: Narrative) {
            ${facts.changePercent >= 0 ? "Up" : "Down"} ${Math.abs(facts.changePercent)}% on ${facts.previousScans} the month before.
          </p>`;
 
+  // The whole run so far, shown once it is worth showing — a first month has
+  // nothing to compare against, and repeating the month's own figures under a
+  // different heading would read as padding.
+  const showTerm =
+    facts.termOpenDays > facts.openDays && (facts.termScans > 0 || facts.termPlays > 0);
+
+  const termBlock = showTerm
+    ? `<div style="background:#ffffff;border:1px solid rgba(0,0,0,0.06);border-radius:18px;padding:20px 24px;margin-bottom:22px;">
+        <p style="margin:0 0 12px;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#9a8b7d;font-weight:700;">
+          ${facts.termComplete ? "Your full run" : "Since you started"}
+        </p>
+        <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+          <tr>
+            <td style="padding:5px 0;font-size:14px;color:${MUTED};">Scans</td>
+            <td style="padding:5px 0;font-size:14px;color:${INK};font-weight:600;text-align:right;">${facts.termScans.toLocaleString()}</td>
+          </tr>
+          <tr>
+            <td style="padding:5px 0;font-size:14px;color:${MUTED};">Times played</td>
+            <td style="padding:5px 0;font-size:14px;color:${INK};font-weight:600;text-align:right;">${facts.termPlays.toLocaleString()}</td>
+          </tr>
+          <tr>
+            <td style="padding:5px 0;font-size:14px;color:${MUTED};">Days on screen</td>
+            <td style="padding:5px 0;font-size:14px;color:${INK};font-weight:600;text-align:right;">${facts.termOpenDays.toLocaleString()}</td>
+          </tr>
+        </table>
+        <p style="margin:12px 0 0;font-size:12px;line-height:1.6;color:#9a8b7d;">
+          ${formatDate(facts.termFrom)} to ${formatDate(facts.termTo)}.
+        </p>
+      </div>`
+    : "";
+
+  const termText = showTerm
+    ? `\n${facts.termComplete ? "YOUR FULL RUN" : "SINCE YOU STARTED"} (${formatDate(facts.termFrom)} to ${formatDate(facts.termTo)})\n\n  Scans:          ${facts.termScans.toLocaleString()}\n  Times played:   ${facts.termPlays.toLocaleString()}\n  Days on screen: ${facts.termOpenDays.toLocaleString()}\n`
+    : "";
+
   const detail: string[] = [];
   if (facts.bestDay) {
     detail.push(`Your busiest day was ${facts.bestDay.label}, with ${facts.bestDay.count} scan${facts.bestDay.count === 1 ? "" : "s"}.`);
@@ -355,13 +390,15 @@ export function reportEmail(facts: ReportFacts, narrative: Narrative) {
   </tr></table>
   ${change}
 
+  ${termBlock}
+
   <div style="background:#ffffff;border:1px solid rgba(0,0,0,0.06);border-radius:18px;padding:22px 24px;margin-bottom:22px;">
     <p style="margin:0;font-size:15px;line-height:1.65;">${narrative.body}</p>
     ${detail.length ? `<p style="margin:14px 0 0;font-size:14px;line-height:1.65;color:${MUTED};">${detail.join(" ")}</p>` : ""}
   </div>
 
   <p style="margin:0 0 4px;font-size:13px;line-height:1.6;color:${MUTED};">
-    A "scan" is someone pointing their phone at your code and opening your page — not a view. Times played is how often your ad appeared on the screens.
+    A "scan" is someone pointing their phone at your code and opening your page — not a view. Times played is how often your ad appeared on the screens, counted only for the days it was actually running.
   </p>
   <p style="margin:0;font-size:12px;line-height:1.6;color:#9a8b7d;">
     Questions, or want to change your artwork? Just reply to this email. Mex Taco House screen advertising is managed by Smart Scale.
@@ -377,10 +414,10 @@ ${facts.business}${facts.category ? ` - our only ${facts.category} advertiser` :
   Scans:          ${facts.scans.toLocaleString()}
   Times played:   ${facts.plays.toLocaleString()}
   Days on screen: ${facts.openDays}
-${facts.changePercent === null ? "" : `\n${facts.changePercent >= 0 ? "Up" : "Down"} ${Math.abs(facts.changePercent)}% on ${facts.previousScans} the month before.\n`}
+${facts.changePercent === null ? "" : `\n${facts.changePercent >= 0 ? "Up" : "Down"} ${Math.abs(facts.changePercent)}% on ${facts.previousScans} the month before.\n`}${termText}
 ${narrative.body}
 ${detail.length ? `\n${detail.join(" ")}\n` : ""}
-A "scan" is someone pointing their phone at your code and opening your page - not a view. Times played is how often your ad appeared on the screens.
+A "scan" is someone pointing their phone at your code and opening your page - not a view. Times played is how often your ad appeared on the screens, counted only for the days it was actually running.
 
 Questions, or want to change your artwork? Just reply to this email.
 Mex Taco House screen advertising is managed by Smart Scale.`;

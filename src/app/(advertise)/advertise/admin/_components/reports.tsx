@@ -11,6 +11,7 @@ import {
 } from "../actions";
 import { isNarrativeConfigured } from "@/lib/ads/narrative";
 import type { MonthlyReport } from "@/lib/ads/reports";
+import { formatDate } from "@/lib/ads/roster";
 import {
   Card,
   Empty,
@@ -66,6 +67,14 @@ function ReportCard({ report }: { report: MonthlyReport }) {
             plays
           </span>
         </span>
+        <span>
+          <span className="text-2xl font-semibold text-white tabular-nums">
+            {f.openDays.toLocaleString()}
+          </span>{" "}
+          <span className="text-xs uppercase tracking-[0.14em] text-white/35 font-semibold">
+            days on screen
+          </span>
+        </span>
         {f.changePercent !== null && (
           <span
             className={`text-sm ${f.changePercent >= 0 ? "text-emerald-300" : "text-[#f87171]"}`}
@@ -75,6 +84,22 @@ function ReportCard({ report }: { report: MonthlyReport }) {
           </span>
         )}
       </div>
+
+      {/* The whole run so far, which is what an end-of-term conversation is
+          actually about. Hidden in a first month, where it would only repeat
+          the figures above under a different heading. */}
+      {f.termOpenDays > f.openDays && (
+        <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.02] px-4 py-3">
+          <p className="text-[10px] uppercase tracking-[0.14em] text-white/35 font-semibold">
+            {f.termComplete ? "Full run" : "Since they started"} ·{" "}
+            {formatDate(f.termFrom)} – {formatDate(f.termTo)}
+          </p>
+          <p className="mt-1.5 text-sm text-white/70 tabular-nums">
+            {f.termScans.toLocaleString()} scans · {f.termPlays.toLocaleString()} plays
+            · {f.termOpenDays.toLocaleString()} days on screen
+          </p>
+        </div>
+      )}
 
       {sent ? (
         <div className="mt-5 text-sm text-white/55">
