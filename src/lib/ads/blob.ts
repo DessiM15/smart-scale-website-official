@@ -1,88 +1,133 @@
 /**
- * Finding the Blob credentials, and saying so when we can't.
+ * File storage, through the Vercel Blob SDK.
  *
- * Vercel usually sets `BLOB_READ_WRITE_TOKEN` when a Blob store is connected —
- * but it offers an environment-variable prefix when you connect one, and a
- * store attached with a prefix arrives as `SOMETHING_BLOB_READ_WRITE_TOKEN`
- * instead. To the app that looks identical to no store at all, which produces
- * the worst possible message: "no file storage connected" on a project where
- * the dashboard plainly shows one is.
+ * This folder calls Upstash, Twilio and Plunk over plain `fetch` on purpose —
+ * one endpoint, one static key, no dependency worth carrying. Blob is the
+ * exception, and it took a while to see why: a connected store authenticates
+ * with a short-lived OIDC token that Vercel rotates (`BLOB_STORE_ID` +
+ * `VERCEL_OIDC_TOKEN`), not the long-lived `BLOB_READ_WRITE_TOKEN` the older
+ * docs describe. Refreshing a rotating credential by hand is precisely the job
+ * an SDK should be doing, so here it does it.
  *
- * So the token is looked up by suffix rather than by one exact name, and when
- * nothing matches the app reports which candidates it can actually see. A
- * variable added after the last deploy is invisible until a redeploy, and that
- * is the other half of this failure — naming what is visible distinguishes the
- * two without anyone having to guess.
+ * The store is **private**. Read access requires authentication, so a blob URL
+ * is useless on its own and nothing can be handed straight to a browser — every
+ * file is streamed back through a route that checks the session first. That is
+ * a stronger position than the unguessable-but-public URLs this started with,
+ * and it isn't a choice we can revisit: a store's access mode is fixed when the
+ * store is created.
  */
 
-const TOKEN_SUFFIX = "BLOB_READ_WRITE_TOKEN";
+import { del, get, put } from "@vercel/blob";
 
-/** Every environment variable that looks like a Blob token, by name only. */
-function candidateNames(): string[] {
-  return Object.keys(process.env)
-    .filter((name) => name.endsWith(TOKEN_SUFFIX))
-    .sort((a, b) => a.length - b.length);
-}
+/** The store's access mode. Fixed at store creation; ours is private. */
+const ACCESS = "private" as const;
 
 /**
- * The Blob token, whatever Vercel decided to call it.
+ * Whether a store is reachable from this deployment.
  *
- * The plain name is read as a written-out `process.env.BLOB_READ_WRITE_TOKEN`
- * and nothing else, because a bundler can substitute a reference it can see
- * literally in the source and cannot substitute `process.env[name]` built from
- * a variable. Reaching for the dynamic form first — which is what this did at
- * first — risks returning nothing for a variable that is plainly set.
- *
- * The scan below is only for the prefixed names, which cannot be written out
- * because we do not know them ahead of time.
+ * Either credential will do: OIDC is what a connected store uses now, and the
+ * read-write token is the older form, still used from outside Vercel.
  */
-export function blobToken(): string {
-  const direct = (process.env.BLOB_READ_WRITE_TOKEN ?? "").trim();
-  if (direct) return direct;
-
-  for (const name of candidateNames()) {
-    const value = (process.env[name] ?? "").trim();
-    if (value) return value;
-  }
-  return "";
-}
-
 export function isBlobConfigured(): boolean {
-  return Boolean(blobToken());
-}
-
-/** Overridable so the upload paths can be pointed at a stand-in under test. */
-export function blobBase(): string {
-  return (process.env.BLOB_API_BASE || "https://blob.vercel-storage.com").replace(
-    /\/$/,
-    "",
-  );
+  return Boolean(process.env.BLOB_STORE_ID || process.env.BLOB_READ_WRITE_TOKEN);
 }
 
 /**
  * What this deployment can see, for the screen. Names only — never values.
  *
- * Shown when storage looks unconfigured, because "connected in Vercel but not
- * here" and "connected in Vercel after the last deploy" look the same from
- * inside the app and have different fixes.
+ * Written for the person who has just connected a store in Vercel and is being
+ * told it isn't there, because that is the only time anyone reads it.
  */
 export function describeBlobEnv(): string {
-  const direct = (process.env.BLOB_READ_WRITE_TOKEN ?? "").trim();
-  if (direct) return "Found BLOB_READ_WRITE_TOKEN.";
+  const storeId = Boolean(process.env.BLOB_STORE_ID);
+  const oidc = Boolean(process.env.VERCEL_OIDC_TOKEN);
+  const token = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 
-  const names = candidateNames();
-  if (names.length === 0) {
-    // Distinguishes "the variable is absent" from "the variable is present but
-    // this build cannot enumerate it" — the second is invisible otherwise, and
-    // sends you looking at Vercel for something that is already correct there.
-    const visible = Object.keys(process.env).length;
-    return `This deployment can't see any variable ending in BLOB_READ_WRITE_TOKEN, out of ${visible} it can see at all. If Vercel shows the store connected to this project with Production ticked, redeploy — a variable added after a build is invisible until then.`;
+  if (storeId && oidc) return "Connected: BLOB_STORE_ID and VERCEL_OIDC_TOKEN.";
+  if (storeId) {
+    return "BLOB_STORE_ID is set but VERCEL_OIDC_TOKEN isn't. Vercel issues that token at run time — if this is production, redeploy.";
+  }
+  if (token) return "Connected: BLOB_READ_WRITE_TOKEN.";
+
+  const visible = Object.keys(process.env).length;
+  return `No Blob credentials here — neither BLOB_STORE_ID nor BLOB_READ_WRITE_TOKEN, out of ${visible} environment variables this deployment can see. Connect the store to this project with Production ticked, then redeploy.`;
+}
+
+/* --------------------------------- writing -------------------------------- */
+
+export type PutResult =
+  | { ok: true; url: string; pathname: string }
+  | { ok: false; error: string };
+
+/**
+ * Stores one file.
+ *
+ * `overwrite` exists for the nightly backup, which deliberately writes the same
+ * path every day. Everything else gets a fresh path per upload — the SDK
+ * refuses a repeated pathname otherwise, which is the right default for files
+ * that must never quietly replace one another.
+ */
+export async function putBlob(
+  pathname: string,
+  body: Buffer,
+  contentType: string,
+  options: { overwrite?: boolean; randomSuffix?: boolean } = {},
+): Promise<PutResult> {
+  if (!isBlobConfigured()) {
+    return { ok: false, error: "No Blob store is connected to this deployment" };
   }
 
-  const empty = names.filter((n) => !(process.env[n] ?? "").trim());
-  if (empty.length === names.length) {
-    return `Found ${names.join(", ")}, but the value is empty. Re-connect the store in Vercel, then redeploy.`;
+  try {
+    // The SDK takes a Buffer directly; wrapping it was a habit carried over
+    // from the raw fetch this replaced.
+    const blob = await put(pathname, body, {
+      access: ACCESS,
+      contentType,
+      allowOverwrite: options.overwrite ?? false,
+      addRandomSuffix: options.randomSuffix ?? false,
+    });
+    return { ok: true, url: blob.url, pathname: blob.pathname };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "upload failed",
+    };
   }
+}
 
-  return `Found ${names.join(", ")}.`;
+/* --------------------------------- reading -------------------------------- */
+
+export type BlobRead = { stream: ReadableStream; contentType?: string };
+
+/**
+ * Reads one file back. Private blobs are delivered through the function rather
+ * than the CDN, so the caller streams this on to whoever it has already
+ * authenticated.
+ */
+export async function getBlob(url: string): Promise<BlobRead | null> {
+  if (!isBlobConfigured()) return null;
+  try {
+    const result = await get(url, { access: ACCESS });
+    if (!result?.stream) return null;
+    return {
+      stream: result.stream as unknown as ReadableStream,
+      contentType: result.blob?.contentType ?? undefined,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Removes a file. Never throws: a stranded blob costs a fraction of a cent, and
+ * failing a delete over it would leave a record pointing at a file the reader
+ * can no longer be shown.
+ */
+export async function removeBlob(url: string): Promise<void> {
+  if (!isBlobConfigured()) return;
+  try {
+    await del(url);
+  } catch {
+    /* see above */
+  }
 }

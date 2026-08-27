@@ -14,7 +14,7 @@
 import { exportRoster } from "./roster";
 import { listLinks } from "./link-store";
 import { redisPipeline, redisWrite } from "./redis";
-import { blobBase, blobToken, isBlobConfigured } from "./blob";
+import { isBlobConfigured, putBlob } from "./blob";
 
 /** Kept for a month — long enough to notice a bad edit, short enough to be free. */
 const KEEP_DAYS = 30;
@@ -47,9 +47,8 @@ export type BackupResult = {
  * storage hiccup must not take the alerts down with it.
  */
 export async function runBackup(): Promise<BackupResult> {
-  const token = blobToken();
-  if (!token) {
-    return { ok: false, skipped: "No Blob token is visible to this deployment" };
+  if (!isBlobConfigured()) {
+    return { ok: false, skipped: "No Blob store is connected to this deployment" };
   }
 
   try {
@@ -72,33 +71,22 @@ export async function runBackup(): Promise<BackupResult> {
     });
 
     const date = new Date().toISOString().slice(0, 10);
-    const body = new TextEncoder().encode(payload);
+    const body = Buffer.from(payload, "utf8");
 
-    const res = await fetch(`${blobBase()}/ads/backup/${date}.json`, {
-      method: "PUT",
-      headers: {
-        authorization: `Bearer ${token}`,
-        "x-api-version": "7",
-        "x-content-type": "application/json",
-        // Same path every day, so re-running the job replaces the day's file
-        // instead of littering.
-        "x-add-random-suffix": "0",
-      },
+    // Same path every day, so re-running the job replaces the day's file rather
+    // than littering — which the store refuses unless told to allow it.
+    const stored = await putBlob(
+      `ads/backup/${date}.json`,
       body,
-      cache: "no-store",
-      signal: AbortSignal.timeout(20_000),
-    });
+      "application/json",
+      { overwrite: true },
+    );
+    if (!stored.ok) return { ok: false, error: stored.error };
 
-    if (!res.ok) {
-      const detail = await res.text();
-      return { ok: false, error: `Blob ${res.status}: ${detail.slice(0, 200)}` };
-    }
-
-    const parsed = (await res.json()) as { url?: string };
     const entry: BackupEntry = {
       at: new Date().toISOString(),
       date,
-      url: parsed.url ?? "",
+      url: stored.url,
       advertisers: roster.advertisers.length,
       prospects: roster.prospects.length,
       links: links.length,
