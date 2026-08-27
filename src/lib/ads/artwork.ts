@@ -8,7 +8,7 @@
  *
  * Blob is called over its REST API with `fetch` rather than through
  * `@vercel/blob`, for the same reasons the rest of this folder talks to
- * Upstash, Twilio and Plunk that way: no dependency, no lockfile churn, and a
+ * Upstash, Twilio and Resend that way: no dependency, no lockfile churn, and a
  * send path that can be pointed somewhere else under test. Like those, it
  * degrades to a recorded failure when unconfigured instead of throwing.
  */

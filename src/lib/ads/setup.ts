@@ -4,7 +4,7 @@
  * Every feature in this folder degrades quietly when its credentials are
  * missing, which is the right behaviour for a cron job and the wrong one for
  * the person who has to run the business — "the renewal emails aren't sending"
- * and "I never set PLUNK_API_KEY" look identical from the outside.
+ * and "I never set RESEND_API_KEY" look identical from the outside.
  *
  * So the checks that were scattered across a dozen `isXConfigured()` calls are
  * collected here, each with what it unlocks and the steps to finish it. The
@@ -95,11 +95,11 @@ export function setupItems(): SetupItem[] {
             replyToAddress() ? `, replies to ${replyToAddress()}` : ""
           }`
         : undefined,
-      vars: ["PLUNK_API_KEY", "ADS_FROM_EMAIL", "ADS_REPLY_TO"],
+      vars: ["RESEND_API_KEY", "ADS_FROM_EMAIL", "ADS_REPLY_TO"],
       steps: [
-        "In Plunk, add smartscaleagent.com as a sending domain.",
+        "In Resend, add smartscaleagent.com as a domain. The free plan allows one, so an unused domain may need removing first.",
         "Paste the DKIM and SPF records it gives you at your domain registrar, then verify. DNS can take an hour, sometimes longer.",
-        "In Vercel, set PLUNK_API_KEY to your Plunk secret key — the one starting sk_.",
+        "In Vercel, set RESEND_API_KEY to a Resend API key — the one starting re_.",
         "Set ADS_FROM_EMAIL to an address on the verified domain, e.g. Smart Scale <ads@smartscaleagent.com>.",
         "Set ADS_REPLY_TO to the inbox you actually read.",
         "Redeploy, then send yourself a test below before it ever reaches a client.",

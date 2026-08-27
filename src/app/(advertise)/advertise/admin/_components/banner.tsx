@@ -27,7 +27,7 @@ const notices = (
   reportSent: "Report sent.",
   reportSkipped: "Report skipped — it won't be sent.",
   reportEdited: "Report wording updated.",
-  testSent: `Test sent to ${detail}${sent ? ` — ${sent}` : ""}. If it doesn't arrive within a minute: check spam, then open Plunk's own log and find that address. Plunk accepting it and Plunk delivering it are two different things, and its log is the only place that tells them apart.`,
+  testSent: `Test sent to ${detail}${sent ? ` — ${sent}` : ""}. If it doesn't arrive within a minute: check spam, then open Resend's own log and find that message. Resend accepting it and Resend delivering it are two different things, and its log is the only place that tells them apart.`,
   backupDone: `Backed up — ${detail}.`,
   venueSaved: "Saved. It applies to statements from here on — never to one already issued.",
   alerts:
@@ -54,7 +54,7 @@ const errors = (clash?: string, detail?: string): Record<string, string> => ({
   testaddress: "That doesn't look like an email address.",
   testunconfigured:
     "Email isn't connected yet, so there's nothing to test. Finish the Advertiser email steps first.",
-  testsend: `${detail} — most often the sending domain isn't verified yet, the from-address isn't on the verified domain, or the key is the public pk_ one instead of the secret sk_ key.`,
+  testsend: `${detail} — most often the sending domain isn't verified yet, the from-address isn't on the verified domain, or the key is from a different Resend account.`,
   backupoff: "No file storage connected, so there's nowhere to put a backup.",
   backupfailed: detail ?? "The backup didn't write.",
   sharepercent: "The share has to be a number between 0 and 100. Leave it blank to clear the split.",

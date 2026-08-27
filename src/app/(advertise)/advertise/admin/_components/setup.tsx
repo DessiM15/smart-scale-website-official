@@ -125,9 +125,9 @@ function TestResult({
           </p>
           {err === "testsend" && (
             <p className="mt-2 text-xs text-white/40 leading-relaxed">
-              That wording is Plunk&apos;s, not ours. A 401 means the key was
-              refused — check for a stray space on the value in Vercel, and that
-              it&apos;s the secret sk_ key.
+              That wording is Resend&apos;s, not ours. A 401 means the key was
+              refused — check for a stray space on the value in Vercel. A 403
+              usually means the from-address isn&apos;t on a verified domain.
             </p>
           )}
         </Note>
@@ -145,8 +145,8 @@ function TestResult({
           {sent ? ` — ${sent}` : ""}.
         </p>
         <p className="mt-1.5 text-sm text-white/70 leading-relaxed">
-          Plunk accepted it. If it hasn&apos;t landed within a minute, check spam,
-          then find that address in Plunk&apos;s own log — accepted and delivered
+          Resend accepted it. If it hasn&apos;t landed within a minute, check spam,
+          then find that message in Resend&apos;s own log — accepted and delivered
           are different things, and only the log tells them apart.
         </p>
       </Note>
