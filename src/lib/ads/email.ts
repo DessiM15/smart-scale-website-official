@@ -1,5 +1,5 @@
 /**
- * Advertiser-facing email, sent through Plunk's REST API.
+ * Advertiser-facing email, sent through Resend's REST API.
  *
  * Dependency-free on purpose — it's one HTTPS call, and the rest of this
  * folder already talks to Upstash and Twilio the same way. Degrades to a
@@ -11,49 +11,36 @@ import type { ReportFacts } from "./report-data";
 import type { Narrative } from "./narrative";
 
 /** Overridable so the send path can be pointed at a local stand-in under test. */
-function plunkEndpoint(): string {
-  const base = (process.env.PLUNK_API_BASE || "https://api.useplunk.com").replace(
+function resendEndpoint(): string {
+  const base = (process.env.RESEND_API_BASE || "https://api.resend.com").replace(
     /\/$/,
     "",
   );
-  return `${base}/v1/send`;
-}
-
-/** The full "Name <address>" form, for display and for our own templates. */
-export function fromAddress(): string {
-  return process.env.ADS_FROM_EMAIL || "Smart Scale <ads@smartscaleagent.com>";
-}
-
-/**
- * Plunk wants the sender split: a bare address, and the display name beside it.
- * Accepts either form in ADS_FROM_EMAIL so the variable doesn't have to change
- * shape depending on who is delivering the mail.
- */
-function splitFrom(): { address: string; name?: string } {
-  const raw = fromAddress().trim();
-  const bracketed = raw.match(/^(.*)<([^>]+)>\s*$/);
-  if (bracketed) {
-    const name = bracketed[1].trim().replace(/^"|"$/g, "");
-    return { address: bracketed[2].trim(), name: name || undefined };
-  }
-  return { address: raw };
-}
-
-export function replyToAddress(): string | undefined {
-  return process.env.ADS_REPLY_TO || undefined;
+  return `${base}/emails`;
 }
 
 /**
  * The API key, with surrounding whitespace removed.
  *
  * A value pasted into a dashboard field routinely arrives with a trailing
- * newline, and `Bearer sk_x…\n` is refused with the same "incorrect token"
- * message as a genuinely wrong key — which sends you regenerating keys that
- * were never the problem. Everything else in this folder trims its secrets;
- * this had not been, and it cost an evening.
+ * newline, and `Bearer re_x...\n` is refused with the same "invalid key"
+ * message as a genuinely wrong one — which sends you regenerating keys that
+ * were never the problem. Learned on the way here; kept.
  */
 function apiKey(): string {
-  return (process.env.PLUNK_API_KEY ?? "").trim();
+  return (process.env.RESEND_API_KEY ?? "").trim();
+}
+
+/**
+ * The sender, in the "Name <address>" form Resend takes whole. The address must
+ * be on a domain verified in the Resend account, or the send is refused.
+ */
+export function fromAddress(): string {
+  return process.env.ADS_FROM_EMAIL || "Smart Scale <info@smartscaleagent.com>";
+}
+
+export function replyToAddress(): string | undefined {
+  return process.env.ADS_REPLY_TO || undefined;
 }
 
 export function isEmailConfigured(): boolean {
@@ -64,12 +51,12 @@ export function isEmailConfigured(): boolean {
  * A description of the key this deployment is holding, safe to show on screen.
  *
  * Length, the ends, and whether it arrived with whitespace — enough to tell a
- * truncated paste from a mangled one from a wrong-project key, and not enough
- * to be worth anything to anyone reading over a shoulder. Shown only when a
+ * truncated paste from a mangled one from a wrong-account key, and not enough
+ * to be worth anything to someone reading over a shoulder. Shown only when a
  * send is refused, because that is the only moment it helps.
  */
 export function keyFingerprint(): string {
-  const raw = process.env.PLUNK_API_KEY ?? "";
+  const raw = process.env.RESEND_API_KEY ?? "";
   if (!raw) return "no key set";
 
   const key = raw.trim();
@@ -88,35 +75,25 @@ export function keyFingerprint(): string {
 export type EmailResult = {
   ok: boolean;
   error?: string;
-  /** Whatever the provider gave back to identify the send, for cross-checking. */
+  /** Resend's id for the message, for cross-checking against its own log. */
   detail?: string;
 };
 
 /**
- * What Plunk actually said.
+ * What Resend actually said.
  *
- * A 200 is not the same as a send. Providers routinely answer 200 with a body
- * saying the request was understood and refused, so the body is read on every
- * response and a missing or false `success` is treated as a failure. Reporting
- * a send that did not happen is the worst outcome available here — it sends you
- * looking at DNS and spam folders for an email that was never accepted.
+ * A 2xx is not on its own proof of a send, and the body is where the reason
+ * lives when something is refused. Reporting a send that did not happen is the
+ * worst outcome available here — it sends you looking at DNS and spam folders
+ * for an email that was never accepted.
  */
-type PlunkResponse = {
-  success?: boolean;
+type ResendResponse = {
+  id?: string;
+  name?: string;
   message?: string;
-  error?: string;
-  emails?: { contact?: { email?: string }; email?: string }[];
+  statusCode?: number;
 };
 
-/**
- * Sends one message through Plunk.
- *
- * `text` is accepted and not sent: Plunk's transactional endpoint takes a
- * single HTML body. The templates still build a plain-text part because it
- * costs nothing, it is the version a person can actually read back in a log,
- * and it means the provider underneath can change again without rewriting
- * every email in this file.
- */
 export async function sendEmail(message: {
   to: string;
   subject: string;
@@ -124,68 +101,53 @@ export async function sendEmail(message: {
   text: string;
 }): Promise<EmailResult> {
   const key = apiKey();
-  if (!key) return { ok: false, error: "PLUNK_API_KEY is not set" };
-
-  const sender = splitFrom();
+  if (!key) return { ok: false, error: "RESEND_API_KEY is not set" };
 
   try {
-    const res = await fetch(plunkEndpoint(), {
+    const res = await fetch(resendEndpoint(), {
       method: "POST",
       headers: {
         Authorization: `Bearer ${key}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        to: message.to,
+        from: fromAddress(),
+        to: [message.to],
+        reply_to: replyToAddress(),
         subject: message.subject,
-        body: message.html,
-        from: sender.address,
-        name: sender.name,
-        reply: replyToAddress(),
-        // These are contract and renewal notices to people we already do
-        // business with. Adding them to a marketing contact list as a side
-        // effect of being sent one is not something they agreed to.
-        subscribed: false,
+        // Resend takes both parts, so the plain-text version is sent rather
+        // than merely built — a small win back from the last provider.
+        html: message.html,
+        text: message.text,
       }),
       cache: "no-store",
       signal: AbortSignal.timeout(8000),
     });
 
     const raw = await res.text();
-    let parsed: PlunkResponse | null = null;
+    let parsed: ResendResponse | null = null;
     try {
-      parsed = raw ? (JSON.parse(raw) as PlunkResponse) : null;
+      parsed = raw ? (JSON.parse(raw) as ResendResponse) : null;
     } catch {
       // Not JSON. The raw text is still the most useful thing to report.
     }
 
-    const said = parsed?.message || parsed?.error || raw.slice(0, 200);
+    const said = parsed?.message || parsed?.name || raw.slice(0, 200);
 
     if (!res.ok) {
-      return { ok: false, error: `Plunk ${res.status}: ${said || "no detail given"}` };
+      return { ok: false, error: `Resend ${res.status}: ${said || "no detail given"}` };
     }
 
-    // A 200 carrying success:false is a refusal wearing a success code.
-    if (parsed && parsed.success === false) {
+    // Accepted means an id came back. Anything else is a response we cannot
+    // read, and a response we cannot read is not evidence that it sent.
+    if (!parsed?.id) {
       return {
         ok: false,
-        error: `Plunk accepted the request but refused the send: ${said || "no reason given"}`,
+        error: `Resend answered ${res.status} without a message id: ${raw.slice(0, 200) || "(empty)"}`,
       };
     }
 
-    // No recognisable body at all means we cannot say it sent, so we don't.
-    if (!parsed) {
-      return {
-        ok: false,
-        error: `Plunk answered ${res.status} with nothing we could read: ${raw.slice(0, 200) || "(empty)"}`,
-      };
-    }
-
-    const delivered = parsed.emails?.length ?? 0;
-    return {
-      ok: true,
-      detail: delivered > 0 ? `${delivered} queued by Plunk` : "accepted by Plunk",
-    };
+    return { ok: true, detail: `Resend id ${parsed.id}` };
   } catch (err) {
     return {
       ok: false,
@@ -397,7 +359,7 @@ export type TestKind = "delivery" | "renewal";
  * other end of it.
  *
  * Two kinds, because they fail differently. "delivery" is the smallest possible
- * message and answers "did Plunk accept it and did DNS let it land?".
+ * message and answers "did Resend accept it and did DNS let it land?".
  * "renewal" is the actual template with invented figures, and answers "does it
  * look right, is the reply address mine, do the buttons render?".
  *
@@ -466,7 +428,7 @@ export function testEmail(kind: TestKind) {
   ${banner}
   <h1 style="margin:0 0 16px;font-size:24px;line-height:1.3;font-weight:600;">Email is working.</h1>
   <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">
-    If you are reading this, Plunk accepted the message and your domain records let it land. Renewal notices and monthly reports can go out.
+    If you are reading this, Resend accepted the message and your domain records let it land. Renewal notices and monthly reports can go out.
   </p>
   <div style="background:#ffffff;border:1px solid rgba(0,0,0,0.06);border-radius:14px;padding:18px 20px;font-size:14px;line-height:1.7;">
     <div><span style="color:${MUTED};">Sent from</span> <strong>${from}</strong></div>
@@ -482,7 +444,7 @@ export function testEmail(kind: TestKind) {
 
 EMAIL IS WORKING.
 
-If you are reading this, Plunk accepted the message and your domain records let it land.
+If you are reading this, Resend accepted the message and your domain records let it land.
 
   Sent from:      ${from}
   Replies go to:  ${replyTo || "the sending address"}

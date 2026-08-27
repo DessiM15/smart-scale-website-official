@@ -1,7 +1,7 @@
 /**
  * File storage, through the Vercel Blob SDK.
  *
- * This folder calls Upstash, Twilio and Plunk over plain `fetch` on purpose —
+ * This folder calls Upstash, Twilio and Resend over plain `fetch` on purpose —
  * one endpoint, one static key, no dependency worth carrying. Blob is the
  * exception, and it took a while to see why: a connected store authenticates
  * with a short-lived OIDC token that Vercel rotates (`BLOB_STORE_ID` +

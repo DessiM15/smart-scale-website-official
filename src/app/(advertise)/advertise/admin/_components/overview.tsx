@@ -299,7 +299,7 @@ function RenewalWatch({
           title={
             emailArmed
               ? "Advertisers get a renewal email at 30, 7 and 0 days"
-              : "Set PLUNK_API_KEY and ADS_LINK_SECRET to email advertisers"
+              : "Set RESEND_API_KEY and ADS_LINK_SECRET to email advertisers"
           }
         >
           {emailArmed ? "Emailing advertisers" : "Advertiser email off"}

@@ -456,7 +456,7 @@ export async function sendTestEmailAction(data: FormData) {
   }
 
   // Carry back what the provider said, so a send that claims to have worked can
-  // be matched against Plunk's own log rather than taken on trust.
+  // be matched against Resend's own log rather than taken on trust.
   back({ msg: "testSent", detail: to, sent: result.detail ?? "" }, TEST_ANCHOR);
 }
 
