@@ -29,6 +29,7 @@ const notices = (
   reportEdited: "Report wording updated.",
   testSent: `Test sent to ${detail}${sent ? ` — ${sent}` : ""}. If it doesn't arrive within a minute: check spam, then open Plunk's own log and find that address. Plunk accepting it and Plunk delivering it are two different things, and its log is the only place that tells them apart.`,
   backupDone: `Backed up — ${detail}.`,
+  venueSaved: "Saved. It applies to statements from here on — never to one already issued.",
   alerts:
     Number(checked ?? 0) === 0
       ? "Renewal check ran — nothing due today."
@@ -56,6 +57,7 @@ const errors = (clash?: string, detail?: string): Record<string, string> => ({
   testsend: `${detail} — most often the sending domain isn't verified yet, the from-address isn't on the verified domain, or the key is the public pk_ one instead of the secret sk_ key.`,
   backupoff: "No file storage connected, so there's nowhere to put a backup.",
   backupfailed: detail ?? "The backup didn't write.",
+  sharepercent: "The share has to be a number between 0 and 100. Leave it blank to clear the split.",
   dealnote: "Say why this client isn't on list price — future you will want to know.",
   dealnumber: `"${detail}" isn't a number I can use. Enter the amount in dollars, like 275.`,
   dealmonths: "A custom term has to be at least one whole month.",

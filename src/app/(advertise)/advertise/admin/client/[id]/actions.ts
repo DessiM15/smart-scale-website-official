@@ -25,6 +25,11 @@ import {
   voidAgreement,
 } from "@/lib/ads/agreements";
 import { deleteDocument, uploadDocument } from "@/lib/ads/documents";
+import {
+  deletePayment,
+  recordPayment,
+  type PaymentMethod,
+} from "@/lib/ads/payments";
 import { agreementEmail, isEmailConfigured, sendEmail } from "@/lib/ads/email";
 import { agreementUrl } from "@/lib/ads/links";
 
@@ -351,4 +356,44 @@ export async function deleteDocumentAction(data: FormData) {
   if (!(await deleteDocument(documentId))) back(id, { err: "save" });
   revalidatePath(profilePath(id));
   back(id, { msg: "documentRemoved" });
+}
+
+/* -------------------------------- payments -------------------------------- */
+
+/**
+ * Records money that arrived. Not an invoice — Stripe sends those — just the
+ * fact of a payment, which is what the venue statement is calculated from.
+ */
+export async function recordPaymentAction(data: FormData) {
+  await requireAdmin();
+  const id = field(data, "id");
+  const advertiser = id ? await getAdvertiser(id) : null;
+  if (!advertiser) back(id, { err: "missing" });
+
+  const amount = Number(field(data, "amount").replace(/[$,\s]/g, ""));
+  const receivedOn = field(data, "receivedOn");
+
+  const result = await recordPayment({
+    advertiserId: id,
+    business: advertiser.business,
+    amount,
+    receivedOn,
+    method: (field(data, "method") || "stripe") as PaymentMethod,
+    reference: field(data, "reference"),
+    note: field(data, "note"),
+  });
+
+  if (!result.ok) back(id, { err: "payment", detail: result.error ?? "" });
+  revalidatePath(profilePath(id));
+  back(id, { msg: "paymentRecorded" });
+}
+
+export async function deletePaymentAction(data: FormData) {
+  await requireAdmin();
+  const id = field(data, "id");
+  const paymentId = field(data, "paymentId");
+  if (!id || !paymentId) back(id, { err: "missing" });
+  if (!(await deletePayment(paymentId))) back(id, { err: "save" });
+  revalidatePath(profilePath(id));
+  back(id, { msg: "paymentRemoved" });
 }

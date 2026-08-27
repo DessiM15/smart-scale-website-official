@@ -9,6 +9,7 @@ export const TAB_IDS = [
   "reports",
   "qr",
   "prospects",
+  "venue",
   "setup",
 ] as const;
 

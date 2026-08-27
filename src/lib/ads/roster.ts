@@ -80,6 +80,14 @@ export type Advertiser = {
   customMonthly?: number | null;
   customSetup?: number | null;
   customMonths?: number | null;
+  /**
+   * One price for the whole term, paid once — the shape a promotional deal
+   * usually takes. When set it is the complete term value and outranks the
+   * monthly and setup overrides, which are the other way of saying the same
+   * thing. The monthly figure is then derived from it purely so the roster has
+   * a run-rate to add up.
+   */
+  customTotal?: number | null;
   /** Why they aren't on list price. Required whenever an override is set. */
   dealNote?: string;
   /**
@@ -191,6 +199,8 @@ export type Terms = {
   termValue: number;
   /** Whole-term value at list price, for comparison. */
   listTermValue: number;
+  /** The term was priced as one figure, not a monthly rate. */
+  soldAsTotal: boolean;
 };
 
 /**
@@ -200,12 +210,19 @@ export type Terms = {
 export function termsFor(a: Advertiser): Terms {
   const plan = PLANS[a.plan] ?? PLANS.standard;
 
-  const monthly = override(a.customMonthly) ?? plan.monthly;
-  const setup = override(a.customSetup) ?? plan.setup;
   // A term of zero months would make the end date the start date, so a custom
   // length has to be at least one whole month.
   const customMonths = override(a.customMonths);
   const months = customMonths && customMonths >= 1 ? Math.round(customMonths) : plan.months;
+
+  const total = override(a.customTotal);
+
+  // One price for the whole term is the plainest way to state a promotional
+  // deal, so it wins outright. The monthly figure below it is derived, and
+  // exists only so a roster of mixed deals still adds up to a run-rate.
+  const monthly = total !== null ? total / months : (override(a.customMonthly) ?? plan.monthly);
+  const setup = total !== null ? 0 : (override(a.customSetup) ?? plan.setup);
+  const termValue = total !== null ? total : monthly * months + setup;
 
   return {
     monthly,
@@ -215,10 +232,15 @@ export function termsFor(a: Advertiser): Terms {
     listSetup: plan.setup,
     listMonths: plan.months,
     isCustom:
-      monthly !== plan.monthly || setup !== plan.setup || months !== plan.months,
+      total !== null ||
+      monthly !== plan.monthly ||
+      setup !== plan.setup ||
+      months !== plan.months,
     monthlyDiscount: plan.monthly - monthly,
-    termValue: monthly * months + setup,
+    termValue,
     listTermValue: plan.monthly * plan.months + plan.setup,
+    /** True when the term was sold as a single price rather than a rate. */
+    soldAsTotal: total !== null,
   };
 }
 
