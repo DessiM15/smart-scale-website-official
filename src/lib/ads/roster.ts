@@ -120,8 +120,17 @@ export type Prospect = {
   email: string;
   phone: string;
   category: string;
-  /** Where they came from — walk-in, referral, QR scan, cold call. */
+  /** Where they came from: walk-in, referral, QR scan, cold call. */
   source: string;
+  /**
+   * Which piece of print or which drop sent them, from ?src= on the advertise
+   * page. Kept apart from `source` because that field is what the tracker
+   * filters website leads by, and overloading it would quietly break the
+   * new-leads list on the overview.
+   */
+  campaign?: string;
+  /** What they said they could spend, in their own words or a chosen band. */
+  budget?: string;
   status: ProspectStatus;
   notes: string;
   addedAt: string;

@@ -46,7 +46,15 @@ function ProspectList({ prospects }: { prospects: Prospect[] }) {
                 <Pill tone={status.tone}>{status.label}</Pill>
               </p>
               <p className="text-xs text-white/35 mt-1">
-                {[p.category, p.contactName, p.phone, p.email, p.source]
+                {[
+                  p.category,
+                  p.contactName,
+                  p.phone,
+                  p.email,
+                  p.budget && `budget ${p.budget}`,
+                  p.campaign && `via ${p.campaign}`,
+                  p.source,
+                ]
                   .filter(Boolean)
                   .join(" · ") || "no details"}
               </p>

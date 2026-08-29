@@ -36,6 +36,10 @@ export type LeadInput = {
   hasCreative: string;
   hasLogos: string;
   message: string;
+  /** The band they picked on the form, or blank if they skipped it. */
+  budget: string;
+  /** Which flyer or drop sent them, from ?src= on the page they filled in. */
+  campaign: string;
   /** Hidden field. A human never fills this in; a bot fills in everything. */
   honeypot: string;
 };
@@ -67,6 +71,8 @@ export function readLead(form: {
     hasCreative: clean(form.get("has_creative"), 40),
     hasLogos: clean(form.get("has_logos"), 40),
     message: clean(form.get("message"), 1200),
+    budget: clean(form.get("budget"), 60),
+    campaign: clean(form.get("src"), 40),
     honeypot: clean(form.get("company_website"), 200),
   };
 }
@@ -112,12 +118,14 @@ function matchExisting(
 
 function noteFor(lead: LeadInput, stampedAt: string): string {
   const parts = [
+    lead.budget && `Budget: ${lead.budget}`,
     lead.packageInterest && `Wants: ${lead.packageInterest}`,
+    lead.campaign && `Came from: ${lead.campaign}`,
     lead.hasCreative && `Creative: ${lead.hasCreative}`,
     lead.hasLogos && `Logos: ${lead.hasLogos}`,
     lead.message && `"${lead.message}"`,
   ].filter(Boolean);
-  return `${stampedAt} — from the advertise page. ${parts.join(" · ")}`.trim();
+  return `${stampedAt}, from the advertise page. ${parts.join(" · ")}`.trim();
 }
 
 /**
@@ -153,6 +161,10 @@ export async function recordLead(
         phone: lead.phone,
         category: lead.industry || existing?.category || "",
         source: "Advertise page",
+        // Kept even when this submission didn't carry one, so a client who
+        // first arrived through a flyer keeps that attribution on a repeat.
+        campaign: lead.campaign || existing?.campaign,
+        budget: lead.budget || existing?.budget,
         // Never downgrade one you've already worked — a prospect you marked
         // hot is still hot when they fill the form in a second time. Somebody
         // you'd passed on coming back is the exception: that is news, and it
@@ -180,9 +192,9 @@ export async function recordLead(
     await sendTeamSms(
       `Mex Taco ads · NEW LEAD${existing ? " (repeat)" : ""}: ${
         lead.business || lead.name
-      }. ${category}. ${lead.phone || lead.email}. Wants ${
-        lead.packageInterest || "not sure"
-      }. smartscaleagent.com/advertise/admin?tab=prospects`,
+      }. ${category}. ${lead.phone || lead.email}. Budget ${
+        lead.budget || "not given"
+      }${lead.campaign ? `. From ${lead.campaign}` : ""}. smartscaleagent.com/advertise/admin?tab=prospects`,
     );
 
     return { ok: true };
