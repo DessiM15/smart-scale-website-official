@@ -5,7 +5,7 @@ import RedSeparator from "@/components/ui/RedSeparator";
 export const metadata: Metadata = {
   title: { absolute: "Our Work | Website Design for Houston-Area Businesses" },
   description:
-    "Websites we've built for local businesses across Katy, Cypress, and Houston \u2014 restaurants, barbershops, estheticians, and more.",
+    "Websites we've built for local businesses across Katy, Cypress, and Houston: restaurants, barbershops, estheticians, and more.",
   alternates: { canonical: "/portfolio" },
 };
 
@@ -19,7 +19,7 @@ export default function PortfolioPage() {
             Websites We&apos;ve Built for Local Businesses
           </h1>
           <p className="text-lg sm:text-xl text-black/50 max-w-2xl mx-auto hero-subheadline">
-            Real websites for real businesses across the Houston metro \u2014
+            Real websites for real businesses across the Houston metro:
             restaurants, barbershops, estheticians, and industrial suppliers.
           </p>
         </div>
