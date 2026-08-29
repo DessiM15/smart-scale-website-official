@@ -4,28 +4,47 @@
  */
 
 import {
+  deleteReportAction,
   editReportAction,
   generateReportsAction,
+  recalculateReportAction,
   sendReportAction,
   skipReportAction,
 } from "../actions";
 import { isNarrativeConfigured } from "@/lib/ads/narrative";
-import type { MonthlyReport } from "@/lib/ads/reports";
-import { formatDate } from "@/lib/ads/roster";
+import { runInMonth } from "@/lib/ads/report-data";
+import { isReportStale, type MonthlyReport } from "@/lib/ads/reports";
+import { formatDate, type AdvertiserView } from "@/lib/ads/roster";
 import {
   Card,
   Empty,
+  Note,
   Pill,
   btnPrimary,
   btnSolid,
   inputClass,
+  linkAction,
   linkQuiet,
+  stamp,
 } from "./ui";
 
-function ReportCard({ report }: { report: MonthlyReport }) {
+function ReportCard({
+  report,
+  advertiser,
+}: {
+  report: MonthlyReport;
+  advertiser?: AdvertiserView;
+}) {
   const f = report.facts;
   const sent = report.status === "sent";
   const skipped = report.status === "skipped";
+
+  // A saved report keeps the figures it was written with. That is right for one
+  // already sent and wrong for one still waiting, so a draft is checked against
+  // the roster every time it is looked at. Only a draft: a skipped report is one
+  // you have already decided not to send, and flagging it is noise.
+  const stale = report.status === "draft" && isReportStale(report, advertiser);
+  const expected = stale && advertiser ? runInMonth(advertiser, report.month) : null;
 
   return (
     <li className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5 sm:p-6">
@@ -45,10 +64,55 @@ function ReportCard({ report }: { report: MonthlyReport }) {
               : ""}
           </p>
         </div>
-        <Pill tone={sent ? "ok" : skipped ? "neutral" : "warn"}>
-          {sent ? "Sent" : skipped ? "Skipped" : "Awaiting review"}
+        <Pill
+          tone={stale ? "bad" : sent ? "ok" : skipped ? "neutral" : "warn"}
+          title={
+            stale
+              ? "The figures saved in this report no longer match the roster."
+              : undefined
+          }
+        >
+          {stale
+            ? "Figures out of date"
+            : sent
+              ? "Sent"
+              : skipped
+                ? "Skipped"
+                : "Awaiting review"}
         </Pill>
       </div>
+
+      {expected && (
+        <div className="mt-5">
+          <Note tone="bad">
+            <p className="text-sm font-semibold text-white">
+              Don&rsquo;t send this — the figures below are out of date.
+            </p>
+            <p className="mt-1.5 text-sm text-white/60 leading-relaxed">
+              They were worked out on {stamp(report.createdAt)} and say the ad
+              played {f.plays.toLocaleString()} times across{" "}
+              {f.openDays.toLocaleString()} opening{" "}
+              {f.openDays === 1 ? "day" : "days"}. On the roster as it stands
+              now, {report.business} was on screen for{" "}
+              {expected.openDays.toLocaleString()}{" "}
+              {expected.openDays === 1 ? "day" : "days"} that month, which is{" "}
+              {expected.plays.toLocaleString()} plays. Recalculating rebuilds
+              every figure from the roster and the scans recorded since.
+            </p>
+            <form action={recalculateReportAction} className="mt-3">
+              <input
+                type="hidden"
+                name="advertiserId"
+                value={report.advertiserId}
+              />
+              <input type="hidden" name="month" value={report.month} />
+              <button type="submit" className={btnSolid}>
+                Recalculate figures
+              </button>
+            </form>
+          </Note>
+        </div>
+      )}
 
       <div className="flex flex-wrap items-baseline gap-6 mt-5">
         <span>
@@ -138,11 +202,31 @@ function ReportCard({ report }: { report: MonthlyReport }) {
               Approve &amp; send
             </button>
           </form>
+          {!stale && (
+            <form action={recalculateReportAction}>
+              <input
+                type="hidden"
+                name="advertiserId"
+                value={report.advertiserId}
+              />
+              <input type="hidden" name="month" value={report.month} />
+              <button type="submit" className={linkQuiet}>
+                Recalculate figures
+              </button>
+            </form>
+          )}
           <form action={skipReportAction}>
             <input type="hidden" name="advertiserId" value={report.advertiserId} />
             <input type="hidden" name="month" value={report.month} />
             <button type="submit" className={linkQuiet}>
               Skip this one
+            </button>
+          </form>
+          <form action={deleteReportAction}>
+            <input type="hidden" name="advertiserId" value={report.advertiserId} />
+            <input type="hidden" name="month" value={report.month} />
+            <button type="submit" className={linkAction}>
+              Delete draft
             </button>
           </form>
           <span className="text-xs text-white/30">
@@ -154,10 +238,17 @@ function ReportCard({ report }: { report: MonthlyReport }) {
   );
 }
 
-export function ReportsTab({ reports }: { reports: MonthlyReport[] }) {
+export function ReportsTab({
+  reports,
+  advertisers,
+}: {
+  reports: MonthlyReport[];
+  advertisers: AdvertiserView[];
+}) {
   const waiting = reports.filter((r) => r.status === "draft");
   const rest = reports.filter((r) => r.status !== "draft").slice(0, 6);
   const aiOn = isNarrativeConfigured();
+  const byId = new Map(advertisers.map((a) => [a.id, a]));
 
   return (
     <Card
@@ -189,7 +280,11 @@ export function ReportsTab({ reports }: { reports: MonthlyReport[] }) {
           {waiting.length > 0 && (
             <ul className="space-y-4">
               {waiting.map((r) => (
-                <ReportCard key={`${r.advertiserId}-${r.month}`} report={r} />
+                <ReportCard
+                  key={`${r.advertiserId}-${r.month}`}
+                  report={r}
+                  advertiser={byId.get(r.advertiserId)}
+                />
               ))}
             </ul>
           )}
@@ -200,7 +295,11 @@ export function ReportsTab({ reports }: { reports: MonthlyReport[] }) {
               </summary>
               <ul className="space-y-4 mt-4">
                 {rest.map((r) => (
-                  <ReportCard key={`${r.advertiserId}-${r.month}`} report={r} />
+                  <ReportCard
+                    key={`${r.advertiserId}-${r.month}`}
+                    report={r}
+                    advertiser={byId.get(r.advertiserId)}
+                  />
                 ))}
               </ul>
             </details>

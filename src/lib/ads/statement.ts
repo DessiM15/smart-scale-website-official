@@ -9,11 +9,11 @@
  * that quietly rounds is one nobody can check.
  */
 
-import { listAdvertisers, type AdvertiserView } from "./roster";
+import { daysBetween, listAdvertisers, today, type AdvertiserView } from "./roster";
 import { paymentsInMonth, sumPayments, type Payment } from "./payments";
 import { getSettings, venueShareOf, type Settings } from "./settings";
 import { listLinks, linksForAdvertiser } from "./link-store";
-import { getCombinedStats } from "./scan-store";
+import { getCombinedStats, localStamp } from "./scan-store";
 import { SELLABLE_SLOTS } from "./roster";
 
 /** Plays per open day, from the rotation: 18 slides x 10s = a 3-minute loop. */
@@ -83,9 +83,15 @@ export function previousMonth(month: string): string {
   return d.toISOString().slice(0, 7);
 }
 
-/** The month before today, which is the one you would actually be settling. */
-export function lastCompleteMonth(today = new Date()): string {
-  return previousMonth(today.toISOString().slice(0, 7));
+/**
+ * The month before today, which is the one you would actually be settling.
+ *
+ * Read off the restaurant's wall clock rather than UTC: on the evening of the
+ * 31st, UTC has already rolled into the next month and would offer to settle a
+ * month that has not finished.
+ */
+export function lastCompleteMonth(at = new Date()): string {
+  return previousMonth(localStamp(at).date.slice(0, 7));
 }
 
 function monthBounds(month: string): { from: string; to: string; days: number } {
@@ -98,13 +104,24 @@ function monthBounds(month: string): { from: string; to: string; days: number } 
   };
 }
 
-/** Mondays are closed; Sunday runs shorter hours than the rest of the week. */
-function playsForMonth(month: string): { plays: number; openDays: number } {
+/**
+ * Mondays are closed; Sunday runs shorter hours than the rest of the week.
+ *
+ * Stops at today, because a statement opened part-way through a month would
+ * otherwise count days that have not happened — and this is a document about
+ * what was delivered, handed to the person owed money for it.
+ */
+function playsForMonth(
+  month: string,
+  asOf = today(),
+): { plays: number; openDays: number } {
   const [y, m] = month.split("-").map(Number);
   const { days } = monthBounds(month);
   let plays = 0;
   let openDays = 0;
   for (let day = 1; day <= days; day += 1) {
+    const date = `${month}-${String(day).padStart(2, "0")}`;
+    if (date > asOf) break;
     const weekday = new Date(Date.UTC(y, m - 1, day)).getUTCDay();
     if (weekday === 1) continue; // closed Mondays
     openDays += 1;
@@ -135,7 +152,17 @@ export async function buildStatement(month: string): Promise<Statement> {
   // Scans need a window long enough to cover this month and the one before it,
   // so the comparison figure comes from the same series rather than a second
   // query with different edges.
-  const daysBack = 75;
+  //
+  // Counted back from today, not from the month: a fixed 75 days reaches last
+  // month and nothing older, so re-opening a statement from the spring reported
+  // every advertiser as having had no scans at all — a plausible-looking zero,
+  // which is the worst kind of wrong number on a document about money. Capped
+  // at 400 days because the daily counters expire there and beyond it the
+  // honest answer is that we no longer hold the data.
+  const daysBack = Math.min(
+    400,
+    Math.max(75, daysBetween(prevBounds.from, today()) + 5),
+  );
 
   const lines: StatementLine[] = await Promise.all(
     advertisers.map(async (view) => {

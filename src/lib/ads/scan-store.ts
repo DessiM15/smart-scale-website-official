@@ -7,7 +7,7 @@
  */
 
 import { createHash } from "crypto";
-import { redisPipeline, isRedisConfigured } from "./redis";
+import { redisPipeline, redisWrite, isRedisConfigured } from "./redis";
 
 /** Restaurant local time. Bucketing days in UTC would split the lunch rush. */
 export const TZ = "America/Chicago";
@@ -122,6 +122,93 @@ export async function recordScan(input: ScanInput): Promise<void> {
   ]);
 }
 
+/* -------------------------------- test scans ------------------------------- */
+
+/**
+ * A line drawn under everything a code had counted at one moment.
+ *
+ * Setting up a client means scanning their own QR a few times to check the
+ * artwork and the destination, and those scans are indistinguishable from a
+ * guest's: same redirect, same counter. Left alone they sit in the client's
+ * first report and in their whole-term totals for good, which is a small lie
+ * told to the one person paying to be told the truth.
+ *
+ * Deleting them is not an option — the counters are the record, and a code that
+ * has been reset can never be audited. So the scans stay exactly where they
+ * are and a baseline is stored beside them; every read subtracts it. The raw
+ * figures remain recoverable, and clearing the baseline puts everything back.
+ *
+ * Stored per day rather than as a single number so that real scans on the same
+ * day as a test are still counted — a code is usually tested on the day it goes
+ * live, which is also the day it might first be scanned for real.
+ */
+export type TestBaseline = {
+  /** When the line was drawn. Recent events older than this are hidden too. */
+  at: string;
+  total: number;
+  unique: number;
+  days: Record<string, number>;
+  byHour: number[];
+  byWeekday: number[];
+  byDevice: Record<DeviceKind, number>;
+};
+
+const BASELINE_KEY = (code: string) => `${KEY}:testbase:${code}`;
+/** Wide enough to capture every day counter that still exists. */
+const BASELINE_WINDOW = 400;
+
+function parseBaseline(raw: unknown): TestBaseline | null {
+  try {
+    return raw ? (JSON.parse(String(raw)) as TestBaseline) : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function getTestBaseline(code: string): Promise<TestBaseline | null> {
+  const [raw] = await pipeline([["GET", BASELINE_KEY(code)]]);
+  return parseBaseline(raw);
+}
+
+/**
+ * Treat everything counted so far on this code as testing.
+ *
+ * Called again later it simply moves the line forward, which is what "these
+ * were tests" means the second time too.
+ */
+export async function markScansAsTests(
+  code: string,
+): Promise<{ ok: boolean; excluded: number }> {
+  // Read past any existing baseline: this draws a fresh line under everything.
+  const raw = await getCodeStats(code, BASELINE_WINDOW, { includeTests: true });
+
+  const days: Record<string, number> = {};
+  for (const point of raw.series) {
+    if (point.count > 0) days[point.date] = point.count;
+  }
+
+  const baseline: TestBaseline = {
+    at: new Date().toISOString(),
+    total: raw.total,
+    unique: raw.uniqueDevices,
+    days,
+    byHour: raw.byHour,
+    byWeekday: raw.byWeekday,
+    byDevice: raw.byDevice,
+  };
+
+  // No expiry: the line has to outlive the day counters it describes.
+  const ok = await redisWrite([
+    ["SET", BASELINE_KEY(code), JSON.stringify(baseline)],
+  ]);
+  return { ok, excluded: raw.total };
+}
+
+/** Put the excluded scans back — for a line drawn by mistake. */
+export async function clearTestBaseline(code: string): Promise<boolean> {
+  return redisWrite([["DEL", BASELINE_KEY(code)]]);
+}
+
 /* --------------------------------- reading -------------------------------- */
 
 export type ScanEvent = {
@@ -144,6 +231,10 @@ export type CodeStats = {
   byWeekday: number[];
   byDevice: Record<DeviceKind, number>;
   recent: ScanEvent[];
+  /** Scans held back as testing. Every figure above is already net of these. */
+  testScans: number;
+  /** Distinct phones behind those test scans, for correcting a union count. */
+  testUniqueDevices: number;
 };
 
 const toInt = (v: unknown): number => {
@@ -162,8 +253,28 @@ function hashToCounts(raw: unknown): Record<string, number> {
   return out;
 }
 
-/** Full stats for one code over the last `days` calendar days. */
-export async function getCodeStats(code: string, days: number): Promise<CodeStats> {
+/** Never let a subtraction produce a negative count. */
+const net = (value: number, taken = 0) => Math.max(0, value - taken);
+
+export type StatsOptions = {
+  /** Report the raw counters, ignoring any test baseline. */
+  includeTests?: boolean;
+};
+
+/**
+ * Full stats for one code over the last `days` calendar days.
+ *
+ * Net of scans marked as testing, unless asked otherwise. Doing the subtraction
+ * here rather than at each call site is deliberate: reports, the venue
+ * statement, renewal emails, the client profile and the registry all read
+ * through this one function, and a correction applied anywhere else would be a
+ * correction some of them quietly missed.
+ */
+export async function getCodeStats(
+  code: string,
+  days: number,
+  options: StatsOptions = {},
+): Promise<CodeStats> {
   const dates = recentDates(days);
   const results = await pipeline([
     ["GET", `${KEY}:total:${code}`],
@@ -173,11 +284,18 @@ export async function getCodeStats(code: string, days: number): Promise<CodeStat
     ["HGETALL", `${KEY}:device:${code}`],
     ["LRANGE", `${KEY}:recent:${code}`, 0, RECENT_LIMIT - 1],
     ["MGET", ...dates.map((d) => `${KEY}:day:${code}:${d}`)],
+    ["GET", BASELINE_KEY(code)],
   ]);
 
-  const [total, uniq, hourRaw, weekdayRaw, deviceRaw, recentRaw, dayRaw] = results;
+  const [total, uniq, hourRaw, weekdayRaw, deviceRaw, recentRaw, dayRaw, baseRaw] =
+    results;
+  const base = options.includeTests ? null : parseBaseline(baseRaw);
+
   const dayCounts = Array.isArray(dayRaw) ? dayRaw.map(toInt) : dates.map(() => 0);
-  const series = dates.map((date, i) => ({ date, count: dayCounts[i] ?? 0 }));
+  const series = dates.map((date, i) => ({
+    date,
+    count: net(dayCounts[i] ?? 0, base?.days[date]),
+  }));
 
   const hours = hashToCounts(hourRaw);
   const weekdays = hashToCounts(weekdayRaw);
@@ -191,32 +309,46 @@ export async function getCodeStats(code: string, days: number): Promise<CodeStat
         return null;
       }
     })
-    .filter((e): e is ScanEvent => e !== null);
+    .filter((e): e is ScanEvent => e !== null)
+    // Events carry their own timestamp, so the activity feed can be filtered
+    // exactly rather than by subtracting a count from it.
+    .filter((e) => !base || e.t >= base.at);
 
   return {
     code,
-    total: toInt(total),
-    uniqueDevices: toInt(uniq),
+    total: net(toInt(total), base?.total),
+    // A HyperLogLog cannot have members removed, so this is the one figure that
+    // is corrected by arithmetic rather than exactly. Subtracting the count at
+    // the baseline errs low when a test phone later scans for real, which is
+    // the safe direction for a number shown to a paying client.
+    uniqueDevices: net(toInt(uniq), base?.unique),
     series,
     windowTotal: series.reduce((sum, p) => sum + p.count, 0),
     last7: series.slice(-7).reduce((sum, p) => sum + p.count, 0),
     today: series[series.length - 1]?.count ?? 0,
-    byHour: Array.from({ length: 24 }, (_, h) => hours[String(h)] ?? 0),
-    byWeekday: Array.from({ length: 7 }, (_, d) => weekdays[String(d)] ?? 0),
+    byHour: Array.from({ length: 24 }, (_, h) =>
+      net(hours[String(h)] ?? 0, base?.byHour?.[h]),
+    ),
+    byWeekday: Array.from({ length: 7 }, (_, d) =>
+      net(weekdays[String(d)] ?? 0, base?.byWeekday?.[d]),
+    ),
     byDevice: {
-      ios: devices.ios ?? 0,
-      android: devices.android ?? 0,
-      other: devices.other ?? 0,
+      ios: net(devices.ios ?? 0, base?.byDevice?.ios),
+      android: net(devices.android ?? 0, base?.byDevice?.android),
+      other: net(devices.other ?? 0, base?.byDevice?.other),
     },
     recent,
+    testScans: base?.total ?? 0,
+    testUniqueDevices: base?.unique ?? 0,
   };
 }
 
 export async function getStatsForCodes(
   codes: string[],
   days: number,
+  options: StatsOptions = {},
 ): Promise<CodeStats[]> {
-  return Promise.all(codes.map((code) => getCodeStats(code, days)));
+  return Promise.all(codes.map((code) => getCodeStats(code, days, options)));
 }
 
 /**
@@ -234,6 +366,7 @@ export async function getStatsForCodes(
 export async function getCombinedStats(
   codes: string[],
   days: number,
+  options: StatsOptions = {},
 ): Promise<CodeStats> {
   const unique = [...new Set(codes.filter(Boolean))];
 
@@ -251,13 +384,15 @@ export async function getCombinedStats(
       byWeekday: Array.from({ length: 7 }, () => 0),
       byDevice: { ios: 0, android: 0, other: 0 },
       recent: [],
+      testScans: 0,
+      testUniqueDevices: 0,
     };
   }
 
-  if (unique.length === 1) return getCodeStats(unique[0], days);
+  if (unique.length === 1) return getCodeStats(unique[0], days, options);
 
   const [parts, unionRaw] = await Promise.all([
-    getStatsForCodes(unique, days),
+    getStatsForCodes(unique, days, options),
     pipeline([["PFCOUNT", ...unique.map((c) => `${KEY}:uniq:${c}`)]]),
   ]);
 
@@ -265,7 +400,14 @@ export async function getCombinedStats(
   const sumAt = (pick: (s: CodeStats) => number[], i: number) =>
     parts.reduce((sum, s) => sum + (pick(s)[i] ?? 0), 0);
 
-  const unionCount = toInt(unionRaw[0]);
+  // The union is a raw PFCOUNT across every code, so it still contains the
+  // testers that each part has already had removed. Subtracting each code's
+  // excluded phones double-counts a tester who scanned two of them, which errs
+  // low — the safe direction for a figure a client is shown.
+  const unionCount = net(
+    toInt(unionRaw[0]),
+    parts.reduce((sum, s) => sum + s.testUniqueDevices, 0),
+  );
 
   return {
     // Not a real code — this is several of them. Callers show the client's
@@ -294,5 +436,7 @@ export async function getCombinedStats(
       .flatMap((s) => s.recent)
       .sort((a, b) => b.t.localeCompare(a.t))
       .slice(0, RECENT_LIMIT),
+    testScans: parts.reduce((sum, s) => sum + s.testScans, 0),
+    testUniqueDevices: parts.reduce((sum, s) => sum + s.testUniqueDevices, 0),
   };
 }

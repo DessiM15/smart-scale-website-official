@@ -45,6 +45,22 @@ export function unsupportedNumbers(text: string, allowed: number[]): number[] {
 
 /** A correct, unexciting report. Always available, never wrong. */
 export function templateNarrative(facts: ReportFacts): Narrative {
+  const headline = `${facts.business} — ${facts.monthName}`;
+
+  // A month the ad was never on screen for has nothing to say about scans or
+  // plays. This is reachable — a report drafted under an older rule, or before
+  // a start date was corrected, recalculates to nothing — and the ordinary
+  // wording would then read "ran throughout July ... played 0 times", which is
+  // both self-contradicting and untrue.
+  if (facts.openDays === 0) {
+    return {
+      headline,
+      body: `Your ad wasn't on screen during ${facts.monthName}, so there's nothing to report for the month.`,
+      source: "template",
+    };
+  }
+
+  const days = `${facts.openDays} opening day${facts.openDays === 1 ? "" : "s"}`;
   const parts: string[] = [];
 
   if (facts.scans > 0) {
@@ -60,21 +76,15 @@ export function templateNarrative(facts: ReportFacts): Narrative {
     if (facts.bestHourWindow) {
       parts.push(`Scans cluster around ${facts.bestHourWindow}.`);
     }
+    parts.push(`It played ${facts.plays} times across ${days}.`);
   } else {
+    // Said in one sentence rather than two, so "opening days" isn't repeated.
     parts.push(
-      `Your ad ran throughout ${facts.monthName} but wasn't scanned during the month.`,
+      `Your ad played ${facts.plays} times across ${days} in ${facts.monthName}, and wasn't scanned during the month.`,
     );
   }
 
-  parts.push(
-    `It played ${facts.plays} times across ${facts.openDays} opening days.`,
-  );
-
-  return {
-    headline: `${facts.business} — ${facts.monthName}`,
-    body: parts.join(" "),
-    source: "template",
-  };
+  return { headline, body: parts.join(" "), source: "template" };
 }
 
 /* --------------------------------- Claude --------------------------------- */

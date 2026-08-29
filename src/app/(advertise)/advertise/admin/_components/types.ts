@@ -1,7 +1,10 @@
 import type { AdLinkRecord } from "@/lib/ads/link-store";
 
-/** A registry link with its all-time scan count attached. */
-export type LinkView = AdLinkRecord & { scans: number };
+/**
+ * A registry link with its all-time scan count attached, net of any scans
+ * marked as testing — and how many those were, so the registry can say so.
+ */
+export type LinkView = AdLinkRecord & { scans: number; testScans: number };
 
 export const TAB_IDS = [
   "overview",
