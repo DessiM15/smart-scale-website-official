@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState, useEffect, useLayoutEffect } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -32,15 +33,23 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [navTheme, setNavTheme] = useState<"light" | "dark">("light");
 
+  // This nav lives in the route-group layout, so it survives every in-site
+  // navigation. Both effects below therefore key off the pathname: measuring
+  // the page once on first mount left the nav describing a page the visitor
+  // had already left.
+  const pathname = usePathname();
+
   // Scroll detection
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 100);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
+    // A new route usually lands at the top, and landing there fires no scroll
+    // event, so re-sync rather than keeping the previous page's frosted bar.
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [pathname]);
 
   // Section-aware theme detection via ScrollTrigger
   useIsomorphicLayoutEffect(() => {
@@ -54,10 +63,22 @@ export default function Navbar() {
     // a crossing, so the section already sitting at the top of the viewport at
     // load never announces itself — which left the nav painting its default
     // light styling on top of a dark hero.
-    const list = Array.from(sections);
-    const passed = list.filter((s) => s.getBoundingClientRect().top <= 1);
-    const initial = passed[passed.length - 1] ?? list[0];
-    if (initial) setNavTheme(themeOf(initial));
+    const resolveCurrent = () => {
+      const list = Array.from(document.querySelectorAll("[data-theme]"));
+      const passed = list.filter((s) => s.getBoundingClientRect().top <= 1);
+      const initial = passed[passed.length - 1] ?? list[0];
+      if (initial) setNavTheme(themeOf(initial));
+    };
+
+    resolveCurrent();
+
+    // On a client-side navigation this effect runs while the window is still
+    // sitting at the *previous* page's offset — the scroll reset happens a
+    // beat later. Measuring only here picked whichever section of the new page
+    // happened to fall under that stale offset, which is how arriving at the
+    // dark homepage from a light page left the nav dark-on-dark. Measure again
+    // once the browser has settled on the real position.
+    const frame = requestAnimationFrame(resolveCurrent);
 
     sections.forEach((section) => {
       const theme = section.getAttribute("data-theme") as "light" | "dark";
@@ -73,10 +94,15 @@ export default function Navbar() {
       triggers.push(st);
     });
 
+    // Positions were measured against a page that may have just been swapped
+    // out from under them.
+    ScrollTrigger.refresh();
+
     return () => {
+      cancelAnimationFrame(frame);
       triggers.forEach((st) => st.kill());
     };
-  }, []);
+  }, [pathname]);
 
   // Derived theme colors
   const isLight = navTheme === "light";
