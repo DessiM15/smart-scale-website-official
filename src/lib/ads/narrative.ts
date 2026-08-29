@@ -137,6 +137,13 @@ function factSheet(facts: ReportFacts): string {
   if (facts.bestHourWindow) {
     lines.push(`Scans cluster around: ${facts.bestHourWindow}`);
   }
+  if (facts.topPlaces.length > 0) {
+    lines.push(
+      `Towns the scans came from, busiest first: ${facts.topPlaces
+        .map((p) => `${p.name} (${p.count})`)
+        .join(", ")}`,
+    );
+  }
   return lines.join("\n");
 }
 

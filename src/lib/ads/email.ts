@@ -375,6 +375,16 @@ export function reportEmail(facts: ReportFacts, narrative: Narrative) {
   if (facts.uniquePhones > 0) {
     detail.push(`${facts.uniquePhones} distinct phone${facts.uniquePhones === 1 ? " has" : "s have"} scanned your code since you started.`);
   }
+  // Where the diners came from is often the most useful line in the whole
+  // report to a business deciding where to spend next.
+  if (facts.topPlaces.length > 0) {
+    const places = facts.topPlaces.slice(0, 3).map((p) => p.name);
+    const list =
+      places.length === 1
+        ? places[0]
+        : `${places.slice(0, -1).join(", ")} and ${places[places.length - 1]}`;
+    detail.push(`Most of those scans came from ${list}.`);
+  }
 
   const html = `<!doctype html>
 <html><body style="margin:0;padding:0;background:${CREAM};">
