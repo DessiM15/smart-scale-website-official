@@ -319,19 +319,61 @@ html.lenis, html.lenis body {
   animation-direction: reverse;
 }
 
-/* Pause the whole row when the visitor hovers it, so a review can be read. */
-.review-marquee:hover .review-marquee-track {
+/*
+ * Pause the row when the visitor hovers it, tabs into it, or opens a review,
+ * so nothing drifts out from under the cursor while a card is being read or
+ * a link on it is being aimed at.
+ */
+.review-marquee:hover .review-marquee-track,
+.review-marquee:focus-within .review-marquee-track,
+.reviews-paused .review-marquee-track {
   animation-play-state: paused;
+}
+
+/*
+ * A moving card is only clickable because the pointer pauses it first. On
+ * touch there is no hover, so the marquee becomes a swipeable strip instead
+ * — same cards, same order, but a tap can actually land on one.
+ */
+@media (hover: none) {
+  .review-marquee {
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+
+  .review-marquee::-webkit-scrollbar {
+    display: none;
+  }
+
+  .review-marquee-track {
+    animation: none;
+    padding-left: 1rem;
+  }
+
+  .review-marquee-track:nth-child(2) {
+    display: none;
+  }
+
+  .review-marquee .review-card {
+    scroll-snap-align: center;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   /* Degrade to a plain scrollable strip rather than animating. */
   .review-marquee {
     overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .review-marquee::-webkit-scrollbar {
+    display: none;
   }
 
   .review-marquee-track {
     animation: none;
+    padding-left: 1rem;
   }
 
   /* The duplicate copy exists only to hide the animation seam. */

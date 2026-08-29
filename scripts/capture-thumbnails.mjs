@@ -1,6 +1,13 @@
 /**
  * Portfolio Thumbnail Capture Script
- * Usage: node scripts/capture-thumbnails.mjs
+ *
+ * Usage:
+ *   node scripts/capture-thumbnails.mjs                 // every project below
+ *   node scripts/capture-thumbnails.mjs fgt-solutions   // just these slugs
+ *
+ * Pass slugs when you have only added one or two projects. A full run
+ * re-shoots every live site, so an unrelated client mid-redesign would get a
+ * half-built page baked into their thumbnail.
  */
 
 import puppeteer from "puppeteer";
@@ -13,21 +20,27 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const PROJECTS = [
   { slug: "bloxify-landing", url: "https://bloxify.app" },
-  { slug: "lomeli-financial", url: "https://jorge-lomeli-financial.vercel.app" },
+  { slug: "lomeli-financial", url: "https://www.lomelifinancial.com" },
   { slug: "teachers-pension", url: "https://teachers-retirement-three.vercel.app" },
-  { slug: "gulf-coast-alloys", url: "https://gca-2-blond.vercel.app" },
+  { slug: "gulf-coast-alloys", url: "https://www.gulfcoastalloys.net" },
   { slug: "botmakers-crm", url: "https://botmakers-crm.vercel.app" },
   { slug: "botmakers-website", url: "https://botmakers.ai" },
-  { slug: "taylor-made-esthetics", url: "https://taylor-made-esthetics.vercel.app" },
+  { slug: "taylor-made-esthetics", url: "https://www.taylormadeesthetics.net" },
   { slug: "fight-my-repo", url: "https://fight-my-repo.vercel.app" },
   { slug: "repo911", url: "https://repo-911.vercel.app" },
   { slug: "valor-financial", url: "https://phil-valor-recruitment.vercel.app" },
   { slug: "apex-affinity-group", url: "https://apexpulsemarket.com" },
   { slug: "mex-taco-house", url: "https://mextacohouse.com" },
   { slug: "the-houston-barber", url: "https://barber-website-mock.vercel.app" },
+  { slug: "fgt-solutions", url: "https://www.fgtsco.com" },
+  { slug: "cheryl-baptiste", url: "https://www.cherylbaptiste.me" },
 ];
 
 const OUTPUT_DIR = path.resolve(__dirname, "../public/assets/portfolio");
+
+/** Slugs passed on the command line; empty means "all of them". */
+const ONLY = new Set(process.argv.slice(2));
+const wanted = (slug) => ONLY.size === 0 || ONLY.has(slug);
 
 /**
  * Portfolio images have descriptive filenames (e.g.
@@ -65,6 +78,11 @@ function outputPathFor(slug) {
 async function generatePlaceholder(slug, title) {
   const outputPath = outputPathFor(slug);
   if (!outputPath) return;
+  // Never paint a grey placeholder over a real screenshot that already exists.
+  if (fs.existsSync(outputPath)) {
+    console.log(`  [keep] ${slug} already has an image`);
+    return;
+  }
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 
   const safeName = title.replace(/&/g, "&amp;").replace(/</g, "&lt;");
@@ -115,11 +133,11 @@ async function main() {
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
-  // Generate placeholder for bloxify (no live URL)
-  await generatePlaceholder("bloxify", "Bloxify");
+  // Bloxify is a mobile app with no live URL to shoot.
+  if (wanted("bloxify")) await generatePlaceholder("bloxify", "Bloxify");
 
-  // Capture all projects
   for (const project of PROJECTS) {
+    if (!wanted(project.slug)) continue;
     await captureScreenshot(browser, project.slug, project.url);
   }
 

@@ -19,6 +19,11 @@ export interface Project {
   description: string;
   shortDescription: string;
   thumbnailImage: string;
+  /**
+   * The public URL visitors are sent to. Named for its history: it holds the
+   * client's own domain wherever one is live, and falls back to the
+   * vercel.app address only for concepts, mocks, and private apps.
+   */
   vercelUrl?: string;
   secondaryVercelUrl?: string;
   githubUrl: string;
@@ -161,7 +166,7 @@ export const projects: Project[] = [
       "A corporate website for a specialty metals and alloys distributor, showcasing their product catalog, capabilities, and industry expertise to B2B buyers.",
     shortDescription: "Industrial metals distributor corporate website.",
     thumbnailImage: "/assets/portfolio/gulf-coast-alloys/gulf-coast-alloys-industrial-website-design.webp",
-    vercelUrl: "https://gca-2-blond.vercel.app",
+    vercelUrl: "https://www.gulfcoastalloys.net",
     githubUrl: "https://github.com/DessiM15/GCA2",
     featured: true,
     featuredOrder: 3,
@@ -244,7 +249,7 @@ export const projects: Project[] = [
       "A premium website for an esthetics studio, featuring service menus, online booking integration, before/after galleries, and a design aesthetic that matches the luxury brand experience.",
     shortDescription: "Premium esthetics studio website with booking integration.",
     thumbnailImage: "/assets/portfolio/taylor-made-esthetics/taylor-made-esthetician-website-design.webp",
-    vercelUrl: "https://taylor-made-esthetics.vercel.app",
+    vercelUrl: "https://www.taylormadeesthetics.net",
     githubUrl: "https://github.com/DessiM15/taylor-made-esthetics",
     featured: true,
     featuredOrder: 4,
@@ -468,7 +473,7 @@ export const projects: Project[] = [
       "A professional landing page for a financial advisory group, designed to build trust and generate qualified leads from high-net-worth individuals seeking financial guidance.",
     shortDescription: "Professional financial advisory landing page.",
     thumbnailImage: "/assets/portfolio/lomeli-financial/lomeli-financial-landing-page-design.webp",
-    vercelUrl: "https://jorge-lomeli-financial.vercel.app",
+    vercelUrl: "https://www.lomelifinancial.com",
     githubUrl: "https://github.com/DessiM15/jorge-lomeli-financial",
     caseStudy: {
       challenge:
@@ -480,6 +485,62 @@ export const projects: Project[] = [
         "Streamlined lead capture with contact forms",
         "Mobile-responsive for on-the-go prospects",
         "SEO-optimized for local financial advisor searches",
+      ],
+    },
+  },
+  {
+    slug: "fgt-solutions",
+    businessType: "Leadership Advisory",
+    title: "FGT Solutions",
+    clientName: "Cheryl Baptiste",
+    serviceType: "Website",
+    industry: "Consulting / People Strategy",
+    techStack: ["Next.js", "React 19", "TypeScript", "Web3Forms", "Vercel"],
+    description:
+      "The first website for FGT Solutions, a people-strategy and leadership advisory practice. Built to give the firm a presence it never had, and to qualify leads before they reach the inbox: a five-question organizational diagnostic scores where a leader's problem actually sits, then hands them to the contact form already warmed up and self-identified.",
+    shortDescription: "First website plus a diagnostic that qualifies leads before the form.",
+    thumbnailImage: "/assets/portfolio/fgt-solutions/fgt-solutions-leadership-advisory-website-design.webp",
+    vercelUrl: "https://www.fgtsco.com",
+    githubUrl: "https://github.com/DessiM15/Cheryl-Baptiste-FGT",
+    caseStudy: {
+      challenge:
+        "An established advisory practice was running entirely on referrals with no website at all. Prospects had nowhere to size up the work before reaching out, and every inquiry that did arrive landed cold, with no sense of whether the organization was a fit or what was actually going wrong inside it.",
+      solution:
+        "Built a full site around the two reasons leaders actually call, then put a five-question organizational diagnostic in front of the contact form. Each answer is scored and reflected back in plain language, so by the time a visitor reaches the lead form they have named their own problem and self-selected. Submissions route straight to the inbox through Web3Forms, with no backend to maintain.",
+      results: [
+        "First web presence for a practice that had run on referrals alone",
+        "Five-question diagnostic that scores and qualifies a lead before the form",
+        "Answers reflected back in plain language, so prospects arrive already self-identified",
+        "Service, process, and first-30-days sections that answer the sales questions up front",
+        "Serverless lead delivery through Web3Forms, sitemap and robots configured for search",
+      ],
+    },
+  },
+  {
+    slug: "cheryl-baptiste",
+    businessType: "Personal Brand",
+    title: "Cheryl Baptiste",
+    clientName: "Cheryl Baptiste",
+    serviceType: "Website",
+    industry: "Personal Brand / Publishing",
+    techStack: ["Next.js", "React 19", "TypeScript", "GSAP", "Lenis", "Vercel"],
+    description:
+      "A personal brand and essay site for Cheryl Baptiste, founder of FGT Solutions, writing candidly about work, leadership, and the move from employee to entrepreneur. An editorial home for her Substack essays, press, and speaking, built as the personal counterpart to the firm's site.",
+    shortDescription: "Editorial personal brand site for a leadership writer and founder.",
+    thumbnailImage: "/assets/portfolio/cheryl-baptiste/cheryl-baptiste-personal-brand-website-design.webp",
+    vercelUrl: "https://www.cherylbaptiste.me",
+    githubUrl: "https://github.com/DessiM15/Cheryl-Baptiste-Personal",
+    caseStudy: {
+      challenge:
+        "Cheryl's writing lived on Substack and her advisory work lived at FGT Solutions, with nothing tying the two together. The personal voice that draws readers in had no home of its own, and no place to hold press, media, and speaking alongside the essays.",
+      solution:
+        "Designed an editorial site built around her writing: an essay index split into two lanes, work and journey, a media and press page, and a personal narrative section. Smooth scrolling through Lenis and GSAP-driven reveals give the pages a paced, magazine-like feel without pulling attention off the words.",
+      results: [
+        "A personal home that reads as editorial rather than corporate",
+        "Essay index split into two lanes so readers can follow the voice they came for",
+        "Media, press, and speaking collected in one place",
+        "GSAP reveals and Lenis smooth scroll, paced so the writing stays the focus",
+        "Sitemap, robots, and per-page metadata configured for search",
       ],
     },
   },
