@@ -144,6 +144,11 @@ export type ReportFacts = {
   bestDay: { date: string; label: string; count: number } | null;
   /** Busiest hour across the ad's whole life, as a readable window. */
   bestHourWindow: string | null;
+  /**
+   * The towns the scans came from, busiest first, across the ad's whole life.
+   * Empty for anyone whose scans predate location being counted.
+   */
+  topPlaces: { name: string; count: number }[];
   daysWithScans: number;
 
   /** Times the ad played during the month — rotation arithmetic, not measured. */
@@ -251,6 +256,7 @@ export async function buildReportFacts(
       : null,
     bestHourWindow:
       byHour.some((c) => c > 0) ? `${HOUR_LABEL(peakHour)}–${HOUR_LABEL(peakHour + 1)}` : null,
+    topPlaces: (stats?.byPlace ?? []).slice(0, 4),
     daysWithScans: inMonth.filter((p) => p.count > 0).length,
     plays,
     openDays,
@@ -292,6 +298,7 @@ function collectNumbers(facts: Omit<ReportFacts, "allowedNumbers">): number[] {
     facts.uniquePhones,
     facts.bestDay?.count,
     facts.daysWithScans,
+    ...facts.topPlaces.map((p) => p.count),
     facts.plays,
     facts.openDays,
     facts.termPlays,
@@ -309,6 +316,7 @@ function collectNumbers(facts: Omit<ReportFacts, "allowedNumbers">): number[] {
     facts.monthName,
     facts.bestHourWindow ?? "",
     facts.bestDay?.label ?? "",
+    facts.topPlaces.map((p) => p.name).join(" "),
     formatDate(facts.termFrom),
     formatDate(facts.termTo),
   ].join(" ");

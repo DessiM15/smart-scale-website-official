@@ -346,6 +346,27 @@ function CodeCard({
         </p>
       </div>
 
+      {/* Where the phones were. Only counts from the day this started being
+          recorded, so an older code shows nothing rather than a false zero. */}
+      {stats.byPlace.length > 0 && (
+        <div className="mt-4">
+          <p className="text-[10px] uppercase tracking-[0.14em] text-white/25 font-semibold mb-1.5">
+            Scanned from
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {stats.byPlace.slice(0, 5).map((place) => (
+              <span
+                key={place.name}
+                className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-xs text-white/60"
+              >
+                {place.name}{" "}
+                <span className="text-white/35 tabular-nums">{place.count}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       <form action={repointClientLinkAction} className="mt-4 space-y-2">
         <input type="hidden" name="id" value={advertiserId} />
         <input type="hidden" name="code" value={link.code} />

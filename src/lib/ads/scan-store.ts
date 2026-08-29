@@ -7,7 +7,12 @@
  */
 
 import { createHash } from "crypto";
-import { redisPipeline, redisWrite, isRedisConfigured } from "./redis";
+import {
+  redisPipeline,
+  redisWrite,
+  isRedisConfigured,
+  type RedisCommand,
+} from "./redis";
 
 /** Restaurant local time. Bucketing days in UTC would split the lunch rush. */
 export const TZ = "America/Chicago";
@@ -82,6 +87,29 @@ function visitorHash(code: string, date: string, ip: string, ua: string): string
     .slice(0, 24);
 }
 
+/**
+ * A readable place from the two headers the edge sends.
+ *
+ * Vercel URL-encodes the city, so "San Antonio" arrives as "San%20Antonio".
+ * That went unnoticed while the value only ever sat in the recent-activity
+ * list; the moment it is counted and shown to an advertiser it has to be
+ * decoded, or a report tells them their best town is called San%20Antonio.
+ */
+export function placeName(city?: string, region?: string): string {
+  const decode = (value?: string) => {
+    if (!value) return "";
+    try {
+      return decodeURIComponent(value).trim();
+    } catch {
+      return value.trim();
+    }
+  };
+  const town = decode(city);
+  const area = decode(region);
+  if (!town) return "";
+  return area ? `${town}, ${area}` : town;
+}
+
 export type ScanInput = {
   code: string;
   userAgent: string;
@@ -98,6 +126,8 @@ export async function recordScan(input: ScanInput): Promise<void> {
   const visitor = visitorHash(code, stamp.date, input.ip, input.userAgent);
   const dayKey = `${KEY}:day:${code}:${stamp.date}`;
   const uniqDayKey = `${KEY}:uniqday:${code}:${stamp.date}`;
+
+  const place = placeName(input.city, input.region);
 
   const event = JSON.stringify({
     t: (input.at ?? new Date()).toISOString(),
@@ -119,6 +149,12 @@ export async function recordScan(input: ScanInput): Promise<void> {
     ["EXPIRE", uniqDayKey, DAY_TTL_SECONDS],
     ["LPUSH", `${KEY}:recent:${code}`, event],
     ["LTRIM", `${KEY}:recent:${code}`, 0, RECENT_LIMIT - 1],
+    // Counted for the life of the code rather than per day: an advertiser
+    // wants to know which towns their ad reaches, and a per-day breakdown of
+    // that would be a key per town per day for a question nobody asks.
+    ...(place
+      ? ([["HINCRBY", `${KEY}:place:${code}`, place, 1]] as RedisCommand[])
+      : []),
   ]);
 }
 
@@ -151,6 +187,8 @@ export type TestBaseline = {
   byHour: number[];
   byWeekday: number[];
   byDevice: Record<DeviceKind, number>;
+  /** Absent on baselines drawn before places were counted. */
+  byPlace?: Record<string, number>;
 };
 
 const BASELINE_KEY = (code: string) => `${KEY}:testbase:${code}`;
@@ -195,6 +233,7 @@ export async function markScansAsTests(
     byHour: raw.byHour,
     byWeekday: raw.byWeekday,
     byDevice: raw.byDevice,
+    byPlace: Object.fromEntries(raw.byPlace.map((p) => [p.name, p.count])),
   };
 
   // No expiry: the line has to outlive the day counters it describes.
@@ -230,6 +269,8 @@ export type CodeStats = {
   byHour: number[];
   byWeekday: number[];
   byDevice: Record<DeviceKind, number>;
+  /** Towns the scans came from, busiest first. Empty before any were recorded. */
+  byPlace: { name: string; count: number }[];
   recent: ScanEvent[];
   /** Scans held back as testing. Every figure above is already net of these. */
   testScans: number;
@@ -255,6 +296,17 @@ function hashToCounts(raw: unknown): Record<string, number> {
 
 /** Never let a subtraction produce a negative count. */
 const net = (value: number, taken = 0) => Math.max(0, value - taken);
+
+/** Towns busiest first, with any test scans taken back out. */
+function rankPlaces(
+  counts: Record<string, number>,
+  excluded?: Record<string, number>,
+): { name: string; count: number }[] {
+  return Object.entries(counts)
+    .map(([name, count]) => ({ name, count: net(count, excluded?.[name]) }))
+    .filter((p) => p.count > 0)
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
 
 export type StatsOptions = {
   /** Report the raw counters, ignoring any test baseline. */
@@ -285,10 +337,20 @@ export async function getCodeStats(
     ["LRANGE", `${KEY}:recent:${code}`, 0, RECENT_LIMIT - 1],
     ["MGET", ...dates.map((d) => `${KEY}:day:${code}:${d}`)],
     ["GET", BASELINE_KEY(code)],
+    ["HGETALL", `${KEY}:place:${code}`],
   ]);
 
-  const [total, uniq, hourRaw, weekdayRaw, deviceRaw, recentRaw, dayRaw, baseRaw] =
-    results;
+  const [
+    total,
+    uniq,
+    hourRaw,
+    weekdayRaw,
+    deviceRaw,
+    recentRaw,
+    dayRaw,
+    baseRaw,
+    placeRaw,
+  ] = results;
   const base = options.includeTests ? null : parseBaseline(baseRaw);
 
   const dayCounts = Array.isArray(dayRaw) ? dayRaw.map(toInt) : dates.map(() => 0);
@@ -337,6 +399,7 @@ export async function getCodeStats(
       android: net(devices.android ?? 0, base?.byDevice?.android),
       other: net(devices.other ?? 0, base?.byDevice?.other),
     },
+    byPlace: rankPlaces(hashToCounts(placeRaw), base?.byPlace),
     recent,
     testScans: base?.total ?? 0,
     testUniqueDevices: base?.unique ?? 0,
@@ -383,6 +446,7 @@ export async function getCombinedStats(
       byHour: Array.from({ length: 24 }, () => 0),
       byWeekday: Array.from({ length: 7 }, () => 0),
       byDevice: { ios: 0, android: 0, other: 0 },
+      byPlace: [],
       recent: [],
       testScans: 0,
       testUniqueDevices: 0,
@@ -431,6 +495,14 @@ export async function getCombinedStats(
       android: parts.reduce((sum, s) => sum + s.byDevice.android, 0),
       other: parts.reduce((sum, s) => sum + s.byDevice.other, 0),
     },
+    byPlace: rankPlaces(
+      parts.reduce<Record<string, number>>((all, part) => {
+        for (const place of part.byPlace) {
+          all[place.name] = (all[place.name] ?? 0) + place.count;
+        }
+        return all;
+      }, {}),
+    ),
     // Newest first across every code, so "recent activity" reads as one stream.
     recent: parts
       .flatMap((s) => s.recent)

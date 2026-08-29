@@ -82,6 +82,8 @@ export async function GET(
         code: link.code,
         userAgent,
         ip: clientIp(req),
+        // Both arrive percent-encoded from the edge. Decoding happens in
+        // recordScan so every caller gets the same treatment.
         city: req.headers.get("x-vercel-ip-city") ?? undefined,
         region: req.headers.get("x-vercel-ip-country-region") ?? undefined,
       });
