@@ -20,6 +20,11 @@ const notices = (
   linkSaved: "QR code updated.",
   linkOn: "QR code switched back on.",
   linkOff: "QR code retired. Scans now land on the advertise page.",
+  testsExcluded:
+    Number(sent ?? 0) === 0
+      ? "Nothing to hold back — that code hasn't been scanned yet."
+      : `${sent} scan${sent === "1" ? "" : "s"} held back as testing. They stay in the database and are left out of every report from here on.`,
+  testsRestored: "Test scans put back. Every scan on that code counts again.",
   reportsDrafted:
     Number(sent ?? 0) === 0
       ? "No new reports to draft."
@@ -27,6 +32,12 @@ const notices = (
   reportSent: "Report sent.",
   reportSkipped: "Report skipped — it won't be sent.",
   reportEdited: "Report wording updated.",
+  reportRecalculated:
+    "Figures rebuilt from the roster and the scans recorded so far.",
+  reportRecalculatedRewritten:
+    "Figures rebuilt — and the wording was replaced with a plain summary, because it quoted numbers the corrected figures no longer support. Read it before sending.",
+  reportAlreadyRight: "Already up to date — the figures still match the roster.",
+  reportDeleted: "Draft removed.",
   testSent: `Test sent to ${detail}${sent ? ` — ${sent}` : ""}. If it doesn't arrive within a minute: check spam, then open Plunk's own log and find that address. Plunk accepting it and Plunk delivering it are two different things, and its log is the only place that tells them apart.`,
   backupDone: `Backed up — ${detail}.`,
   venueSaved: "Saved. It applies to statements from here on — never to one already issued.",
@@ -51,6 +62,7 @@ const errors = (clash?: string, detail?: string): Record<string, string> => ({
   logotype: "Logos must be a PNG, JPEG, WebP or SVG.",
   logosize: "That logo is over 200KB. Export a smaller version and try again.",
   reportsend: detail ?? "Could not send that report.",
+  reportfigures: detail ?? "Could not update that report.",
   testaddress: "That doesn't look like an email address.",
   testunconfigured:
     "Email isn't connected yet, so there's nothing to test. Finish the Advertiser email steps first.",

@@ -8,7 +8,7 @@
  */
 
 import { saveVenueSettingsAction } from "../actions";
-import type { Settings } from "@/lib/ads/settings";
+import { venueShareOf, type Settings } from "@/lib/ads/settings";
 import { monthLabel } from "@/lib/ads/statement";
 import {
   Card,
@@ -79,7 +79,7 @@ export function VenueTab({
           />
           <Tile
             label="Owed so far"
-            value={money(Math.round(collectedThisMonth * (share / 100) * 100) / 100)}
+            value={money(venueShareOf(collectedThisMonth, share))}
             hint="month to date"
             tone={share > 0 ? "alert" : "plain"}
           />

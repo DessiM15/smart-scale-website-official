@@ -14,11 +14,19 @@ import { reportEmail } from "./email";
 import {
   buildReportFacts,
   lastCompleteMonth,
+  monthLabel,
+  runInMonth,
   type MonthKey,
   type ReportFacts,
 } from "./report-data";
-import { writeNarrative, type Narrative } from "./narrative";
-import { listAdvertisers } from "./roster";
+import {
+  templateNarrative,
+  unsupportedNumbers,
+  writeNarrative,
+  type Narrative,
+} from "./narrative";
+import { codesForAdvertiser } from "./link-store";
+import { getAdvertiser, listAdvertisers, toView, type AdvertiserView } from "./roster";
 import { localStamp } from "./scan-store";
 import { sendTeamSms } from "./notify";
 
@@ -107,9 +115,19 @@ export async function generateReports(
       notes.push(`${advertiser.business}: no email address on file.`);
       continue;
     }
-    if (!advertiser.qrCode) {
+    // Every code they own, not just the legacy field — a client whose codes
+    // were only ever attached by ownership still has scans to report.
+    const codes = await codesForAdvertiser(advertiser.id, advertiser.qrCode);
+    if (codes.length === 0) {
       skipped += 1;
       notes.push(`${advertiser.business}: no QR code, so there's nothing to report.`);
+      continue;
+    }
+    // A report for a month the ad never ran in is worse than no report: it
+    // reads as a month of nothing rather than a month that never happened.
+    if (runInMonth(advertiser, month).openDays === 0) {
+      skipped += 1;
+      notes.push(`${advertiser.business}: wasn't on screen in ${monthLabel(month)}.`);
       continue;
     }
     if (await getReport(advertiser.id, month)) {
@@ -159,6 +177,113 @@ export async function updateNarrative(
     ...report,
     narrative: { ...report.narrative, headline, body, source: "template" },
   });
+}
+
+/**
+ * Whether a saved draft's figures still agree with the roster.
+ *
+ * Deliberately answered from the dates alone, with no database call, so the
+ * tracker can flag every draft on the page for free. It catches the failure
+ * that matters: a draft is written once and then kept forever, so a figure
+ * computed by an older rule — or before a start date was corrected — stays on
+ * screen looking authoritative long after it stopped being true.
+ */
+export function isReportStale(
+  report: MonthlyReport,
+  advertiser: AdvertiserView | undefined,
+): boolean {
+  if (!advertiser) return false;
+  const expected = runInMonth(advertiser, report.month);
+  return (
+    report.facts.plays !== expected.plays ||
+    report.facts.openDays !== expected.openDays
+  );
+}
+
+export type RecalculateResult = {
+  ok: boolean;
+  error?: string;
+  /** The figures moved. False means the draft already matched. */
+  changed?: boolean;
+  /** The wording was replaced because it cited figures that no longer hold. */
+  rewritten?: boolean;
+};
+
+/**
+ * Rebuilds a draft's figures from the roster and the scan data as they stand
+ * now, keeping the report otherwise intact.
+ *
+ * The wording is the delicate part. It was written — and possibly approved by a
+ * person — against the old numbers, so a sentence like "it played four thousand
+ * times" survives a recalculation as a lie in prose while every figure beside
+ * it is corrected. So the existing wording is re-checked against the new facts
+ * with the same guard used on a model draft, and thrown away for a plain
+ * summary the moment it cites something that no longer exists.
+ *
+ * A sent report is never touched. Its figures are the record of what the
+ * advertiser was actually told, right or wrong.
+ */
+export async function recalculateReport(
+  advertiserId: string,
+  month: MonthKey,
+): Promise<RecalculateResult> {
+  const report = await getReport(advertiserId, month);
+  if (!report) return { ok: false, error: "No such report." };
+  if (report.status === "sent") {
+    return {
+      ok: false,
+      error:
+        "That report has already been sent. Its figures are the record of what the advertiser was told, so they stay as they are.",
+    };
+  }
+
+  const advertiser = await getAdvertiser(advertiserId);
+  if (!advertiser) {
+    return { ok: false, error: "That advertiser is no longer on the roster." };
+  }
+
+  const facts = await buildReportFacts(toView(advertiser), month);
+  const changed = JSON.stringify(facts) !== JSON.stringify(report.facts);
+
+  const stale = unsupportedNumbers(
+    `${report.narrative.headline} ${report.narrative.body}`,
+    facts.allowedNumbers,
+  );
+  const rewritten = stale.length > 0;
+  const narrative: Narrative = rewritten
+    ? {
+        ...templateNarrative(facts),
+        rejectedReason: `wording cited ${stale.join(", ")}, which the figures no longer support`,
+      }
+    : report.narrative;
+
+  if (!changed && !rewritten) return { ok: true, changed: false };
+
+  const ok = await put({ ...report, facts, narrative });
+  if (!ok) return { ok: false, error: "Could not save the corrected report." };
+  return { ok: true, changed, rewritten };
+}
+
+/**
+ * Removes a draft outright — for a report that should never have been written,
+ * where correcting the figures would only leave a truthful record of nothing.
+ * Sent reports are kept, always.
+ */
+export async function deleteReport(
+  advertiserId: string,
+  month: MonthKey,
+): Promise<{ ok: boolean; error?: string }> {
+  const report = await getReport(advertiserId, month);
+  if (!report) return { ok: false, error: "No such report." };
+  if (report.status === "sent") {
+    return { ok: false, error: "A sent report is a record — it can't be deleted." };
+  }
+  const key = KEY(advertiserId, month);
+  const ok = await redisWrite([
+    ["DEL", key],
+    ["SREM", INDEX, key],
+  ]);
+  return ok ? { ok: true } : { ok: false, error: "Could not remove that report." };
 }
 
 export async function skipReport(

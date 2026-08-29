@@ -19,11 +19,14 @@ import {
 import { runRenewalCheck } from "@/lib/ads/renewals";
 import { clearResponse } from "@/lib/ads/responses";
 import {
+  deleteReport,
   generateReports,
+  recalculateReport,
   sendReport,
   skipReport,
   updateNarrative,
 } from "@/lib/ads/reports";
+import { clearTestBaseline, markScansAsTests } from "@/lib/ads/scan-store";
 import {
   getLink,
   listLinks,
@@ -385,6 +388,32 @@ export async function toggleLinkActiveAction(data: FormData) {
   back({ msg: active ? "linkOn" : "linkOff", who: code });
 }
 
+/* -------------------------------- test scans ------------------------------- */
+
+/**
+ * Hold back everything counted so far on a code as testing.
+ *
+ * Nothing is deleted: the counters keep every scan and a baseline is stored
+ * beside them, so the raw history stays auditable and this is reversible.
+ */
+export async function markScansAsTestsAction(data: FormData) {
+  await requireAdmin();
+  const code = normalizeCode(field(data, "code"));
+  if (!(await getLink(code))) back({ err: "codemissing", detail: code });
+  const { ok, excluded } = await markScansAsTests(code);
+  if (!ok) back({ err: "save" });
+  revalidatePath(PAGE);
+  back({ msg: "testsExcluded", who: code, sent: String(excluded) });
+}
+
+export async function clearTestScansAction(data: FormData) {
+  await requireAdmin();
+  const code = normalizeCode(field(data, "code"));
+  if (!(await clearTestBaseline(code))) back({ err: "save" });
+  revalidatePath(PAGE);
+  back({ msg: "testsRestored", who: code });
+}
+
 /* ---------------------------- monthly reports ---------------------------- */
 
 export async function generateReportsAction(data: FormData) {
@@ -410,6 +439,37 @@ export async function skipReportAction(data: FormData) {
   }
   revalidatePath(PAGE);
   back({ msg: "reportSkipped" });
+}
+
+/**
+ * Rebuilds a draft's figures. Offered as its own button rather than done on
+ * every page load because a report is a document: it should change when someone
+ * asks it to, not quietly underneath a reader.
+ */
+export async function recalculateReportAction(data: FormData) {
+  await requireAdmin();
+  const result = await recalculateReport(
+    field(data, "advertiserId"),
+    field(data, "month"),
+  );
+  if (!result.ok) back({ err: "reportfigures", detail: result.error ?? "" });
+  revalidatePath(PAGE);
+  back({
+    msg:
+      result.changed === false
+        ? "reportAlreadyRight"
+        : result.rewritten
+          ? "reportRecalculatedRewritten"
+          : "reportRecalculated",
+  });
+}
+
+export async function deleteReportAction(data: FormData) {
+  await requireAdmin();
+  const result = await deleteReport(field(data, "advertiserId"), field(data, "month"));
+  if (!result.ok) back({ err: "reportfigures", detail: result.error ?? "" });
+  revalidatePath(PAGE);
+  back({ msg: "reportDeleted" });
 }
 
 export async function editReportAction(data: FormData) {

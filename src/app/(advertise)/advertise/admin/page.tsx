@@ -57,6 +57,8 @@ const TAB_FOR_RESULT: Record<string, TabId> = {
   linkSaved: "qr",
   linkOn: "qr",
   linkOff: "qr",
+  testsExcluded: "qr",
+  testsRestored: "qr",
   code: "qr",
   codetaken: "qr",
   codemissing: "qr",
@@ -67,7 +69,12 @@ const TAB_FOR_RESULT: Record<string, TabId> = {
   reportSent: "reports",
   reportSkipped: "reports",
   reportEdited: "reports",
+  reportRecalculated: "reports",
+  reportRecalculatedRewritten: "reports",
+  reportAlreadyRight: "reports",
+  reportDeleted: "reports",
   reportsend: "reports",
+  reportfigures: "reports",
   prospect: "prospects",
   prospectRemoved: "prospects",
   venueSaved: "venue",
@@ -222,10 +229,10 @@ export default async function AdminPage({
   const reports = await listReports();
 
   const links: LinkView[] = await Promise.all(
-    rawLinks.map(async (link) => ({
-      ...link,
-      scans: (await getCodeStats(link.code, 1)).total,
-    })),
+    rawLinks.map(async (link) => {
+      const stats = await getCodeStats(link.code, 1);
+      return { ...link, scans: stats.total, testScans: stats.testScans };
+    }),
   );
 
   const editingLink = params.editLink
@@ -378,7 +385,9 @@ export default async function AdminPage({
           <CategoriesTab rows={categories} openSlots={summary.openSlots} />
         )}
 
-        {tab === "reports" && <ReportsTab reports={reports} />}
+        {tab === "reports" && (
+          <ReportsTab reports={reports} advertisers={advertisers} />
+        )}
 
         {tab === "qr" && <QrTab links={links} editing={editingLink} />}
 

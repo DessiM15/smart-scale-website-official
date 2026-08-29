@@ -3,7 +3,12 @@
  * the scan and forwards on, so a printed ad can be re-pointed later.
  */
 
-import { saveLinkAction, toggleLinkActiveAction } from "../actions";
+import {
+  clearTestScansAction,
+  markScansAsTestsAction,
+  saveLinkAction,
+  toggleLinkActiveAction,
+} from "../actions";
 import type { LinkView } from "./types";
 import { tabHref } from "./types";
 import {
@@ -43,6 +48,25 @@ function Controls({ link }: { link: LinkView }) {
           {link.active ? "Retire" : "Restore"}
         </button>
       </form>
+      {/* Setting a code up means scanning it yourself a few times. Those land
+          in the client's report unless they are said to be what they were. */}
+      <form
+        action={link.testScans > 0 ? clearTestScansAction : markScansAsTestsAction}
+        className="inline"
+      >
+        <input type="hidden" name="code" value={link.code} />
+        <button
+          type="submit"
+          className={`ml-4 ${linkQuiet}`}
+          title={
+            link.testScans > 0
+              ? "Count the held-back scans again."
+              : "Hold back the scans counted so far as testing. Nothing is deleted, and it can be undone."
+          }
+        >
+          {link.testScans > 0 ? "Count tests again" : "These were tests"}
+        </button>
+      </form>
     </>
   );
 }
@@ -69,6 +93,12 @@ function LinkRow({ link }: { link: LinkView }) {
       </td>
       <td className="px-4 py-4 text-right tabular-nums text-white">
         {link.scans.toLocaleString()}
+        {link.testScans > 0 && (
+          <p className="text-[11px] text-white/30 mt-0.5 tabular-nums">
+            {link.testScans.toLocaleString()} test
+            {link.testScans === 1 ? "" : "s"} held back
+          </p>
+        )}
       </td>
       <td className="px-4 py-4 whitespace-nowrap">
         <Artwork code={link.code} />
@@ -95,6 +125,12 @@ function LinkCard({ link }: { link: LinkView }) {
           <p className="text-[10px] uppercase tracking-[0.14em] text-white/30 font-semibold mt-1">
             scans
           </p>
+          {link.testScans > 0 && (
+            <p className="text-[11px] text-white/30 mt-1 tabular-nums">
+              {link.testScans.toLocaleString()} test
+              {link.testScans === 1 ? "" : "s"} held back
+            </p>
+          )}
         </div>
       </div>
 

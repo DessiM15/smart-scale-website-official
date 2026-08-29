@@ -103,6 +103,25 @@ export function lastCompleteMonth(): MonthKey {
   return previousMonth(monthKey(localStamp().date));
 }
 
+/**
+ * What a report for this month should say about the rotation — the days the ad
+ * was actually on screen, and the plays that follow from them.
+ *
+ * Pure arithmetic over the advertiser's dates, with no database behind it, so
+ * two callers can ask cheaply: generation, to skip a month an ad never ran in,
+ * and the tracker, to spot a saved draft whose figures no longer match the
+ * roster. `openDays` of zero means there is nothing to report — the ad had not
+ * started, had already ended, or the only days it covered were Mondays.
+ */
+export function runInMonth(
+  advertiser: AdvertiserView,
+  month: MonthKey,
+): { from: string; to: string; plays: number; openDays: number } {
+  const bounds = monthBounds(month);
+  const onScreen = onScreenWindow(advertiser, bounds.from, bounds.to);
+  return { ...onScreen, ...playsBetween(onScreen.from, onScreen.to) };
+}
+
 export type ReportFacts = {
   advertiserId: string;
   business: string;
@@ -198,9 +217,7 @@ export async function buildReportFacts(
 
   // Only the days this ad was actually in the rotation, and only days that have
   // happened. A month is not a run.
-  const bounds = monthBounds(month);
-  const onScreen = onScreenWindow(advertiser, bounds.from, bounds.to);
-  const { plays, openDays } = playsBetween(onScreen.from, onScreen.to);
+  const { plays, openDays } = runInMonth(advertiser, month);
 
   const term = playsBetween(termSoFar.from, termSoFar.to);
   const termScans = series
