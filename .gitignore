@@ -48,3 +48,10 @@ next-env.d.ts
 assets/botmaker-video.mp4
 *.mp4
 
+
+# Finder/iCloud duplicate copies ("name 2.tsx"). Already excluded from
+# tsconfig; ignored here so a directory-wide `git add` cannot commit them.
+* 2.ts
+* 2.tsx
+* 2.html
+* 2.svg
