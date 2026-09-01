@@ -61,6 +61,30 @@ export type EditingAdvertiser = {
   endDateLabel: string;
 };
 
+/**
+ * A prospect who has said yes, carried into this form.
+ *
+ * Kept separate from `editing` because they are opposites: editing has an id
+ * and must not create anything, this has no id and must create exactly one
+ * advertiser. Sharing one prop would mean an `id` that is sometimes a prospect
+ * and sometimes a client, which is the sort of thing that ends with a
+ * conversion overwriting somebody else's contract.
+ */
+export type ConversionPrefill = {
+  prospectId: string;
+  business: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  category: string;
+  notes: string;
+  campaign: string;
+  source: string;
+  /** Another active advertiser already holds the category they asked for. */
+  categoryHeldBy?: string;
+  openSlots: number;
+};
+
 const numberValue = (v: number | null | undefined) =>
   v === null || v === undefined ? "" : String(v);
 
@@ -99,11 +123,13 @@ function refusal(state: NonNullable<AdvertiserFormState>): string {
 
 export function AdvertiserForm({
   editing,
+  prefill,
   codes,
   plans,
   today,
 }: {
   editing?: EditingAdvertiser;
+  prefill?: ConversionPrefill;
   codes: LinkView[];
   plans: PlanOption[];
   today: string;
@@ -113,17 +139,24 @@ export function AdvertiserForm({
     null,
   );
 
+  /** What each field starts as: the client being edited, or the prospect. */
+  const start = editing ?? prefill;
+
   return (
     <details
       id="editor"
       // Open while editing, and open after a refusal — closing it on the reader
       // is how the values looked lost even when they weren't.
-      open={Boolean(editing) || Boolean(state)}
+      open={Boolean(editing) || Boolean(prefill) || Boolean(state)}
       className="group rounded-3xl border border-white/[0.07] bg-[#131313] overflow-hidden"
     >
       <summary className="flex cursor-pointer items-center justify-between gap-4 px-6 sm:px-8 py-5 list-none [&::-webkit-details-marker]:hidden hover:bg-white/[0.02] transition-colors">
         <span className="text-white font-semibold">
-          {editing ? `Edit ${editing.business}` : "Add an advertiser"}
+          {editing
+            ? `Edit ${editing.business}`
+            : prefill
+              ? `Sign up ${prefill.business}`
+              : "Add an advertiser"}
         </span>
         <span className="text-xs font-semibold uppercase tracking-[0.14em] text-white/35 group-open:hidden">
           Open
@@ -140,6 +173,52 @@ export function AdvertiserForm({
           </a>
         )}
 
+        {prefill && !state && (
+          <div className="mb-5 space-y-3">
+            <Note tone="ok">
+              <p className="text-sm font-semibold text-white">
+                Converting {prefill.business} from the prospect list.
+              </p>
+              <p className="mt-1.5 text-sm text-white/70">
+                Their details are filled in below. They stay on the prospect list
+                until you save this, and nothing on their record changes if you
+                walk away. Set the package, check the start date, and save.
+              </p>
+              <a
+                href={`${tabHref("prospects")}#prospect-${prefill.prospectId}`}
+                className={`${linkQuiet} inline-block mt-2.5`}
+              >
+                Back to their prospect card
+              </a>
+            </Note>
+
+            {prefill.categoryHeldBy && (
+              <Note tone="bad">
+                <p className="text-sm font-semibold text-white">
+                  {prefill.categoryHeldBy} already holds “{prefill.category}”.
+                </p>
+                <p className="mt-1.5 text-sm text-white/70">
+                  Exclusivity is what we sell, so this won&apos;t save as Running.
+                  End the other run first, give this client a different category,
+                  or leave them signed but not live.
+                </p>
+              </Note>
+            )}
+
+            {prefill.openSlots === 0 && (
+              <Note tone="warn">
+                <p className="text-sm font-semibold text-white">
+                  All 16 slots are taken.
+                </p>
+                <p className="mt-1.5 text-sm text-white/70">
+                  Somebody has to come off the rotation before this one can go on
+                  it. Signed but not live is the honest state until then.
+                </p>
+              </Note>
+            )}
+          </div>
+        )}
+
         {state && (
           <div className="mb-5">
             <Note tone="bad">
@@ -154,18 +233,29 @@ export function AdvertiserForm({
 
         <form action={formAction} className="space-y-5">
           {editing && <input type="hidden" name="id" value={editing.id} />}
+          {prefill && (
+            <>
+              <input type="hidden" name="prospectId" value={prefill.prospectId} />
+              <input
+                type="hidden"
+                name="prospectCampaign"
+                value={prefill.campaign}
+              />
+              <input type="hidden" name="prospectSource" value={prefill.source} />
+            </>
+          )}
 
           <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Business" name="business" defaultValue={editing?.business} required />
+            <Field label="Business" name="business" defaultValue={start?.business} required />
             <Field
               label="Category (locked)"
               name="category"
-              defaultValue={editing?.category}
+              defaultValue={start?.category}
               placeholder="Plumbing, Dentistry, Auto Repair…"
             />
-            <Field label="Contact name" name="contactName" defaultValue={editing?.contactName} />
-            <Field label="Phone" name="phone" type="tel" defaultValue={editing?.phone} />
-            <Field label="Email" name="email" type="email" defaultValue={editing?.email} />
+            <Field label="Contact name" name="contactName" defaultValue={start?.contactName} />
+            <Field label="Phone" name="phone" type="tel" defaultValue={start?.phone} />
+            <Field label="Email" name="email" type="email" defaultValue={start?.email} />
             <div>
               <label className={labelClass} htmlFor="qrCode">
                 QR code
@@ -238,7 +328,10 @@ export function AdvertiserForm({
               <select
                 id="status"
                 name="status"
-                defaultValue={editing?.status ?? "active"}
+                // A conversion starts as signed-but-not-live: they have said yes,
+                // but the start date is usually still ahead. Worth knowing that
+                // pending does not hold their category — the warning above says so.
+                defaultValue={editing?.status ?? (prefill ? "pending" : "active")}
                 className={selectClass}
               >
                 <option value="active">Running</option>
@@ -358,7 +451,7 @@ export function AdvertiserForm({
               id="notes"
               name="notes"
               rows={2}
-              defaultValue={editing?.notes}
+              defaultValue={start?.notes}
               placeholder="Artwork due, renewal conversation, billing quirks…"
               className={inputClass}
             />
@@ -366,7 +459,11 @@ export function AdvertiserForm({
 
           <div className="flex flex-wrap items-center gap-4 pt-1">
             <SubmitButton className={`${btnPrimary} px-6 py-3`} pendingLabel="Saving…">
-              {editing ? "Save changes" : "Add advertiser"}
+              {editing
+                ? "Save changes"
+                : prefill
+                  ? `Sign up ${prefill.business}`
+                  : "Add advertiser"}
             </SubmitButton>
             <p className="text-xs text-white/30">
               The end date is calculated from the package term —{" "}

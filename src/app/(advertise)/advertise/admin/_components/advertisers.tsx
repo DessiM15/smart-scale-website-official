@@ -6,7 +6,11 @@
  */
 
 import { deleteAdvertiserAction } from "../actions";
-import { AdvertiserForm, type EditingAdvertiser } from "./advertiser-form";
+import {
+  AdvertiserForm,
+  type ConversionPrefill,
+  type EditingAdvertiser,
+} from "./advertiser-form";
 import {
   formatDate,
   today,
@@ -335,6 +339,7 @@ export function AdvertisersTab({
   knownCodes,
   links,
   editing,
+  prefill,
   query = "",
 }: {
   advertisers: AdvertiserView[];
@@ -342,6 +347,7 @@ export function AdvertisersTab({
   knownCodes: Set<string>;
   links: LinkView[];
   editing?: AdvertiserView;
+  prefill?: ConversionPrefill;
   query?: string;
 }) {
   const shown = advertisers.filter((v) => matchesQuery(v, query));
@@ -419,6 +425,7 @@ export function AdvertisersTab({
 
       <AdvertiserForm
         editing={editing ? toEditing(editing) : undefined}
+        prefill={prefill}
         codes={links}
         plans={planOptions()}
         today={today()}

@@ -3,7 +3,15 @@ import { isAdminConfigured, isSignedIn } from "@/lib/ads/auth";
 import { isRedisConfigured, isRedisReachable } from "@/lib/ads/redis";
 import { listLinks } from "@/lib/ads/link-store";
 import { getCodeStats } from "@/lib/ads/scan-store";
-import { listAdvertisers, listProspects, summarize } from "@/lib/ads/roster";
+import {
+  categoryConflict,
+  followUpsDue,
+  isOpenProspect,
+  listAdvertisers,
+  listProspects,
+  summarize,
+  today,
+} from "@/lib/ads/roster";
 import { recentRuns } from "@/lib/ads/notify";
 import { recentBackups } from "@/lib/ads/backup";
 import { collectFacts, writeBriefing } from "@/lib/ads/briefing";
@@ -76,7 +84,13 @@ const TAB_FOR_RESULT: Record<string, TabId> = {
   reportsend: "reports",
   reportfigures: "reports",
   prospect: "prospects",
+  prospectEdited: "prospects",
+  prospectUpdated: "prospects",
   prospectRemoved: "prospects",
+  prospectmissing: "prospects",
+  followupdate: "prospects",
+  emptyupdate: "prospects",
+  removedBackToList: "prospects",
   venueSaved: "venue",
   sharepercent: "venue",
   testSent: "setup",
@@ -190,6 +204,8 @@ export default async function AdminPage({
     err?: string;
     clash?: string;
     edit?: string;
+    /** A prospect being converted: the advertiser form opens filled in. */
+    from?: string;
     sent?: string;
     checked?: string;
     detail?: string;
@@ -247,6 +263,17 @@ export default async function AdminPage({
   const newLeads = prospects.filter(
     (p) => p.status === "new" && p.source === "Advertise page",
   );
+  const asOf = today();
+  const followUps = followUpsDue(prospects, asOf);
+  const openProspects = prospects.filter(isOpenProspect);
+
+  // A prospect who has said yes, carried into the advertiser form. Built here
+  // because the two warnings on it — their category being held, and the
+  // rotation being full — are facts about the roster, not about them.
+  const converting = params.from
+    ? prospects.find((p) => p.id === params.from)
+    : undefined;
+
   // The venue tab needs this month's takings; the statement pages compute
   // their own, so this is the only figure the tracker itself has to fetch.
   const currentMonth = new Date().toISOString().slice(0, 7);
@@ -261,6 +288,23 @@ export default async function AdminPage({
   const knownCodeSet = new Set(links.map((l) => l.code));
   const summary = summarize(advertisers);
 
+  const prefill = converting
+    ? {
+        prospectId: converting.id,
+        business: converting.business,
+        contactName: converting.contactName,
+        email: converting.email,
+        phone: converting.phone,
+        category: converting.category,
+        notes: converting.notes,
+        campaign: converting.campaign ?? "",
+        source: converting.source,
+        categoryHeldBy: categoryConflict(advertisers, converting.category)
+          ?.business,
+        openSlots: summary.openSlots,
+      }
+    : undefined;
+
   // The briefing is written from the same figures the tiles show, and cached on
   // a fingerprint of them — so it costs an API call when something changes and
   // nothing when it hasn't.
@@ -269,6 +313,7 @@ export default async function AdminPage({
       newLeads: newLeads.length,
       replies: replies.length,
       unsigned: summary.unsigned.length,
+      followUps: followUps.length,
     }),
   );
 
@@ -278,7 +323,7 @@ export default async function AdminPage({
   // An explicit tab wins; otherwise follow whatever the last action touched.
   const tab: TabId = isTab(params.tab)
     ? params.tab
-    : params.edit
+    : params.edit || params.from
       ? "advertisers"
       : params.editLink
         ? "qr"
@@ -286,7 +331,8 @@ export default async function AdminPage({
           TAB_FOR_RESULT[params.msg ?? ""] ??
           "overview");
 
-  const openItems = needsAttention.length + replies.length + newLeads.length;
+  const openItems =
+    needsAttention.length + replies.length + newLeads.length + followUps.length;
 
   return (
     <main className="min-h-screen bg-[#0A0A0A] text-white">
@@ -331,8 +377,10 @@ export default async function AdminPage({
                 reports: { value: draftReports, urgent: draftReports > 0 },
                 qr: { value: links.length },
                 prospects: {
-                  value: prospects.length,
-                  urgent: newLeads.length > 0,
+                  // Open work only. Counting the ones already signed up or
+                  // passed on makes the badge grow forever and mean nothing.
+                  value: openProspects.length,
+                  urgent: newLeads.length > 0 || followUps.length > 0,
                 },
                 setup: {
                   value: setupTodo,
@@ -366,6 +414,8 @@ export default async function AdminPage({
             replies={replies}
             backups={backups}
             newLeads={newLeads}
+            followUps={followUps}
+            today={asOf}
             briefing={briefing}
           />
         )}
@@ -377,6 +427,7 @@ export default async function AdminPage({
             knownCodes={knownCodeSet}
             links={links}
             editing={editing}
+            prefill={prefill}
             query={params.q ?? ""}
           />
         )}
@@ -391,7 +442,9 @@ export default async function AdminPage({
 
         {tab === "qr" && <QrTab links={links} editing={editingLink} />}
 
-        {tab === "prospects" && <ProspectsTab prospects={prospects} />}
+        {tab === "prospects" && (
+          <ProspectsTab prospects={prospects} today={asOf} />
+        )}
 
         {tab === "venue" && (
           <VenueTab
