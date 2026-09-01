@@ -38,14 +38,20 @@ import {
   validateDestination,
 } from "@/lib/ads/link-store";
 import {
+  appendUpdate,
   categoryConflict,
   deleteAdvertiser,
   deleteProspect,
+  findProspectByAdvertiser,
+  getProspect,
   listAdvertisers,
+  patchProspect,
   saveAdvertiser,
   saveProspect,
   type AdvertiserStatus,
   type PlanId,
+  type Prospect,
+  type ProspectInput,
   type ProspectStatus,
   PLANS,
 } from "@/lib/ads/roster";
@@ -71,6 +77,17 @@ function optionalNumber(data: FormData, name: string): number | null {
 /** True when the box had something in it, whether or not it parsed. */
 const wasFilled = (data: FormData, name: string) =>
   field(data, name).replace(/[$,\s]/g, "").length > 0;
+
+/**
+ * The value only if the form actually carried the field.
+ *
+ * Records are now merged on save rather than replaced, so a field a form never
+ * rendered keeps whatever it already held. `field()` can't express that — it
+ * returns "" for both "left blank" and "not on this form", and those mean
+ * opposite things: one clears the value, the other must leave it alone.
+ */
+const present = (data: FormData, name: string): string | undefined =>
+  data.has(name) ? field(data, name) : undefined;
 
 /** Every mutation re-checks the session — an action is a public endpoint. */
 async function requireAdmin() {
@@ -190,8 +207,25 @@ export async function saveAdvertiserAction(
     if (takenCodes.includes(autoCode)) return { err: "codetaken", detail: autoCode };
   }
 
+  // Set only when converting, so an ordinary edit leaves them untouched rather
+  // than blanking the attribution the merge is there to protect.
+  const carried: {
+    fromProspectId?: string;
+    campaign?: string;
+    source?: string;
+  } = {};
+  const prospectId = field(data, "prospectId");
+  if (prospectId) {
+    carried.fromProspectId = prospectId;
+    const campaign = present(data, "prospectCampaign");
+    const source = present(data, "prospectSource");
+    if (campaign) carried.campaign = campaign;
+    if (source) carried.source = source;
+  }
+
   const { ok, id: savedId } = await saveAdvertiser(
     {
+      ...carried,
       business,
       contactName: field(data, "contactName"),
       email: field(data, "email"),
@@ -213,6 +247,30 @@ export async function saveAdvertiserAction(
   );
 
   if (!ok) return { err: "save" };
+
+  // The prospect turns into a client here and nowhere else. Picking "advertiser"
+  // on the prospect list only opens this form; abandoning it leaves them exactly
+  // where they were, and a category clash above returns before reaching this
+  // line. There is no state in which somebody is marked won without a record.
+  if (prospectId) {
+    const prospect = await getProspect(prospectId);
+    if (prospect) {
+      await patchProspect(prospectId, {
+        status: "won",
+        advertiserId: savedId,
+        // Their follow-up belongs to the sale, and the sale is done.
+        followUpDate: "",
+        log: appendUpdate(prospect, {
+          at: new Date().toISOString(),
+          from: prospect.status,
+          to: "won",
+          text: `Signed up as an advertiser${
+            status === "pending" ? ", not live yet" : ""
+          }.`,
+        }),
+      });
+    }
+  }
 
   if (autoCode) {
     const linked = await saveLink({
@@ -255,10 +313,46 @@ export async function deleteAdvertiserAction(data: FormData) {
   await requireAdmin();
   const id = field(data, "id");
   if (!id) back({ err: "missing" });
+
+  // Read before the delete, while the link still exists to follow.
+  const prospect = await findProspectByAdvertiser(id);
+
   if (!(await deleteAdvertiser(id))) back({ err: "save" });
+
+  // A prospect pointing at a record that no longer exists is worse than one
+  // still in the pipeline, so they go back to being somebody worth chasing.
+  if (prospect) {
+    await patchProspect(prospect.id, {
+      status: "hot",
+      advertiserId: "",
+      log: appendUpdate(prospect, {
+        at: new Date().toISOString(),
+        from: "won",
+        to: "hot",
+        text: "Their advertiser record was deleted, so they are back on the list.",
+      }),
+    });
+  }
+
   revalidatePath(PAGE);
-  back({ msg: "removed" });
+  back({ msg: prospect ? "removedBackToList" : "removed" });
 }
+
+/* -------------------------------- prospects ------------------------------- */
+
+/** Every status a person is allowed to choose. `won` is not one of them. */
+const PICKABLE_STATUS: ProspectStatus[] = ["new", "contacted", "hot", "review", "passed"];
+
+/** A date field that has to be a real YYYY-MM-DD, or nothing at all. */
+function optionalDate(data: FormData, name: string): string | null {
+  const raw = field(data, name);
+  if (!raw) return "";
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null;
+  return raw;
+}
+
+/** Where a prospect action returns to: the card it was taken from. */
+const prospectAnchor = (id: string) => `prospect-${id}`;
 
 export async function saveProspectAction(data: FormData) {
   await requireAdmin();
@@ -266,23 +360,165 @@ export async function saveProspectAction(data: FormData) {
   const business = field(data, "business");
   if (!business) back({ err: "business" });
 
+  const id = field(data, "id") || undefined;
+
+  // Only what this form actually rendered. The add form has no campaign or
+  // budget box, and before records were merged on save, editing a web lead
+  // through it erased which flyer sent them.
+  const optional: Partial<ProspectInput> = {};
+  for (const name of ["campaign", "budget"] as const) {
+    const value = present(data, name);
+    if (value !== undefined) optional[name] = value;
+  }
+
+  // An edit is a correction to the details, never a move along the pipeline —
+  // that is what an update is for, and it leaves a record behind.
+  const chosen = field(data, "status") as ProspectStatus;
+  const status: ProspectStatus | undefined = id
+    ? undefined
+    : PICKABLE_STATUS.includes(chosen)
+      ? chosen
+      : "new";
+
+  const existing = id ? await getProspect(id) : null;
+  if (id && !existing) back({ err: "prospectmissing" });
+
   const { ok } = await saveProspect(
     {
+      ...optional,
       business,
       contactName: field(data, "contactName"),
       email: field(data, "email"),
       phone: field(data, "phone"),
       category: field(data, "category"),
       source: field(data, "source"),
-      status: (field(data, "status") || "new") as ProspectStatus,
+      status: status ?? existing!.status,
       notes: field(data, "notes"),
     },
-    field(data, "id") || undefined,
+    id,
   );
 
   if (!ok) back({ err: "save" });
   revalidatePath(PAGE);
-  back({ msg: "prospect" });
+  if (id) back({ msg: "prospectEdited" }, prospectAnchor(id));
+  back({ msg: "prospect" }, "prospect-add");
+}
+
+/**
+ * One thing that happened, written to the timeline.
+ *
+ * The status and the note are recorded together on purpose. A status that moves
+ * with no reason attached is the thing that makes a pipeline useless three weeks
+ * later, when nobody can remember what "contacted" meant for this one.
+ */
+export async function logProspectUpdateAction(data: FormData) {
+  await requireAdmin();
+
+  const id = field(data, "id");
+  if (!id) back({ err: "missing" });
+
+  const prospect = await getProspect(id);
+  if (!prospect) back({ err: "prospectmissing" });
+
+  const note = field(data, "note").slice(0, 1200);
+  const followUp = optionalDate(data, "followUp");
+  if (followUp === null) back({ err: "followupdate" }, prospectAnchor(id));
+
+  const chosen = field(data, "status");
+
+  // "Advertiser" isn't a status you can set. It's the start of a conversion:
+  // the note is saved first so nothing typed is lost, then the prefilled
+  // advertiser form opens. They stay where they are until that form saves.
+  if (chosen === "convert") {
+    if (note) {
+      await patchProspect(id, {
+        log: appendUpdate(prospect, {
+          at: new Date().toISOString(),
+          from: "",
+          to: prospect.status,
+          text: note,
+        }),
+      });
+      revalidatePath(PAGE);
+    }
+    back({ tab: "advertisers", from: id }, "editor");
+  }
+
+  const status = PICKABLE_STATUS.includes(chosen as ProspectStatus)
+    ? (chosen as ProspectStatus)
+    : prospect.status;
+
+  if (!note && status === prospect.status && followUp === (prospect.followUpDate ?? "")) {
+    back({ err: "emptyupdate" }, prospectAnchor(id));
+  }
+
+  const moved = status !== prospect.status;
+
+  // Changing only the date is a real update, and an entry with nothing in it
+  // reads on the timeline as though something was lost.
+  const text =
+    note ||
+    (!moved && followUp !== (prospect.followUpDate ?? "")
+      ? followUp
+        ? "Follow-up date set."
+        : "Follow-up cleared."
+      : "");
+
+  const ok = await patchProspect(id, {
+    status,
+    followUpDate: followUp,
+    log: appendUpdate(prospect, {
+      at: new Date().toISOString(),
+      from: moved ? prospect.status : "",
+      to: status,
+      text,
+      followUp: followUp || undefined,
+    }),
+  });
+
+  if (!ok) back({ err: "save" });
+  revalidatePath(PAGE);
+  back({ msg: "prospectUpdated" }, prospectAnchor(id));
+}
+
+/**
+ * Ticks one of the three things a review-stage prospect is waiting on.
+ *
+ * Logged like any other update. "Payment received" is the kind of fact you
+ * want a date against later, and a checkbox on its own has no date.
+ */
+export async function toggleProspectGateAction(data: FormData) {
+  await requireAdmin();
+
+  const id = field(data, "id");
+  const gate = field(data, "gate");
+  const on = field(data, "on") === "1";
+
+  const GATES = {
+    mockupApproved: "the mockup approved",
+    agreementSigned: "the agreement signed",
+    paymentReceived: "payment received",
+  } as const;
+
+  if (!(gate in GATES)) back({ err: "missing" });
+  const key = gate as keyof typeof GATES;
+
+  const prospect = await getProspect(id);
+  if (!prospect) back({ err: "prospectmissing" });
+
+  const ok = await patchProspect(id, {
+    [key]: on,
+    log: appendUpdate(prospect, {
+      at: new Date().toISOString(),
+      from: "",
+      to: prospect.status,
+      text: on ? `Marked ${GATES[key]}.` : `Unmarked ${GATES[key]}.`,
+    }),
+  } as Partial<Prospect>);
+
+  if (!ok) back({ err: "save" });
+  revalidatePath(PAGE);
+  back({ msg: "prospectUpdated" }, prospectAnchor(id));
 }
 
 export async function deleteProspectAction(data: FormData) {

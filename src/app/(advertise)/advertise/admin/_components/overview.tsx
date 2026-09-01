@@ -467,6 +467,69 @@ function Unsigned({ items }: { items: AdvertiserView[] }) {
 }
 
 /**
+ * Prospects somebody promised to come back to, on or before today.
+ *
+ * A follow-up date recorded on a card two tabs away is a note to nobody. This
+ * is the half of the pipeline that has to be in front of you on the morning it
+ * matters, which is the only morning it is worth anything.
+ */
+function FollowUps({ items, today }: { items: Prospect[]; today: string }) {
+  if (items.length === 0) return null;
+  return (
+    <Card
+      title={`${items.length} follow-${items.length === 1 ? "up" : "ups"} due`}
+      lede="You said you'd get back to these. Logging an update clears them off here."
+      surface="warn"
+      className="mb-5"
+      action={
+        <a href={tabHref("prospects")} className={linkQuiet}>
+          The pipeline
+        </a>
+      }
+    >
+      <ul className="divide-y divide-white/[0.06] -my-2">
+        {items.map((p) => {
+          const overdue = (p.followUpDate ?? "") < today;
+          return (
+            <li
+              key={p.id}
+              className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm"
+            >
+              <span>
+                <span className="font-semibold text-white">{p.business}</span>
+                <span className="text-white/35">
+                  {" "}
+                  · {p.category || "no category given"}
+                </span>
+              </span>
+              <span className="flex items-center gap-4">
+                <Pill tone={overdue ? "bad" : "warn"}>
+                  {overdue ? "Overdue" : "Today"}
+                </Pill>
+                <a
+                  href={`${tabHref("prospects")}#prospect-${p.id}`}
+                  className={linkQuiet}
+                >
+                  Open
+                </a>
+                {p.phone && (
+                  <a
+                    href={`tel:${p.phone.replace(/[^\d+]/g, "")}`}
+                    className="rounded-full border border-[#DC2626]/40 px-3 py-1 text-xs font-semibold text-[#f87171] hover:bg-[#DC2626] hover:text-white hover:border-transparent transition-colors"
+                  >
+                    Call
+                  </a>
+                )}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </Card>
+  );
+}
+
+/**
  * Leads that came in on their own and haven't been picked up yet. The whole
  * point of the advertise page writing into the roster is that these stop
  * living in an inbox, so they belong on the front page, not two tabs away.
@@ -565,6 +628,8 @@ export function OverviewTab({
   replies,
   backups,
   newLeads,
+  followUps,
+  today,
   briefing,
 }: {
   summary: RosterSummary;
@@ -575,6 +640,8 @@ export function OverviewTab({
   replies: RenewalResponse[];
   backups: BackupEntry[];
   newLeads: Prospect[];
+  followUps: Prospect[];
+  today: string;
   briefing: Briefing;
 }) {
   return (
@@ -618,6 +685,8 @@ export function OverviewTab({
 
       <NewLeads leads={newLeads} />
 
+      <FollowUps items={followUps} today={today} />
+
       <Unsigned items={summary.unsigned} />
 
       <Backups entries={backups} />
@@ -626,6 +695,7 @@ export function OverviewTab({
         replies.length === 0 &&
         due.length === 0 &&
         newLeads.length === 0 &&
+        followUps.length === 0 &&
         summary.unsigned.length === 0 && (
         <div className="mb-5">
           <Empty>

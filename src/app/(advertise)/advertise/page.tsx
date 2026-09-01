@@ -28,11 +28,11 @@ const STARTING_PRICE = "$300 a month";
 export const metadata: Metadata = {
   title: "Advertise at Mex Taco House | In-Restaurant TV Advertising",
   description:
-    "Own your category on Mex Taco House's dining-room screens in Cypress, TX. 10,000+ impressions a month, one business per category, and we design your ad free. Plans from $300/mo. Managed by Smart Scale.",
+    "Own your category on Mex Taco House's dining-room screens in Cypress, TX. 10,000+ impressions a month, one business per category, and we design your ad for you. Plans from $300/mo. Managed by Smart Scale.",
   openGraph: {
     title: "Advertise at Mex Taco House | In-Restaurant TV Advertising",
     description:
-      "Own your category on Mex Taco House's dining-room screens. 10,000+ impressions a month, one business per category. We design your ad free, before you pay anything.",
+      "Own your category on Mex Taco House's dining-room screens. 10,000+ impressions a month, one business per category. We design your ad, track the scans, and report the results.",
     type: "website",
   },
 };

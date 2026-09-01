@@ -91,6 +91,18 @@ export type Advertiser = {
   /** Why they aren't on list price. Required whenever an override is set. */
   dealNote?: string;
   /**
+   * The prospect record they were converted from, and the attribution that
+   * came with it.
+   *
+   * Carried onto the advertiser rather than left behind on the prospect
+   * because the flyer that produced a paying client is worth knowing at
+   * exactly the moment it stops being a prospect — which is when the prospect
+   * list stops being where anybody looks.
+   */
+  fromProspectId?: string;
+  campaign?: string;
+  source?: string;
+  /**
    * How this client pays: the whole term up front, or invoiced monthly.
    *
    * Lives on the client rather than the plan because it is negotiated per deal
@@ -111,7 +123,46 @@ export type Advertiser = {
   updatedAt: string;
 };
 
-export type ProspectStatus = "new" | "contacted" | "hot" | "passed";
+/**
+ * Where a business is in the pipeline.
+ *
+ * `new → contacted → review → won`, with `passed` available at any point, and
+ * `hot` kept from the original four so records written before this existed
+ * still mean what they meant. Hot is a contacted prospect worth chasing rather
+ * than a stage of its own, so it groups with contacted.
+ *
+ * `won` is only ever written by a successful advertiser save. Nothing else may
+ * set it: a prospect marked won with no advertiser behind it would appear to
+ * hold a category it does not own and occupy a slot nobody is paying for.
+ */
+export type ProspectStatus =
+  | "new"
+  | "contacted"
+  | "hot"
+  | "review"
+  | "won"
+  | "passed";
+
+/** The three working stages, in pipeline order. */
+export const PROSPECT_STAGES = ["new", "contacted", "review"] as const;
+export type ProspectStage = (typeof PROSPECT_STAGES)[number];
+
+/**
+ * One thing that happened, kept forever.
+ *
+ * A single overwritten note can only hold the most recent call, and the one
+ * before it is usually the one that tells you they have gone quiet.
+ */
+export type ProspectUpdate = {
+  /** ISO timestamp. */
+  at: string;
+  /** Blank when the update didn't move them. */
+  from: ProspectStatus | "";
+  to: ProspectStatus;
+  text: string;
+  /** YYYY-MM-DD, when this update set one. */
+  followUp?: string;
+};
 
 export type Prospect = {
   id: string;
@@ -133,9 +184,61 @@ export type Prospect = {
   budget?: string;
   status: ProspectStatus;
   notes: string;
+  /** Every update logged against them, oldest first. */
+  log?: ProspectUpdate[];
+  /** When somebody should touch them next. Blank once it has been acted on. */
+  followUpDate?: string;
+  /** Set on conversion: the advertiser record they became. */
+  advertiserId?: string;
+  /**
+   * The three things that stand between "they said yes" and a client on the
+   * books. Tracked here rather than as real agreement and payment records
+   * because both of those hang off an advertiser, and an advertiser is the
+   * thing this stage exists to produce. Once converted, the real records take
+   * over and these stop being read.
+   */
+  mockupApproved?: boolean;
+  agreementSigned?: boolean;
+  paymentReceived?: boolean;
   addedAt: string;
   updatedAt: string;
 };
+
+/** Still worth working: neither converted nor passed on. */
+export function isOpenProspect(p: Prospect): boolean {
+  return p.status !== "won" && p.status !== "passed";
+}
+
+/** Which section of the Prospects tab they belong in, if any. */
+export function stageOf(p: Prospect): ProspectStage | null {
+  if (p.status === "new") return "new";
+  if (p.status === "contacted" || p.status === "hot") return "contacted";
+  if (p.status === "review") return "review";
+  return null;
+}
+
+/** Everything a review-stage prospect is waiting on has come back. */
+export function reviewComplete(p: Prospect): boolean {
+  return Boolean(p.mockupApproved && p.agreementSigned && p.paymentReceived);
+}
+
+/** Open prospects whose follow-up date has arrived or gone by, oldest first. */
+export function followUpsDue(prospects: Prospect[], asOf = today()): Prospect[] {
+  return prospects
+    .filter((p) => isOpenProspect(p) && p.followUpDate && p.followUpDate <= asOf)
+    .sort((a, b) => (a.followUpDate ?? "").localeCompare(b.followUpDate ?? ""));
+}
+
+/**
+ * The log with one more entry on it, capped so a single record can't grow
+ * without limit in a database that stores it as one value.
+ */
+export function appendUpdate(
+  existing: Prospect | null | undefined,
+  entry: ProspectUpdate,
+): ProspectUpdate[] {
+  return [...(existing?.log ?? []), entry].slice(-100);
+}
 
 /* ---------------------------------- dates --------------------------------- */
 
@@ -411,7 +514,13 @@ export async function saveAdvertiser(
 ): Promise<{ ok: boolean; id: string }> {
   const now = new Date().toISOString();
   const existing = id ? await getAdvertiser(id) : null;
+  // Merged over the existing record, not written in place of it. The edit form
+  // only knows the fields it renders, so a straight replace silently dropped
+  // everything it doesn't — which is how editing a client's phone number also
+  // cleared the end date of the agreement they had signed, and put them
+  // straight back onto the unsigned-paperwork list.
   const record: Advertiser = {
+    ...(existing ?? {}),
     ...input,
     id: existing?.id ?? id ?? newId(input.business),
     createdAt: existing?.createdAt ?? now,
@@ -433,11 +542,14 @@ export async function deleteAdvertiser(id: string): Promise<boolean> {
 
 export async function listProspects(): Promise<Prospect[]> {
   const raw = await loadCollection<Prospect>(PROSPECT_INDEX, PROSPECT_KEY);
+  // Furthest along first, so the ones closest to signing are hardest to miss.
   const rank: Record<ProspectStatus, number> = {
-    hot: 0,
-    contacted: 1,
-    new: 2,
-    passed: 3,
+    review: 0,
+    hot: 1,
+    contacted: 2,
+    new: 3,
+    won: 4,
+    passed: 5,
   };
   return raw.sort(
     (a, b) => rank[a.status] - rank[b.status] || b.addedAt.localeCompare(a.addedAt),
@@ -462,7 +574,11 @@ export async function saveProspect(
 ): Promise<{ ok: boolean; id: string }> {
   const now = new Date().toISOString();
   const existing = id ? await getProspect(id) : null;
+  // Merged for the same reason as the advertiser above: the add form carries no
+  // campaign or budget field, so saving an edited web lead used to erase which
+  // flyer sent them and what they said they could spend.
   const record: Prospect = {
+    ...(existing ?? {}),
     ...input,
     id: existing?.id ?? id ?? newId(input.business),
     addedAt: existing?.addedAt ?? now,
@@ -473,6 +589,41 @@ export async function saveProspect(
     ["SADD", PROSPECT_INDEX, record.id],
   ]);
   return { ok, id: record.id };
+}
+
+/**
+ * Changes only the fields named, leaving the rest alone.
+ *
+ * What the update log, the review checklist and the conversion marker all
+ * write through. They each touch two or three fields and must not have an
+ * opinion about the other twenty.
+ */
+export async function patchProspect(
+  id: string,
+  patch: Partial<Prospect>,
+): Promise<boolean> {
+  const existing = await getProspect(id);
+  if (!existing) return false;
+  const record: Prospect = {
+    ...existing,
+    ...patch,
+    id: existing.id,
+    addedAt: existing.addedAt,
+    updatedAt: new Date().toISOString(),
+  };
+  return redisWrite([
+    ["SET", PROSPECT_KEY(record.id), JSON.stringify(record)],
+    ["SADD", PROSPECT_INDEX, record.id],
+  ]);
+}
+
+/** The prospect a given advertiser was converted from, if there was one. */
+export async function findProspectByAdvertiser(
+  advertiserId: string,
+): Promise<Prospect | null> {
+  if (!advertiserId) return null;
+  const all = await listProspects();
+  return all.find((p) => p.advertiserId === advertiserId) ?? null;
 }
 
 export async function deleteProspect(id: string): Promise<boolean> {

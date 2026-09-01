@@ -14,6 +14,7 @@
 
 import { redisPipeline } from "./redis";
 import {
+  appendUpdate,
   categoryConflict,
   listAdvertisers,
   listProspects,
@@ -153,6 +154,11 @@ export async function recordLead(
     const stampedAt = new Date().toISOString().slice(0, 10);
     const note = noteFor(lead, stampedAt);
 
+    // Somebody already on the screens filling the form in again is not a lead.
+    // Treating them as one puts a paying client back at the top of the queue
+    // and texts the team about winning business they already have.
+    const isClient = existing?.status === "won";
+
     const { ok } = await saveProspect(
       {
         business: lead.business || lead.name,
@@ -171,6 +177,20 @@ export async function recordLead(
         // should reappear in the queue.
         status: !existing || existing.status === "passed" ? "new" : existing.status,
         notes: existing?.notes ? `${existing.notes}\n${note}` : note,
+        // The form submission goes on the timeline too, so a prospect worked by
+        // hand and a prospect who came back on their own read the same way.
+        log: appendUpdate(existing, {
+          at: new Date().toISOString(),
+          from: "",
+          to: existing?.status ?? "new",
+          text: isClient
+            ? `Filled in the advertise form again while already on the screens.${
+                lead.message ? ` "${lead.message}"` : ""
+              }`
+            : `${existing ? "Came back through" : "Arrived from"} the advertise page.${
+                lead.budget ? ` Budget: ${lead.budget}.` : ""
+              }${lead.packageInterest ? ` Wants: ${lead.packageInterest}.` : ""}`,
+        }),
       },
       existing?.id,
     );
@@ -190,11 +210,17 @@ export async function recordLead(
       : "no category given";
 
     await sendTeamSms(
-      `Mex Taco ads · NEW LEAD${existing ? " (repeat)" : ""}: ${
-        lead.business || lead.name
-      }. ${category}. ${lead.phone || lead.email}. Budget ${
-        lead.budget || "not given"
-      }${lead.campaign ? `. From ${lead.campaign}` : ""}. smartscaleagent.com/advertise/admin?tab=prospects`,
+      isClient
+        ? `Mex Taco ads · CURRENT CLIENT enquiry: ${
+            lead.business || lead.name
+          } used the advertise form. ${lead.phone || lead.email}${
+            lead.message ? `. "${lead.message.slice(0, 120)}"` : ""
+          }. smartscaleagent.com/advertise/admin?tab=prospects`
+        : `Mex Taco ads · NEW LEAD${existing ? " (repeat)" : ""}: ${
+            lead.business || lead.name
+          }. ${category}. ${lead.phone || lead.email}. Budget ${
+            lead.budget || "not given"
+          }${lead.campaign ? `. From ${lead.campaign}` : ""}. smartscaleagent.com/advertise/admin?tab=prospects`,
     );
 
     return { ok: true };

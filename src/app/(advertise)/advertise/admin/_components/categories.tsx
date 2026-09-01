@@ -9,9 +9,12 @@
  * two tabs and a date nobody was comparing.
  */
 
-import type { AdvertiserView } from "@/lib/ads/roster";
-import { formatDate } from "@/lib/ads/roster";
-import type { Prospect } from "@/lib/ads/roster";
+import {
+  formatDate,
+  isOpenProspect,
+  type AdvertiserView,
+  type Prospect,
+} from "@/lib/ads/roster";
 import { tabHref } from "./types";
 import { Card, Empty, Pill, SubHead, linkQuiet, money } from "./ui";
 
@@ -44,7 +47,10 @@ export function buildCategories(
   }
 
   for (const prospect of prospects) {
-    if (prospect.status === "passed" || !prospect.category.trim()) continue;
+    // Converted and passed prospects are both finished business: one now holds
+    // the category as an advertiser, the other isn't coming. Either one left in
+    // here shows the same business as both holding a category and queuing for it.
+    if (!isOpenProspect(prospect) || !prospect.category.trim()) continue;
     const key = normalise(prospect.category);
     const existing = rows.get(key);
     if (existing) existing.waiting.push(prospect);

@@ -38,6 +38,8 @@ export type BriefingFacts = {
   unsignedCount: number;
   newLeadCount: number;
   repliesWaiting: number;
+  /** Prospects somebody promised to come back to, on or before today. */
+  followUpsDue: number;
   /** Every number above, flattened — the only figures a draft may contain. */
   allowedNumbers: number[];
 };
@@ -53,7 +55,12 @@ export type Briefing = {
 
 export function collectFacts(
   summary: RosterSummary,
-  extras: { newLeads: number; replies: number; unsigned: number },
+  extras: {
+    newLeads: number;
+    replies: number;
+    unsigned: number;
+    followUps: number;
+  },
 ): BriefingFacts {
   const expiring = summary.expiring.map((v: AdvertiserView) => ({
     business: v.business,
@@ -77,6 +84,7 @@ export function collectFacts(
     unsignedCount: extras.unsigned,
     newLeadCount: extras.newLeads,
     repliesWaiting: extras.replies,
+    followUpsDue: extras.followUps,
   };
 
   // Numbers inside the words the model is shown count as permitted — a business
@@ -97,6 +105,7 @@ export function collectFacts(
         facts.unsignedCount,
         facts.newLeadCount,
         facts.repliesWaiting,
+        facts.followUpsDue,
         ...expiring.map((e) => e.days),
         ...overdue.map((o) => o.daysAgo),
         ...fromWords,
@@ -112,6 +121,7 @@ export function isQuiet(facts: BriefingFacts): boolean {
     facts.overdue.length === 0 &&
     facts.newLeadCount === 0 &&
     facts.repliesWaiting === 0 &&
+    facts.followUpsDue === 0 &&
     facts.unsignedCount === 0
   );
 }
@@ -158,6 +168,12 @@ export function templateBriefing(facts: BriefingFacts): string {
   if (facts.newLeadCount > 0) {
     parts.push(
       `${facts.newLeadCount} new lead${facts.newLeadCount === 1 ? "" : "s"} from the advertise page.`,
+    );
+  }
+
+  if (facts.followUpsDue > 0) {
+    parts.push(
+      `${facts.followUpsDue} prospect${facts.followUpsDue === 1 ? "" : "s"} ${facts.followUpsDue === 1 ? "is" : "are"} due a follow-up.`,
     );
   }
 
@@ -208,6 +224,7 @@ function factSheet(facts: BriefingFacts): string {
 
   if (facts.repliesWaiting > 0) lines.push(`Advertiser replies waiting: ${facts.repliesWaiting}`);
   if (facts.newLeadCount > 0) lines.push(`New leads not yet worked: ${facts.newLeadCount}`);
+  if (facts.followUpsDue > 0) lines.push(`Prospects due a follow-up today or earlier: ${facts.followUpsDue}`);
   if (facts.unsignedCount > 0) lines.push(`Clients running with no signed agreement: ${facts.unsignedCount}`);
 
   return lines.join("\n");
