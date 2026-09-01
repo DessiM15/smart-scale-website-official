@@ -4,10 +4,15 @@
  * The advertise page: one decision, made as easy as possible.
  *
  * It used to be a catalogue. You browsed three priced tiers and picked one,
- * which asks a stranger to choose a contract before they have seen anything we
- * would make for them. It is now a lead page with a single offer, a free
- * mockup of their own ad, and every section below the fold exists to answer a
- * doubt about taking it.
+ * which asks a stranger to choose a contract before they have spoken to
+ * anybody. It is now a lead page with a single offer, finding out whether
+ * their category is still open, and every section below the fold exists to
+ * answer a doubt about taking it.
+ *
+ * The offer used to be a free mockup. Design is now covered by the one-time
+ * setup fee, so nothing on this page may promise it for nothing — a page that
+ * gives away work the contract charges for is a page that argues with its own
+ * invoice.
  *
  * The live half comes from the tracker. How many slots are left is read from
  * the roster on the server, so the page cannot claim a slot is going after it
@@ -76,10 +81,10 @@ const BUDGETS = [
 ];
 
 const TICKER = [
-  { text: "FREE AD DESIGN, ALWAYS", gold: true },
+  { text: "AD DESIGN DONE FOR YOU", gold: true },
   { text: "ONE BUSINESS PER CATEGORY", gold: false },
   { text: "LIVE IN DAYS, NOT WEEKS", gold: true },
-  { text: "NO COMMITMENT TO SEE IT", gold: false },
+  { text: "10,000+ IMPRESSIONS A MONTH", gold: false },
 ];
 
 const INCLUDED = [
@@ -333,8 +338,7 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
 
             <p className="text-white/80 text-base sm:text-lg leading-relaxed max-w-lg mt-3">
               10,000+ impressions a month on the screens at Mex Taco House in
-              Cypress. One business per category, and we design the ad for you,
-              free.
+              Cypress. One business per category, and we design the ad for you.
             </p>
 
             <a
@@ -349,7 +353,7 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
           </div>
 
           {/* the form, in the fold */}
-          <div id="mockup" className="scroll-mt-24">
+          <div id="quote" className="scroll-mt-24">
             {isSubmitted ? (
               <SuccessCard phoneDisplay={phoneDisplay} phoneHref={phoneHref} />
             ) : (
@@ -357,7 +361,7 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
                 onSubmit={handleSubmit}
                 className="bg-white rounded-3xl p-6 sm:p-7 shadow-2xl shadow-black/50 border-t-[5px] border-[#DC2626] flex flex-col gap-4"
               >
-                <input type="hidden" name="subject" value="Free ad mockup request, Mex Taco House" />
+                <input type="hidden" name="subject" value="Advertising enquiry, Mex Taco House" />
                 <input type="hidden" name="src" value={source} />
                 {/* Spam trap. Off-screen rather than display:none, because a
                     hidden field is the first thing a bot learns to skip. */}
@@ -371,10 +375,10 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
                     className="text-[2.1rem] sm:text-[2.4rem] leading-none text-[#1a1210]"
                     style={{ fontFamily: "var(--font-bebas), Impact, sans-serif" }}
                   >
-                    Get your free mockup
+                    See if your category is open
                   </p>
                   <p className="text-sm text-[#7a6a5d] mt-1">
-                    We design it. Then you decide.
+                    One business per category. We will tell you straight.
                   </p>
                 </div>
 
@@ -433,7 +437,7 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
                   className="w-full rounded-full bg-[#DC2626] text-white text-2xl py-3.5 hover:bg-[#b91c1c] transition-colors disabled:opacity-60"
                   style={{ fontFamily: "var(--font-bebas), Impact, sans-serif" }}
                 >
-                  {isSubmitting ? "Sending" : "Send me my free mockup"}
+                  {isSubmitting ? "Sending" : "Check my category"}
                 </button>
                 <p className="text-xs text-[#9a8b7d] text-center">
                   Back within 24 hours. No spam, no obligation.
@@ -556,7 +560,7 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
           </div>
 
           <a
-            href="#mockup"
+            href="#quote"
             className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#DC2626] text-white text-2xl px-8 py-3.5 hover:bg-[#b91c1c] transition-colors"
             style={{ fontFamily: "var(--font-bebas), Impact, sans-serif" }}
           >
@@ -662,7 +666,7 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
                 </button>
               ))}
               <a
-                href="#mockup"
+                href="#quote"
                 className="bg-[#0b0b0d] rounded-xl p-2 col-span-4 lg:col-span-1"
               >
                 <div className="rounded border-2 border-dashed border-[#f0c674]/50 aspect-[16/10] flex flex-col items-center justify-center">
@@ -697,22 +701,22 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
             className="text-2xl sm:text-[1.7rem] text-[#DC2626] leading-none"
             style={{ fontFamily: "var(--font-shadows), cursive" }}
           >
-            Nothing to lose
+            Straightforward
           </p>
           <h2
             className="text-5xl sm:text-6xl lg:text-7xl leading-[0.9] mb-9"
             style={{ fontFamily: "var(--font-bebas), Impact, sans-serif" }}
           >
-            Three steps, no commitment
+            Three steps to on screen
           </h2>
 
           <div className="grid md:grid-cols-3 gap-5" data-animate="stagger">
             <Step n="01" title="Tell us about your business">
               Sixty seconds, six fields. That is the whole ask.
             </Step>
-            <Step n="02" title="We design your ad, free" highlight>
-              A real mockup in your inbox within 24 hours. If you do not love it,
-              you owe nothing.
+            <Step n="02" title="We design your ad" highlight>
+              In your hands within 24 hours, with revisions until it is right.
+              The design is covered by your one-time setup fee.
             </Step>
             <Step n="03" title="Approve, and you are live">
               On the screens the next business day.
@@ -768,7 +772,7 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
             </p>
             <div className="flex flex-wrap gap-3 mt-2">
               <a
-                href="#mockup"
+                href="#quote"
                 className="px-7 py-3 rounded-full bg-[#DC2626] text-white text-2xl hover:bg-[#b91c1c] transition-colors"
                 style={{ fontFamily: "var(--font-bebas), Impact, sans-serif" }}
               >
@@ -852,26 +856,26 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
               className="text-2xl sm:text-3xl text-[#f0c674] leading-none mb-1"
               style={{ fontFamily: "var(--font-shadows), cursive" }}
             >
-              No catch, no card
+              One business per category
             </p>
             <h2
               className="text-white text-4xl sm:text-5xl lg:text-[3.7rem] leading-[0.9]"
               style={{ fontFamily: "var(--font-bebas), Impact, sans-serif" }}
             >
-              The mockup is free.
+              Your category is open
               <br />
-              The category might not be
+              today. It might not be
               <br />
               here next month.
             </h2>
           </div>
           <div className="relative flex flex-col gap-3 flex-shrink-0">
             <a
-              href="#mockup"
+              href="#quote"
               className="px-8 py-4 rounded-full bg-white text-[#DC2626] text-2xl text-center hover:bg-white/90 transition-colors"
               style={{ fontFamily: "var(--font-bebas), Impact, sans-serif" }}
             >
-              Get my free mockup
+              Claim my category
             </a>
             <a
               href={phoneHref}
@@ -902,11 +906,11 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
       {!isSubmitted && (
         <div className="lg:hidden fixed bottom-0 inset-x-0 z-50 bg-white/97 backdrop-blur border-t border-black/10 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex items-center gap-3">
           <a
-            href="#mockup"
+            href="#quote"
             className="flex-1 text-center rounded-full bg-[#DC2626] text-white text-2xl py-3"
             style={{ fontFamily: "var(--font-bebas), Impact, sans-serif" }}
           >
-            Free mockup
+            Claim my slot
           </a>
           <a
             href={phoneHref}
@@ -1109,10 +1113,11 @@ function SuccessCard({
         Done
       </h3>
       <p className="text-[#5c4f45] mb-2 animate-[fade-slide-up_0.5s_ease-out_1.2s_both]">
-        Your free mockup will be in your hands within 24 hours.
+        We will come back to you within 24 hours.
       </p>
       <p className="text-sm text-[#9a8b7d] mb-6 animate-[fade-slide-up_0.5s_ease-out_1.4s_both]">
-        We will call or email to walk you through it. Nothing to pay either way.
+        We will call or email with whether your category is open and what the
+        spot would cost.
       </p>
       <a
         href={phoneHref}
