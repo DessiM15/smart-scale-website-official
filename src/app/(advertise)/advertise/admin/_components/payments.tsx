@@ -67,7 +67,7 @@ export function MonthControls({
   const href = (f: PaymentsFilter) => `${PAGE}?month=${month}${f === "all" ? "" : `&show=${f}`}`;
   return (
     <div className="flex flex-wrap items-center gap-2 mb-6">
-      <form method="get" className="relative">
+      <form method="get" className="flex items-center gap-2">
         <label className="sr-only" htmlFor="month">Month</label>
         <select
           id="month"
@@ -80,7 +80,7 @@ export function MonthControls({
           ))}
         </select>
         {filter !== "all" && <input type="hidden" name="show" value={filter} />}
-        <button type="submit" className={`${btnGhost} ${btnSm} ml-2`}>Go</button>
+        <button type="submit" className={`${btnGhost} ${btnSm}`}>Go</button>
       </form>
       <span className="hidden sm:block w-px h-6 bg-white/10 mx-1" />
       <FilterPill href={href("all")} on={filter === "all"}>All</FilterPill>

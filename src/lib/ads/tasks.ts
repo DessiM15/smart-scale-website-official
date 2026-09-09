@@ -336,15 +336,34 @@ export function buildToday(input: TodayInput): TodayItem[] {
     });
   }
 
+  // One row per client, however many months they are behind. Seven rows for
+  // one client is a wall, not a list; the oldest month is the one to collect.
+  const byClient = new Map<string, ExpectedPayment[]>();
   for (const e of input.overduePayments) {
+    if (!byClient.has(e.advertiserId)) byClient.set(e.advertiserId, []);
+    byClient.get(e.advertiserId)!.push(e);
+  }
+  for (const [advertiserId, list] of byClient) {
+    const oldest = list[0];
+    const total = list.reduce((sum, e) => sum + e.amount, 0);
+    const late = list.some((e) => e.status === "late");
     items.push({
-      key: `payment:${e.advertiserId}:${e.period}`,
+      key: `payment:${advertiserId}:${oldest.period}`,
       kind: "payment",
-      tone: e.status === "late" ? "bad" : "warn",
-      title: `${e.business} · $${e.amount.toLocaleString("en-US", { maximumFractionDigits: 0 })} ${e.status}`,
-      detail: `${e.label} · due ${formatDate(e.dueDate)}${e.daysLate > 0 ? ` · ${e.daysLate} days ago` : ""}`,
-      order: -e.daysLate,
-      actions: [{ type: "markPaid", advertiserId: e.advertiserId, period: e.period, amount: e.amount }],
+      tone: late ? "bad" : "warn",
+      title:
+        list.length === 1
+          ? `${oldest.business} · $${oldest.amount.toLocaleString("en-US", { maximumFractionDigits: 0 })} ${oldest.status}`
+          : `${oldest.business} · $${total.toLocaleString("en-US", { maximumFractionDigits: 0 })} across ${list.length} months`,
+      detail:
+        list.length === 1
+          ? `${oldest.label} · due ${formatDate(oldest.dueDate)}${oldest.daysLate > 0 ? ` · ${oldest.daysLate} days ago` : ""}`
+          : `Oldest is ${oldest.label.toLowerCase()}, due ${formatDate(oldest.dueDate)} · ${oldest.daysLate} days ago · Mark paid takes the oldest first`,
+      order: -oldest.daysLate,
+      actions: [
+        { type: "markPaid", advertiserId, period: oldest.period, amount: oldest.amount },
+        ...(list.length > 1 ? [{ type: "link", label: "All months", href: `${ADMIN}/advertisers?open=${advertiserId}&panel=payments` } as TodayAction] : []),
+      ],
     });
   }
 
