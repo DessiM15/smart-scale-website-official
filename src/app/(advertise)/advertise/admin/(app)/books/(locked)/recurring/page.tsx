@@ -41,8 +41,8 @@ export default async function RecurringPage({
       />
 
       <Card
-        title={due ? `${due} due, not yet logged` : "This month"}
-        lede="Each bill shows on Today on its day. Log it when the charge lands; the amount can be changed on the ledger if it differs."
+        title={due ? `${due} due, not yet paid` : "This month"}
+        lede="Each bill shows on Today on its day. Tap Paid when the charge has come out and it's logged for the month; change the amount on the ledger if it differed."
         padding="px-5 sm:px-6 pt-5 pb-2"
       >
         <BillsTable bills={bills} expected={expected} month={month} returnTo={PAGE} />

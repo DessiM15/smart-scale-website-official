@@ -88,6 +88,12 @@ async function loadByIds(ids: string[]): Promise<Payment[]> {
     .sort((a, b) => b.receivedOn.localeCompare(a.receivedOn));
 }
 
+export async function getPayment(id: string): Promise<Payment | null> {
+  if (!id) return null;
+  const [raw] = await redisPipeline([["GET", KEY(id)]]);
+  return parse(raw);
+}
+
 export async function listPayments(advertiserId: string): Promise<Payment[]> {
   const [ids] = await redisPipeline([["SMEMBERS", BY_ADVERTISER(advertiserId)]]);
   return loadByIds(Array.isArray(ids) ? ids.map(String) : []);

@@ -24,6 +24,7 @@ export type EntryDefaults = {
   partner?: string;
   memo?: string;
   direction?: "in" | "out";
+  toAccount?: string;
   noReceipt?: boolean;
 };
 
@@ -37,6 +38,7 @@ export function EntryForm({
   submitLabel,
   pendingLabel = "Saving",
   lockKind,
+  kinds,
   showNoReceipt,
   id = "entry",
   submitClass = btnSolid,
@@ -52,6 +54,8 @@ export function EntryForm({
   pendingLabel?: string;
   /** For a receipt: it is an expense, full stop. */
   lockKind?: EntryKind;
+  /** Offer only these kinds. A receipt is a purchase or a cash withdrawal, never income. */
+  kinds?: EntryKind[];
   showNoReceipt?: boolean;
   id?: string;
   submitClass?: string;
@@ -59,6 +63,7 @@ export function EntryForm({
 }) {
   const [kind, setKind] = useState<EntryKind>(lockKind ?? defaults.kind ?? "expense");
   const meta = KINDS.find((k) => k.id === kind)!;
+  const offered = kinds ? KINDS.filter((k) => kinds.includes(k.id)) : KINDS;
   const categories = CATEGORIES.filter((c) => c.kind === (meta.category as CategoryKind));
   const owner = kind === "contribution" || kind === "draw";
   const transfer = kind === "transfer";
@@ -94,7 +99,7 @@ export function EntryForm({
               onChange={(e) => setKind(e.target.value as EntryKind)}
               className={selectClass}
             >
-              {KINDS.map((k) => (
+              {offered.map((k) => (
                 <option key={k.id} value={k.id}>{k.label}</option>
               ))}
             </select>
@@ -154,10 +159,11 @@ export function EntryForm({
           </div>
         ) : transfer ? (
           <div>
-            <label className={labelClass} htmlFor={f("direction")}>Which way</label>
-            <select id={f("direction")} name="direction" defaultValue={defaults.direction ?? "out"} className={selectClass}>
-              <option value="out">Out of this account</option>
-              <option value="in">Into this account</option>
+            <label className={labelClass} htmlFor={f("toAccount")}>Account it went to</label>
+            <select id={f("toAccount")} name="toAccount" defaultValue={defaults.toAccount ?? "cash"} className={selectClass}>
+              {ACCOUNTS.map((a) => (
+                <option key={a.id} value={a.id}>{a.label}</option>
+              ))}
             </select>
           </div>
         ) : kind === "income" ? (
@@ -187,7 +193,7 @@ export function EntryForm({
       )}
       {owner && <input type="hidden" name="party" value="" />}
       {transfer && (
-        <Field label="Other account, in words" name="party" id={f("party-tr")} defaultValue={defaults.party} placeholder="Stripe payout to the bank" />
+        <Field label="What it was" name="party" id={f("party-tr")} defaultValue={defaults.party} placeholder="ATM withdrawal, Stripe payout" />
       )}
 
       <Field label="Memo" name="memo" id={f("memo")} defaultValue={defaults.memo} placeholder="What it was for" />

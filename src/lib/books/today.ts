@@ -10,7 +10,7 @@
 import type { TodayAction, TodayItem } from "@/lib/ads/tasks";
 import { formatDate } from "@/lib/ads/roster";
 import { missingReceipts, type Entry } from "./ledger";
-import { formatCents } from "./money";
+import { formatCents, monthName } from "./money";
 import type { Receipt } from "./receipts";
 import type { ExpectedBill } from "./recurring";
 import type { VaultDoc } from "./vault";
@@ -62,8 +62,8 @@ export function buildBooksToday(input: BooksTodayInput): TodayItem[] {
       key: `bill:${b.bill.id}:${b.month}`,
       kind: "bill",
       tone: b.daysLate > 3 ? "bad" : "warn",
-      title: `${b.bill.vendor} · ${formatCents(b.bill.cents)} expected`,
-      detail: `Usually on the ${ordinal(b.bill.day)}${b.daysLate > 0 ? ` · ${b.daysLate} ${b.daysLate === 1 ? "day" : "days"} ago` : " · today"} · Log it once the charge shows`,
+      title: `${b.bill.vendor} · ${formatCents(b.bill.cents)} due${b.daysLate > 0 ? ` ${b.daysLate} ${b.daysLate === 1 ? "day" : "days"} ago` : " today"}`,
+      detail: `Comes out on the ${ordinal(b.bill.day)} each month · tap Paid once it has, and it's logged for ${monthName(b.month)}`,
       order: -b.daysLate,
       actions: [
         { type: "logBill", id: b.bill.id, month: b.month } as TodayAction,

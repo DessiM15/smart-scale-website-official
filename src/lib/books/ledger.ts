@@ -34,6 +34,8 @@ export type Entry = {
   kind: EntryKind;
   category: string;
   account: Account;
+  /** On a transfer: where the money went. A withdrawal is checking → cash. */
+  toAccount?: Account;
   /** Who paid, or who was paid. */
   party: string;
   /** A Books client, when the money came from one. */
@@ -72,7 +74,10 @@ export function validateEntry(input: EntryInput): string | null {
   if (!isCategoryId(input.category)) return "Pick a category.";
   if (categoryOf(input.category).kind !== kind.category) return "That category doesn't fit that kind of entry.";
   if (!isAccount(input.account)) return "Which account did it go through?";
-  if (kind.id === "transfer" && !input.direction) return "Which way did the transfer go?";
+  if (kind.id === "transfer") {
+    if (!input.toAccount || !isAccount(input.toAccount)) return "Where did the money go? Pick the account it moved to.";
+    if (input.toAccount === input.account) return "A transfer needs two different accounts.";
+  }
   if ((kind.id === "contribution" || kind.id === "draw") && !input.partner) return "Whose money is it? Pick Dessi or Jay.";
   if (!input.party && kind.id !== "contribution" && kind.id !== "draw" && kind.id !== "transfer") {
     return "Who was it from, or who was it to?";
@@ -80,9 +85,37 @@ export function validateEntry(input: EntryInput): string | null {
   return null;
 }
 
-/** The direction a kind implies, or the one given for a transfer. */
+/** The direction a kind implies. A transfer leaves `account` for `toAccount`. */
 export function directionFor(kind: EntryKind, given?: Direction): Direction {
   return kindOf(kind)?.direction ?? given ?? "out";
+}
+
+/* -------------------------------- balances -------------------------------- */
+
+/**
+ * Where the money is, from every row ever logged.
+ *
+ * The books started the week the account opened, so this is the real
+ * balance of each account as long as everything has been logged: money in
+ * adds, money out subtracts, and a transfer subtracts from one account and
+ * adds to the other. Cash on hand is the number people actually forget.
+ */
+export function accountBalances(entries: Entry[]): Record<Account, number> {
+  const b: Record<Account, number> = { checking: 0, stripe: 0, cash: 0 };
+  for (const e of entries) {
+    if (e.kind === "transfer") {
+      if (e.toAccount) {
+        b[e.account] -= e.cents;
+        b[e.toAccount] += e.cents;
+      } else {
+        // Older transfers only knew one side.
+        b[e.account] += e.direction === "in" ? e.cents : -e.cents;
+      }
+      continue;
+    }
+    b[e.account] += e.direction === "in" ? e.cents : -e.cents;
+  }
+  return b;
 }
 
 /* --------------------------------- storage -------------------------------- */
@@ -131,10 +164,35 @@ export async function listAllEntries(): Promise<Entry[]> {
   return loadByIds(ids);
 }
 
-export async function entryBySource(ref: string): Promise<Entry | null> {
+const IGNORED = "ignored:";
+
+export type SourceStatus = { kind: "entry"; entry: Entry } | { kind: "ignored"; reason: string } | null;
+
+/** What the books have done with an outside record: posted it, left it out, or nothing yet. */
+export async function sourceStatus(ref: string): Promise<SourceStatus> {
   if (!ref) return null;
-  const [id] = await redisPipeline([["GET", SOURCE(ref)]]);
-  return id ? getEntry(String(id)) : null;
+  const [raw] = await redisPipeline([["GET", SOURCE(ref)]]);
+  if (!raw) return null;
+  const value = String(raw);
+  if (value.startsWith(IGNORED)) return { kind: "ignored", reason: value.slice(IGNORED.length) };
+  const entry = await getEntry(value);
+  return entry ? { kind: "entry", entry } : null;
+}
+
+export async function entryBySource(ref: string): Promise<Entry | null> {
+  const status = await sourceStatus(ref);
+  return status?.kind === "entry" ? status.entry : null;
+}
+
+/** Say an outside record is not business money, so it is never offered again. */
+export async function ignoreSource(ref: string, reason: string): Promise<boolean> {
+  return redisWrite([["SET", SOURCE(ref), `${IGNORED}${reason.slice(0, 160)}`]]);
+}
+
+export async function unignoreSource(ref: string): Promise<boolean> {
+  const status = await sourceStatus(ref);
+  if (status?.kind !== "ignored") return false;
+  return redisWrite([["DEL", SOURCE(ref)]]);
 }
 
 export type SaveResult = { ok: true; entry: Entry } | { ok: false; error: string };
@@ -143,10 +201,12 @@ export async function addEntry(input: EntryInput): Promise<SaveResult> {
   const invalid = validateEntry(input);
   if (invalid) return { ok: false, error: invalid };
 
-  // The same ad payment or bill must never land twice.
+  // The same ad payment or bill must never land twice, and one that was
+  // deliberately left out stays out.
   if (input.sourceRef) {
-    const existing = await entryBySource(input.sourceRef);
-    if (existing) return { ok: true, entry: existing };
+    const status = await sourceStatus(input.sourceRef);
+    if (status?.kind === "entry") return { ok: true, entry: status.entry };
+    if (status?.kind === "ignored") return { ok: false, error: `That was left out of the books on purpose: ${status.reason}.` };
   }
 
   const now = new Date().toISOString();
@@ -204,7 +264,12 @@ export async function deleteEntry(id: string): Promise<Entry | null> {
     ["DEL", KEY(id)],
     ["SREM", MONTH(monthOf(entry.date)), id],
   ];
-  if (entry.sourceRef) commands.push(["DEL", SOURCE(entry.sourceRef)]);
+  if (entry.sourceRef) {
+    // An ad payment removed by hand is a decision to leave it out; a bill
+    // removed by hand should simply come back as due.
+    if (entry.source === "ads") commands.push(["SET", SOURCE(entry.sourceRef), `${IGNORED}removed from the ledger`]);
+    else commands.push(["DEL", SOURCE(entry.sourceRef)]);
+  }
   const ok = await redisWrite(commands);
   return ok ? entry : null;
 }

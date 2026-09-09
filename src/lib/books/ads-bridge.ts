@@ -9,7 +9,7 @@
 
 import type { Payment } from "@/lib/ads/payments";
 import { ensureClientForAdvertiser } from "./clients";
-import { addEntry, deleteEntry, entryBySource, type Account, type Entry } from "./ledger";
+import { addEntry, deleteEntry, entryBySource, ignoreSource, sourceStatus, unignoreSource, type Account, type Entry } from "./ledger";
 
 export const adPaymentRef = (paymentId: string) => `ads:payment:${paymentId}`;
 
@@ -44,11 +44,30 @@ export async function unpostAdPayment(paymentId: string): Promise<void> {
   if (entry) await deleteEntry(entry.id);
 }
 
-/** Ad payments the ledger has never seen, so the two can be brought level. */
-export async function unpostedAdPayments(payments: Payment[]): Promise<Payment[]> {
-  const out: Payment[] = [];
-  for (const p of payments) {
-    if (!(await entryBySource(adPaymentRef(p.id)))) out.push(p);
+export type AdPaymentState = { payment: Payment; state: "posted"; entry: Entry } | { payment: Payment; state: "left-out"; reason: string } | { payment: Payment; state: "waiting" };
+
+/** Every ad payment and what the books did with it, newest first. */
+export async function adPaymentStates(payments: Payment[]): Promise<AdPaymentState[]> {
+  const out: AdPaymentState[] = [];
+  for (const payment of payments) {
+    const status = await sourceStatus(adPaymentRef(payment.id));
+    if (status?.kind === "entry") out.push({ payment, state: "posted", entry: status.entry });
+    else if (status?.kind === "ignored") out.push({ payment, state: "left-out", reason: status.reason });
+    else out.push({ payment, state: "waiting" });
   }
-  return out;
+  return out.sort((a, b) => b.payment.receivedOn.localeCompare(a.payment.receivedOn));
+}
+
+/** Ad payments the ledger has never seen and nobody has left out. */
+export async function unpostedAdPayments(payments: Payment[]): Promise<Payment[]> {
+  return (await adPaymentStates(payments)).filter((s) => s.state === "waiting").map((s) => s.payment);
+}
+
+/** Money that was never the LLC's: paid before it existed, or to a personal account. */
+export async function leaveOutAdPayment(paymentId: string, reason: string): Promise<boolean> {
+  return ignoreSource(adPaymentRef(paymentId), reason || "not business money");
+}
+
+export async function bringBackAdPayment(paymentId: string): Promise<boolean> {
+  return unignoreSource(adPaymentRef(paymentId));
 }

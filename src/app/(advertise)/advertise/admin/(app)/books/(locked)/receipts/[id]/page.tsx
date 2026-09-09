@@ -91,18 +91,37 @@ export default async function ConfirmReceiptPage({
                   )}
                 </div>
 
+                {read?.kind === "cash-withdrawal" && (
+                  <p className="mb-4 text-sm text-[#E0B36A]">
+                    This looks like a cash withdrawal. Taking cash out isn&apos;t spending: it moves money from the bank to Cash, and what you buy with it gets logged from Cash as you go.
+                  </p>
+                )}
                 <EntryForm
                   id="confirm"
                   action={confirmReceiptAction}
                   hidden={{ receiptId: receipt.id, returnTo: BOOKS }}
-                  lockKind="expense"
-                  defaults={{
-                    amount: read?.total != null ? centsToInput(read.total) : "",
-                    date: read?.date || undefined,
-                    category: read?.category,
-                    party: read?.vendor,
-                    memo: read?.summary,
-                  }}
+                  kinds={["expense", "transfer"]}
+                  defaults={
+                    read?.kind === "cash-withdrawal"
+                      ? {
+                          kind: "transfer",
+                          amount: read.total != null ? centsToInput(read.total) : "",
+                          date: read.date || undefined,
+                          category: "transfer",
+                          account: "checking",
+                          toAccount: "cash",
+                          party: read.vendor ? `ATM withdrawal, ${read.vendor}` : "ATM withdrawal",
+                          memo: read.summary,
+                        }
+                      : {
+                          kind: "expense",
+                          amount: read?.total != null ? centsToInput(read.total) : "",
+                          date: read?.date || undefined,
+                          category: read?.category,
+                          party: read?.vendor,
+                          memo: read?.summary,
+                        }
+                  }
                   clients={clients}
                   team={TEAM}
                   today={today()}

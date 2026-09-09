@@ -5,15 +5,20 @@
 
 import {
   attachReceiptAction,
+  bringBackAdPaymentAction,
   deleteBillAction,
   deleteEntryAction,
+  importAdPaymentsAction,
+  leaveOutAdPaymentAction,
   logBillAction,
+  postAdPaymentAction,
   snapReceiptAction,
   toggleBillAction,
   updateEntryAction,
 } from "../(app)/books/actions";
+import type { AdPaymentState } from "@/lib/books/ads-bridge";
 import { categoryOf } from "@/lib/books/categories";
-import { accountLabel, type Entry, type Totals } from "@/lib/books/ledger";
+import { ACCOUNTS, accountLabel, type Account, type Entry, type Totals } from "@/lib/books/ledger";
 import { centsToInput, formatCents } from "@/lib/books/money";
 import { receiptHref } from "@/lib/books/receipts";
 import type { ExpectedBill, RecurringBill } from "@/lib/books/recurring";
@@ -31,6 +36,7 @@ import {
   bebas,
   btnDanger,
   btnGhost,
+  btnPrimary,
   btnSm,
   inputClass,
   labelClass,
@@ -117,7 +123,12 @@ export function LedgerRow({
 }) {
   const category = categoryOf(entry.category);
   const client = entry.clientId ? clients.find((c) => c.id === entry.clientId) : undefined;
-  const who = entry.kind === "contribution" || entry.kind === "draw" ? entry.partner : client?.name ?? entry.party;
+  const who =
+    entry.kind === "contribution" || entry.kind === "draw"
+      ? entry.partner
+      : entry.kind === "transfer"
+        ? `${accountLabel(entry.account)} → ${entry.toAccount ? accountLabel(entry.toAccount) : entry.direction === "in" ? "in" : "out"}${entry.party ? ` · ${entry.party}` : ""}`
+        : client?.name ?? entry.party;
   return (
     <li id={`entry-${entry.id}`} className="scroll-mt-28">
       <details open={open} className="group border-b border-white/[0.06] last:border-b-0">
@@ -164,6 +175,7 @@ export function LedgerRow({
               partner: entry.partner,
               memo: entry.memo,
               direction: entry.direction,
+              toAccount: entry.toAccount,
               noReceipt: entry.noReceipt,
             }}
             clients={clients}
@@ -213,7 +225,12 @@ export function LedgerRow({
 export function RecentLine({ entry, clients }: { entry: Entry; clients: { id: string; name: string }[] }) {
   const category = categoryOf(entry.category);
   const client = entry.clientId ? clients.find((c) => c.id === entry.clientId) : undefined;
-  const who = entry.kind === "contribution" || entry.kind === "draw" ? `${entry.partner} ${entry.kind === "draw" ? "took out" : "put in"}` : client?.name ?? entry.party;
+  const who =
+    entry.kind === "contribution" || entry.kind === "draw"
+      ? `${entry.partner} ${entry.kind === "draw" ? "took out" : "put in"}`
+      : entry.kind === "transfer"
+        ? `${accountLabel(entry.account)} → ${entry.toAccount ? accountLabel(entry.toAccount) : "out"}`
+        : client?.name ?? entry.party;
   return (
     <li className="flex items-center gap-3 py-3 border-b border-white/[0.06] last:border-b-0">
       <a href={`${BOOKS}/ledger?month=${entry.date.slice(0, 7)}&open=${entry.id}#entry-${entry.id}`} className="flex-1 min-w-0 group">
@@ -259,7 +276,7 @@ export function BillsTable({ bills, expected, month, returnTo }: { bills: Recurr
         return (
           <li key={bill.id} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 py-4 border-b border-white/[0.06] last:border-b-0">
             <span className="sm:w-24 shrink-0">
-              <Badge tone={tone}>{status === "logged" ? "Logged" : status === "due" ? "Due" : status === "paused" ? "Paused" : "Upcoming"}</Badge>
+              <Badge tone={tone}>{status === "logged" ? "Paid" : status === "due" ? "Due" : status === "paused" ? "Paused" : "Upcoming"}</Badge>
             </span>
             <div className="flex-1 min-w-0">
               <p className="text-[15px] text-white leading-snug">
@@ -269,7 +286,7 @@ export function BillsTable({ bills, expected, month, returnTo }: { bills: Recurr
                 On the {bill.day}
                 {ordinalSuffix(bill.day)} · {categoryOf(bill.category).label} · {accountLabel(bill.account)}
                 {bill.note ? ` · ${bill.note}` : ""}
-                {e?.entry ? ` · logged ${formatDate(e.entry.date)}` : ""}
+                {e?.entry ? ` · paid ${formatDate(e.entry.date)}` : ""}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2 shrink-0">
@@ -278,7 +295,7 @@ export function BillsTable({ bills, expected, month, returnTo }: { bills: Recurr
                   <input type="hidden" name="id" value={bill.id} />
                   <input type="hidden" name="month" value={month} />
                   <input type="hidden" name="returnTo" value={returnTo} />
-                  <button type="submit" className={`${btnGhost} ${btnSm}`}>Log this month</button>
+                  <button type="submit" className={`${btnGhost} ${btnSm}`}>Paid this month</button>
                 </form>
               )}
               <form action={toggleBillAction}>
@@ -341,5 +358,111 @@ export function BigButton({ href, icon, label, hint, solid }: { href: string; ic
         <span className={`block text-xs mt-1.5 ${solid ? "text-white/80" : "text-white/45"}`}>{hint}</span>
       </span>
     </a>
+  );
+}
+
+/* -------------------------------- balances -------------------------------- */
+
+/** Bank, Stripe, cash: what each holds, from everything logged. */
+export function BalancesCard({ balances }: { balances: Record<Account, number> }) {
+  const total = balances.checking + balances.stripe + balances.cash;
+  return (
+    <Card title="Where the money is" lede="From every row logged since the account opened. Cash out of the ATM sits in Cash until you spend it; a Stripe payout moves Stripe to the bank.">
+      <div className="grid grid-cols-3 gap-3">
+        {ACCOUNTS.map((a) => (
+          <div key={a.id} className="border border-white/[0.08] px-4 py-4 min-w-0">
+            <p className={`${labelClass} !mb-1`}>{a.short}</p>
+            <p className={`${numClass} text-xl sm:text-2xl tabular-nums ${balances[a.id] < 0 ? "text-[#f87171]" : "text-white"}`}>{formatCents(balances[a.id], { whole: true })}</p>
+          </div>
+        ))}
+      </div>
+      <p className="mt-3 text-xs text-white/40">
+        {formatCents(total, { whole: true })} in all
+        {balances.cash > 0 ? ` · ${formatCents(balances.cash)} cash on hand not yet spent` : ""}
+        {balances.stripe > 0 ? ` · ${formatCents(balances.stripe)} still in Stripe, not paid out` : ""}
+      </p>
+    </Card>
+  );
+}
+
+/* --------------------------------- ad money ------------------------------- */
+
+const STATE_LABEL = { posted: "In the ledger", waiting: "Waiting", "left-out": "Left out" } as const;
+const STATE_TONE: Record<AdPaymentState["state"], Tone> = { posted: "ok", waiting: "warn", "left-out": "neutral" };
+
+/** Every ad payment and what the books did with it, with the buttons to change that. */
+export function AdMoneyCard({ states, returnTo }: { states: AdPaymentState[]; returnTo: string }) {
+  const waiting = states.filter((s) => s.state === "waiting").length;
+  return (
+    <Card
+      id="ad-money"
+      title={`Ad payments · ${waiting ? `${waiting} waiting` : "all handled"}`}
+      lede="Payments recorded on the ads side. Bring one in and it posts as ad revenue in the month it arrived, keyed to the payment so it can never double up. Leave one out if it was never the LLC's money."
+      padding="px-5 sm:px-6 pt-5 pb-2"
+      action={
+        waiting > 1 ? (
+          <form action={importAdPaymentsAction}>
+            <input type="hidden" name="returnTo" value={returnTo} />
+            <button type="submit" className={`${btnGhost} ${btnSm}`}>Bring in all {waiting}</button>
+          </form>
+        ) : undefined
+      }
+    >
+      {states.length === 0 ? (
+        <div className="pb-4">
+          <Empty>No ad payments recorded yet. Mark one paid on the Payments page and it lands here and in the ledger.</Empty>
+        </div>
+      ) : (
+        <ul>
+          {states.map((s) => (
+            <li key={s.payment.id} className="flex flex-col sm:flex-row sm:items-center gap-3 py-3.5 border-b border-white/[0.06] last:border-b-0">
+              <span className="sm:w-28 shrink-0">
+                <Badge tone={STATE_TONE[s.state]}>{STATE_LABEL[s.state]}</Badge>
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-[15px] text-white leading-snug">
+                  {formatCents(Math.round(s.payment.amount * 100))} from {s.payment.business}
+                </p>
+                <p className="text-xs text-white/45 leading-snug">
+                  Arrived {formatDate(s.payment.receivedOn)} by {s.payment.method}
+                  {s.payment.period ? ` · for ${s.payment.period}` : ""}
+                  {s.state === "left-out" ? ` · ${s.reason}` : ""}
+                  {s.state === "posted" ? ` · in ${accountLabel(s.entry.account)}` : ""}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                {s.state === "waiting" && (
+                  <>
+                    <form action={postAdPaymentAction}>
+                      <input type="hidden" name="paymentId" value={s.payment.id} />
+                      <input type="hidden" name="returnTo" value={returnTo} />
+                      <SubmitButton className={`${btnPrimary} ${btnSm}`} pendingLabel="Posting">Bring in</SubmitButton>
+                    </form>
+                    <form action={leaveOutAdPaymentAction} className="flex items-center gap-2">
+                      <input type="hidden" name="paymentId" value={s.payment.id} />
+                      <input type="hidden" name="returnTo" value={returnTo} />
+                      <input name="reason" placeholder="why: paid before the LLC" className={`${inputClass} w-44 py-2 text-xs`} />
+                      <button type="submit" className={`${btnGhost} ${btnSm}`}>Leave out</button>
+                    </form>
+                  </>
+                )}
+                {s.state === "left-out" && (
+                  <form action={bringBackAdPaymentAction}>
+                    <input type="hidden" name="paymentId" value={s.payment.id} />
+                    <input type="hidden" name="returnTo" value={returnTo} />
+                    <button type="submit" className={`${btnGhost} ${btnSm}`}>Bring back</button>
+                  </form>
+                )}
+                {s.state === "posted" && (
+                  <a href={`${BOOKS}/ledger?month=${s.entry.date.slice(0, 7)}&open=${s.entry.id}#entry-${s.entry.id}`} className={`${btnGhost} ${btnSm}`}>
+                    Open
+                  </a>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
   );
 }

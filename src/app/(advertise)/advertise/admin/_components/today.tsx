@@ -148,7 +148,7 @@ function ItemAction({ action, item, returnTo }: { action: TodayAction; item: Tod
           <input type="hidden" name="month" value={action.month} />
           <input type="hidden" name="returnTo" value={returnTo} />
           <button type="submit" className={`${btnPrimary} ${btnSm}`}>
-            <CheckIcon /> Log it
+            <CheckIcon /> Paid
           </button>
         </form>
       );
