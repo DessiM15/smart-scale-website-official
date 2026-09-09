@@ -22,6 +22,7 @@ import { listClients } from "@/lib/books/clients";
 import { listVault } from "@/lib/books/vault";
 import { getCompany } from "@/lib/books/company";
 import { listPasskeys } from "@/lib/books/passkeys";
+import { getStripeState } from "@/lib/books/stripe";
 
 export const cachedAdvertisers = cache(listAdvertisers);
 export const cachedProspects = cache(listProspects);
@@ -39,6 +40,7 @@ export const cachedClients = cache(listClients);
 export const cachedVault = cache(listVault);
 export const cachedCompany = cache(getCompany);
 export const cachedPasskeys = cache(listPasskeys);
+export const cachedStripeState = cache(getStripeState);
 
 /**
  * Every client's full payment history, keyed by client.

@@ -45,6 +45,7 @@ export const CATEGORIES: Category[] = [
   { id: "bank-fees", label: "Bank fees and interest", kind: "expense", line: "Line 15 / 20" },
   { id: "processing-fees", label: "Payment processing fees", kind: "expense", line: "Line 20, other deductions" },
   { id: "venue-share", label: "Venue revenue share", kind: "expense", line: "Line 20, other deductions" },
+  { id: "refunds", label: "Refunds to clients", kind: "expense", line: "Line 1b, returns and allowances" },
   { id: "other-expense", label: "Other expense", kind: "expense", line: "Line 20, other deductions" },
 
   { id: "owner-contribution", label: "Owner contribution", kind: "capital", line: "Partner capital, Schedule K-1" },

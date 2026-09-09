@@ -36,7 +36,7 @@ export default async function ClientsPage({
         }
       />
 
-      <Card title={`${clients.length} ${clients.length === 1 ? "client" : "clients"}`} padding="px-5 sm:px-6 pt-5 pb-2" lede="Advertisers appear here on their own the first time a payment posts. Add web and app clients by hand.">
+      <Card title={`${clients.length} ${clients.length === 1 ? "client" : "clients"}`} padding="px-5 sm:px-6 pt-5 pb-2" lede="Advertisers appear here on their own the first time a payment posts, and Stripe customers the first time the sync sees them. Add anyone else by hand.">
         {clients.length === 0 ? (
           <div className="pb-4">
             <Empty>No clients yet. Add one, or record an ad payment and the advertiser shows up here.</Empty>
@@ -56,9 +56,12 @@ export default async function ClientsPage({
                           <Badge tone="brand" dot={false}>Advertiser</Badge>
                         </a>
                       )}
+                      {c.stripeCustomerId && (
+                        <Badge tone="neutral" dot={false}>Stripe</Badge>
+                      )}
                     </p>
                     <p className="text-xs text-white/45 leading-snug">
-                      {c.note || (c.advertiserId ? "On the screens" : "Web or app client")}
+                      {c.note || (c.advertiserId ? "On the screens" : c.stripeCustomerId ? "Pays through Stripe" : "Web or app client")}
                       {all !== ytd ? ` · ${formatCents(all, { whole: true })} all time` : ""}
                     </p>
                   </div>

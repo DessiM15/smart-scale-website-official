@@ -15,6 +15,7 @@ import type { Receipt } from "./receipts";
 import type { ExpectedBill } from "./recurring";
 import type { VaultDoc } from "./vault";
 import type { Filing } from "./company";
+import type { StripeState } from "./stripe";
 
 const BOOKS = "/advertise/admin/books";
 
@@ -31,11 +32,26 @@ export type BooksTodayInput = {
   renewals: { doc: VaultDoc; daysLeft: number }[];
   /** Annual filings inside their window. */
   filings: { filing: Filing; dueOn: string; daysLeft: number; key: string }[];
+  /** How the last Stripe pull went. Absent when Stripe isn't connected. */
+  stripe?: StripeState | null;
   done: Set<string>;
 };
 
 export function buildBooksToday(input: BooksTodayInput): TodayItem[] {
   const items: TodayItem[] = [];
+
+  // A failed pull clears itself the next time one works, so there is no Done.
+  if (input.stripe && input.stripe.lastOk === false && input.stripe.lastRunAt) {
+    items.push({
+      key: `stripe:failed:${input.stripe.lastRunAt}`,
+      kind: "task",
+      tone: "bad",
+      title: "The Stripe pull failed",
+      detail: `${input.stripe.lastError ?? "No reason came back"} · tried ${formatDate(input.stripe.lastRunAt.slice(0, 10))} · Stripe money isn't reaching the ledger until it works`,
+      order: -100,
+      actions: [{ type: "link", label: "Stripe", href: `${BOOKS}/stripe` }],
+    });
+  }
 
   for (const r of input.pending) {
     const vendor = r.read?.vendor || "an unnamed receipt";

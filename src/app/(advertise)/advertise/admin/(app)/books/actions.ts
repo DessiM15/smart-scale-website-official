@@ -35,6 +35,7 @@ import {
 import { formatCents, isIsoDate, isMonth, parseDollars } from "@/lib/books/money";
 import { confirmReceipt, deleteReceipt, getReceipt, storeReceipt, unconfirmReceipt } from "@/lib/books/receipts";
 import { addBill, billDueDate, billSourceRef, deleteBill, getBill, setBillActive } from "@/lib/books/recurring";
+import { bringBackStripeTxn, describeRun, getStripeTxn, runStripeSync } from "@/lib/books/stripe";
 
 const ADMIN = "/advertise/admin";
 const BOOKS = `${ADMIN}/books`;
@@ -47,6 +48,7 @@ const PAGES = {
   vault: `${BOOKS}/vault`,
   company: `${BOOKS}/company`,
   passkeys: `${BOOKS}/passkeys`,
+  stripe: `${BOOKS}/stripe`,
 } as const;
 
 const field = (data: FormData, name: string) => String(data.get(name) ?? "").trim();
@@ -590,4 +592,33 @@ export async function lockBooksAction() {
   await clearBooksSession();
   if (access.ok && access.via === "passkey") await audit({ who: access.who, action: "books.lock", summary: "Locked the books on this browser." });
   back(`${BOOKS}/unlock`, { msg: "booksLocked" });
+}
+
+/* --------------------------------- stripe --------------------------------- */
+
+/** Pull everything new from Stripe now, instead of waiting for tonight. */
+export async function syncStripeAction(data: FormData) {
+  const to = returnPath(data, PAGES.stripe);
+  const who = await requireBooks(to);
+  const result = await runStripeSync(who);
+  if (!result.ok) {
+    await log(who, "stripe.sync", `Stripe pull failed: ${result.error}`);
+    back(to, { err: "stripe", detail: result.error });
+  }
+  const summary = describeRun(result.run);
+  await log(who, "stripe.sync", `Pulled Stripe. ${summary}`, PAGES.stripe, { after: result.run });
+  back(to, { msg: "stripeSynced", detail: summary });
+}
+
+/** A Stripe transaction that was removed from the ledger by hand, put back. */
+export async function bringBackStripeAction(data: FormData) {
+  const who = await requireBooks(PAGES.stripe);
+  const id = field(data, "id");
+  const txn = id ? await getStripeTxn(id) : null;
+  if (!txn) back(PAGES.stripe, { err: "stripemissing" });
+  const result = await bringBackStripeTxn(id, who);
+  if (!result.ok) back(PAGES.stripe, { err: "stripe", detail: result.error });
+  const what = `${formatCents(Math.abs(result.txn.amount))} ${result.txn.party}`;
+  await log(who, "stripe.bringBack", `Brought a Stripe transaction back into the ledger: ${what}.`, result.txn.entryId ? `${PAGES.ledger}?month=${result.txn.date.slice(0, 7)}#entry-${result.txn.entryId}` : PAGES.stripe, { target: id });
+  back(PAGES.stripe, { msg: "stripeBroughtBack", detail: what }, `txn-${id}`);
 }

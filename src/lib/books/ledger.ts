@@ -48,8 +48,12 @@ export type Entry = {
   memo: string;
   who: string;
   source: EntrySource;
-  /** Where it came from, when not typed: "ads:payment:<id>", "recurring:<id>:<month>". */
+  /** Where it came from, when not typed: "ads:payment:<id>", "recurring:<id>:<month>", "stripe:txn:<id>". */
   sourceRef?: string;
+  /** The Stripe balance transaction this row is, or was matched to. */
+  stripeRef?: string;
+  /** Other outside records that point at this same row: an ad payment matched to a Stripe charge. */
+  links?: string[];
   createdAt: string;
   updatedAt: string;
 };
@@ -184,6 +188,47 @@ export async function entryBySource(ref: string): Promise<Entry | null> {
   return status?.kind === "entry" ? status.entry : null;
 }
 
+export type SourceMark = { kind: "entry"; entryId: string } | { kind: "ignored"; reason: string };
+
+/** The same question for many references at once, one round trip, without loading the rows. */
+export async function sourceStatuses(refs: string[]): Promise<Map<string, SourceMark | null>> {
+  const out = new Map<string, SourceMark | null>();
+  if (refs.length === 0) return out;
+  const [values] = await redisPipeline([["MGET", ...refs.map(SOURCE)]]);
+  refs.forEach((ref, i) => {
+    const raw = Array.isArray(values) ? values[i] : null;
+    if (!raw) return out.set(ref, null);
+    const value = String(raw);
+    out.set(ref, value.startsWith(IGNORED) ? { kind: "ignored", reason: value.slice(IGNORED.length) } : { kind: "entry", entryId: value });
+  });
+  return out;
+}
+
+/**
+ * Point a second outside record at a row that already exists: an ad payment
+ * and the Stripe charge that is the same money. The row remembers the link
+ * so a later match can see it is already spoken for.
+ */
+export async function linkSource(ref: string, entryId: string): Promise<boolean> {
+  const entry = await getEntry(entryId);
+  if (!entry) return false;
+  const links = Array.from(new Set([...(entry.links ?? []), ref]));
+  return redisWrite([
+    ["SET", SOURCE(ref), entryId],
+    ["SET", KEY(entryId), JSON.stringify({ ...entry, links })],
+  ]);
+}
+
+export async function unlinkSource(ref: string, entryId: string): Promise<boolean> {
+  const entry = await getEntry(entryId);
+  if (!entry) return redisWrite([["DEL", SOURCE(ref)]]);
+  const links = (entry.links ?? []).filter((l) => l !== ref);
+  return redisWrite([
+    ["DEL", SOURCE(ref)],
+    ["SET", KEY(entryId), JSON.stringify({ ...entry, links: links.length ? links : undefined })],
+  ]);
+}
+
 /** Say an outside record is not business money, so it is never offered again. */
 export async function ignoreSource(ref: string, reason: string): Promise<boolean> {
   return redisWrite([["SET", SOURCE(ref), `${IGNORED}${reason.slice(0, 160)}`]]);
@@ -265,11 +310,14 @@ export async function deleteEntry(id: string): Promise<Entry | null> {
     ["SREM", MONTH(monthOf(entry.date)), id],
   ];
   if (entry.sourceRef) {
-    // An ad payment removed by hand is a decision to leave it out; a bill
+    // An ad payment or a Stripe transaction removed by hand is a decision to
+    // leave it out, or the next sync would put it straight back; a bill
     // removed by hand should simply come back as due.
-    if (entry.source === "ads") commands.push(["SET", SOURCE(entry.sourceRef), `${IGNORED}removed from the ledger`]);
+    if (entry.source === "ads" || entry.source === "stripe") commands.push(["SET", SOURCE(entry.sourceRef), `${IGNORED}removed from the ledger`]);
     else commands.push(["DEL", SOURCE(entry.sourceRef)]);
   }
+  // Anything else that pointed here now points at nothing.
+  for (const ref of entry.links ?? []) commands.push(["DEL", SOURCE(ref)]);
   const ok = await redisWrite(commands);
   return ok ? entry : null;
 }

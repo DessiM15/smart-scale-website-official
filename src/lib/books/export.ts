@@ -13,9 +13,10 @@ import { listBills } from "./recurring";
 import { listVault } from "./vault";
 import { getCompany } from "./company";
 import { listPasskeys } from "./passkeys";
+import { getStripeState, listStripeTxns } from "./stripe";
 
 export async function exportBooks() {
-  const [entries, receipts, clients, bills, vault, company, passkeys] = await Promise.all([
+  const [entries, receipts, clients, bills, vault, company, passkeys, stripeState, stripeTxns] = await Promise.all([
     listAllEntries(),
     listAllReceipts(),
     listClients(),
@@ -23,6 +24,8 @@ export async function exportBooks() {
     listVault(),
     getCompany(),
     listPasskeys(),
+    getStripeState(),
+    listStripeTxns(5000),
   ]);
   return {
     exportedAt: new Date().toISOString(),
@@ -36,5 +39,7 @@ export async function exportBooks() {
     company,
     // Public keys only. Without these a restored database would lock everyone out.
     passkeys,
+    // What the Stripe pull has done, so a restore knows where it got to.
+    stripe: { state: stripeState, transactions: stripeTxns },
   };
 }

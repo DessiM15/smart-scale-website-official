@@ -24,6 +24,7 @@ export type Client = {
 const KEY = (id: string) => `books:client:${id}`;
 const INDEX = "books:clients";
 const BY_ADVERTISER = (advertiserId: string) => `books:client:adv:${advertiserId}`;
+const BY_STRIPE = (customerId: string) => `books:client:stripe:${customerId}`;
 
 function parse(raw: unknown): Client | null {
   try {
@@ -77,7 +78,39 @@ export async function deleteClient(id: string): Promise<boolean> {
     ["SREM", INDEX, id],
   ];
   if (client.advertiserId) commands.push(["DEL", BY_ADVERTISER(client.advertiserId)]);
+  if (client.stripeCustomerId) commands.push(["DEL", BY_STRIPE(client.stripeCustomerId)]);
   return redisWrite(commands);
+}
+
+/**
+ * The client for a Stripe customer, made on first use. A client already here
+ * under the same name (an advertiser, say) is tied to the customer rather
+ * than duplicated, so one business stays one line in the reports.
+ */
+export async function ensureClientForStripeCustomer(customerId: string, name: string): Promise<Client | null> {
+  const [id] = await redisPipeline([["GET", BY_STRIPE(customerId)]]);
+  if (id) {
+    const existing = await getClient(String(id));
+    if (existing) return existing;
+  }
+  const wanted = name.trim().toLowerCase();
+  const sameName = wanted ? (await listClients()).find((c) => !c.stripeCustomerId && c.name.trim().toLowerCase() === wanted) : undefined;
+  if (sameName) {
+    const linked: Client = { ...sameName, stripeCustomerId: customerId };
+    const ok = await redisWrite([
+      ["SET", KEY(linked.id), JSON.stringify(linked)],
+      ["SET", BY_STRIPE(customerId), linked.id],
+    ]);
+    return ok ? linked : sameName;
+  }
+  const made = await addClient({ name: name.trim() || "Stripe customer", note: "From Stripe" });
+  if (!made.client) return null;
+  const client: Client = { ...made.client, stripeCustomerId: customerId };
+  await redisWrite([
+    ["SET", KEY(client.id), JSON.stringify(client)],
+    ["SET", BY_STRIPE(customerId), client.id],
+  ]);
+  return client;
 }
 
 /** The client for an advertiser, made on first use. */
