@@ -30,6 +30,10 @@ const PATHS: Record<string, string> = {
   recurring: '<path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3"/><path d="M18 3v4h-4M6 21v-4h4"/>',
   clients: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 20h6a5 5 0 0 0-4-4.9"/>',
   camera: '<path d="M4 8h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="3.5"/>',
+  vault: '<rect x="3" y="4" width="18" height="16"/><circle cx="12" cy="12" r="4"/><path d="M12 10v2l1.5 1.5M3 8h2M3 16h2"/>',
+  company: '<path d="M3 21h18M5 21V7l7-4 7 4v14"/><path d="M9 21v-5h6v5M9 10h2M13 10h2M9 14h2M13 14h2"/>',
+  key: '<circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3M15 12v2"/>',
+  lock: '<rect x="5" y="11" width="14" height="10"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
   pin: '<path d="M12 22s7-7 7-12a7 7 0 1 0-14 0c0 5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>',
   ext: '<path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/>',
@@ -73,7 +77,9 @@ export type NavKey =
   | "ledger"
   | "receipts"
   | "recurring"
-  | "clients";
+  | "clients"
+  | "vault"
+  | "company";
 
 export type NavCount = { value: number; hot?: boolean } | { soon: true };
 
@@ -95,6 +101,8 @@ export const NAV_BOOKS: { key: NavKey; label: string; href: string }[] = [
   { key: "receipts", label: "Receipts", href: `${ADMIN}/books/receipts` },
   { key: "recurring", label: "Bills", href: `${ADMIN}/books/recurring` },
   { key: "clients", label: "Clients", href: `${ADMIN}/books/clients` },
+  { key: "vault", label: "Vault", href: `${ADMIN}/books/vault` },
+  { key: "company", label: "Company", href: `${ADMIN}/books/company` },
 ];
 
 export const BOOKS_KEYS: NavKey[] = NAV_BOOKS.map((n) => n.key);

@@ -6,12 +6,12 @@ import { TEAM } from "@/lib/ads/who";
 import { getEntry } from "@/lib/books/ledger";
 import { centsToInput, formatCents } from "@/lib/books/money";
 import { getReceipt, receiptHref } from "@/lib/books/receipts";
-import { confirmReceiptAction, discardReceiptAction } from "../../actions";
-import { BOOKS } from "../../../../_components/books";
-import { EntryForm } from "../../../../_components/entry-form";
-import { PageHeader } from "../../../../_components/shell";
-import { Badge, Card, Note, btnDanger, btnGhost, btnSm } from "../../../../_components/ui";
-import { Shell } from "../../../shell";
+import { confirmReceiptAction, discardReceiptAction } from "../../../actions";
+import { BOOKS } from "../../../../../_components/books";
+import { EntryForm } from "../../../../../_components/entry-form";
+import { PageHeader } from "../../../../../_components/shell";
+import { Badge, Card, Note, btnDanger, btnGhost, btnSm } from "../../../../../_components/ui";
+import { Shell } from "../../../../shell";
 
 export const metadata: Metadata = { title: "Confirm receipt" };
 export const maxDuration = 60;

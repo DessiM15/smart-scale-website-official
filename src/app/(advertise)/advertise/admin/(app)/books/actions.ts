@@ -8,7 +8,11 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { isSignedIn } from "@/lib/ads/auth";
-import { currentWho, isTeamMember } from "@/lib/ads/who";
+import { isTeamMember } from "@/lib/ads/who";
+import { audit } from "@/lib/books/audit";
+import { booksAccess, clearBooksSession, deletePasskey, getPasskey, listPasskeys, renamePasskey } from "@/lib/books/passkeys";
+import { addVaultDoc, deleteVaultDoc, getVaultDoc, updateVaultDoc } from "@/lib/books/vault";
+import { getCompany, issueRevealToken, saveCompany, sealEin, type Company, type Filing } from "@/lib/books/company";
 import { recordHistory } from "@/lib/ads/tasks";
 import { listAdvertisers, today } from "@/lib/ads/roster";
 import { listPayments } from "@/lib/ads/payments";
@@ -38,10 +42,26 @@ const PAGES = {
   receipts: `${BOOKS}/receipts`,
   recurring: `${BOOKS}/recurring`,
   clients: `${BOOKS}/clients`,
+  vault: `${BOOKS}/vault`,
+  company: `${BOOKS}/company`,
+  passkeys: `${BOOKS}/passkeys`,
 } as const;
 
 const field = (data: FormData, name: string) => String(data.get(name) ?? "").trim();
 
+/**
+ * Every Books action needs the shared key and, once anyone has enrolled a
+ * passkey, a passkey session. Returns who is acting, from the passkey when
+ * there is one.
+ */
+async function requireBooks(): Promise<string> {
+  if (!(await isSignedIn())) redirect(`${ADMIN}/signin`);
+  const access = await booksAccess();
+  if (!access.ok) redirect(`${BOOKS}/unlock`);
+  return access.who;
+}
+
+/** The enrolment page and passkey management stay behind the shared key alone. */
 async function requireAdmin() {
   if (!(await isSignedIn())) redirect(`${ADMIN}/signin`);
 }
@@ -58,8 +78,12 @@ function back(path: string, params: Record<string, string>, anchor?: string): ne
   redirect(`${path}${query}${hash}`);
 }
 
-async function log(text: string, href?: string) {
-  await recordHistory({ who: await currentWho(), kind: "books", text, href });
+/** History for the day's strip, and the audit log for good. */
+async function log(who: string, action: string, text: string, href?: string, detail?: { target?: string; before?: unknown; after?: unknown }) {
+  await Promise.all([
+    recordHistory({ who, kind: "books", text, href }),
+    audit({ who, action, target: detail?.target, summary: text, before: detail?.before, after: detail?.after }),
+  ]);
 }
 
 /* -------------------------------- entries --------------------------------- */
@@ -105,9 +129,8 @@ const describe = (cents: number, party: string, kind: EntryKind) => {
 };
 
 export async function addEntryAction(data: FormData) {
-  await requireAdmin();
+  const who = await requireBooks();
   const to = returnPath(data, PAGES.home);
-  const who = await currentWho();
   const parsed = entryFromForm(data, who);
   if ("error" in parsed) back(to, { err: "entry", detail: parsed.error }, "log");
 
@@ -116,18 +139,17 @@ export async function addEntryAction(data: FormData) {
 
   const e = result.entry;
   const what = describe(e.cents, e.partner ?? e.party, e.kind);
-  await log(`Logged ${what}.`, `${PAGES.ledger}?month=${e.date.slice(0, 7)}#entry-${e.id}`);
+  await log(who, "entry.add", `Logged ${what}.`, `${PAGES.ledger}?month=${e.date.slice(0, 7)}#entry-${e.id}`);
   back(to, { msg: "entryAdded", detail: what });
 }
 
 export async function updateEntryAction(data: FormData) {
-  await requireAdmin();
+  const who = await requireBooks();
   const id = field(data, "id");
   const current = id ? await getEntry(id) : null;
   const to = returnPath(data, PAGES.ledger);
   if (!current) back(to, { err: "entrymissing" });
 
-  const who = await currentWho();
   const parsed = entryFromForm(data, who);
   if ("error" in parsed) back(to, { err: "entry", detail: parsed.error, month: current.date.slice(0, 7) }, `entry-${id}`);
 
@@ -138,12 +160,12 @@ export async function updateEntryAction(data: FormData) {
   const result = await updateEntry(id, { ...patch, noReceipt: data.get("noReceipt") === "on" ? true : current.noReceipt });
   if (!result.ok) back(to, { err: "entry", detail: result.error, month: current.date.slice(0, 7) }, `entry-${id}`);
 
-  await log(`Edited ${describe(result.entry.cents, result.entry.partner ?? result.entry.party, result.entry.kind)}.`, `${PAGES.ledger}?month=${result.entry.date.slice(0, 7)}#entry-${id}`);
+  await log(who, "entry.edit", `Edited ${describe(result.entry.cents, result.entry.partner ?? result.entry.party, result.entry.kind)}.`, `${PAGES.ledger}?month=${result.entry.date.slice(0, 7)}#entry-${id}`, { target: id, before: current, after: result.entry });
   back(to, { msg: "entrySaved", month: result.entry.date.slice(0, 7) }, `entry-${id}`);
 }
 
 export async function deleteEntryAction(data: FormData) {
-  await requireAdmin();
+  const who = await requireBooks();
   const id = field(data, "id");
   const to = returnPath(data, PAGES.ledger);
   const entry = id ? await deleteEntry(id) : null;
@@ -153,29 +175,28 @@ export async function deleteEntryAction(data: FormData) {
   // case the row was the mistake and not the receipt.
   if (entry.receiptId) await unconfirmReceipt(entry.receiptId);
 
-  await log(`Removed ${describe(entry.cents, entry.partner ?? entry.party, entry.kind)} from the ledger.`);
+  await log(who, "entry.delete", `Removed ${describe(entry.cents, entry.partner ?? entry.party, entry.kind)} from the ledger.`, undefined, { target: id, before: entry });
   back(to, { msg: "entryRemoved", month: entry.date.slice(0, 7) });
 }
 
 export async function markNoReceiptAction(data: FormData) {
-  await requireAdmin();
+  const who = await requireBooks();
   const id = field(data, "id");
   const to = returnPath(data, ADMIN);
   const result = id ? await updateEntry(id, { noReceipt: true }) : null;
   if (!result || !result.ok) back(to, { err: "entrymissing" });
-  await log(`No receipt for ${describe(result.entry.cents, result.entry.party, result.entry.kind)}.`);
+  await log(who, "entry.noReceipt", `No receipt for ${describe(result.entry.cents, result.entry.party, result.entry.kind)}.`, undefined, { target: id });
   back(to, { msg: "noReceipt" });
 }
 
 /* -------------------------------- receipts -------------------------------- */
 
 export async function snapReceiptAction(data: FormData) {
-  await requireAdmin();
+  const who = await requireBooks();
   const file = data.get("photo");
   const to = returnPath(data, PAGES.receipts);
   if (!(file instanceof File) || file.size === 0) back(to, { err: "receiptmissing" }, "snap");
 
-  const who = await currentWho();
   const stored = await storeReceipt(file, who, { read: true });
   if (!stored.ok) back(to, { err: "receipt", detail: stored.error }, "snap");
 
@@ -189,13 +210,13 @@ export async function snapReceiptAction(data: FormData) {
     back(`${PAGES.receipts}/${r.id}`, { msg: "receiptDuplicate" });
   }
 
-  await log(`Snapped a receipt${r.read?.vendor ? ` from ${r.read.vendor}` : ""}.`, `${PAGES.receipts}/${r.id}`);
+  await log(who, "receipt.snap", `Snapped a receipt${r.read?.vendor ? ` from ${r.read.vendor}` : ""}.`, `${PAGES.receipts}/${r.id}`, { target: r.id, after: r.read });
   if (r.readError) back(`${PAGES.receipts}/${r.id}`, { msg: "receiptUnread", detail: r.readError.slice(0, 120) });
   back(`${PAGES.receipts}/${r.id}`, { msg: "receiptRead" });
 }
 
 export async function confirmReceiptAction(data: FormData) {
-  await requireAdmin();
+  const who = await requireBooks();
   const id = field(data, "receiptId");
   const receipt = id ? await getReceipt(id) : null;
   const own = `${PAGES.receipts}/${id}`;
@@ -204,7 +225,6 @@ export async function confirmReceiptAction(data: FormData) {
     back(PAGES.ledger, { msg: "receiptDuplicate" }, `entry-${receipt.entryId}`);
   }
 
-  const who = await currentWho();
   const parsed = entryFromForm(data, who);
   if ("error" in parsed) back(own, { err: "entry", detail: parsed.error });
 
@@ -214,12 +234,12 @@ export async function confirmReceiptAction(data: FormData) {
 
   const to = returnPath(data, PAGES.home);
   const what = describe(result.entry.cents, result.entry.party, result.entry.kind);
-  await log(`Confirmed a receipt: ${what}.`, `${PAGES.ledger}?month=${result.entry.date.slice(0, 7)}#entry-${result.entry.id}`);
+  await log(who, "receipt.confirm", `Confirmed a receipt: ${what}.`, `${PAGES.ledger}?month=${result.entry.date.slice(0, 7)}#entry-${result.entry.id}`, { target: id, before: receipt.read, after: result.entry });
   back(to, { msg: "receiptConfirmed", detail: what });
 }
 
 export async function discardReceiptAction(data: FormData) {
-  await requireAdmin();
+  const who = await requireBooks();
   const id = field(data, "receiptId");
   const receipt = id ? await getReceipt(id) : null;
   if (!receipt) back(PAGES.receipts, { err: "receiptgone" });
@@ -227,13 +247,13 @@ export async function discardReceiptAction(data: FormData) {
   if (receipt.status === "confirmed" && receipt.entryId) back(PAGES.ledger, { err: "receiptgone" }, `entry-${receipt.entryId}`);
 
   await deleteReceipt(id);
-  await log("Discarded a receipt photo.");
+  await log(who, "receipt.discard", "Discarded a receipt photo.", undefined, { target: id, before: receipt });
   back(returnPath(data, PAGES.receipts), { msg: "receiptDiscarded" });
 }
 
 /** A photo for an expense that was typed in first. Filed straight against the row. */
 export async function attachReceiptAction(data: FormData) {
-  await requireAdmin();
+  const who = await requireBooks();
   const id = field(data, "id");
   const entry = id ? await getEntry(id) : null;
   const to = returnPath(data, PAGES.ledger);
@@ -243,7 +263,6 @@ export async function attachReceiptAction(data: FormData) {
   const file = data.get("photo");
   if (!(file instanceof File) || file.size === 0) back(to, { err: "receiptmissing", month }, `entry-${id}`);
 
-  const who = await currentWho();
   const stored = await storeReceipt(file, who, { read: false, entryId: id });
   if (!stored.ok) back(to, { err: "receipt", detail: stored.error, month }, `entry-${id}`);
   if (stored.duplicate && stored.receipt.entryId && stored.receipt.entryId !== id) {
@@ -253,33 +272,33 @@ export async function attachReceiptAction(data: FormData) {
 
   const result = await updateEntry(id, { receiptId: stored.receipt.id, noReceipt: undefined });
   if (!result.ok) back(to, { err: "entry", detail: result.error, month }, `entry-${id}`);
-  await log(`Attached a receipt to ${describe(entry.cents, entry.party, entry.kind)}.`, `${PAGES.ledger}?month=${month}#entry-${id}`);
+  await log(who, "receipt.attach", `Attached a receipt to ${describe(entry.cents, entry.party, entry.kind)}.`, `${PAGES.ledger}?month=${month}#entry-${id}`, { target: id, after: stored.receipt.id });
   back(to, { msg: "receiptAttached", month }, `entry-${id}`);
 }
 
 /* -------------------------------- clients --------------------------------- */
 
 export async function addClientAction(data: FormData) {
-  await requireAdmin();
+  const who = await requireBooks();
   const result = await addClient({ name: field(data, "name"), note: field(data, "note") });
   if (!result.ok) back(PAGES.clients, { err: "client", detail: result.error ?? "" }, "add-client");
-  await log(`Added client ${result.client!.name}.`, PAGES.clients);
+  await log(who, "client.add", `Added client ${result.client!.name}.`, PAGES.clients, { target: result.client!.id });
   back(PAGES.clients, { msg: "clientAdded" });
 }
 
 export async function deleteClientAction(data: FormData) {
-  await requireAdmin();
+  const who = await requireBooks();
   const id = field(data, "id");
   const client = id ? await getClient(id) : null;
   if (!client || !(await deleteClient(id))) back(PAGES.clients, { err: "missing" });
-  await log(`Removed client ${client.name}.`);
+  await log(who, "client.delete", `Removed client ${client.name}.`, undefined, { target: id, before: client });
   back(PAGES.clients, { msg: "clientRemoved" });
 }
 
 /* --------------------------------- bills ---------------------------------- */
 
 export async function addBillAction(data: FormData) {
-  await requireAdmin();
+  const who = await requireBooks();
   const cents = parseDollars(field(data, "amount"));
   const account = field(data, "account") || "checking";
   const result = await addBill({
@@ -289,35 +308,35 @@ export async function addBillAction(data: FormData) {
     account: (isAccount(account) ? account : "checking") as Account,
     day: Number(field(data, "day")),
     note: field(data, "note"),
-    who: await currentWho(),
+    who,
   });
   if (!result.ok) back(PAGES.recurring, { err: "bill", detail: result.error ?? "" }, "add-bill");
-  await log(`Added a monthly bill: ${field(data, "vendor")}.`, PAGES.recurring);
+  await log(who, "bill.add", `Added a monthly bill: ${field(data, "vendor")}.`, PAGES.recurring);
   back(PAGES.recurring, { msg: "billAdded" });
 }
 
 export async function toggleBillAction(data: FormData) {
-  await requireAdmin();
+  const who = await requireBooks();
   const id = field(data, "id");
   const bill = id ? await getBill(id) : null;
   if (!bill) back(PAGES.recurring, { err: "billmissing" });
   if (!(await setBillActive(id, !bill.active))) back(PAGES.recurring, { err: "save" });
-  await log(`${bill.active ? "Paused" : "Resumed"} the ${bill.vendor} bill.`);
+  await log(who, bill.active ? "bill.pause" : "bill.resume", `${bill.active ? "Paused" : "Resumed"} the ${bill.vendor} bill.`, undefined, { target: id });
   back(PAGES.recurring, { msg: bill.active ? "billPaused" : "billResumed" });
 }
 
 export async function deleteBillAction(data: FormData) {
-  await requireAdmin();
+  const who = await requireBooks();
   const id = field(data, "id");
   const bill = id ? await getBill(id) : null;
   if (!bill || !(await deleteBill(id))) back(PAGES.recurring, { err: "billmissing" });
-  await log(`Removed the ${bill.vendor} bill.`);
+  await log(who, "bill.delete", `Removed the ${bill.vendor} bill.`, undefined, { target: id, before: bill });
   back(PAGES.recurring, { msg: "billRemoved" });
 }
 
 /** Post this month's charge for a bill: the usual amount unless told otherwise. */
 export async function logBillAction(data: FormData) {
-  await requireAdmin();
+  const who = await requireBooks();
   const to = returnPath(data, PAGES.recurring);
   const id = field(data, "id");
   const bill = id ? await getBill(id) : null;
@@ -335,14 +354,14 @@ export async function logBillAction(data: FormData) {
     account: bill.account,
     party: bill.vendor,
     memo: bill.note,
-    who: await currentWho(),
+    who,
     source: "recurring",
     sourceRef: billSourceRef(bill.id, month),
     noReceipt: true,
   });
   if (!result.ok) back(to, { err: "entry", detail: result.error });
   const what = `${formatCents(cents)} to ${bill.vendor}`;
-  await log(`Logged the ${bill.vendor} bill: ${what}.`, `${PAGES.ledger}?month=${month}#entry-${result.entry.id}`);
+  await log(who, "bill.log", `Logged the ${bill.vendor} bill: ${what}.`, `${PAGES.ledger}?month=${month}#entry-${result.entry.id}`, { target: result.entry.id });
   back(to, { msg: "billLogged", detail: what });
 }
 
@@ -350,9 +369,8 @@ export async function logBillAction(data: FormData) {
 
 /** Every ad payment the ledger has not seen yet, posted now. Safe to run twice. */
 export async function importAdPaymentsAction(data: FormData) {
-  await requireAdmin();
+  const who = await requireBooks();
   const to = returnPath(data, PAGES.home);
-  const who = await currentWho();
   const advertisers = await listAdvertisers();
   const lists = await Promise.all(advertisers.map((a) => listPayments(a.id)));
   const missing = await unpostedAdPayments(lists.flat());
@@ -360,6 +378,174 @@ export async function importAdPaymentsAction(data: FormData) {
   for (const p of missing) {
     if (await postAdPayment(p, who)) posted += 1;
   }
-  if (posted > 0) await log(`Brought ${posted} ad payment${posted === 1 ? "" : "s"} into the ledger.`, PAGES.ledger);
+  if (posted > 0) await log(who, "ads.import", `Brought ${posted} ad payment${posted === 1 ? "" : "s"} into the ledger.`, PAGES.ledger);
   back(to, { msg: "adPaymentsImported", sent: String(posted) });
+}
+
+/* --------------------------------- vault ---------------------------------- */
+
+export async function uploadVaultAction(data: FormData) {
+  const who = await requireBooks();
+  const file = data.get("file");
+  if (!(file instanceof File) || file.size === 0) back(PAGES.vault, { err: "vaultmissing" }, "add-doc");
+  const result = await addVaultDoc(file, {
+    kind: field(data, "kind"),
+    label: field(data, "label"),
+    issuedOn: field(data, "issuedOn") || undefined,
+    renewsOn: field(data, "renewsOn") || undefined,
+    note: field(data, "note"),
+    who,
+  });
+  if (!result.ok) back(PAGES.vault, { err: "vault", detail: result.error }, "add-doc");
+  await log(who, "vault.add", `Filed ${result.doc.label} in the vault.`, `${PAGES.vault}#doc-${result.doc.id}`, { target: result.doc.id, after: { kind: result.doc.kind, sha256: result.doc.sha256 } });
+  back(PAGES.vault, { msg: "vaultSaved", detail: result.doc.label }, `doc-${result.doc.id}`);
+}
+
+export async function updateVaultAction(data: FormData) {
+  const who = await requireBooks();
+  const id = field(data, "id");
+  const before = id ? await getVaultDoc(id) : null;
+  if (!before) back(PAGES.vault, { err: "vaultgone" });
+  const doc = await updateVaultDoc(id, {
+    label: field(data, "label"),
+    kind: field(data, "kind"),
+    issuedOn: field(data, "issuedOn"),
+    renewsOn: field(data, "renewsOn"),
+    note: field(data, "note"),
+  });
+  if (!doc) back(PAGES.vault, { err: "save" }, `doc-${id}`);
+  await log(who, "vault.edit", `Updated ${doc.label} in the vault.`, `${PAGES.vault}#doc-${id}`, { target: id, before, after: doc });
+  back(PAGES.vault, { msg: "vaultUpdated" }, `doc-${id}`);
+}
+
+export async function deleteVaultAction(data: FormData) {
+  const who = await requireBooks();
+  const id = field(data, "id");
+  const doc = id ? await deleteVaultDoc(id) : null;
+  if (!doc) back(PAGES.vault, { err: "vaultgone" });
+  await log(who, "vault.delete", `Removed ${doc.label} from the vault.`, undefined, { target: id, before: doc });
+  back(PAGES.vault, { msg: "vaultRemoved" });
+}
+
+/* -------------------------------- company --------------------------------- */
+
+export async function saveCompanyAction(data: FormData) {
+  const who = await requireBooks();
+  const before = await getCompany();
+  const pct = (name: string) => {
+    const n = Number(field(data, name).replace(/[%\s]/g, ""));
+    return Number.isFinite(n) && n >= 0 && n <= 100 ? n : 0;
+  };
+  const members = before.members.map((m, i) => ({
+    name: field(data, `member${i}Name`) || m.name,
+    role: field(data, `member${i}Role`) || m.role,
+    sharePercent: data.has(`member${i}Share`) ? pct(`member${i}Share`) : m.sharePercent,
+  }));
+  const formedOn = field(data, "formedOn");
+  if (formedOn && !isIsoDate(formedOn)) back(PAGES.company, { err: "company", detail: "That formation date didn't make sense." });
+  const next: Company = {
+    ...before,
+    legalName: field(data, "legalName") || before.legalName,
+    dba: field(data, "dba"),
+    entityType: field(data, "entityType") || before.entityType,
+    taxElection: field(data, "taxElection") || before.taxElection,
+    state: field(data, "state") || before.state,
+    formedOn,
+    registeredAgent: { name: field(data, "agentName"), address: field(data, "agentAddress") },
+    principalAddress: field(data, "principalAddress"),
+    mailingAddress: field(data, "mailingAddress"),
+    members,
+    bank: { name: field(data, "bankName") || before.bank.name, last4: field(data, "bankLast4").replace(/\D/g, "").slice(-4) },
+    notes: field(data, "notes").slice(0, 2000),
+    updatedAt: new Date().toISOString(),
+    updatedBy: who,
+  };
+  if (!(await saveCompany(next))) back(PAGES.company, { err: "save" });
+  const { einSealed: _b, ...beforeSafe } = before;
+  const { einSealed: _a, ...afterSafe } = next;
+  void _b;
+  void _a;
+  await log(who, "company.save", "Updated the company details.", PAGES.company, { before: beforeSafe, after: afterSafe });
+  back(PAGES.company, { msg: "companySaved" });
+}
+
+export async function saveEinAction(data: FormData) {
+  const who = await requireBooks();
+  const sealed = sealEin(field(data, "ein"));
+  if ("error" in sealed) back(PAGES.company, { err: "ein", detail: sealed.error }, "ein");
+  const company = await getCompany();
+  const ok = await saveCompany({ ...company, ...sealed, updatedAt: new Date().toISOString(), updatedBy: who });
+  if (!ok) back(PAGES.company, { err: "save" }, "ein");
+  await log(who, "company.ein", `Set the EIN (ending ${sealed.einLast4}).`, undefined, { after: { einLast4: sealed.einLast4 } });
+  back(PAGES.company, { msg: "einSaved" }, "ein");
+}
+
+/** Shows the EIN once. Every reveal is a line in the audit log. */
+export async function revealEinAction() {
+  const who = await requireBooks();
+  const token = await issueRevealToken();
+  await audit({ who, action: "company.reveal", summary: "Revealed the EIN." });
+  back(PAGES.company, { reveal: token }, "ein");
+}
+
+export async function addFilingAction(data: FormData) {
+  const who = await requireBooks();
+  const label = field(data, "label");
+  const month = Number(field(data, "month"));
+  const day = Number(field(data, "day"));
+  if (!label) back(PAGES.company, { err: "filing", detail: "What is the filing called?" }, "filings");
+  if (!Number.isInteger(month) || month < 1 || month > 12 || !Number.isInteger(day) || day < 1 || day > 31) {
+    back(PAGES.company, { err: "filing", detail: "When is it due? A month and a day." }, "filings");
+  }
+  const company = await getCompany();
+  const filing: Filing = { id: `f-${Date.now().toString(36)}`, label: label.slice(0, 120), month, day, note: field(data, "note").slice(0, 200) };
+  const ok = await saveCompany({ ...company, filings: [...company.filings, filing], updatedAt: new Date().toISOString(), updatedBy: who });
+  if (!ok) back(PAGES.company, { err: "save" }, "filings");
+  await log(who, "company.filing.add", `Added a yearly filing: ${filing.label}.`, `${PAGES.company}#filings`, { after: filing });
+  back(PAGES.company, { msg: "filingAdded" }, "filings");
+}
+
+export async function deleteFilingAction(data: FormData) {
+  const who = await requireBooks();
+  const id = field(data, "id");
+  const company = await getCompany();
+  const filing = company.filings.find((f) => f.id === id);
+  if (!filing) back(PAGES.company, { err: "missing" }, "filings");
+  const ok = await saveCompany({ ...company, filings: company.filings.filter((f) => f.id !== id), updatedAt: new Date().toISOString(), updatedBy: who });
+  if (!ok) back(PAGES.company, { err: "save" }, "filings");
+  await log(who, "company.filing.delete", `Removed the yearly filing: ${filing.label}.`, undefined, { before: filing });
+  back(PAGES.company, { msg: "filingRemoved" }, "filings");
+}
+
+/* -------------------------------- passkeys -------------------------------- */
+
+export async function deletePasskeyAction(data: FormData) {
+  await requireAdmin();
+  const id = field(data, "id");
+  const passkey = id ? await getPasskey(id) : null;
+  if (!passkey) back(PAGES.passkeys, { err: "passkeymissing" });
+  // Refuse to remove the last one by accident; the shared key alone would
+  // then open the books again, which should be a decision, not a slip.
+  if ((await listPasskeys()).length === 1 && field(data, "confirm") !== "last") back(PAGES.passkeys, { err: "lastpasskey" });
+  await deletePasskey(id);
+  const access = await booksAccess();
+  await audit({ who: access.who || passkey.who, action: "passkey.remove", target: id, summary: `Removed the passkey ${passkey.label} (${passkey.who}).` });
+  back(PAGES.passkeys, { msg: "passkeyRemoved" });
+}
+
+export async function renamePasskeyAction(data: FormData) {
+  await requireAdmin();
+  const id = field(data, "id");
+  const label = field(data, "label").slice(0, 60);
+  const passkey = id && label ? await renamePasskey(id, label) : null;
+  if (!passkey) back(PAGES.passkeys, { err: "passkeymissing" });
+  back(PAGES.passkeys, { msg: "passkeyRenamed" });
+}
+
+/** Ends the passkey session on this browser. */
+export async function lockBooksAction() {
+  const access = await booksAccess();
+  await clearBooksSession();
+  if (access.ok && access.via === "passkey") await audit({ who: access.who, action: "books.lock", summary: "Locked the books on this browser." });
+  back(`${BOOKS}/unlock`, { msg: "booksLocked" });
 }

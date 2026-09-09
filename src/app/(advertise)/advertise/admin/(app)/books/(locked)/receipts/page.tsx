@@ -4,11 +4,11 @@ import { formatDate } from "@/lib/ads/roster";
 import { formatCents } from "@/lib/books/money";
 import { isReaderConfigured } from "@/lib/books/reader";
 import { isReceiptStoreConfigured, receiptHref } from "@/lib/books/receipts";
-import { discardReceiptAction } from "../actions";
-import { BOOKS, SnapCard } from "../../../_components/books";
-import { PageHeader } from "../../../_components/shell";
-import { Badge, Card, Empty, btnDanger, btnPrimary, btnSm } from "../../../_components/ui";
-import { Shell } from "../../shell";
+import { discardReceiptAction } from "../../actions";
+import { BOOKS, SnapCard } from "../../../../_components/books";
+import { PageHeader } from "../../../../_components/shell";
+import { Badge, Card, Empty, btnDanger, btnPrimary, btnSm } from "../../../../_components/ui";
+import { Shell } from "../../../shell";
 
 export const metadata: Metadata = { title: "Receipts" };
 export const maxDuration = 60;

@@ -13,6 +13,8 @@ import { missingReceipts, type Entry } from "./ledger";
 import { formatCents } from "./money";
 import type { Receipt } from "./receipts";
 import type { ExpectedBill } from "./recurring";
+import type { VaultDoc } from "./vault";
+import type { Filing } from "./company";
 
 const BOOKS = "/advertise/admin/books";
 
@@ -25,6 +27,11 @@ export type BooksTodayInput = {
   bills: ExpectedBill[];
   /** This month's entries, for the ones missing a receipt. */
   entries: Entry[];
+  /** Vault documents coming up for renewal, or past it. */
+  renewals: { doc: VaultDoc; daysLeft: number }[];
+  /** Annual filings inside their window. */
+  filings: { filing: Filing; dueOn: string; daysLeft: number; key: string }[];
+  done: Set<string>;
 };
 
 export function buildBooksToday(input: BooksTodayInput): TodayItem[] {
@@ -78,6 +85,39 @@ export function buildBooksToday(input: BooksTodayInput): TodayItem[] {
       actions: [
         { type: "link", label: "Attach", href: `${BOOKS}/ledger?month=${e.date.slice(0, 7)}&open=${e.id}#entry-${e.id}` },
         { type: "noReceipt", id: e.id } as TodayAction,
+      ],
+    });
+  }
+
+  for (const r of input.renewals) {
+    const key = `vault:${r.doc.id}:${r.doc.renewsOn}`;
+    if (input.done.has(key)) continue;
+    items.push({
+      key,
+      kind: "document",
+      tone: r.daysLeft < 0 ? "bad" : r.daysLeft <= 7 ? "warn" : "",
+      title: `${r.doc.label} ${r.daysLeft < 0 ? "lapsed" : "renews"} ${r.daysLeft < 0 ? `${-r.daysLeft} days ago` : r.daysLeft === 0 ? "today" : `in ${r.daysLeft} days`}`,
+      detail: `${formatDate(r.doc.renewsOn!)} · in the vault · after renewing, put the new date on it`,
+      order: r.daysLeft,
+      actions: [
+        { type: "link", label: "Vault", href: `${BOOKS}/vault#doc-${r.doc.id}` },
+        { type: "done", key },
+      ],
+    });
+  }
+
+  for (const f of input.filings) {
+    if (input.done.has(f.key)) continue;
+    items.push({
+      key: f.key,
+      kind: "document",
+      tone: f.daysLeft < 0 ? "bad" : f.daysLeft <= 14 ? "warn" : "",
+      title: `${f.filing.label} ${f.daysLeft < 0 ? "was due" : "due"} ${f.daysLeft < 0 ? `${-f.daysLeft} days ago` : f.daysLeft === 0 ? "today" : `in ${f.daysLeft} days`}`,
+      detail: `${formatDate(f.dueOn)}${f.filing.note ? ` · ${f.filing.note}` : ""} · every year`,
+      order: f.daysLeft,
+      actions: [
+        { type: "link", label: "Company", href: `${BOOKS}/company#filings` },
+        { type: "done", key: f.key },
       ],
     });
   }

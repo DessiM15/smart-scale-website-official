@@ -218,7 +218,8 @@ export type TodayKind =
   | "report"
   | "task"
   | "receipt"
-  | "bill";
+  | "bill"
+  | "document";
 
 /**
  * How a row can be acted on. Each becomes a button; the page decides how.
@@ -259,8 +260,9 @@ const KIND_ORDER: Record<TodayKind, number> = {
   followup: 5,
   renewal: 6,
   paperwork: 7,
-  task: 8,
-  report: 9,
+  document: 8,
+  task: 9,
+  report: 10,
 };
 
 const ADMIN = "/advertise/admin";
