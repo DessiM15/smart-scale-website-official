@@ -736,6 +736,7 @@ export async function markPaidAction(data: FormData) {
     reference: field(data, "reference"),
     note: field(data, "note"),
     period,
+    who: await who(),
   });
   if (!result.ok) back(to, { err: "payment", detail: result.error ?? "" });
 

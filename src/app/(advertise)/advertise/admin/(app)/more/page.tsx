@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { signOutAction } from "../../actions";
-import { Icon, NAV, NAV_SECONDARY, PageHeader } from "../../_components/shell";
+import { Icon, NAV, NAV_BOOKS, NAV_SECONDARY, PageHeader } from "../../_components/shell";
 import { bebas, cardClass } from "../../_components/ui";
 import { Shell } from "../shell";
 
@@ -8,7 +8,11 @@ export const metadata: Metadata = { title: "More" };
 
 /** The rest of the navigation, for the phone tab bar's fifth tab. */
 export default async function MorePage() {
-  const items = [...NAV.filter((n) => !["today", "pipeline", "advertisers", "payments"].includes(n.key)), ...NAV_SECONDARY];
+  const items = [
+    ...NAV.filter((n) => !["today", "pipeline", "advertisers", "payments"].includes(n.key)),
+    ...NAV_BOOKS.filter((n) => n.key !== "books"),
+    ...NAV_SECONDARY,
+  ];
   return (
     <Shell active="more">
       <PageHeader eyebrow="More" title="Everything else." />

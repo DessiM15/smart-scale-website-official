@@ -379,6 +379,7 @@ export async function recordPaymentAction(data: FormData) {
     reference: field(data, "reference"),
     note: field(data, "note"),
     period: /^\d{4}-\d{2}$/.test(field(data, "period")) ? field(data, "period") : undefined,
+    who: await currentWho(),
   });
 
   if (!result.ok) back(id, { err: "payment", detail: result.error ?? "" });

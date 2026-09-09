@@ -19,6 +19,7 @@ const KIND_LABEL: Record<string, string> = {
   prospect: "Prospect",
   advertiser: "Advertiser",
   report: "Report",
+  books: "Books",
   other: "Note",
 };
 

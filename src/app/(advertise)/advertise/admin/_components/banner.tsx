@@ -70,6 +70,27 @@ const notices = (
   agreementVoided: "Agreement cancelled. It stays on file.",
   artworkSaved: "Artwork uploaded.",
   artworkRemoved: "Artwork removed.",
+  entryAdded: `Logged${detail ? `: ${detail}` : ""}.`,
+  entrySaved: "Entry updated.",
+  entryRemoved: "Entry removed from the ledger.",
+  receiptRead: "Photo kept and read. Check the numbers against it, then save.",
+  receiptUnread: `Photo kept, but it couldn't be read${detail ? ` (${detail})` : ""}. Fill the form in by hand.`,
+  receiptDuplicate: "That photo is already on file. Here it is.",
+  receiptConfirmed: `Saved to the ledger${detail ? `: ${detail}` : ""}. The receipt is filed with it.`,
+  receiptDiscarded: "Photo discarded.",
+  receiptAttached: "Receipt attached.",
+  noReceipt: "Noted. It won't ask again.",
+  clientAdded: "Client added.",
+  clientRemoved: "Client removed.",
+  billAdded: "Bill added. It'll show on Today each month on its day.",
+  billPaused: "Bill paused. It won't be expected until you switch it back on.",
+  billResumed: "Bill switched back on.",
+  billRemoved: "Bill removed.",
+  billLogged: `Logged${detail ? `: ${detail}` : ""}.`,
+  adPaymentsImported:
+    Number(sent ?? 0) === 0
+      ? "The ledger already has every ad payment."
+      : `Brought ${sent} ad payment${sent === "1" ? "" : "s"} into the ledger.`,
 });
 
 const errors = (clash?: string, detail?: string): Record<string, string> => ({
@@ -118,6 +139,14 @@ const errors = (clash?: string, detail?: string): Record<string, string> => ({
   doccovers: "Which term does it cover? Give the end date.",
   docsigner: "Who signed it? A full name.",
   payment: detail ?? "That payment didn't record.",
+  entry: detail ?? "That entry didn't save.",
+  entrymissing: "That entry isn't in the ledger any more.",
+  receipt: detail ?? "That photo didn't upload.",
+  receiptmissing: "Take or pick a photo first.",
+  receiptgone: "That receipt isn't there any more.",
+  client: detail ?? "That client didn't save.",
+  bill: detail ?? "That bill didn't save.",
+  billmissing: "That bill isn't on the list any more.",
 });
 
 export type BannerParams = {
