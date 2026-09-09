@@ -16,7 +16,9 @@ import { getCompany, issueRevealToken, saveCompany, sealEin, type Company, type 
 import { recordHistory } from "@/lib/ads/tasks";
 import { listAdvertisers, today } from "@/lib/ads/roster";
 import { listPayments } from "@/lib/ads/payments";
-import { postAdPayment, unpostedAdPayments } from "@/lib/books/ads-bridge";
+import { bringBackAdPayment, leaveOutAdPayment, postAdPayment, unpostedAdPayments } from "@/lib/books/ads-bridge";
+import { getPayment } from "@/lib/ads/payments";
+import { monthName } from "@/lib/books/money";
 import { addClient, deleteClient, getClient } from "@/lib/books/clients";
 import {
   addEntry,
@@ -54,10 +56,10 @@ const field = (data: FormData, name: string) => String(data.get(name) ?? "").tri
  * passkey, a passkey session. Returns who is acting, from the passkey when
  * there is one.
  */
-async function requireBooks(): Promise<string> {
+async function requireBooks(returnTo?: string): Promise<string> {
   if (!(await isSignedIn())) redirect(`${ADMIN}/signin`);
   const access = await booksAccess();
-  if (!access.ok) redirect(`${BOOKS}/unlock`);
+  if (!access.ok) redirect(`${BOOKS}/unlock${returnTo ? `?to=${encodeURIComponent(returnTo)}` : ""}`);
   return access.who;
 }
 
@@ -103,6 +105,7 @@ function entryFromForm(data: FormData, who: string): { input: EntryInput } | { e
   if (!isAccount(account)) return { error: "Which account did it go through?" };
   const partner = field(data, "partner");
   const direction = field(data, "direction");
+  const toAccount = field(data, "toAccount");
 
   return {
     input: {
@@ -111,6 +114,7 @@ function entryFromForm(data: FormData, who: string): { input: EntryInput } | { e
       kind: kind.id as EntryKind,
       category: field(data, "category"),
       account: account as Account,
+      toAccount: kind.id === "transfer" && isAccount(toAccount) ? toAccount : undefined,
       party: field(data, "party"),
       clientId: field(data, "clientId") || undefined,
       partner: isTeamMember(partner) ? partner : undefined,
@@ -180,9 +184,9 @@ export async function deleteEntryAction(data: FormData) {
 }
 
 export async function markNoReceiptAction(data: FormData) {
-  const who = await requireBooks();
   const id = field(data, "id");
   const to = returnPath(data, ADMIN);
+  const who = await requireBooks(to);
   const result = id ? await updateEntry(id, { noReceipt: true }) : null;
   if (!result || !result.ok) back(to, { err: "entrymissing" });
   await log(who, "entry.noReceipt", `No receipt for ${describe(result.entry.cents, result.entry.party, result.entry.kind)}.`, undefined, { target: id });
@@ -336,8 +340,8 @@ export async function deleteBillAction(data: FormData) {
 
 /** Post this month's charge for a bill: the usual amount unless told otherwise. */
 export async function logBillAction(data: FormData) {
-  const who = await requireBooks();
   const to = returnPath(data, PAGES.recurring);
+  const who = await requireBooks(to);
   const id = field(data, "id");
   const bill = id ? await getBill(id) : null;
   if (!bill) back(to, { err: "billmissing" });
@@ -361,7 +365,7 @@ export async function logBillAction(data: FormData) {
   });
   if (!result.ok) back(to, { err: "entry", detail: result.error });
   const what = `${formatCents(cents)} to ${bill.vendor}`;
-  await log(who, "bill.log", `Logged the ${bill.vendor} bill: ${what}.`, `${PAGES.ledger}?month=${month}#entry-${result.entry.id}`, { target: result.entry.id });
+  await log(who, "bill.paid", `Paid the ${bill.vendor} bill: ${what}.`, `${PAGES.ledger}?month=${month}#entry-${result.entry.id}`, { target: result.entry.id });
   back(to, { msg: "billLogged", detail: what });
 }
 
@@ -369,17 +373,55 @@ export async function logBillAction(data: FormData) {
 
 /** Every ad payment the ledger has not seen yet, posted now. Safe to run twice. */
 export async function importAdPaymentsAction(data: FormData) {
-  const who = await requireBooks();
   const to = returnPath(data, PAGES.home);
+  const who = await requireBooks(to);
   const advertisers = await listAdvertisers();
   const lists = await Promise.all(advertisers.map((a) => listPayments(a.id)));
   const missing = await unpostedAdPayments(lists.flat());
-  let posted = 0;
+  const posted: string[] = [];
   for (const p of missing) {
-    if (await postAdPayment(p, who)) posted += 1;
+    const entry = await postAdPayment(p, who);
+    if (entry) posted.push(`${formatCents(entry.cents)} from ${p.business} (${monthName(entry.date.slice(0, 7))})`);
   }
-  if (posted > 0) await log(who, "ads.import", `Brought ${posted} ad payment${posted === 1 ? "" : "s"} into the ledger.`, PAGES.ledger);
-  back(to, { msg: "adPaymentsImported", sent: String(posted) });
+  if (posted.length > 0) await log(who, "ads.import", `Brought ${posted.length} ad payment${posted.length === 1 ? "" : "s"} into the ledger: ${posted.join("; ")}.`, PAGES.ledger);
+  back(to, { msg: "adPaymentsImported", sent: String(posted.length), detail: posted.join("; ") }, "ad-money");
+}
+
+/** One ad payment into the ledger. */
+export async function postAdPaymentAction(data: FormData) {
+  const to = returnPath(data, PAGES.home);
+  const who = await requireBooks(to);
+  const payment = await getPayment(field(data, "paymentId"));
+  if (!payment) back(to, { err: "missing" }, "ad-money");
+  const entry = await postAdPayment(payment, who);
+  if (!entry) back(to, { err: "entry", detail: "That payment couldn't be posted. It may have been left out on purpose." }, "ad-money");
+  const what = `${formatCents(entry.cents)} from ${payment.business}`;
+  await log(who, "ads.post", `Brought an ad payment into the ledger: ${what} (${monthName(entry.date.slice(0, 7))}).`, `${PAGES.ledger}?month=${entry.date.slice(0, 7)}#entry-${entry.id}`, { target: entry.id });
+  back(to, { msg: "adPaymentPosted", detail: `${what}, ${monthName(entry.date.slice(0, 7))}` }, "ad-money");
+}
+
+/** Money that was never the LLC's. Stays out unless brought back. */
+export async function leaveOutAdPaymentAction(data: FormData) {
+  const to = returnPath(data, PAGES.home);
+  const who = await requireBooks(to);
+  const payment = await getPayment(field(data, "paymentId"));
+  if (!payment) back(to, { err: "missing" }, "ad-money");
+  const reason = field(data, "reason") || "not business money";
+  if (!(await leaveOutAdPayment(payment.id, reason))) back(to, { err: "save" }, "ad-money");
+  await log(who, "ads.leaveOut", `Left an ad payment out of the books: $${payment.amount.toLocaleString("en-US")} from ${payment.business} (${reason}).`, undefined, { target: payment.id });
+  back(to, { msg: "adPaymentLeftOut", detail: `${payment.business}` }, "ad-money");
+}
+
+export async function bringBackAdPaymentAction(data: FormData) {
+  const to = returnPath(data, PAGES.home);
+  const who = await requireBooks(to);
+  const payment = await getPayment(field(data, "paymentId"));
+  if (!payment) back(to, { err: "missing" }, "ad-money");
+  await bringBackAdPayment(payment.id);
+  const entry = await postAdPayment(payment, who);
+  if (!entry) back(to, { err: "save" }, "ad-money");
+  await log(who, "ads.post", `Brought an ad payment back into the ledger: ${formatCents(entry.cents)} from ${payment.business}.`, `${PAGES.ledger}?month=${entry.date.slice(0, 7)}#entry-${entry.id}`, { target: entry.id });
+  back(to, { msg: "adPaymentPosted", detail: `${formatCents(entry.cents)} from ${payment.business}, ${monthName(entry.date.slice(0, 7))}` }, "ad-money");
 }
 
 /* --------------------------------- vault ---------------------------------- */

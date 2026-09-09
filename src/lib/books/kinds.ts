@@ -22,7 +22,7 @@ export const KINDS: { id: EntryKind; label: string; direction: Direction | null;
   { id: "expense", label: "Money out", direction: "out", category: "expense" },
   { id: "contribution", label: "Owner put money in", direction: "in", category: "capital" },
   { id: "draw", label: "Owner took money out", direction: "out", category: "capital" },
-  { id: "transfer", label: "Transfer between accounts", direction: null, category: "transfer" },
+  { id: "transfer", label: "Moved between accounts (cash out, Stripe payout)", direction: null, category: "transfer" },
 ];
 
 export function kindOf(id: string) {

@@ -3,18 +3,18 @@ import { cachedClients, cachedEntries } from "@/lib/ads/cached";
 import { TEAM } from "@/lib/ads/who";
 import { booksAccess } from "@/lib/books/passkeys";
 import { isFileKeyConfigured } from "@/lib/books/crypto";
-import { unpostedAdPayments } from "@/lib/books/ads-bridge";
-import { capitalByPartner, listAllEntries, totals } from "@/lib/books/ledger";
+import { adPaymentStates } from "@/lib/books/ads-bridge";
+import { accountBalances, capitalByPartner, listAllEntries, totals } from "@/lib/books/ledger";
 import { monthName } from "@/lib/books/money";
 import { isReaderConfigured } from "@/lib/books/reader";
 import { isReceiptStoreConfigured } from "@/lib/books/receipts";
-import { addEntryAction, importAdPaymentsAction, lockBooksAction } from "../actions";
-import { BigButton, BOOKS, CapitalCard, MoneyTiles, RecentLine, SnapCard } from "../../../_components/books";
+import { addEntryAction, lockBooksAction } from "../actions";
+import { AdMoneyCard, BalancesCard, BigButton, BOOKS, CapitalCard, MoneyTiles, RecentLine, SnapCard } from "../../../_components/books";
 import { EntryForm } from "../../../_components/entry-form";
 import { PageHeader } from "../../../_components/shell";
 import { TodayRow } from "../../../_components/today";
 import { Icon } from "../../../_components/shell";
-import { Card, Disclosure, Empty, Note, btnGhost, btnPrimary, btnSm, linkLine } from "../../../_components/ui";
+import { Card, Empty, Note, btnGhost, linkLine } from "../../../_components/ui";
 import { Shell } from "../../shell";
 import { todayData } from "../../nav-counts";
 
@@ -33,7 +33,8 @@ export default async function BooksPage({
   const [entries, everything] = await Promise.all([cachedEntries(month), listAllEntries()]);
   const sums = totals(entries);
   const capital = capitalByPartner(everything, TEAM);
-  const unposted = await unpostedAdPayments([...data.payments.values()].flat());
+  const adStates = await adPaymentStates([...data.payments.values()].flat());
+  const balances = accountBalances(everything);
   const storeReady = isReceiptStoreConfigured();
 
   return (
@@ -154,21 +155,9 @@ export default async function BooksPage({
             )}
           </Card>
 
+          <BalancesCard balances={balances} />
           <CapitalCard rows={capital} />
-
-          {unposted.length > 0 && (
-            <Disclosure summary={<span>{unposted.length} ad {unposted.length === 1 ? "payment" : "payments"} not in the ledger yet</span>} hint="bring them in">
-              <p className="text-sm text-white/55 leading-relaxed pt-3 mb-4">
-                Payments recorded on the ads side before the books existed. One press posts each as ad revenue, once, keyed to the payment so it can never double up.
-              </p>
-              <form action={importAdPaymentsAction}>
-                <input type="hidden" name="returnTo" value={BOOKS} />
-                <button type="submit" className={`${btnPrimary} ${btnSm}`}>
-                  Bring them into the ledger
-                </button>
-              </form>
-            </Disclosure>
-          )}
+          <AdMoneyCard states={adStates} returnTo={BOOKS} />
         </div>
       </div>
     </Shell>

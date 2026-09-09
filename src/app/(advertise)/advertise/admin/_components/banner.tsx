@@ -82,11 +82,11 @@ const notices = (
   noReceipt: "Noted. It won't ask again.",
   clientAdded: "Client added.",
   clientRemoved: "Client removed.",
-  billAdded: "Bill added. It'll show on Today each month on its day.",
+  billAdded: "Bill added. It'll show on Today each month on its day, with a Paid button.",
   billPaused: "Bill paused. It won't be expected until you switch it back on.",
   billResumed: "Bill switched back on.",
   billRemoved: "Bill removed.",
-  billLogged: `Logged${detail ? `: ${detail}` : ""}.`,
+  billLogged: `Paid${detail ? `: ${detail}` : ""}. It's in the ledger for the month.`,
   passkeyEnrolled: `Passkey added${detail ? `: ${detail}` : ""}. The books open with it from now on.`,
   passkeyRemoved: "Passkey removed.",
   passkeyRenamed: "Passkey renamed.",
@@ -100,8 +100,10 @@ const notices = (
   filingRemoved: "Filing removed.",
   adPaymentsImported:
     Number(sent ?? 0) === 0
-      ? "The ledger already has every ad payment."
-      : `Brought ${sent} ad payment${sent === "1" ? "" : "s"} into the ledger.`,
+      ? "Nothing waiting. Every ad payment is either in the ledger or deliberately left out."
+      : `Brought ${sent} ad payment${sent === "1" ? "" : "s"} into the ledger${detail ? `: ${detail}` : ""}. Each is filed in the month it arrived.`,
+  adPaymentPosted: `In the ledger${detail ? `: ${detail}` : ""}.`,
+  adPaymentLeftOut: `Left out${detail ? `: ${detail}` : ""}. It won't be offered again unless you bring it back.`,
 });
 
 const errors = (clash?: string, detail?: string): Record<string, string> => ({

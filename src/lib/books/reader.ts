@@ -27,6 +27,8 @@ export type ReceiptRead = {
   confidence: "high" | "medium" | "low";
   /** What was bought, in a few words, for the memo. */
   summary: string;
+  /** An ATM or teller slip is money moving, not money spent. */
+  kind: "purchase" | "cash-withdrawal";
 };
 
 export type ReadResult = { ok: true; read: ReceiptRead } | { ok: false; error: string };
@@ -38,12 +40,13 @@ export function isReaderConfigured(): boolean {
 const SYSTEM = `You read photos of receipts for a two-person web and app studio's bookkeeping.
 Report only what is printed on the receipt. If a value is not legible or not present, leave it empty rather than guessing.
 The total is the final amount paid, after tax and tip. Dates are YYYY-MM-DD. Amounts are in US dollars.
-Pick the category that best fits what was bought from the list you are given. Say "low" confidence when the photo is blurry, cut off, or the total is unclear.`;
+Pick the category that best fits what was bought from the list you are given. Say "low" confidence when the photo is blurry, cut off, or the total is unclear.
+An ATM receipt, a teller withdrawal slip, or a cash-back line is a "cash-withdrawal", not a purchase; everything else is a "purchase".`;
 
 const SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["vendor", "date", "total", "tax", "category", "confidence", "summary"],
+  required: ["vendor", "date", "total", "tax", "category", "confidence", "summary", "kind"],
   properties: {
     vendor: { type: "string", description: "The business name as printed, or empty." },
     date: { type: "string", description: "YYYY-MM-DD, or empty if not legible." },
@@ -52,6 +55,7 @@ const SCHEMA = {
     category: { type: "string", enum: RECEIPT_CATEGORY_IDS },
     confidence: { type: "string", enum: ["high", "medium", "low"] },
     summary: { type: "string", description: "What was bought, under ten words." },
+    kind: { type: "string", enum: ["purchase", "cash-withdrawal"] },
   },
 } as const;
 
@@ -99,6 +103,7 @@ export async function readReceiptImage(bytes: Buffer, mediaType: MediaType): Pro
       category?: string;
       confidence?: string;
       summary?: string;
+      kind?: string;
     };
 
     const cents = (n: number | null | undefined) =>
@@ -117,6 +122,7 @@ export async function readReceiptImage(bytes: Buffer, mediaType: MediaType): Pro
         category,
         confidence,
         summary: (parsed.summary ?? "").trim().slice(0, 160),
+        kind: parsed.kind === "cash-withdrawal" ? "cash-withdrawal" : "purchase",
       },
     };
   } catch (err) {

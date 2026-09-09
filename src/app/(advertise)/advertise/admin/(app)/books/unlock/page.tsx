@@ -14,7 +14,7 @@ const BOOKS = "/advertise/admin/books";
 /** The door. One tap on a device that holds a passkey. */
 export default async function UnlockPage({ searchParams }: { searchParams: Promise<{ to?: string; msg?: string; err?: string }> }) {
   const [params, access, passkeys] = await Promise.all([searchParams, booksAccess(), cachedPasskeys()]);
-  const to = params.to && params.to.startsWith(BOOKS) && !params.to.includes("//") ? params.to : BOOKS;
+  const to = params.to && params.to.startsWith("/advertise/admin") && !params.to.includes("//") ? params.to : BOOKS;
   if (access.ok) redirect(to);
 
   const people = [...new Set(passkeys.map((p) => p.who))];
