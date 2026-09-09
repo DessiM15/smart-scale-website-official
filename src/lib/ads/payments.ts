@@ -42,6 +42,13 @@ export type Payment = {
   /** Stripe payment id, cheque number, whatever identifies it. */
   reference: string;
   note: string;
+  /**
+   * The month this was meant to cover, YYYY-MM, when it was recorded against a
+   * particular expected payment. Absent on older records and on money that
+   * arrived without being matched to anything, which the schedule then
+   * allocates oldest-first.
+   */
+  period?: string;
   recordedAt: string;
 };
 
@@ -99,6 +106,7 @@ export type PaymentInput = {
   method: PaymentMethod;
   reference: string;
   note: string;
+  period?: string;
 };
 
 export async function recordPayment(

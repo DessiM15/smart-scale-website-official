@@ -15,7 +15,7 @@ import {
   validateCode,
   validateDestination,
 } from "@/lib/ads/link-store";
-import { getAdvertiser, saveAdvertiser } from "@/lib/ads/roster";
+import { artworkStatusOf, getAdvertiser, saveAdvertiser } from "@/lib/ads/roster";
 import {
   countersignAgreement,
   fileAgreement,
@@ -32,15 +32,15 @@ import {
 } from "@/lib/ads/payments";
 import { agreementEmail, isEmailConfigured, sendEmail } from "@/lib/ads/email";
 import { agreementUrl } from "@/lib/ads/links";
-
-const profilePath = (id: string) => `/advertise/admin/client/${id}`;
+import { recordHistory } from "@/lib/ads/tasks";
+import { currentWho } from "@/lib/ads/who";
 
 const field = (data: FormData, name: string) =>
   String(data.get(name) ?? "").trim();
 
 /** Every mutation re-checks the session — an action is a public endpoint. */
 async function requireAdmin() {
-  if (!(await isSignedIn())) redirect("/advertise/admin");
+  if (!(await isSignedIn())) redirect("/advertise/admin/signin");
 }
 
 /**
@@ -48,11 +48,13 @@ async function requireAdmin() {
  * their own detail because these actions fail for reasons a generic "couldn't
  * save" wouldn't explain — a file too large, a code already printed elsewhere.
  */
-function back(id: string, params: Record<string, string>): never {
-  // Without an id there is no profile to go back to, and inventing one would
+function back(id: string, params: Record<string, string>, panel?: string): never {
+  // Without an id there is no client to go back to, and inventing one would
   // land the reader on a 404 instead of the message.
-  const target = id ? profilePath(id) : "/advertise/admin";
-  redirect(`${target}?${new URLSearchParams(params)}`);
+  if (!id) redirect(`/advertise/admin/advertisers?${new URLSearchParams(params)}`);
+  const query = new URLSearchParams({ open: id, ...(panel ? { panel } : {}), ...params });
+  revalidatePath("/advertise/admin/advertisers");
+  redirect(`/advertise/admin/advertisers?${query}#client-${id}`);
 }
 
 /* --------------------------------- notes ---------------------------------- */
@@ -68,8 +70,7 @@ export async function saveNotesAction(data: FormData) {
     id,
   );
   if (!ok) back(id, { err: "save" });
-  revalidatePath(profilePath(id));
-  back(id, { msg: "notesSaved" });
+  back(id, { msg: "notesSaved" }, "notes");
 }
 
 /* -------------------------------- artwork --------------------------------- */
@@ -87,8 +88,14 @@ export async function uploadArtworkAction(data: FormData) {
   const result = await uploadArtwork(id, file, field(data, "note"));
   if (!result.ok) back(id, { err: "artwork", detail: result.error ?? "" });
 
-  revalidatePath(profilePath(id));
-  back(id, { msg: "artworkSaved" });
+  // A slide arriving is what "received" means, so the status follows the
+  // upload unless it is already further along.
+  const advertiser = await getAdvertiser(id);
+  if (advertiser && artworkStatusOf(advertiser) === "requested") {
+    await saveAdvertiser({ ...advertiser, artworkStatus: "received" }, id);
+  }
+
+  back(id, { msg: "artworkSaved" }, "artwork");
 }
 
 export async function deleteArtworkAction(data: FormData) {
@@ -97,8 +104,7 @@ export async function deleteArtworkAction(data: FormData) {
   const artworkId = field(data, "artworkId");
   if (!id || !artworkId) back(id, { err: "missing" });
   if (!(await deleteArtwork(id, artworkId))) back(id, { err: "save" });
-  revalidatePath(profilePath(id));
-  back(id, { msg: "artworkRemoved" });
+  back(id, { msg: "artworkRemoved" }, "artwork");
 }
 
 /* -------------------------------- QR codes -------------------------------- */
@@ -155,8 +161,7 @@ export async function addClientLinkAction(data: FormData) {
     await saveAdvertiser({ ...advertiser, qrCode: code }, id);
   }
 
-  revalidatePath(profilePath(id));
-  back(id, { msg: "linkAdded", detail: code });
+  back(id, { msg: "linkAdded", detail: code }, "codes");
 }
 
 /** Repointing a code is the whole reason we own the redirect. */
@@ -180,8 +185,7 @@ export async function repointClientLinkAction(data: FormData) {
     advertiserId: id,
   });
   if (!ok) back(id, { err: "save" });
-  revalidatePath(profilePath(id));
-  back(id, { msg: "linkSaved", detail: code });
+  back(id, { msg: "linkSaved", detail: code }, "codes");
 }
 
 /* ------------------------------- agreements ------------------------------- */
@@ -201,8 +205,7 @@ export async function prepareAgreementAction(data: FormData) {
 
   const { ok } = await prepareAgreement(advertiser);
   if (!ok) back(id, { err: "save" });
-  revalidatePath(profilePath(id));
-  back(id, { msg: "agreementPrepared" });
+  back(id, { msg: "agreementPrepared" }, "agreement");
 }
 
 export async function sendAgreementAction(data: FormData) {
@@ -227,8 +230,7 @@ export async function sendAgreementAction(data: FormData) {
   const result = await sendEmail({ to: agreement.terms.email, ...message });
   if (!result.ok) back(id, { err: "agreementSend", detail: result.error ?? "" });
 
-  revalidatePath(profilePath(id));
-  back(id, { msg: "agreementSent", detail: agreement.terms.email });
+  back(id, { msg: "agreementSent", detail: agreement.terms.email }, "agreement");
 }
 
 /**
@@ -258,8 +260,7 @@ export async function countersignAgreementAction(data: FormData) {
     );
   }
 
-  revalidatePath(profilePath(id));
-  back(id, { msg: "agreementDone" });
+  back(id, { msg: "agreementDone" }, "agreement");
 }
 
 export async function voidAgreementAction(data: FormData) {
@@ -270,8 +271,7 @@ export async function voidAgreementAction(data: FormData) {
   if (!(await voidAgreement(agreementId, field(data, "reason")))) {
     back(id, { err: "save" });
   }
-  revalidatePath(profilePath(id));
-  back(id, { msg: "agreementVoided" });
+  back(id, { msg: "agreementVoided" }, "agreement");
 }
 
 /* --------------------------- agreements from elsewhere -------------------- */
@@ -325,8 +325,7 @@ export async function uploadAgreementAction(data: FormData) {
   // Same stamp the countersign path writes, so the roster stops flagging them.
   await saveAdvertiser({ ...advertiser, signedAgreementEndDate: coversEndDate }, id);
 
-  revalidatePath(profilePath(id));
-  back(id, { msg: "agreementFiled" });
+  back(id, { msg: "agreementFiled" }, "agreement");
 }
 
 /** Any other paperwork worth keeping on a client — a W-9, a COI, a scan. */
@@ -344,8 +343,7 @@ export async function uploadDocumentAction(data: FormData) {
   });
   if (!stored.ok) back(id, { err: "docupload", detail: stored.error });
 
-  revalidatePath(profilePath(id));
-  back(id, { msg: "documentSaved" });
+  back(id, { msg: "documentSaved" }, "agreement");
 }
 
 export async function deleteDocumentAction(data: FormData) {
@@ -354,8 +352,7 @@ export async function deleteDocumentAction(data: FormData) {
   const documentId = field(data, "documentId");
   if (!id || !documentId) back(id, { err: "missing" });
   if (!(await deleteDocument(documentId))) back(id, { err: "save" });
-  revalidatePath(profilePath(id));
-  back(id, { msg: "documentRemoved" });
+  back(id, { msg: "documentRemoved" }, "agreement");
 }
 
 /* -------------------------------- payments -------------------------------- */
@@ -381,11 +378,17 @@ export async function recordPaymentAction(data: FormData) {
     method: (field(data, "method") || "stripe") as PaymentMethod,
     reference: field(data, "reference"),
     note: field(data, "note"),
+    period: /^\d{4}-\d{2}$/.test(field(data, "period")) ? field(data, "period") : undefined,
   });
 
   if (!result.ok) back(id, { err: "payment", detail: result.error ?? "" });
-  revalidatePath(profilePath(id));
-  back(id, { msg: "paymentRecorded" });
+  await recordHistory({
+    who: await currentWho(),
+    kind: "payment",
+    text: `Recorded $${amount.toLocaleString("en-US", { maximumFractionDigits: 0 })} from ${advertiser.business}.`,
+    href: `/advertise/admin/advertisers?open=${id}&panel=payments`,
+  });
+  back(id, { msg: "paymentRecorded" }, "payments");
 }
 
 export async function deletePaymentAction(data: FormData) {
@@ -394,6 +397,5 @@ export async function deletePaymentAction(data: FormData) {
   const paymentId = field(data, "paymentId");
   if (!id || !paymentId) back(id, { err: "missing" });
   if (!(await deletePayment(paymentId))) back(id, { err: "save" });
-  revalidatePath(profilePath(id));
-  back(id, { msg: "paymentRemoved" });
+  back(id, { msg: "paymentRemoved" }, "payments");
 }

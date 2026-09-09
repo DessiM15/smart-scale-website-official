@@ -112,7 +112,7 @@ function LinkRow({ link }: { link: LinkView }) {
 
 function LinkCard({ link }: { link: LinkView }) {
   return (
-    <li className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+    <li className=" border border-white/[0.07] bg-white/[0.02] p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-mono text-[#f87171]">/go/{link.code}</p>
@@ -202,7 +202,7 @@ export function QrTab({
       <details
         id="qr"
         open={Boolean(editing) || links.length === 0}
-        className="group rounded-3xl border border-white/[0.07] bg-[#131313] overflow-hidden"
+        className="group border border-white/[0.07] bg-white/[0.02] overflow-hidden"
       >
         <summary className="flex cursor-pointer items-center justify-between gap-4 px-6 sm:px-8 py-5 list-none [&::-webkit-details-marker]:hidden hover:bg-white/[0.02] transition-colors">
           <span className="text-white font-semibold">
@@ -290,7 +290,7 @@ export function QrTab({
                   name="logo"
                   type="file"
                   accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                  className="w-full text-sm text-white/55 file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[#0A0A0A] hover:file:bg-white/85"
+                  className="w-full text-sm text-white/55 file:mr-3 file: file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white file:border-0"
                 />
                 <p className="mt-1.5 text-xs text-white/30">
                   PNG, JPEG, WebP or SVG, under 200KB. A square logo on a transparent
@@ -316,7 +316,7 @@ export function QrTab({
                   <img
                     src={editing.logoDataUri}
                     alt=""
-                    className="h-16 w-16 object-contain rounded-lg border border-white/10 bg-white p-1"
+                    className="h-16 w-16 object-contain border border-white/10 bg-white p-1"
                   />
                 </div>
               )}

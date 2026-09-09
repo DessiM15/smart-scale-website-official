@@ -43,7 +43,7 @@ function Item({ item }: { item: SetupItem }) {
       // Anything still switched off is opened, because that's what the reader
       // came here to fix.
       open={!done}
-      className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden"
+      className=" border border-white/[0.07] bg-white/[0.02] overflow-hidden"
     >
       <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-3 px-5 py-4 list-none [&::-webkit-details-marker]:hidden hover:bg-white/[0.02] transition-colors">
         <span className="flex flex-wrap items-center gap-2.5">
@@ -67,7 +67,7 @@ function Item({ item }: { item: SetupItem }) {
             <ol className="space-y-2">
               {item.steps.map((step, i) => (
                 <li key={i} className="flex gap-3 text-sm text-white/70">
-                  <span className="shrink-0 w-5 h-5 rounded-full bg-white/[0.07] text-[11px] font-semibold text-white/50 flex items-center justify-center tabular-nums">
+                  <span className="shrink-0 w-5 h-5 bg-white/[0.07] text-[11px] font-semibold text-white/50 flex items-center justify-center tabular-nums">
                     {i + 1}
                   </span>
                   <span className="leading-relaxed">{step}</span>
