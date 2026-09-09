@@ -8,6 +8,7 @@ import { cache } from "react";
 import {
   cachedAdvertisers,
   cachedBills,
+  cachedCompany,
   cachedEntries,
   cachedPaymentsByAdvertiser,
   cachedPendingReceipts,
@@ -15,9 +16,12 @@ import {
   cachedReports,
   cachedResponses,
   cachedTasks,
+  cachedVault,
 } from "@/lib/ads/cached";
+import { filingsDue } from "@/lib/books/company";
 import { expectedBills } from "@/lib/books/recurring";
 import { buildBooksToday } from "@/lib/books/today";
+import { renewalsDue } from "@/lib/books/vault";
 import { overdueAcross } from "@/lib/ads/expected";
 import { artworkStatusOf, followUpsDue, isOpenProspect, summarize, today } from "@/lib/ads/roster";
 import { setupItems } from "@/lib/ads/setup";
@@ -28,7 +32,7 @@ import type { NavCount, NavKey } from "../_components/shell";
 export const todayData = cache(async function todayData() {
   const asOf = today();
   const month = asOf.slice(0, 7);
-  const [advertisers, prospects, replies, reports, tasks, entries, pendingReceipts, bills] = await Promise.all([
+  const [advertisers, prospects, replies, reports, tasks, entries, pendingReceipts, bills, vault, company] = await Promise.all([
     cachedAdvertisers(),
     cachedProspects(),
     cachedResponses(),
@@ -37,6 +41,8 @@ export const todayData = cache(async function todayData() {
     cachedEntries(month),
     cachedPendingReceipts(),
     cachedBills(),
+    cachedVault(),
+    cachedCompany(),
   ]);
   const payments = await cachedPaymentsByAdvertiser(advertisers.map((a) => a.id));
   const summary = summarize(advertisers);
@@ -46,16 +52,22 @@ export const todayData = cache(async function todayData() {
   const drafts = reports.filter((r) => r.status === "draft");
   const draftReports = drafts.length ? { count: drafts.length, month: drafts[0].month } : null;
 
+  const renewals = renewalsDue(vault, asOf);
+  const filings = filingsDue(company.filings, asOf);
+  const booksKeys = [...renewals.map((r) => `vault:${r.doc.id}:${r.doc.renewsOn}`), ...filings.map((f) => f.key)];
+
+  const partial = { today: asOf, newLeads, followUps, summary, replies, overduePayments, draftReports, tasks };
+  const done = await doneSet([...candidateKeys({ ...partial, books: [] }), ...booksKeys]);
   const books = buildBooksToday({
     today: asOf,
     pending: pendingReceipts,
     bills: expectedBills(bills, entries, month, asOf),
     entries,
+    renewals,
+    filings,
+    done,
   });
-
-  const input = { today: asOf, newLeads, followUps, summary, replies, overduePayments, draftReports, tasks, books };
-  const done = await doneSet(candidateKeys(input));
-  const items = buildToday({ ...input, done });
+  const items = buildToday({ ...partial, books, done });
 
   return { asOf, advertisers, prospects, replies, reports, tasks, payments, summary, newLeads, followUps, overduePayments, items, books, pendingReceipts };
 });

@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import { cachedClients } from "@/lib/ads/cached";
 import { listAllEntries } from "@/lib/books/ledger";
 import { formatCents } from "@/lib/books/money";
-import { addClientAction, deleteClientAction } from "../actions";
-import { BOOKS } from "../../../_components/books";
-import { PageHeader } from "../../../_components/shell";
-import { SubmitButton } from "../../../_components/submit-button";
-import { clientHref } from "../../../_components/types";
-import { Badge, Card, Disclosure, Empty, Field, btnDanger, btnPrimary, btnSm, numClass } from "../../../_components/ui";
-import { Shell } from "../../shell";
+import { addClientAction, deleteClientAction } from "../../actions";
+import { BOOKS } from "../../../../_components/books";
+import { PageHeader } from "../../../../_components/shell";
+import { SubmitButton } from "../../../../_components/submit-button";
+import { clientHref } from "../../../../_components/types";
+import { Badge, Card, Disclosure, Empty, Field, btnDanger, btnPrimary, btnSm, numClass } from "../../../../_components/ui";
+import { Shell } from "../../../shell";
 
 export const metadata: Metadata = { title: "Clients" };
 

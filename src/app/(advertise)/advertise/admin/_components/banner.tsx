@@ -87,6 +87,17 @@ const notices = (
   billResumed: "Bill switched back on.",
   billRemoved: "Bill removed.",
   billLogged: `Logged${detail ? `: ${detail}` : ""}.`,
+  passkeyEnrolled: `Passkey added${detail ? `: ${detail}` : ""}. The books open with it from now on.`,
+  passkeyRemoved: "Passkey removed.",
+  passkeyRenamed: "Passkey renamed.",
+  booksLocked: "Locked. Unlock with a passkey next time.",
+  vaultSaved: `Sealed and filed${detail ? `: ${detail}` : ""}.`,
+  vaultUpdated: "Document updated.",
+  vaultRemoved: "Document removed.",
+  companySaved: "Company details saved.",
+  einSaved: "EIN sealed. It shows masked; reveal it when you need it.",
+  filingAdded: "Filing added. It'll land on Today as the date approaches, every year.",
+  filingRemoved: "Filing removed.",
   adPaymentsImported:
     Number(sent ?? 0) === 0
       ? "The ledger already has every ad payment."
@@ -147,6 +158,15 @@ const errors = (clash?: string, detail?: string): Record<string, string> => ({
   client: detail ?? "That client didn't save.",
   bill: detail ?? "That bill didn't save.",
   billmissing: "That bill isn't on the list any more.",
+  locked: "The books are locked. Unlock them with a passkey first.",
+  passkeymissing: "That passkey isn't enrolled any more.",
+  lastpasskey: "That's the only passkey. Removing it would open the books to the shared key again; add another first if that's not what you want.",
+  vault: detail ?? "That file didn't upload.",
+  vaultmissing: "Pick a file first.",
+  vaultgone: "That document isn't in the vault any more.",
+  company: detail ?? "That didn't save.",
+  ein: detail ?? "That EIN didn't save.",
+  filing: detail ?? "That filing didn't save.",
 });
 
 export type BannerParams = {

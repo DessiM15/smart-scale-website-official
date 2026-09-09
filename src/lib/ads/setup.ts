@@ -18,6 +18,7 @@ import { isLinkSigningConfigured } from "./links";
 import { isArtworkStoreConfigured } from "./artwork";
 import { describeBlobEnv } from "./blob";
 import { TEMPLATE_REVIEWED, TEMPLATE_VERSION } from "./agreement-template";
+import { describeFileKey, isFileKeyConfigured } from "@/lib/books/crypto";
 
 export type SetupStatus = "on" | "off" | "partial";
 
@@ -67,6 +68,23 @@ export function setupItems(): SetupItem[] {
         "In Vercel: Storage → Create Database → Upstash Redis.",
         "Connect it to this project, then redeploy.",
       ],
+    },
+    {
+      id: "books-key",
+      name: "Books file key",
+      unlocks:
+        "Sealing receipts, vault documents and the EIN before they reach storage. Without it the vault refuses uploads and the EIN can't be stored.",
+      status: flag(isFileKeyConfigured()),
+      detail: isFileKeyConfigured() ? describeFileKey() : undefined,
+      vars: ["BOOKS_FILE_KEY"],
+      steps: [
+        "On a laptop, run: openssl rand -base64 32",
+        "In Vercel: Settings → Environment Variables → add BOOKS_FILE_KEY with that value, Production ticked.",
+        "Redeploy.",
+        "Keep a copy of the key somewhere outside Vercel, such as the password manager you both use.",
+      ],
+      caution:
+        "Everything sealed with this key is unreadable without it. Rotating or losing the key means every vault document and sealed receipt is gone. Never change it casually.",
     },
     {
       id: "cron",

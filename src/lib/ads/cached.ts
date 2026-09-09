@@ -19,6 +19,9 @@ import { listEntries, listMonths } from "@/lib/books/ledger";
 import { listPendingReceipts } from "@/lib/books/receipts";
 import { listBills } from "@/lib/books/recurring";
 import { listClients } from "@/lib/books/clients";
+import { listVault } from "@/lib/books/vault";
+import { getCompany } from "@/lib/books/company";
+import { listPasskeys } from "@/lib/books/passkeys";
 
 export const cachedAdvertisers = cache(listAdvertisers);
 export const cachedProspects = cache(listProspects);
@@ -33,6 +36,9 @@ export const cachedMonths = cache(listMonths);
 export const cachedPendingReceipts = cache(listPendingReceipts);
 export const cachedBills = cache(listBills);
 export const cachedClients = cache(listClients);
+export const cachedVault = cache(listVault);
+export const cachedCompany = cache(getCompany);
+export const cachedPasskeys = cache(listPasskeys);
 
 /**
  * Every client's full payment history, keyed by client.

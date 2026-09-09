@@ -1,19 +1,22 @@
 import type { Metadata } from "next";
 import { cachedClients, cachedEntries } from "@/lib/ads/cached";
-import { currentWho, TEAM } from "@/lib/ads/who";
+import { TEAM } from "@/lib/ads/who";
+import { booksAccess } from "@/lib/books/passkeys";
+import { isFileKeyConfigured } from "@/lib/books/crypto";
 import { unpostedAdPayments } from "@/lib/books/ads-bridge";
 import { capitalByPartner, listAllEntries, totals } from "@/lib/books/ledger";
 import { monthName } from "@/lib/books/money";
 import { isReaderConfigured } from "@/lib/books/reader";
 import { isReceiptStoreConfigured } from "@/lib/books/receipts";
-import { addEntryAction, importAdPaymentsAction } from "./actions";
-import { BigButton, BOOKS, CapitalCard, MoneyTiles, RecentLine, SnapCard } from "../../_components/books";
-import { EntryForm } from "../../_components/entry-form";
-import { PageHeader } from "../../_components/shell";
-import { TodayRow } from "../../_components/today";
-import { Card, Disclosure, Empty, btnGhost, btnPrimary, btnSm, linkLine } from "../../_components/ui";
-import { Shell } from "../shell";
-import { todayData } from "../nav-counts";
+import { addEntryAction, importAdPaymentsAction, lockBooksAction } from "../actions";
+import { BigButton, BOOKS, CapitalCard, MoneyTiles, RecentLine, SnapCard } from "../../../_components/books";
+import { EntryForm } from "../../../_components/entry-form";
+import { PageHeader } from "../../../_components/shell";
+import { TodayRow } from "../../../_components/today";
+import { Icon } from "../../../_components/shell";
+import { Card, Disclosure, Empty, Note, btnGhost, btnPrimary, btnSm, linkLine } from "../../../_components/ui";
+import { Shell } from "../../shell";
+import { todayData } from "../../nav-counts";
 
 export const metadata: Metadata = { title: "Books" };
 /** Reading a receipt waits on the model; give the snap action room. */
@@ -24,7 +27,8 @@ export default async function BooksPage({
 }: {
   searchParams: Promise<{ msg?: string; err?: string; detail?: string; sent?: string }>;
 }) {
-  const [params, data, who, clients] = await Promise.all([searchParams, todayData(), currentWho(), cachedClients()]);
+  const [params, data, access, clients] = await Promise.all([searchParams, todayData(), booksAccess(), cachedClients()]);
+  const who = access.who;
   const month = data.asOf.slice(0, 7);
   const [entries, everything] = await Promise.all([cachedEntries(month), listAllEntries()]);
   const sums = totals(entries);
@@ -71,6 +75,41 @@ export default async function BooksPage({
         </div>
 
         <div className="flex flex-col gap-5">
+          {access.via === "open" ? (
+            <Note tone="warn">
+              <div className="flex items-start gap-3">
+                <Icon name="key" size={18} className="text-[#E0B36A] shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm text-white">The books are open to anyone with the shared key.</p>
+                  <p className="mt-1 text-sm text-white/55">
+                    Add a passkey on each of your phones and they lock behind Face ID.{" "}
+                    <a href={`${BOOKS}/passkeys`} className={linkLine}>
+                      Set up passkeys
+                    </a>
+                  </p>
+                </div>
+              </div>
+            </Note>
+          ) : (
+            <div className="flex flex-wrap items-center justify-between gap-3 border border-white/[0.08] px-4 py-3 text-xs text-white/50">
+              <span className="flex items-center gap-2">
+                <Icon name="lock" size={14} className="text-[#7FBF8E]" />
+                Unlocked as {who} with a passkey
+              </span>
+              <span className="flex items-center gap-3">
+                <a href={`${BOOKS}/passkeys`} className="hover:text-white transition-colors">Passkeys</a>
+                <a href={`${BOOKS}/audit`} className="hover:text-white transition-colors">Audit log</a>
+                <form action={lockBooksAction}>
+                  <button type="submit" className="hover:text-white transition-colors">Lock</button>
+                </form>
+              </span>
+            </div>
+          )}
+          {!isFileKeyConfigured() && (
+            <Note tone="warn">
+              <p className="text-sm text-white">BOOKS_FILE_KEY isn&apos;t set. Receipts are stored unsealed and the vault is closed until it is. See Setup.</p>
+            </Note>
+          )}
           <Card
             title={`Needs you · ${data.books.length}`}
             padding="px-5 sm:px-6 pt-5 pb-2"

@@ -51,6 +51,7 @@ const KIND: Record<TodayKind, { label: string; tone: Tone }> = {
   report: { label: "Report", tone: "neutral" },
   receipt: { label: "Receipt", tone: "warn" },
   bill: { label: "Bill", tone: "warn" },
+  document: { label: "Document", tone: "neutral" },
 };
 
 const CheckIcon = () => (

@@ -648,14 +648,25 @@ export async function markDoneAction(data: FormData) {
   const to = returnPath(data, PAGES.today);
   const key = field(data, "key");
   const title = field(data, "title");
-  if (!/^(renewal|paperwork|reply|reports):/.test(key)) back(to, { err: "missing" });
+  if (!/^(renewal|paperwork|reply|reports|vault|filing):/.test(key)) back(to, { err: "missing" });
 
   const by = await who();
   if (!(await markDone(key, by))) back(to, { err: "save" });
 
-  const kind = key.split(":")[0] as HistoryKind;
+  const prefix = key.split(":")[0];
+  const kind = (prefix === "vault" || prefix === "filing" ? "books" : prefix) as HistoryKind;
   const verb =
-    kind === "renewal" ? "Renewal handled" : kind === "paperwork" ? "Paperwork chased" : kind === "reply" ? "Reply handled" : "Done";
+    prefix === "renewal"
+      ? "Renewal handled"
+      : prefix === "paperwork"
+        ? "Paperwork chased"
+        : prefix === "reply"
+          ? "Reply handled"
+          : prefix === "vault"
+            ? "Document renewed"
+            : prefix === "filing"
+              ? "Filing done"
+              : "Done";
   await log(kind, `${verb}: ${title || key}.`, field(data, "href") || undefined);
   back(to, { msg: "done" });
 }

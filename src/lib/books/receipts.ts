@@ -14,7 +14,8 @@
 import { createHash, randomUUID } from "crypto";
 import sharp from "sharp";
 import { redisPipeline, redisWrite } from "@/lib/ads/redis";
-import { getBlob, isBlobConfigured, putBlob, removeBlob, type BlobRead } from "@/lib/ads/blob";
+import { getBlob, isBlobConfigured, putBlob, removeBlob } from "@/lib/ads/blob";
+import { isFileKeyConfigured, openBytes, sealBytes } from "./crypto";
 import { readReceiptImage, type ReceiptRead } from "./reader";
 
 /** The server action body limit is 4.5 MB; the phone shrinks before sending. */
@@ -35,6 +36,8 @@ export type Receipt = {
   width: number;
   height: number;
   sha256: string;
+  /** Encrypted with BOOKS_FILE_KEY before upload. Older photos may not be. */
+  sealed?: boolean;
   capturedAt: string;
   who: string;
   status: ReceiptStatus;
@@ -145,8 +148,16 @@ export async function storeReceipt(
     if (existing) return { ok: true, receipt: existing, duplicate: true };
   }
 
+  // Sealed when the key is there. A receipt is not an EIN letter, so a
+  // missing key does not stop the snap; the Setup page says it is missing.
+  const sealed = isFileKeyConfigured();
   const id = randomUUID();
-  const stored = await putBlob(`ads/private/books/receipts/${id}.jpg`, image, "image/jpeg", { randomSuffix: true });
+  const stored = await putBlob(
+    `ads/private/books/receipts/${id}.${sealed ? "bin" : "jpg"}`,
+    sealed ? sealBytes(image) : image,
+    sealed ? "application/octet-stream" : "image/jpeg",
+    { randomSuffix: true },
+  );
   if (!stored.ok) return { ok: false, error: stored.error };
 
   const receipt: Receipt = {
@@ -157,6 +168,7 @@ export async function storeReceipt(
     width,
     height,
     sha256,
+    sealed,
     capturedAt: new Date().toISOString(),
     who,
     status: options.entryId ? "confirmed" : "pending",
@@ -213,11 +225,18 @@ export async function deleteReceipt(id: string): Promise<Receipt | null> {
   return ok ? receipt : null;
 }
 
-export async function readReceiptFile(id: string): Promise<{ receipt: Receipt; file: BlobRead } | null> {
+/** The photo, in the clear, for the gated route. */
+export async function readReceiptFile(id: string): Promise<{ receipt: Receipt; bytes: Buffer } | null> {
   const receipt = await getReceipt(id);
   if (!receipt) return null;
   const file = await getBlob(receipt.blobUrl);
-  return file ? { receipt, file } : null;
+  if (!file) return null;
+  const raw = Buffer.from(await new Response(file.stream).arrayBuffer());
+  try {
+    return { receipt, bytes: receipt.sealed ? openBytes(raw) : raw };
+  } catch {
+    return null;
+  }
 }
 
 /** Where the portal links to. Never the Blob address. */
