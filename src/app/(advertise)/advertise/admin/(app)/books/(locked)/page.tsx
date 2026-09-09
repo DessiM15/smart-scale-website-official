@@ -8,6 +8,7 @@ import { accountBalances, capitalByPartner, listAllEntries, totals } from "@/lib
 import { monthName } from "@/lib/books/money";
 import { isReaderConfigured } from "@/lib/books/reader";
 import { isReceiptStoreConfigured } from "@/lib/books/receipts";
+import { isStripeConfigured } from "@/lib/books/stripe";
 import { addEntryAction, lockBooksAction } from "../actions";
 import { AdMoneyCard, BalancesCard, BigButton, BOOKS, CapitalCard, MoneyTiles, RecentLine, SnapCard } from "../../../_components/books";
 import { EntryForm } from "../../../_components/entry-form";
@@ -109,6 +110,11 @@ export default async function BooksPage({
           {!isFileKeyConfigured() && (
             <Note tone="warn">
               <p className="text-sm text-white">BOOKS_FILE_KEY isn&apos;t set. Receipts are stored unsealed and the vault is closed until it is. See Setup.</p>
+            </Note>
+          )}
+          {!isStripeConfigured() && (
+            <Note tone="warn">
+              <p className="text-sm text-white">Stripe isn&apos;t connected, so Stripe money has to be typed in. STRIPE_RESTRICTED_KEY is on the Setup page.</p>
             </Note>
           )}
           <Card

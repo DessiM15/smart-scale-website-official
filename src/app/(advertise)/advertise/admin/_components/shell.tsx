@@ -79,7 +79,8 @@ export type NavKey =
   | "recurring"
   | "clients"
   | "vault"
-  | "company";
+  | "company"
+  | "stripe";
 
 export type NavCount = { value: number; hot?: boolean } | { soon: true };
 
@@ -101,6 +102,7 @@ export const NAV_BOOKS: { key: NavKey; label: string; href: string }[] = [
   { key: "receipts", label: "Receipts", href: `${ADMIN}/books/receipts` },
   { key: "recurring", label: "Bills", href: `${ADMIN}/books/recurring` },
   { key: "clients", label: "Clients", href: `${ADMIN}/books/clients` },
+  { key: "stripe", label: "Stripe", href: `${ADMIN}/books/stripe` },
   { key: "vault", label: "Vault", href: `${ADMIN}/books/vault` },
   { key: "company", label: "Company", href: `${ADMIN}/books/company` },
 ];

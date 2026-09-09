@@ -9,7 +9,8 @@
 
 import type { Payment } from "@/lib/ads/payments";
 import { ensureClientForAdvertiser } from "./clients";
-import { addEntry, deleteEntry, entryBySource, ignoreSource, sourceStatus, unignoreSource, type Account, type Entry } from "./ledger";
+import { addEntry, deleteEntry, entryBySource, ignoreSource, linkSource, listEntries, monthOf, sourceStatus, unignoreSource, unlinkSource, updateEntry, type Account, type Entry } from "./ledger";
+import { shiftMonth } from "./money";
 
 export const adPaymentRef = (paymentId: string) => `ads:payment:${paymentId}`;
 
@@ -19,9 +20,47 @@ function accountFor(method: Payment["method"]): Account {
   return "checking";
 }
 
+/** How far apart the day a payment was marked paid and the Stripe charge may be. */
+const MATCH_WINDOW_DAYS = 7;
+const daysApart = (a: string, b: string) => Math.abs(Date.parse(a) - Date.parse(b)) / 86_400_000;
+
+/**
+ * A Stripe payment the sync has already posted, for an ad payment that is the
+ * same money. Same amount, within a week, not yet tied to any ad payment. The
+ * row is kept and given the advertiser's name; nothing is posted twice.
+ */
+async function adoptStripeEntry(payment: Payment, clientId: string | undefined): Promise<Entry | null> {
+  const cents = Math.round(payment.amount * 100);
+  const month = monthOf(payment.receivedOn);
+  const lists = await Promise.all([shiftMonth(month, -1), month, shiftMonth(month, 1)].map((m) => listEntries(m)));
+  const candidates = lists
+    .flat()
+    .filter((e) => e.source === "stripe" && e.kind === "income" && e.cents === cents && !(e.links ?? []).some((l) => l.startsWith("ads:")) && daysApart(e.date, payment.receivedOn) <= MATCH_WINDOW_DAYS)
+    .sort((a, b) => daysApart(a.date, payment.receivedOn) - daysApart(b.date, payment.receivedOn));
+  const match = candidates[0];
+  if (!match) return null;
+  const result = await updateEntry(match.id, {
+    category: "ad-revenue",
+    party: payment.business,
+    clientId: clientId ?? match.clientId,
+    memo: [payment.period ? `Screen ad, ${payment.period}` : "Screen ad", payment.reference, payment.note, match.stripeRef].filter(Boolean).join(" · "),
+  });
+  if (!result.ok) return null;
+  await linkSource(adPaymentRef(payment.id), match.id);
+  return result.entry;
+}
+
 /** One ledger row for one ad payment. Returns the row, new or already there. */
 export async function postAdPayment(payment: Payment, who: string): Promise<Entry | null> {
   const client = await ensureClientForAdvertiser(payment.advertiserId, payment.business);
+  if (payment.method === "stripe") {
+    const already = await sourceStatus(adPaymentRef(payment.id));
+    if (already?.kind === "entry") return already.entry;
+    if (!already) {
+      const adopted = await adoptStripeEntry(payment, client?.id);
+      if (adopted) return adopted;
+    }
+  }
   const result = await addEntry({
     date: payment.receivedOn,
     cents: Math.round(payment.amount * 100),
@@ -41,7 +80,15 @@ export async function postAdPayment(payment: Payment, who: string): Promise<Entr
 
 export async function unpostAdPayment(paymentId: string): Promise<void> {
   const entry = await entryBySource(adPaymentRef(paymentId));
-  if (entry) await deleteEntry(entry.id);
+  if (!entry) return;
+  // A row that came from Stripe stays: the charge is still real. It just
+  // stops being this ad payment.
+  if (entry.source === "stripe") {
+    await unlinkSource(adPaymentRef(paymentId), entry.id);
+    await updateEntry(entry.id, { category: "client-revenue", memo: entry.stripeRef ?? entry.memo });
+    return;
+  }
+  await deleteEntry(entry.id);
 }
 
 export type AdPaymentState = { payment: Payment; state: "posted"; entry: Entry } | { payment: Payment; state: "left-out"; reason: string } | { payment: Payment; state: "waiting" };

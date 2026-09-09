@@ -15,9 +15,11 @@ import {
   cachedProspects,
   cachedReports,
   cachedResponses,
+  cachedStripeState,
   cachedTasks,
   cachedVault,
 } from "@/lib/ads/cached";
+import { isStripeConfigured } from "@/lib/books/stripe";
 import { filingsDue } from "@/lib/books/company";
 import { expectedBills } from "@/lib/books/recurring";
 import { buildBooksToday } from "@/lib/books/today";
@@ -32,7 +34,7 @@ import type { NavCount, NavKey } from "../_components/shell";
 export const todayData = cache(async function todayData() {
   const asOf = today();
   const month = asOf.slice(0, 7);
-  const [advertisers, prospects, replies, reports, tasks, entries, pendingReceipts, bills, vault, company] = await Promise.all([
+  const [advertisers, prospects, replies, reports, tasks, entries, pendingReceipts, bills, vault, company, stripe] = await Promise.all([
     cachedAdvertisers(),
     cachedProspects(),
     cachedResponses(),
@@ -43,6 +45,7 @@ export const todayData = cache(async function todayData() {
     cachedBills(),
     cachedVault(),
     cachedCompany(),
+    isStripeConfigured() ? cachedStripeState() : Promise.resolve(null),
   ]);
   const payments = await cachedPaymentsByAdvertiser(advertisers.map((a) => a.id));
   const summary = summarize(advertisers);
@@ -65,6 +68,7 @@ export const todayData = cache(async function todayData() {
     entries,
     renewals,
     filings,
+    stripe,
     done,
   });
   const items = buildToday({ ...partial, books, done });

@@ -156,7 +156,8 @@ export function LedgerRow({
           <p className="text-xs text-white/35">
             Logged {entry.who ? `by ${entry.who} ` : ""}
             {formatDate(entry.createdAt.slice(0, 10))}
-            {entry.source !== "manual" ? ` · came from ${entry.source === "ads" ? "an ad payment" : entry.source === "recurring" ? "a monthly bill" : entry.source}` : ""}
+            {entry.source !== "manual" ? ` · came from ${entry.source === "ads" ? "an ad payment" : entry.source === "recurring" ? "a monthly bill" : entry.source === "stripe" ? "Stripe" : entry.source}` : ""}
+            {entry.stripeRef && entry.source !== "stripe" ? " · matched to a Stripe payment" : ""}
             {entry.updatedAt !== entry.createdAt ? ` · edited ${formatDate(entry.updatedAt.slice(0, 10))}` : ""}
           </p>
 
@@ -184,7 +185,7 @@ export function LedgerRow({
             submitLabel="Save changes"
             submitClass={`${btnGhost} ${btnSm}`}
             showNoReceipt
-            lockKind={entry.source === "ads" ? "income" : undefined}
+            lockKind={entry.source === "ads" ? "income" : entry.source === "stripe" ? entry.kind : undefined}
           />
 
           {entry.kind === "expense" && !entry.receiptId && (
@@ -381,6 +382,9 @@ export function BalancesCard({ balances }: { balances: Record<Account, number> }
         {balances.cash > 0 ? ` · ${formatCents(balances.cash)} cash on hand not yet spent` : ""}
         {balances.stripe > 0 ? ` · ${formatCents(balances.stripe)} still in Stripe, not paid out` : ""}
       </p>
+      <a href={`${BOOKS}/stripe`} className={`${linkLine} inline-block mt-4`}>
+        Check against Stripe
+      </a>
     </Card>
   );
 }

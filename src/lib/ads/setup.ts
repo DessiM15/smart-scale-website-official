@@ -19,6 +19,7 @@ import { isArtworkStoreConfigured } from "./artwork";
 import { describeBlobEnv } from "./blob";
 import { TEMPLATE_REVIEWED, TEMPLATE_VERSION } from "./agreement-template";
 import { describeFileKey, isFileKeyConfigured } from "@/lib/books/crypto";
+import { describeStripeKey, isStripeConfigured, syncFrom } from "@/lib/books/stripe";
 
 export type SetupStatus = "on" | "off" | "partial";
 
@@ -87,10 +88,28 @@ export function setupItems(): SetupItem[] {
         "Everything sealed with this key is unreadable without it. Rotating or losing the key means every vault document and sealed receipt is gone. Never change it casually.",
     },
     {
+      id: "stripe",
+      name: "Stripe sync",
+      unlocks:
+        "Every Stripe payment, fee, refund and payout landing in the ledger on its own each night, and the Sync now button on the Stripe page. Without it, Stripe money has to be typed in.",
+      status: flag(isStripeConfigured()),
+      detail: isStripeConfigured() ? `${describeStripeKey()} Pulling everything since ${syncFrom()}.` : undefined,
+      vars: ["STRIPE_RESTRICTED_KEY"],
+      steps: [
+        "In Stripe: dashboard.stripe.com/apikeys, live mode, Create restricted key, “Powering an integration you built”.",
+        "Pick the “Reporting, analytics, and accounting” template. Everything in it is read only.",
+        "Name it Smart Scale Books, create it, and copy the rk_live_ value. Stripe shows it once.",
+        "In Vercel: Settings → Environment Variables → add STRIPE_RESTRICTED_KEY with that value, Production ticked.",
+        "Redeploy, then open Books → Stripe and press Sync now.",
+      ],
+      caution:
+        "Use a restricted key with read access only. This key can look at Stripe; it must never be able to charge, refund or move money, and the code here never asks to.",
+    },
+    {
       id: "cron",
       name: "Daily job",
       unlocks:
-        "The renewal watch, the monthly report drafts, and the nightly backup. Nothing automatic happens without this.",
+        "The renewal watch, the monthly report drafts, the nightly Stripe pull, and the nightly backup. Nothing automatic happens without this.",
       status: flag(isCronConfigured()),
       vars: ["CRON_SECRET"],
       essential: true,

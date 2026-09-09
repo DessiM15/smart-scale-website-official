@@ -104,6 +104,8 @@ const notices = (
       : `Brought ${sent} ad payment${sent === "1" ? "" : "s"} into the ledger${detail ? `: ${detail}` : ""}. Each is filed in the month it arrived.`,
   adPaymentPosted: `In the ledger${detail ? `: ${detail}` : ""}.`,
   adPaymentLeftOut: `Left out${detail ? `: ${detail}` : ""}. It won't be offered again unless you bring it back.`,
+  stripeSynced: detail ?? "Stripe is up to date.",
+  stripeBroughtBack: `Back in the ledger${detail ? `: ${detail}` : ""}.`,
 });
 
 const errors = (clash?: string, detail?: string): Record<string, string> => ({
@@ -169,6 +171,8 @@ const errors = (clash?: string, detail?: string): Record<string, string> => ({
   company: detail ?? "That didn't save.",
   ein: detail ?? "That EIN didn't save.",
   filing: detail ?? "That filing didn't save.",
+  stripe: detail ? `Stripe said: ${detail}` : "The Stripe pull didn't work.",
+  stripemissing: "That Stripe transaction isn't on the list.",
 });
 
 export type BannerParams = {
