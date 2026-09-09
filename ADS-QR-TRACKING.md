@@ -195,89 +195,100 @@ own access is unaffected — signed-in tracker sessions don't use that key.
 
 ---
 
-## The ad tracker (`/advertise/admin`)
+## The portal (`/advertise/admin`)
 
-The internal book of record for the rotation. Sign in once and the session lasts
-30 days.
+The internal book of record for the business. Sign in once with the team key
+and the session lasts 30 days. Rebuilt in September 2026 as "Ad Ops": a
+sidebar of real pages instead of tabs, a Today list with Done on every row,
+and payments worked out from each deal.
 
 ### Setup
 
 Add one environment variable in Vercel alongside the ones above:
 
 ```
-ADS_ADMIN_KEY = <a long passphrase you make up — different from ADS_STATS_KEY>
+ADS_ADMIN_KEY = <a long passphrase you make up, different from ADS_STATS_KEY>
 ```
 
 Redeploy, then go to **smartscaleagent.com/advertise/admin** and sign in. Give
-Jay the same passphrase. Unlike the scan report, this page can *change* data, so
-it uses a real login rather than a key in the URL — nothing sensitive ends up in
-browser history or a screenshot.
+Jay the same passphrase. Pick your name in the sidebar once per browser: it is
+what the history uses to say who did what.
 
-The page is split into five tabs, and the tab is in the URL — bookmark
-`?tab=advertisers` if that's where you always start.
-
-| Tab | What's there |
+| Page | What's there |
 |---|---|
-| **Overview** | The four numbers, who needs a call today, and the renewal watch |
-| **Advertisers** | The rotation table, locked categories, and the add/edit form |
-| **Reports** | Monthly reports awaiting approval |
+| **Today** | New leads, expiring terms, follow-ups due, this month's money, then one list of everything due with a Done button, the Board, and what got done today |
+| **Pipeline** | New, Contacted, Under review. Each card has a stage picker, a follow-up with Done and Reschedule, and the three gates. Categories held and waiting at the bottom |
+| **Advertisers** | The rotation. A row opens in place into the deal, QR codes, artwork, agreement, payments and notes. The contract form is at the bottom |
+| **Payments** | Expected payments per month from every deal, Mark paid on each, collected against expected, the venue split, and the statements |
+| **Artwork** | Every slide's status: requested, received, approved, on screen. Only on screen counts plays |
 | **QR codes** | The link registry and artwork downloads |
-| **Prospects** | The interested list |
+| **Reports** | Monthly reports awaiting approval |
+| **Flyers** | Coming. The shape is described on the page |
+| **History** | Every Done, payment and move, dated and named |
+| **Setup** | What is connected, the renewal watch, the test send, backups |
 
-The badge on a tab is how many items sit behind it; a red badge means something
-is waiting on you.
+On a phone the sidebar becomes a tab bar: Today, Pipeline, Clients, Money,
+More. The badge beside a page is open work, never a total.
 
 ### What it tracks
 
 | | |
 |---|---|
-| **Advertisers** | Business, contact, category, package, start date, status, notes, and which QR code is theirs |
-| **Packages** | Short Term (3mo/$500), Standard (6mo/$450), Annual (12mo/$375), plus Free Starter (internal only) |
-| **End dates** | Calculated from the package term — you never type one. Month-end is handled correctly (a term starting Jan 31 ends Feb 28) |
-| **Slots** | 16 sellable of the 18-slide loop. Open slots update as you add and end advertisers |
-| **Categories** | Every locked category, listed. Two active advertisers cannot hold the same one — the form refuses and tells you who already has it |
-| **Needs attention** | Anything ending within 60 days, plus anything whose end date has already passed, with a tap-to-call link |
-| **Money** | Monthly revenue from active advertisers, and total left to invoice across current terms |
-| **Interested list** | Businesses waiting on a slot or a category, ranked hot → contacted → new → passed |
+| **Advertisers** | Business, contact, category, package, start date, status, notes, slot on the board, artwork status, and which QR codes are theirs |
+| **Packages** | Short Term (3mo/$350 + $99 setup), Standard (6mo/$325), Annual (12mo/$300), plus Free Starter (internal only). Custom rates per client override these |
+| **End dates** | Calculated from the term. Month-end is handled correctly (a term starting Jan 31 ends Feb 28) |
+| **The Board** | 18 slides, 16 for sale, each with the business in it. Open slots say which category is waiting |
+| **Categories** | One active advertiser per category. The form refuses a clash and says who holds it |
+| **Expected payments** | Worked out from each deal: one per month of the term (setup on the first), or one for the whole term when it was sold as a price. Paid, due, late, or scheduled, with money applied oldest-first |
+| **Done markers** | A renewal or paperwork row marked done stays done for that term and comes back when the next one ends. A follow-up marked done clears the date on the prospect |
+| **History** | Who did what, kept for the last 500 entries |
 
 ### Day-to-day
 
-- **New advertiser** → Advertisers tab → "Add an advertiser". Category and start
-  date are what matter; everything else can be filled in later.
-- **Signed but artwork isn't ready** → status "Signed, not live yet". They don't
-  consume a slot or count toward revenue until you set them to Running.
-- **Term is up** → they renew (change the start date and package to the new
-  term) or they don't (set status to Ended). Ended advertisers stay on the record
-  and release their category.
-- **Someone asks about advertising** → put them on the Interested list right
-  then, with the category they want. When that category frees up you have a call
-  list instead of a memory.
+- **Morning** → open Today. Work the list top to bottom; press Done as you go.
+  Leads take you to the pipeline card, payments have Mark paid in place.
+- **New advertiser** → Advertisers, "Add an advertiser" at the bottom. Category
+  and start date are what matter. They take the lowest free slot unless you
+  give them one.
+- **Signed but artwork isn't ready** → status "Signed, not live yet". They hold a
+  slot on the Board but not their category, and count toward nothing until
+  Running.
+- **A slide arrives** → upload it on the client's Artwork panel (or the Artwork
+  page). Uploading moves Requested to Received; Approved and On screen are
+  buttons.
+- **Money lands** → Mark paid on the Payments page or the Today list, say how
+  it came. A Stripe payment does not record itself yet.
+- **Term is up** → renew (move the start date and package to the new term) or
+  set status to Ended. Ended advertisers stay on the record and release their
+  category and slot.
 
 ### Two things to know
 
 **The QR field is a cross-reference, not the source of truth.** Codes are created
-on the tracker's **QR codes** tab and stored in the link registry
-(`src/lib/ads/link-store.ts`). The field on an advertiser only points at one. If
-it names a code that isn't in the registry, the tracker flags it in red, because
-scanning it would fall through to the advertise page — create the code on the QR
-codes tab first, then pick it here.
+on the **QR codes** page or from a client's Codes panel, and stored in the link
+registry (`src/lib/ads/link-store.ts`). If a client names a code that isn't in
+the registry, the advertisers page says so at the bottom.
 
-`src/lib/ads/advertisers.ts` is no longer where codes are added. It holds the
-seed codes and the fallback the redirect uses during a database outage.
-
-**Back it up.** The roster lives in Upstash's free tier. It is not a system of
-record you'd trust a business to, and it's cheap insurance to keep a copy —
-`exportRoster()` in `src/lib/ads/roster.ts` returns the whole thing as JSON. A
-scheduled nightly export is worth adding before this holds real money.
+**Nothing about the redesign changed how records are stored.** Every key and
+shape in Redis is the same as before; the new fields (slot, artwork status,
+venue, who) are optional additions, and every save merges over the existing
+record. The nightly backup still runs; "Back up now" is on Setup.
 
 ### Files
 
 | File | What it does |
 |---|---|
-| `src/lib/ads/roster.ts` | Advertisers, waitlist, term math, slot and category rules |
-| `src/lib/ads/redis.ts` | Shared Upstash transport for the roster and the scan counters |
-| `src/lib/ads/auth.ts` | Sign-in for the admin page |
-| `src/app/(advertise)/advertise/admin/` | The tracker page and its save/delete actions |
+| `src/lib/ads/roster.ts` | Advertisers, prospects, term math, slot and category rules |
+| `src/lib/ads/expected.ts` | The payment schedule each deal implies, and how money is applied to it |
+| `src/lib/ads/tasks.ts` | The Today list, done markers, history, own tasks |
+| `src/lib/ads/board.ts` | The Board: who is in which slide |
+| `src/lib/ads/who.ts` | The name picked in the sidebar |
+| `src/lib/ads/venues.ts` | The locations, one today |
+| `src/lib/ads/redis.ts` | Shared Upstash transport |
+| `src/lib/ads/auth.ts` | Sign-in for the portal |
+| `src/app/(advertise)/advertise/admin/(app)/` | One folder per page |
+| `src/app/(advertise)/advertise/admin/_components/` | The design system (`ui.tsx`), the shell, and each page's pieces |
+| `src/app/(advertise)/advertise/admin/actions.ts` | Every save, done, mark paid and move |
 
 ---
 

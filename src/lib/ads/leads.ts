@@ -215,12 +215,12 @@ export async function recordLead(
             lead.business || lead.name
           } used the advertise form. ${lead.phone || lead.email}${
             lead.message ? `. "${lead.message.slice(0, 120)}"` : ""
-          }. smartscaleagent.com/advertise/admin?tab=prospects`
+          }. smartscaleagent.com/advertise/admin/pipeline`
         : `Mex Taco ads · NEW LEAD${existing ? " (repeat)" : ""}: ${
             lead.business || lead.name
           }. ${category}. ${lead.phone || lead.email}. Budget ${
             lead.budget || "not given"
-          }${lead.campaign ? `. From ${lead.campaign}` : ""}. smartscaleagent.com/advertise/admin?tab=prospects`,
+          }${lead.campaign ? `. From ${lead.campaign}` : ""}. smartscaleagent.com/advertise/admin/pipeline`,
     );
 
     return { ok: true };

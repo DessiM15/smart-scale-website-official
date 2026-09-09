@@ -381,7 +381,7 @@ export default async function StatementPage({
       {/* Controls, deliberately not printed. */}
       <div className="max-w-[8.5in] mx-auto px-6 mb-4 flex flex-wrap items-center justify-between gap-3 print:hidden">
         <a
-          href="/advertise/admin?tab=venue"
+          href="/advertise/admin/payments#venue"
           className="text-sm font-semibold text-[#5c4f45] hover:text-[#1a1210]"
         >
           ← Back to the tracker

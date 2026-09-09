@@ -25,12 +25,20 @@ import {
   Field,
   Note,
   Pill,
+  bebas,
   btnPrimary,
   inputClass,
   labelClass,
   linkQuiet,
   selectClass,
 } from "./ui";
+
+const ARTWORK_OPTIONS = [
+  { id: "requested", label: "Requested" },
+  { id: "received", label: "Received" },
+  { id: "approved", label: "Approved" },
+  { id: "on-screen", label: "On screen" },
+];
 
 /** Plan facts, flattened to the few strings the form actually renders. */
 export type PlanOption = {
@@ -59,6 +67,8 @@ export type EditingAdvertiser = {
   dealNote?: string;
   isCustom: boolean;
   endDateLabel: string;
+  slot?: number | null;
+  artworkStatus?: string;
 };
 
 /**
@@ -114,6 +124,8 @@ function refusal(state: NonNullable<AdvertiserFormState>): string {
       return state.detail ?? "That QR code name isn't valid.";
     case "codetaken":
       return `"${state.detail}" is already in use. A printed code can never be reassigned — pick a different name.`;
+    case "slot":
+      return "A slot is a number from 1 to 16.";
     case "save":
       return "The database didn't accept that. Check the connection and try again.";
     default:
@@ -148,25 +160,23 @@ export function AdvertiserForm({
       // Open while editing, and open after a refusal — closing it on the reader
       // is how the values looked lost even when they weren't.
       open={Boolean(editing) || Boolean(prefill) || Boolean(state)}
-      className="group rounded-3xl border border-white/[0.07] bg-[#131313] overflow-hidden"
+      className="group border border-white/[0.08] bg-white/[0.02] overflow-hidden scroll-mt-28"
     >
-      <summary className="flex cursor-pointer items-center justify-between gap-4 px-6 sm:px-8 py-5 list-none [&::-webkit-details-marker]:hidden hover:bg-white/[0.02] transition-colors">
-        <span className="text-white font-semibold">
+      <summary className="flex cursor-pointer items-center justify-between gap-4 px-5 sm:px-6 py-4 list-none [&::-webkit-details-marker]:hidden hover:bg-white/[0.02] transition-colors">
+        <span className={`${bebas} text-[13px] tracking-[0.24em] text-white`}>
           {editing
             ? `Edit ${editing.business}`
             : prefill
               ? `Sign up ${prefill.business}`
               : "Add an advertiser"}
         </span>
-        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-white/35 group-open:hidden">
-          Open
-        </span>
-        <span className="hidden text-xs font-semibold uppercase tracking-[0.14em] text-white/35 group-open:inline">
-          Close
+        <span className={`${bebas} text-[11px] tracking-[0.22em] text-white/35`}>
+          <span className="group-open:hidden">Open</span>
+          <span className="hidden group-open:inline">Close</span>
         </span>
       </summary>
 
-      <div className="px-6 sm:px-8 pb-8 pt-2 border-t border-white/[0.06]">
+      <div className="px-5 sm:px-6 pb-6 pt-4 border-t border-white/[0.06]">
         {editing && (
           <a href={tabHref("advertisers")} className={`${linkQuiet} inline-block mb-5`}>
             Cancel edit
@@ -282,7 +292,7 @@ export function AdvertiserForm({
             </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label className={labelClass} htmlFor="plan">
                 Package <span className="text-[#DC2626]">*</span>
@@ -339,16 +349,43 @@ export function AdvertiserForm({
                 <option value="ended">Ended</option>
               </select>
             </div>
+            <Field
+              label="Slot on the board"
+              name="slot"
+              id="slot"
+              inputMode="numeric"
+              defaultValue={editing?.slot ? String(editing.slot) : ""}
+              placeholder="next free"
+              hint="1 to 16. Left blank, they take the lowest free one."
+            />
+            <div>
+              <label className={labelClass} htmlFor="artworkStatus">
+                Artwork
+              </label>
+              <select
+                id="artworkStatus"
+                name="artworkStatus"
+                defaultValue={editing?.artworkStatus ?? "requested"}
+                className={selectClass}
+              >
+                {ARTWORK_OPTIONS.map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1.5 text-xs text-white/30">Only on screen counts plays.</p>
+            </div>
           </div>
 
           {/* The deal. Blank means list price, so the common case stays a short
               form and only a real exception costs any typing. */}
           <details
             open={Boolean(editing?.isCustom) || state?.err.startsWith("deal")}
-            className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden"
+            className=" border border-white/[0.07] bg-white/[0.02] overflow-hidden"
           >
             <summary className="flex cursor-pointer items-center justify-between gap-4 px-5 py-4 list-none [&::-webkit-details-marker]:hidden hover:bg-white/[0.02] transition-colors">
-              <span className="text-sm font-semibold text-white">
+              <span className={`${bebas} text-[12px] tracking-[0.22em] text-white`}>
                 Custom deal
                 {editing?.isCustom && (
                   <span className="ml-2">
@@ -415,10 +452,10 @@ export function AdvertiserForm({
           {!editing && (
             <details
               open={state?.err === "destination" || state?.err === "code" || state?.err === "codetaken"}
-              className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden"
+              className=" border border-white/[0.07] bg-white/[0.02] overflow-hidden"
             >
               <summary className="flex cursor-pointer items-center justify-between gap-4 px-5 py-4 list-none [&::-webkit-details-marker]:hidden hover:bg-white/[0.02] transition-colors">
-                <span className="text-sm font-semibold text-white">
+                <span className={`${bebas} text-[12px] tracking-[0.22em] text-white`}>
                   Make their QR code now
                 </span>
                 <span className="text-xs text-white/35">optional</span>

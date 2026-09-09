@@ -47,7 +47,7 @@ function ReportCard({
   const expected = stale && advertiser ? runInMonth(advertiser, report.month) : null;
 
   return (
-    <li className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5 sm:p-6">
+    <li className=" border border-white/[0.07] bg-white/[0.02] p-5 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="font-semibold text-white">
@@ -153,7 +153,7 @@ function ReportCard({
           actually about. Hidden in a first month, where it would only repeat
           the figures above under a different heading. */}
       {f.termOpenDays > f.openDays && (
-        <div className="mt-4 rounded-xl border border-white/[0.07] bg-white/[0.02] px-4 py-3">
+        <div className="mt-4 border border-white/[0.07] bg-white/[0.02] px-4 py-3">
           <p className="text-[10px] uppercase tracking-[0.14em] text-white/35 font-semibold">
             {f.termComplete ? "Full run" : "Since they started"} ·{" "}
             {formatDate(f.termFrom)} – {formatDate(f.termTo)}

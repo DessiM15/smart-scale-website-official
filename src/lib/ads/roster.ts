@@ -119,9 +119,47 @@ export type Advertiser = {
    * renewal need fresh paperwork: once the term moves, this no longer matches.
    */
   signedAgreementEndDate?: string;
+  /**
+   * Which slide in the rotation is theirs, 1 to 16. Assigned the first time
+   * they are saved as running or signed, lowest free number first, and
+   * editable afterwards. The Board reads it; nothing else depends on it, so
+   * two clients sharing a number is untidy rather than wrong.
+   */
+  slot?: number | null;
+  /**
+   * Where their slide is in the pipeline from "we need art" to "it is playing".
+   * Absent on older records; `artworkStatusOf` decides what absent means.
+   */
+  artworkStatus?: ArtworkStatus;
+  /** The location whose screens they run on. Absent means the first one. */
+  venueId?: string;
   createdAt: string;
   updatedAt: string;
 };
+
+/**
+ * The artwork pipeline. Plays are only counted for a slide that is actually
+ * on the screens, which is the last of these, so the status is a business
+ * fact rather than a decoration.
+ */
+export type ArtworkStatus = "requested" | "received" | "approved" | "on-screen";
+
+export const ARTWORK_STATUSES: { id: ArtworkStatus; label: string; next?: ArtworkStatus; nextLabel?: string }[] = [
+  { id: "requested", label: "Requested", next: "received", nextLabel: "Mark received" },
+  { id: "received", label: "Received", next: "approved", nextLabel: "Mark approved" },
+  { id: "approved", label: "Approved", next: "on-screen", nextLabel: "Put on screen" },
+  { id: "on-screen", label: "On screen" },
+];
+
+/**
+ * What a record with no status means. Clients set up before this existed have
+ * their slide playing already, and saying "requested" about them would put
+ * every one of them on a to-do list for work that was finished months ago.
+ */
+export function artworkStatusOf(a: Pick<Advertiser, "artworkStatus" | "status">): ArtworkStatus {
+  if (a.artworkStatus) return a.artworkStatus;
+  return a.status === "active" ? "on-screen" : "requested";
+}
 
 /**
  * Where a business is in the pipeline.
@@ -162,6 +200,8 @@ export type ProspectUpdate = {
   text: string;
   /** YYYY-MM-DD, when this update set one. */
   followUp?: string;
+  /** Which of the two of you did it. Blank on entries written before this existed. */
+  who?: string;
 };
 
 export type Prospect = {

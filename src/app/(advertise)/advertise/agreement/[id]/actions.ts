@@ -69,7 +69,7 @@ export async function signAgreementAction(data: FormData) {
     }
 
     await sendTeamSms(
-      `Mex Taco ads · SIGNED: ${agreement.terms.business} agreement signed by ${agreement.signature.name}. Countersign it: smartscaleagent.com/advertise/admin/client/${agreement.advertiserId}`,
+      `Mex Taco ads · SIGNED: ${agreement.terms.business} agreement signed by ${agreement.signature.name}. Countersign it: smartscaleagent.com/advertise/admin/advertisers?open=${agreement.advertiserId}&panel=agreement`,
     );
   }
 
