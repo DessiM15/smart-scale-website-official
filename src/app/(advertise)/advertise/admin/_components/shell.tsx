@@ -24,6 +24,13 @@ const PATHS: Record<string, string> = {
   history: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   setup: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
   more: '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',
+  books: '<path d="M4 4h6a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-6a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h7z"/>',
+  ledger: '<rect x="4" y="3" width="16" height="18"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+  receipts: '<path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4"/>',
+  recurring: '<path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3"/><path d="M18 3v4h-4M6 21v-4h4"/>',
+  clients: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 20h6a5 5 0 0 0-4-4.9"/>',
+  camera: '<path d="M4 8h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="3.5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
   pin: '<path d="M12 22s7-7 7-12a7 7 0 1 0-14 0c0 5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>',
   ext: '<path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/>',
   out: '<path d="M10 4H4v16h6M15 8l5 4-5 4M20 12H9"/>',
@@ -61,7 +68,12 @@ export type NavKey =
   | "flyers"
   | "history"
   | "setup"
-  | "more";
+  | "more"
+  | "books"
+  | "ledger"
+  | "receipts"
+  | "recurring"
+  | "clients";
 
 export type NavCount = { value: number; hot?: boolean } | { soon: true };
 
@@ -75,6 +87,17 @@ export const NAV: { key: NavKey; label: string; href: string }[] = [
   { key: "reports", label: "Reports", href: `${ADMIN}/reports` },
   { key: "flyers", label: "Flyers", href: `${ADMIN}/flyers` },
 ];
+
+/** The books: the whole LLC's money, not just the screens. Its own group in the sidebar. */
+export const NAV_BOOKS: { key: NavKey; label: string; href: string }[] = [
+  { key: "books", label: "Books", href: `${ADMIN}/books` },
+  { key: "ledger", label: "Ledger", href: `${ADMIN}/books/ledger` },
+  { key: "receipts", label: "Receipts", href: `${ADMIN}/books/receipts` },
+  { key: "recurring", label: "Bills", href: `${ADMIN}/books/recurring` },
+  { key: "clients", label: "Clients", href: `${ADMIN}/books/clients` },
+];
+
+export const BOOKS_KEYS: NavKey[] = NAV_BOOKS.map((n) => n.key);
 
 export const NAV_SECONDARY: { key: NavKey; label: string; href: string }[] = [
   { key: "history", label: "History", href: `${ADMIN}/history` },
@@ -209,6 +232,10 @@ export function Sidebar({
         {NAV.map((item) => (
           <NavItem key={item.key} item={item} active={active} count={counts[item.key]} />
         ))}
+        <p className={`${bebas} text-[11px] tracking-[0.24em] text-white/30 px-3.5 pt-5 pb-1.5`}>Books · Smart Scale LLC</p>
+        {NAV_BOOKS.map((item) => (
+          <NavItem key={item.key} item={item} active={active} count={counts[item.key]} />
+        ))}
       </nav>
 
       <div className="px-3 py-3 border-t border-white/[0.07] flex flex-col gap-0.5">
@@ -258,15 +285,16 @@ const MOBILE_TABS: { key: NavKey; label: string; href: string }[] = [
   { key: "today", label: "Today", href: ADMIN },
   { key: "pipeline", label: "Pipeline", href: `${ADMIN}/pipeline` },
   { key: "advertisers", label: "Clients", href: `${ADMIN}/advertisers` },
-  { key: "payments", label: "Money", href: `${ADMIN}/payments` },
+  { key: "payments", label: "Ads $", href: `${ADMIN}/payments` },
+  { key: "books", label: "Books", href: `${ADMIN}/books` },
   { key: "more", label: "More", href: `${ADMIN}/more` },
 ];
 
 const MORE_KEYS: NavKey[] = ["artwork", "qr", "reports", "flyers", "history", "setup", "more"];
 
-/** The phone tab bar. */
+/** The phone tab bar. Every Books page lights the Books tab. */
 export function MobileTabs({ active, counts }: { active: NavKey; counts: Partial<Record<NavKey, NavCount>> }) {
-  const current = MORE_KEYS.includes(active) ? "more" : active;
+  const current = MORE_KEYS.includes(active) ? "more" : BOOKS_KEYS.includes(active) ? "books" : active;
   return (
     <nav className="lg:hidden fixed inset-x-0 bottom-0 z-30 flex border-t border-white/[0.08] bg-[#0F0F0F] pb-[env(safe-area-inset-bottom)]">
       {MOBILE_TABS.map((tab) => {

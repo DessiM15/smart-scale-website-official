@@ -14,6 +14,7 @@
 
 import { randomUUID } from "crypto";
 import { redisPipeline, redisWrite } from "./redis";
+import { postAdPayment, unpostAdPayment } from "@/lib/books/ads-bridge";
 
 const KEY = (id: string) => `ads:payment:${id}`;
 const BY_ADVERTISER = (advertiserId: string) => `ads:payments:${advertiserId}`;
@@ -107,6 +108,8 @@ export type PaymentInput = {
   reference: string;
   note: string;
   period?: string;
+  /** Who recorded it, for the ledger row it posts. */
+  who?: string;
 };
 
 export async function recordPayment(
@@ -115,8 +118,9 @@ export async function recordPayment(
   const invalid = validatePayment(input);
   if (invalid) return { ok: false, error: invalid };
 
+  const { who = "", ...fields } = input;
   const record: Payment = {
-    ...input,
+    ...fields,
     id: randomUUID(),
     amount: Math.round(input.amount * 100) / 100,
     reference: input.reference.slice(0, 120),
@@ -130,7 +134,12 @@ export async function recordPayment(
     ["SADD", BY_MONTH(monthOf(record.receivedOn)), record.id],
   ]);
 
-  return ok ? { ok: true } : { ok: false, error: "The database didn't accept it." };
+  if (!ok) return { ok: false, error: "The database didn't accept it." };
+
+  // The same money, as income in the books. Keyed to this payment, so it can
+  // never post twice and goes when the payment goes.
+  await postAdPayment(record, who);
+  return { ok: true };
 }
 
 export async function deletePayment(id: string): Promise<boolean> {
@@ -138,11 +147,13 @@ export async function deletePayment(id: string): Promise<boolean> {
   const payment = parse(raw);
   if (!payment) return false;
 
-  return redisWrite([
+  const ok = await redisWrite([
     ["DEL", KEY(id)],
     ["SREM", BY_ADVERTISER(payment.advertiserId), id],
     ["SREM", BY_MONTH(monthOf(payment.receivedOn)), id],
   ]);
+  if (ok) await unpostAdPayment(id);
+  return ok;
 }
 
 /* --------------------------------- totals --------------------------------- */

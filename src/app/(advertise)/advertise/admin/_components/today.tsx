@@ -11,6 +11,7 @@ import {
   markDoneAction,
   markPaidAction,
 } from "../actions";
+import { logBillAction, markNoReceiptAction } from "../(app)/books/actions";
 import type { Board, BoardSlot, SlotState } from "@/lib/ads/board";
 import type { HistoryEntry, TodayAction, TodayItem, TodayKind } from "@/lib/ads/tasks";
 import { formatDate, type AdvertiserView } from "@/lib/ads/roster";
@@ -48,6 +49,8 @@ const KIND: Record<TodayKind, { label: string; tone: Tone }> = {
   paperwork: { label: "Paperwork", tone: "neutral" },
   task: { label: "Task", tone: "neutral" },
   report: { label: "Report", tone: "neutral" },
+  receipt: { label: "Receipt", tone: "warn" },
+  bill: { label: "Bill", tone: "warn" },
 };
 
 const CheckIcon = () => (
@@ -137,6 +140,27 @@ function ItemAction({ action, item, returnTo }: { action: TodayAction; item: Tod
       );
     case "markPaid":
       return <MarkPaid advertiserId={action.advertiserId} period={action.period} amount={action.amount} returnTo={returnTo} />;
+    case "logBill":
+      return (
+        <form action={logBillAction}>
+          <input type="hidden" name="id" value={action.id} />
+          <input type="hidden" name="month" value={action.month} />
+          <input type="hidden" name="returnTo" value={returnTo} />
+          <button type="submit" className={`${btnPrimary} ${btnSm}`}>
+            <CheckIcon /> Log it
+          </button>
+        </form>
+      );
+    case "noReceipt":
+      return (
+        <form action={markNoReceiptAction}>
+          <input type="hidden" name="id" value={action.id} />
+          <input type="hidden" name="returnTo" value={returnTo} />
+          <button type="submit" className={`${btnGhost} ${btnSm}`}>
+            No receipt
+          </button>
+        </form>
+      );
   }
 }
 
@@ -198,7 +222,7 @@ export function MarkPaid({
 
 /* --------------------------------- the list -------------------------------- */
 
-function TodayRow({ item, returnTo }: { item: TodayItem; returnTo: string }) {
+export function TodayRow({ item, returnTo }: { item: TodayItem; returnTo: string }) {
   const kind = KIND[item.kind];
   return (
     <li className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 py-4 border-b border-white/[0.06] last:border-b-0">

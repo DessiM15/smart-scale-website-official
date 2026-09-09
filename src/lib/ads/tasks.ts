@@ -42,6 +42,7 @@ export type HistoryKind =
   | "prospect"
   | "advertiser"
   | "report"
+  | "books"
   | "other";
 
 export type HistoryEntry = {
@@ -215,7 +216,9 @@ export type TodayKind =
   | "paperwork"
   | "payment"
   | "report"
-  | "task";
+  | "task"
+  | "receipt"
+  | "bill";
 
 /**
  * How a row can be acted on. Each becomes a button; the page decides how.
@@ -229,7 +232,11 @@ export type TodayAction =
   | { type: "call"; phone: string }
   | { type: "markPaid"; advertiserId: string; period: string; amount: number }
   | { type: "clearReply"; advertiserId: string; endDate: string }
-  | { type: "completeTask"; id: string };
+  | { type: "completeTask"; id: string }
+  /** Post this month's expected charge for a recurring bill. */
+  | { type: "logBill"; id: string; month: string }
+  /** Say a typed expense has no receipt to attach, so it stops asking. */
+  | { type: "noReceipt"; id: string };
 
 export type TodayItem = {
   key: string;
@@ -247,11 +254,13 @@ const KIND_ORDER: Record<TodayKind, number> = {
   lead: 0,
   reply: 1,
   payment: 2,
-  followup: 3,
-  renewal: 4,
-  paperwork: 5,
-  task: 6,
-  report: 7,
+  receipt: 3,
+  bill: 4,
+  followup: 5,
+  renewal: 6,
+  paperwork: 7,
+  task: 8,
+  report: 9,
 };
 
 const ADMIN = "/advertise/admin";
@@ -273,6 +282,8 @@ export type TodayInput = {
   overduePayments: ExpectedPayment[];
   draftReports: { count: number; month: string } | null;
   tasks: Task[];
+  /** Rows the books want on the list, built by ./books/today. */
+  books: TodayItem[];
   done: Set<string>;
 };
 
@@ -462,6 +473,8 @@ export function buildToday(input: TodayInput): TodayItem[] {
       actions: [{ type: "link", label: "Open drafts", href: `${ADMIN}/reports` }],
     });
   }
+
+  items.push(...input.books);
 
   return items.sort((a, b) => KIND_ORDER[a.kind] - KIND_ORDER[b.kind] || a.order - b.order);
 }
