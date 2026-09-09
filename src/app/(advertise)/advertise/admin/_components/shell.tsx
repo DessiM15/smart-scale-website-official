@@ -219,7 +219,12 @@ export function Sidebar({
   returnTo: string;
 }) {
   return (
-    <aside className="hidden lg:flex w-[260px] shrink-0 flex-col border-r border-white/[0.07] bg-[#0F0F0F] sticky top-0 h-screen overflow-y-auto">
+    <aside
+      // The site scrolls through Lenis, which swallows the wheel over nested
+      // scroll boxes unless told to leave one alone.
+      data-lenis-prevent
+      className="hidden lg:flex w-[260px] shrink-0 flex-col border-r border-white/[0.07] bg-[#0F0F0F] sticky top-0 h-screen overflow-y-auto"
+    >
       <div className="px-6 pt-7 pb-5 border-b border-white/[0.07] flex flex-col gap-4">
         <Logo size={42} />
         <div>
