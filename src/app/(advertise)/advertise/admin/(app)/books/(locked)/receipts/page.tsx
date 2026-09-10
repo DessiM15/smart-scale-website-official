@@ -7,7 +7,7 @@ import { isReceiptStoreConfigured, receiptHref } from "@/lib/books/receipts";
 import { discardReceiptAction } from "../../actions";
 import { BOOKS, SnapCard } from "../../../../_components/books";
 import { PageHeader } from "../../../../_components/shell";
-import { Badge, Card, Empty, btnDanger, btnPrimary, btnSm } from "../../../../_components/ui";
+import { Badge, Card, Empty, btnDanger, btnGhost, btnPrimary, btnSm } from "../../../../_components/ui";
 import { Shell } from "../../../shell";
 
 export const metadata: Metadata = { title: "Receipts" };
@@ -24,7 +24,15 @@ export default async function ReceiptsPage({
 
   return (
     <Shell active="receipts" banner={params}>
-      <PageHeader eyebrow="Receipts" title="Snap it now, sort it later." />
+      <PageHeader
+        eyebrow="Receipts"
+        title="Snap it now, sort it later."
+        action={
+          <a href={`${BOOKS}/archive`} className={btnGhost}>
+            Filed by year
+          </a>
+        }
+      />
 
       <div className="grid lg:grid-cols-[1fr_1.25fr] gap-5 items-start">
         <SnapCard configured={isReceiptStoreConfigured()} returnTo={PAGE} reader={isReaderConfigured()} />

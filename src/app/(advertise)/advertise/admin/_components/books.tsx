@@ -8,6 +8,7 @@ import {
   bringBackAdPaymentAction,
   deleteBillAction,
   deleteEntryAction,
+  detachReceiptAction,
   importAdPaymentsAction,
   leaveOutAdPaymentAction,
   logBillAction,
@@ -20,7 +21,7 @@ import type { AdPaymentState } from "@/lib/books/ads-bridge";
 import { categoryOf } from "@/lib/books/categories";
 import { ACCOUNTS, accountLabel, type Account, type Entry, type Totals } from "@/lib/books/ledger";
 import { centsToInput, formatCents } from "@/lib/books/money";
-import { receiptHref } from "@/lib/books/receipts";
+import { receiptHref, type Receipt } from "@/lib/books/receipts";
 import type { ExpectedBill, RecurringBill } from "@/lib/books/recurring";
 import { formatDate } from "@/lib/ads/roster";
 import { EntryForm } from "./entry-form";
@@ -93,11 +94,12 @@ function Amount({ entry, className = "" }: { entry: Entry; className?: string })
   );
 }
 
-function ReceiptMark({ entry }: { entry: Entry }) {
-  if (entry.receiptId) {
+function ReceiptMark({ entry, receipts }: { entry: Entry; receipts: Receipt[] }) {
+  const first = receipts[0]?.id ?? entry.receiptId;
+  if (first) {
     return (
-      <a href={receiptHref(entry.receiptId)} target="_blank" rel="noreferrer" className={`${bebas} text-[10px] tracking-[0.2em] text-[#7FBF8E] hover:text-white transition-colors`} title="Open the receipt">
-        Receipt
+      <a href={receiptHref(first)} target="_blank" rel="noreferrer" className={`${bebas} text-[10px] tracking-[0.2em] text-[#7FBF8E] hover:text-white transition-colors`} title="Open the receipt">
+        {receipts.length > 1 ? `${receipts.length} files` : "Receipt"}
       </a>
     );
   }
@@ -105,9 +107,39 @@ function ReceiptMark({ entry }: { entry: Entry }) {
   return <span className={`${bebas} text-[10px] tracking-[0.2em] text-[#E0B36A]`}>No receipt</span>;
 }
 
+/** The photos on a row, as thumbnails, each with a way off the row. */
+function ReceiptStrip({ entry, receipts, returnTo }: { entry: Entry; receipts: Receipt[]; returnTo: string }) {
+  if (receipts.length === 0) return null;
+  return (
+    <ul className="flex flex-wrap gap-3">
+      {receipts.map((r) => (
+        <li key={r.id} className="flex flex-col gap-1.5 w-24">
+          <a href={receiptHref(r.id)} target="_blank" rel="noreferrer" className="block w-24 h-28 border border-white/[0.1] overflow-hidden bg-white/[0.03]" title="Open full size">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={receiptHref(r.id)} alt="" className="w-full h-full object-cover" loading="lazy" />
+          </a>
+          <span className="text-[11px] text-white/35 leading-snug truncate">
+            {formatDate(r.capturedAt.slice(0, 10)).replace(/, \d{4}$/, "")}
+            {r.who ? ` · ${r.who}` : ""}
+          </span>
+          <form action={detachReceiptAction}>
+            <input type="hidden" name="id" value={entry.id} />
+            <input type="hidden" name="receiptId" value={r.id} />
+            <input type="hidden" name="returnTo" value={returnTo} />
+            <button type="submit" className="text-[11px] text-white/40 hover:text-[#f87171] transition-colors">
+              Take off this row
+            </button>
+          </form>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /** One ledger row, with its edit panel folded underneath. */
 export function LedgerRow({
   entry,
+  receipts = [],
   clients,
   team,
   today,
@@ -115,6 +147,8 @@ export function LedgerRow({
   returnTo,
 }: {
   entry: Entry;
+  /** The photos filed on this row, oldest first. */
+  receipts?: Receipt[];
   clients: { id: string; name: string }[];
   team: readonly string[];
   today: string;
@@ -142,7 +176,7 @@ export function LedgerRow({
             </span>
           </span>
           <span className="hidden sm:flex items-center gap-2 shrink-0">
-            <ReceiptMark entry={entry} />
+            <ReceiptMark entry={entry} receipts={receipts} />
             <Badge tone={KIND_TONE[entry.kind]} dot={false}>{KIND_SHORT[entry.kind]}</Badge>
           </span>
           <Amount entry={entry} className="text-lg sm:text-xl leading-none shrink-0" />
@@ -150,7 +184,7 @@ export function LedgerRow({
 
         <div className="pb-5 pt-2 px-1 flex flex-col gap-5">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/40 sm:hidden">
-            <ReceiptMark entry={entry} />
+            <ReceiptMark entry={entry} receipts={receipts} />
             <Badge tone={KIND_TONE[entry.kind]} dot={false}>{KIND_SHORT[entry.kind]}</Badge>
           </div>
           <p className="text-xs text-white/35">
@@ -188,12 +222,16 @@ export function LedgerRow({
             lockKind={entry.source === "ads" ? "income" : entry.source === "stripe" ? entry.kind : undefined}
           />
 
-          {entry.kind === "expense" && !entry.receiptId && (
-            <form action={attachReceiptAction} className="flex flex-col sm:flex-row sm:items-end gap-3">
+          <ReceiptStrip entry={entry} receipts={receipts} returnTo={returnTo} />
+
+          {/* Any row can carry a file: the receipt, the invoice, the ATM slip, the signed quote. */}
+          <form action={attachReceiptAction} className="flex flex-col sm:flex-row sm:items-end gap-3">
               <input type="hidden" name="id" value={entry.id} />
               <input type="hidden" name="returnTo" value={returnTo} />
               <div className="flex-1">
-                <label className={labelClass} htmlFor={`attach-${entry.id}`}>Attach the receipt</label>
+                <label className={labelClass} htmlFor={`attach-${entry.id}`}>
+                  {receipts.length > 0 ? "Attach another file" : entry.kind === "income" ? "Attach the invoice or receipt" : "Attach the receipt"}
+                </label>
                 <input
                   id={`attach-${entry.id}`}
                   name="photo"
@@ -206,8 +244,7 @@ export function LedgerRow({
               <SubmitButton className={`${btnGhost} ${btnSm}`} pendingLabel="Attaching">
                 Attach
               </SubmitButton>
-            </form>
-          )}
+          </form>
 
           <form action={deleteEntryAction} className="self-start">
             <input type="hidden" name="id" value={entry.id} />

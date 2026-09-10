@@ -50,6 +50,8 @@ const KEY = (id: string) => `books:receipt:${id}`;
 const ALL = "books:receipts";
 const PENDING = "books:receipts:pending";
 const BY_SHA = (sha: string) => `books:receipt:sha:${sha}`;
+/** Every photo filed against one ledger row. A row can hold the receipt and the invoice. */
+const BY_ENTRY = (entryId: string) => `books:receipts:entry:${entryId}`;
 
 export function isReceiptStoreConfigured(): boolean {
   return isBlobConfigured();
@@ -98,6 +100,35 @@ export async function listPendingReceipts(): Promise<Receipt[]> {
 export async function listAllReceipts(): Promise<Receipt[]> {
   const [ids] = await redisPipeline([["SMEMBERS", ALL]]);
   return loadByIds(Array.isArray(ids) ? ids.map(String) : []);
+}
+
+/**
+ * The photos on each of a set of rows, oldest first, one round trip for the
+ * index and one for the records. `primary` is the row's own `receiptId`,
+ * which older rows have without being in the index.
+ */
+export async function listReceiptsForEntries(rows: { id: string; receiptId?: string }[]): Promise<Map<string, Receipt[]>> {
+  const out = new Map<string, Receipt[]>();
+  if (rows.length === 0) return out;
+  const sets = await redisPipeline(rows.map((r) => ["SMEMBERS", BY_ENTRY(r.id)]));
+  const wanted = new Map<string, string[]>();
+  rows.forEach((r, i) => {
+    const members = Array.isArray(sets[i]) ? (sets[i] as unknown[]).map(String) : [];
+    const ids = Array.from(new Set([...(r.receiptId ? [r.receiptId] : []), ...members]));
+    wanted.set(r.id, ids);
+  });
+  const all = Array.from(new Set([...wanted.values()].flat()));
+  const loaded = new Map((await loadByIds(all)).map((r) => [r.id, r]));
+  for (const [entryId, ids] of wanted) {
+    const list = ids.map((id) => loaded.get(id)).filter((r): r is Receipt => r !== undefined && r.status === "confirmed");
+    list.sort((a, b) => a.capturedAt.localeCompare(b.capturedAt));
+    out.set(entryId, list);
+  }
+  return out;
+}
+
+export async function listReceiptsForEntry(row: { id: string; receiptId?: string }): Promise<Receipt[]> {
+  return (await listReceiptsForEntries([row])).get(row.id) ?? [];
 }
 
 async function save(receipt: Receipt, extra: (string | number)[][] = []): Promise<boolean> {
@@ -178,6 +209,7 @@ export async function storeReceipt(
   const ok = await save(receipt, [
     ["SADD", ALL, id],
     ...(receipt.status === "pending" ? [["SADD", PENDING, id] as (string | number)[]] : []),
+    ...(options.entryId ? [["SADD", BY_ENTRY(options.entryId), id] as (string | number)[]] : []),
     ["SET", BY_SHA(sha256), id],
   ]);
   if (!ok) {
@@ -200,15 +232,21 @@ export async function confirmReceipt(id: string, entryId: string): Promise<boole
   const receipt = await getReceipt(id);
   if (!receipt) return false;
   const confirmed: Receipt = { ...receipt, status: "confirmed", entryId };
-  return save(confirmed, [["SREM", PENDING, id]]);
+  return save(confirmed, [
+    ["SREM", PENDING, id],
+    ["SADD", BY_ENTRY(entryId), id],
+  ]);
 }
 
-/** Put a receipt back to waiting when the row it was filed on is removed. */
+/** Put a receipt back to waiting when the row it was filed on is removed, or it was filed on the wrong one. */
 export async function unconfirmReceipt(id: string): Promise<boolean> {
   const receipt = await getReceipt(id);
   if (!receipt) return false;
   const pending: Receipt = { ...receipt, status: "pending", entryId: undefined };
-  return save(pending, [["SADD", PENDING, id]]);
+  return save(pending, [
+    ["SADD", PENDING, id],
+    ...(receipt.entryId ? [["SREM", BY_ENTRY(receipt.entryId), id] as (string | number)[]] : []),
+  ]);
 }
 
 /** Remove the photo and the record. Used for a bad snap or an unlinked receipt. */
@@ -220,6 +258,7 @@ export async function deleteReceipt(id: string): Promise<Receipt | null> {
     ["SREM", ALL, id],
     ["SREM", PENDING, id],
     ["DEL", BY_SHA(receipt.sha256)],
+    ...(receipt.entryId ? [["SREM", BY_ENTRY(receipt.entryId), id] as (string | number)[]] : []),
   ]);
   if (ok) await removeBlob(receipt.blobUrl);
   return ok ? receipt : null;

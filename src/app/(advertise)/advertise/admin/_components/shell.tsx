@@ -39,6 +39,8 @@ const PATHS: Record<string, string> = {
   ext: '<path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/>',
   out: '<path d="M10 4H4v16h6M15 8l5 4-5 4M20 12H9"/>',
   down: '<path d="M6 9l6 6 6-6"/>',
+  stripe: '<rect x="2" y="5" width="20" height="14"/><path d="M15 9.5c-.8-.6-1.9-.9-3-.9-1.9 0-3 .8-3 1.8 0 2.4 6 1.4 6 4 0 1.1-1.3 1.9-3.2 1.9-1.3 0-2.6-.4-3.6-1"/>',
+  archive: '<path d="M3 6h6l2 2h10v12H3z"/><path d="M3 11h18"/>',
 };
 
 export function Icon({ name, size = 16, className = "" }: { name: string; size?: number; className?: string }) {
@@ -80,7 +82,8 @@ export type NavKey =
   | "clients"
   | "vault"
   | "company"
-  | "stripe";
+  | "stripe"
+  | "archive";
 
 export type NavCount = { value: number; hot?: boolean } | { soon: true };
 
@@ -100,6 +103,7 @@ export const NAV_BOOKS: { key: NavKey; label: string; href: string }[] = [
   { key: "books", label: "Books", href: `${ADMIN}/books` },
   { key: "ledger", label: "Ledger", href: `${ADMIN}/books/ledger` },
   { key: "receipts", label: "Receipts", href: `${ADMIN}/books/receipts` },
+  { key: "archive", label: "Filed", href: `${ADMIN}/books/archive` },
   { key: "recurring", label: "Bills", href: `${ADMIN}/books/recurring` },
   { key: "clients", label: "Clients", href: `${ADMIN}/books/clients` },
   { key: "stripe", label: "Stripe", href: `${ADMIN}/books/stripe` },

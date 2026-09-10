@@ -33,7 +33,7 @@ import {
   type EntryKind,
 } from "@/lib/books/ledger";
 import { formatCents, isIsoDate, isMonth, parseDollars } from "@/lib/books/money";
-import { confirmReceipt, deleteReceipt, getReceipt, storeReceipt, unconfirmReceipt } from "@/lib/books/receipts";
+import { confirmReceipt, deleteReceipt, getReceipt, listReceiptsForEntry, storeReceipt, unconfirmReceipt } from "@/lib/books/receipts";
 import { addBill, billDueDate, billSourceRef, deleteBill, getBill, setBillActive } from "@/lib/books/recurring";
 import { bringBackStripeTxn, describeRun, getStripeTxn, runStripeSync } from "@/lib/books/stripe";
 
@@ -177,9 +177,9 @@ export async function deleteEntryAction(data: FormData) {
   const entry = id ? await deleteEntry(id) : null;
   if (!entry) back(to, { err: "entrymissing" });
 
-  // The photo is not thrown away with the row. It goes back to waiting, in
+  // The photos are not thrown away with the row. They go back to waiting, in
   // case the row was the mistake and not the receipt.
-  if (entry.receiptId) await unconfirmReceipt(entry.receiptId);
+  for (const r of await listReceiptsForEntry(entry)) await unconfirmReceipt(r.id);
 
   await log(who, "entry.delete", `Removed ${describe(entry.cents, entry.partner ?? entry.party, entry.kind)} from the ledger.`, undefined, { target: id, before: entry });
   back(to, { msg: "entryRemoved", month: entry.date.slice(0, 7) });
@@ -257,7 +257,10 @@ export async function discardReceiptAction(data: FormData) {
   back(returnPath(data, PAGES.receipts), { msg: "receiptDiscarded" });
 }
 
-/** A photo for an expense that was typed in first. Filed straight against the row. */
+/**
+ * A photo for a row that was typed in first. Filed straight against the
+ * row; a row can hold as many as it needs, the receipt and the invoice both.
+ */
 export async function attachReceiptAction(data: FormData) {
   const who = await requireBooks();
   const id = field(data, "id");
@@ -276,10 +279,34 @@ export async function attachReceiptAction(data: FormData) {
   }
   if (stored.receipt.status === "pending") await confirmReceipt(stored.receipt.id, id);
 
-  const result = await updateEntry(id, { receiptId: stored.receipt.id, noReceipt: undefined });
-  if (!result.ok) back(to, { err: "entry", detail: result.error, month }, `entry-${id}`);
+  // The first photo is the row's own; the rest hang off the same row.
+  if (!entry.receiptId) {
+    const result = await updateEntry(id, { receiptId: stored.receipt.id, noReceipt: undefined });
+    if (!result.ok) back(to, { err: "entry", detail: result.error, month }, `entry-${id}`);
+  }
   await log(who, "receipt.attach", `Attached a receipt to ${describe(entry.cents, entry.party, entry.kind)}.`, `${PAGES.ledger}?month=${month}#entry-${id}`, { target: id, after: stored.receipt.id });
   back(to, { msg: "receiptAttached", month }, `entry-${id}`);
+}
+
+/** A photo filed on the wrong row. It goes back to waiting, not in the bin. */
+export async function detachReceiptAction(data: FormData) {
+  const who = await requireBooks();
+  const id = field(data, "id");
+  const receiptId = field(data, "receiptId");
+  const entry = id ? await getEntry(id) : null;
+  const to = returnPath(data, PAGES.ledger);
+  if (!entry) back(to, { err: "entrymissing" });
+  const month = entry.date.slice(0, 7);
+  const receipt = receiptId ? await getReceipt(receiptId) : null;
+  if (!receipt || receipt.entryId !== id) back(to, { err: "receiptgone", month }, `entry-${id}`);
+
+  await unconfirmReceipt(receiptId);
+  if (entry.receiptId === receiptId) {
+    const rest = await listReceiptsForEntry({ id });
+    await updateEntry(id, { receiptId: rest[0]?.id });
+  }
+  await log(who, "receipt.detach", `Took a photo off ${describe(entry.cents, entry.party, entry.kind)}. It's back on the waiting list.`, `${PAGES.receipts}/${receiptId}`, { target: id, before: receiptId });
+  back(to, { msg: "receiptDetached", month }, `entry-${id}`);
 }
 
 /* -------------------------------- clients --------------------------------- */
