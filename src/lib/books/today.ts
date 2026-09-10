@@ -37,8 +37,37 @@ export type BooksTodayInput = {
   done: Set<string>;
 };
 
+/**
+ * Each quarter closes with a reminder to download the year so far and put it
+ * somewhere outside this system. In January it is the whole previous year,
+ * which is the one the CPA gets.
+ */
+export function archiveNudge(today: string): { key: string; year: string; quarter: number; fullYear: boolean } | null {
+  const y = Number(today.slice(0, 4));
+  const m = Number(today.slice(5, 7));
+  if (![1, 4, 7, 10].includes(m)) return null;
+  const closed = m === 1 ? { year: String(y - 1), quarter: 4 } : { year: String(y), quarter: (m - 1) / 3 };
+  return { key: `archive:download:${closed.year}-Q${closed.quarter}`, year: closed.year, quarter: closed.quarter, fullYear: closed.quarter === 4 };
+}
+
 export function buildBooksToday(input: BooksTodayInput): TodayItem[] {
   const items: TodayItem[] = [];
+
+  const nudge = archiveNudge(input.today);
+  if (nudge && !input.done.has(nudge.key)) {
+    items.push({
+      key: nudge.key,
+      kind: "document",
+      tone: "",
+      title: nudge.fullYear ? `${nudge.year} is closed. Download the whole year for the CPA.` : `Q${nudge.quarter} is closed. Download ${nudge.year} so far and put it in Drive.`,
+      detail: "Books → Filed → Download. One zip: every receipt in its category folder, the ledger and the P&L as spreadsheets. A copy outside this system, every quarter.",
+      order: 50,
+      actions: [
+        { type: "link", label: "Filed", href: `${BOOKS}/archive/${nudge.year}` },
+        { type: "done", key: nudge.key },
+      ],
+    });
+  }
 
   // A failed pull clears itself the next time one works, so there is no Done.
   if (input.stripe && input.stripe.lastOk === false && input.stripe.lastRunAt) {

@@ -8,12 +8,13 @@ import { formatCents } from "@/lib/books/money";
 import { listAllReceipts, receiptHref } from "@/lib/books/receipts";
 import { BOOKS } from "../../../../../_components/books";
 import { Icon, PageHeader } from "../../../../../_components/shell";
-import { Badge, Card, Empty, FilterPill, Note, bebas, btnGhost, btnSm, cardClass, labelClass, numClass, type Tone } from "../../../../../_components/ui";
+import { Badge, Card, Empty, FilterPill, Note, bebas, btnGhost, btnPrimary, btnSm, cardClass, labelClass, numClass, type Tone } from "../../../../../_components/ui";
 import { Shell } from "../../../../shell";
 
 export const metadata: Metadata = { title: "Filed receipts" };
 
 const PAGE = `${BOOKS}/archive`;
+const ZIP = "/api/books/archive";
 
 const KIND_LABEL = { expense: "Out", income: "In", capital: "Owner", transfer: "Transfer" } as const;
 const KIND_TONE: Record<keyof typeof KIND_LABEL, Tone> = { expense: "neutral", income: "ok", capital: "brand", transfer: "neutral" };
@@ -82,12 +83,19 @@ export default async function ArchivePage({
           eyebrow={`Filed · ${year} · ${c.label}`}
           title={`${files.length} ${files.length === 1 ? "file" : "files"}, ${formatCents(total, { whole: true })} on the return.`}
           action={
-            <a href={`${PAGE}/${year}`} className={btnGhost}>
-              All of {year}
-            </a>
+            <>
+              <a href={`${PAGE}/${year}`} className={btnGhost}>
+                All of {year}
+              </a>
+              {files.length > 0 && (
+                <a href={`${ZIP}/${year}?category=${c.id}`} className={btnPrimary}>
+                  Download this folder
+                </a>
+              )}
+            </>
           }
         />
-        <p className="text-sm text-white/45 -mt-3 mb-6">{c.line}.</p>
+        <p className="text-sm text-white/45 -mt-3 mb-6">{c.line}. The download is a zip of this folder: each photo named by date, who and amount, with the rows as a spreadsheet.</p>
 
         <div className="grid lg:grid-cols-[1.5fr_1fr] gap-5 items-start">
           <Card title="Files" padding="px-5 sm:px-6 pt-5 pb-2" lede="Each photo, on the row it was filed against, by the date on the receipt. Open the row to move it or take the photo off.">
@@ -160,9 +168,16 @@ export default async function ArchivePage({
         eyebrow="Receipts · filed"
         title={sum.rows === 0 ? `Nothing in ${year} yet.` : `${year}: ${sum.files} ${sum.files === 1 ? "file" : "files"} in ${sum.folders} ${sum.folders === 1 ? "folder" : "folders"}.`}
         action={
-          <a href={`${BOOKS}/receipts`} className={btnGhost}>
-            Waiting to be confirmed
-          </a>
+          <>
+            <a href={`${BOOKS}/receipts`} className={btnGhost}>
+              Waiting to be confirmed
+            </a>
+            {sum.rows > 0 && (
+              <a href={`${ZIP}/${year}`} className={btnPrimary}>
+                Download {year}
+              </a>
+            )}
+          </>
         }
       />
 
@@ -211,7 +226,7 @@ export default async function ArchivePage({
             </>
           )}
           <p className="mt-8 text-xs text-white/35 leading-relaxed max-w-2xl">
-            This is the shelf the accountant pack will be built from: one folder per category, each photo named by date, who and how much. Recategorise a row in the ledger and its photo moves folders on its own.
+            Download {year} is the accountant pack: one zip with a folder per category, each photo named by date, who and how much, the year&apos;s ledger and a profit and loss as spreadsheets, and a list of rows with no receipt. Send it once the year is closed. Recategorise a row in the ledger and its photo moves folders on its own.
           </p>
         </>
       )}
