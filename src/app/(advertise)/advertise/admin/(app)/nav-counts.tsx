@@ -22,7 +22,7 @@ import {
 import { isStripeConfigured } from "@/lib/books/stripe";
 import { filingsDue } from "@/lib/books/company";
 import { expectedBills } from "@/lib/books/recurring";
-import { buildBooksToday } from "@/lib/books/today";
+import { archiveNudge, buildBooksToday } from "@/lib/books/today";
 import { renewalsDue } from "@/lib/books/vault";
 import { overdueAcross } from "@/lib/ads/expected";
 import { artworkStatusOf, followUpsDue, isOpenProspect, summarize, today } from "@/lib/ads/roster";
@@ -57,7 +57,8 @@ export const todayData = cache(async function todayData() {
 
   const renewals = renewalsDue(vault, asOf);
   const filings = filingsDue(company.filings, asOf);
-  const booksKeys = [...renewals.map((r) => `vault:${r.doc.id}:${r.doc.renewsOn}`), ...filings.map((f) => f.key)];
+  const nudge = archiveNudge(asOf);
+  const booksKeys = [...renewals.map((r) => `vault:${r.doc.id}:${r.doc.renewsOn}`), ...filings.map((f) => f.key), ...(nudge ? [nudge.key] : [])];
 
   const partial = { today: asOf, newLeads, followUps, summary, replies, overduePayments, draftReports, tasks };
   const done = await doneSet([...candidateKeys({ ...partial, books: [] }), ...booksKeys]);
