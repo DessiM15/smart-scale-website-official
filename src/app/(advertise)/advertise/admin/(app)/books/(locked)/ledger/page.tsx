@@ -4,6 +4,7 @@ import { today } from "@/lib/ads/roster";
 import { TEAM } from "@/lib/ads/who";
 import { byCategory, totals, type Entry } from "@/lib/books/ledger";
 import { formatCents, isMonth, monthName, shiftMonth } from "@/lib/books/money";
+import { listReceiptsForEntries } from "@/lib/books/receipts";
 import { BOOKS, LedgerRow, MoneyTiles } from "../../../../_components/books";
 import { PageHeader } from "../../../../_components/shell";
 import { Card, Empty, FilterPill, btnGhost, btnSm, btnSolid, labelClass, selectClass } from "../../../../_components/ui";
@@ -34,6 +35,7 @@ export default async function LedgerPage({
   const show = SHOWS.includes(params.show as Show) ? (params.show as Show) : "all";
   const [entries, months, clients, data] = await Promise.all([cachedEntries(month), cachedMonths(), cachedClients(), todayData()]);
   const shown = entries.filter((e) => keep(e, show));
+  const receiptsByEntry = await listReceiptsForEntries(shown);
   const sums = totals(entries);
   const page = `${BOOKS}/ledger`;
   const returnTo = `${page}?month=${month}`;
@@ -100,7 +102,7 @@ export default async function LedgerPage({
           ) : (
             <ul>
               {shown.map((e) => (
-                <LedgerRow key={e.id} entry={e} clients={clients} team={TEAM} today={asOf} open={params.open === e.id} returnTo={returnTo} />
+                <LedgerRow key={e.id} entry={e} receipts={receiptsByEntry.get(e.id)} clients={clients} team={TEAM} today={asOf} open={params.open === e.id} returnTo={returnTo} />
               ))}
             </ul>
           )}

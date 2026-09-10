@@ -105,6 +105,7 @@ const notices = (
   adPaymentPosted: `In the ledger${detail ? `: ${detail}` : ""}.`,
   adPaymentLeftOut: `Left out${detail ? `: ${detail}` : ""}. It won't be offered again unless you bring it back.`,
   stripeSynced: detail ?? "Stripe is up to date.",
+  receiptDetached: "Photo taken off that row. It's back on the waiting list, not in the bin.",
   stripeBroughtBack: `Back in the ledger${detail ? `: ${detail}` : ""}.`,
 });
 
