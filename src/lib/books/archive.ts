@@ -101,15 +101,15 @@ function safe(s: string): string {
 }
 
 /**
- * What a photo is called when it leaves as a file. Date first so a folder
- * sorts itself, then who, then how much. A row with two photos numbers them.
- * "2026-09-04 Vercel $20.00.jpg"
+ * What a receipt is called when it leaves as a file. Date first so a folder
+ * sorts itself, then who, then how much. A row with two files numbers them.
+ * "2026-09-04 Vercel $20.00.jpg", or ".pdf" for one that came in as a PDF.
  */
-export function fileName(entry: Entry, index = 0, count = 1): string {
+export function fileName(entry: Entry, index = 0, count = 1, ext: "jpg" | "pdf" = "jpg"): string {
   const who = safe(entry.party || categoryOf(entry.category).label) || "receipt";
   const amount = formatCents(entry.cents).replace(/,/g, "");
   const n = count > 1 ? ` (${index + 1} of ${count})` : "";
-  return `${entry.date} ${who} ${amount}${n}.jpg`;
+  return `${entry.date} ${who} ${amount}${n}.${ext}`;
 }
 
 /** The folder a row's photos live in, as a path inside the year. */

@@ -34,7 +34,7 @@ import {
 } from "@/lib/books/ledger";
 import { formatCents, isIsoDate, isMonth, parseDollars } from "@/lib/books/money";
 import { confirmReceipt, deleteReceipt, getReceipt, listReceiptsForEntry, storeReceipt, unconfirmReceipt } from "@/lib/books/receipts";
-import { addBill, billDueDate, billSourceRef, deleteBill, getBill, setBillActive } from "@/lib/books/recurring";
+import { addBill, billDueDate, billSourceRef, deleteBill, getBill, setBillActive, setBillStatementIsEnough } from "@/lib/books/recurring";
 import { bringBackStripeTxn, describeRun, getStripeTxn, runStripeSync } from "@/lib/books/stripe";
 
 const ADMIN = "/advertise/admin";
@@ -358,6 +358,18 @@ export async function toggleBillAction(data: FormData) {
   back(PAGES.recurring, { msg: bill.active ? "billPaused" : "billResumed" });
 }
 
+/** Flip whether this bill's rows expect an invoice, or the bank statement is enough. */
+export async function toggleBillStatementAction(data: FormData) {
+  const who = await requireBooks();
+  const id = field(data, "id");
+  const bill = id ? await getBill(id) : null;
+  if (!bill) back(PAGES.recurring, { err: "billmissing" });
+  const next = !bill.statementIsEnough;
+  if (!(await setBillStatementIsEnough(id, next))) back(PAGES.recurring, { err: "save" });
+  await log(who, "bill.statement", `${bill.vendor}: ${next ? "the statement is enough, no invoice expected" : "an invoice is expected each month"}.`, undefined, { target: id });
+  back(PAGES.recurring, { msg: next ? "billStatementEnough" : "billInvoiceExpected" });
+}
+
 export async function deleteBillAction(data: FormData) {
   const who = await requireBooks();
   const id = field(data, "id");
@@ -367,7 +379,12 @@ export async function deleteBillAction(data: FormData) {
   back(PAGES.recurring, { msg: "billRemoved" });
 }
 
-/** Post this month's charge for a bill: the usual amount unless told otherwise. */
+/**
+ * Post this month's charge for a bill: the usual amount unless told
+ * otherwise. The vendor's invoice can come along in the same tap and is
+ * filed on the row; a bill whose statement is enough logs its row as
+ * needing nothing.
+ */
 export async function logBillAction(data: FormData) {
   const to = returnPath(data, PAGES.recurring);
   const who = await requireBooks(to);
@@ -378,6 +395,8 @@ export async function logBillAction(data: FormData) {
   const cents = field(data, "amount") ? parseDollars(field(data, "amount")) : bill.cents;
   if (cents === null || cents <= 0) back(to, { err: "amount" });
   const date = isIsoDate(field(data, "date")) ? field(data, "date") : billDueDate(bill, month);
+  const file = data.get("photo");
+  const invoice = file instanceof File && file.size > 0 ? file : null;
 
   const result = await addEntry({
     date,
@@ -390,11 +409,27 @@ export async function logBillAction(data: FormData) {
     who,
     source: "recurring",
     sourceRef: billSourceRef(bill.id, month),
-    noReceipt: true,
+    noReceipt: Boolean(bill.statementIsEnough) && !invoice,
   });
   if (!result.ok) back(to, { err: "entry", detail: result.error });
+  const entry = result.entry;
   const what = `${formatCents(cents)} to ${bill.vendor}`;
-  await log(who, "bill.paid", `Paid the ${bill.vendor} bill: ${what}.`, `${PAGES.ledger}?month=${month}#entry-${result.entry.id}`, { target: result.entry.id });
+  await log(who, "bill.paid", `Paid the ${bill.vendor} bill: ${what}.`, `${PAGES.ledger}?month=${month}#entry-${entry.id}`, { target: entry.id });
+
+  if (invoice) {
+    // The row is in either way. If the file can't be kept, say so and the
+    // row's own Attach form is the second try.
+    const stored = await storeReceipt(invoice, who, { read: false, entryId: entry.id });
+    if (!stored.ok) back(to, { msg: "billLoggedNoFile", detail: `${what}. ${stored.error}` });
+    if (stored.duplicate && stored.receipt.entryId && stored.receipt.entryId !== entry.id) {
+      back(to, { msg: "billLoggedNoFile", detail: `${what}. That file is already filed on another row` });
+    }
+    if (stored.receipt.status === "pending") await confirmReceipt(stored.receipt.id, entry.id);
+    const linked = await updateEntry(entry.id, { receiptId: stored.receipt.id, noReceipt: undefined });
+    if (!linked.ok) back(to, { msg: "billLoggedNoFile", detail: `${what}. ${linked.error}` });
+    await log(who, "receipt.attach", `Attached the invoice to ${what}.`, `${PAGES.ledger}?month=${month}#entry-${entry.id}`, { target: entry.id, after: stored.receipt.id });
+    back(to, { msg: "billLoggedInvoice", detail: what });
+  }
   back(to, { msg: "billLogged", detail: what });
 }
 

@@ -355,9 +355,13 @@ export function capitalByPartner(entries: Entry[], partners: readonly string[]):
   });
 }
 
-/** Expenses typed by hand with nothing attached and nobody saying there is nothing to attach. */
+/**
+ * Expenses typed by hand, or logged from a monthly bill, with nothing
+ * attached and nobody saying there is nothing to attach. A bill whose
+ * statement is enough logs its rows with `noReceipt` set, so they stay out.
+ */
 export function missingReceipts(entries: Entry[]): Entry[] {
-  return entries.filter((e) => e.kind === "expense" && e.source === "manual" && !e.receiptId && !e.noReceipt);
+  return entries.filter((e) => e.kind === "expense" && (e.source === "manual" || e.source === "recurring") && !e.receiptId && !e.noReceipt);
 }
 
 /** Totals by category, biggest first, for the month view. */

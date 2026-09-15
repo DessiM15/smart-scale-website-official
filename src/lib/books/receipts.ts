@@ -1,10 +1,12 @@
 /**
- * Receipt photos.
+ * Receipt files.
  *
- * A receipt arrives as a phone photo, is straightened and shrunk to something
- * a browser and a model can both handle, and is kept in the private store
- * under an unguessable path that only ever comes back out through a route
- * that checks the session. The photo is the record; the paper can go.
+ * A receipt arrives as a phone photo, a screenshot, or a PDF from an email.
+ * A picture is straightened and shrunk to something a browser and a model
+ * can both handle; a PDF is kept exactly as it came. Either is kept in the
+ * private store under an unguessable path that only ever comes back out
+ * through a route that checks the session. The file is the record; the
+ * paper can go.
  *
  * A receipt is "pending" until somebody has confirmed what it says. Pending
  * receipts sit on the Today list, so a snap at the counter that never got
@@ -18,9 +20,10 @@ import { getBlob, isBlobConfigured, putBlob, removeBlob } from "@/lib/ads/blob";
 import { isFileKeyConfigured, openBytes, sealBytes } from "./crypto";
 import { readReceiptImage, type ReceiptRead } from "./reader";
 
-/** The server action body limit is 4.5 MB; the phone shrinks before sending. */
+/** The server action body limit is 4.5 MB; the phone shrinks a photo before sending. */
 export const RECEIPT_MAX_BYTES = 4 * 1024 * 1024;
-export const RECEIPT_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+export const PDF = "application/pdf";
+export const RECEIPT_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif", PDF];
 
 /** Long side after normalising. Plenty for a receipt, small enough to read fast. */
 const MAX_SIDE = 2000;
@@ -31,8 +34,10 @@ export type Receipt = {
   id: string;
   /** Server-side only. Read the file through /api/ads/receipt/<id>. */
   blobUrl: string;
-  contentType: "image/jpeg";
+  /** Pictures are always re-encoded to JPEG; a PDF is kept as it came. */
+  contentType: "image/jpeg" | "application/pdf";
   size: number;
+  /** 0 for a PDF. */
   width: number;
   height: number;
   sha256: string;
@@ -57,12 +62,27 @@ export function isReceiptStoreConfigured(): boolean {
   return isBlobConfigured();
 }
 
+/** A picker on a phone sometimes sends a PDF with no type at all; the name still says. */
+export function isPdfFile(file: File): boolean {
+  return file.type === PDF || (!file.type && /\.pdf$/i.test(file.name));
+}
+
+export function isPdf(receipt: Pick<Receipt, "contentType">): boolean {
+  return receipt.contentType === PDF;
+}
+
+/** The extension a receipt leaves with, in a download or the accountant pack. */
+export function receiptExt(receipt: Pick<Receipt, "contentType">): "pdf" | "jpg" {
+  return isPdf(receipt) ? "pdf" : "jpg";
+}
+
 export function validateReceiptFile(file: File): string | null {
-  if (!RECEIPT_TYPES.includes(file.type) && !file.type.startsWith("image/")) {
-    return "Use a photo: JPG, PNG, WEBP or HEIC.";
+  if (!isPdfFile(file) && !RECEIPT_TYPES.includes(file.type) && !file.type.startsWith("image/")) {
+    return "Use a photo or a PDF: JPG, PNG, WEBP, HEIC or PDF.";
   }
   if (file.size > RECEIPT_MAX_BYTES) {
-    return `That photo is ${(file.size / 1024 / 1024).toFixed(1)} MB. The limit is 4 MB; the phone should have shrunk it. Try again.`;
+    const what = isPdfFile(file) ? "PDF" : "photo";
+    return `That ${what} is ${(file.size / 1024 / 1024).toFixed(1)} MB. The limit is 4 MB${isPdfFile(file) ? "" : "; the phone should have shrunk it"}. Try again.`;
   }
   return null;
 }
@@ -140,8 +160,9 @@ export type StoreResult =
   | { ok: false; error: string };
 
 /**
- * Keeps a photo. Straightens it, shrinks it, checks it isn't one already on
- * file, uploads it, and, when asked, has it read.
+ * Keeps a receipt file. A picture is straightened and shrunk; a PDF is kept
+ * as it came. Either is checked against what is already on file, uploaded,
+ * and, when asked, read.
  *
  * `entryId` files the photo straight against an existing ledger row, for a
  * receipt that turns up after the expense was typed. Nothing is read then;
@@ -156,20 +177,32 @@ export async function storeReceipt(
   if (invalid) return { ok: false, error: invalid };
   if (!isBlobConfigured()) return { ok: false, error: "No file storage is connected, so the photo has nowhere to go." };
 
+  const pdf = isPdfFile(file);
+  const contentType: Receipt["contentType"] = pdf ? PDF : "image/jpeg";
   let image: Buffer;
   let width = 0;
   let height = 0;
-  try {
-    const out = await sharp(Buffer.from(await file.arrayBuffer()))
-      .rotate()
-      .resize({ width: MAX_SIDE, height: MAX_SIDE, fit: "inside", withoutEnlargement: true })
-      .jpeg({ quality: 82, mozjpeg: true })
-      .toBuffer({ resolveWithObject: true });
-    image = out.data;
-    width = out.info.width;
-    height = out.info.height;
-  } catch {
-    return { ok: false, error: "That file couldn't be read as a photo. Try taking it again." };
+  if (pdf) {
+    image = Buffer.from(await file.arrayBuffer());
+    // Every PDF starts with its own signature. A renamed screenshot or an
+    // HTML error page saved as .pdf would not open for anyone, so it is
+    // refused here rather than filed.
+    if (image.subarray(0, 5).toString("latin1") !== "%PDF-") {
+      return { ok: false, error: "That file isn't a PDF inside, whatever it's called. Open it and save it again as a PDF, or take a screenshot." };
+    }
+  } else {
+    try {
+      const out = await sharp(Buffer.from(await file.arrayBuffer()))
+        .rotate()
+        .resize({ width: MAX_SIDE, height: MAX_SIDE, fit: "inside", withoutEnlargement: true })
+        .jpeg({ quality: 82, mozjpeg: true })
+        .toBuffer({ resolveWithObject: true });
+      image = out.data;
+      width = out.info.width;
+      height = out.info.height;
+    } catch {
+      return { ok: false, error: "That file couldn't be read as a photo. Try taking it again." };
+    }
   }
 
   const sha256 = createHash("sha256").update(image).digest("hex");
@@ -184,9 +217,9 @@ export async function storeReceipt(
   const sealed = isFileKeyConfigured();
   const id = randomUUID();
   const stored = await putBlob(
-    `ads/private/books/receipts/${id}.${sealed ? "bin" : "jpg"}`,
+    `ads/private/books/receipts/${id}.${sealed ? "bin" : receiptExt({ contentType })}`,
     sealed ? sealBytes(image) : image,
-    sealed ? "application/octet-stream" : "image/jpeg",
+    sealed ? "application/octet-stream" : contentType,
     { randomSuffix: true },
   );
   if (!stored.ok) return { ok: false, error: stored.error };
@@ -194,7 +227,7 @@ export async function storeReceipt(
   const receipt: Receipt = {
     id,
     blobUrl: stored.url,
-    contentType: "image/jpeg",
+    contentType,
     size: image.byteLength,
     width,
     height,
@@ -218,7 +251,7 @@ export async function storeReceipt(
   }
 
   if (options.read) {
-    const read = await readReceiptImage(image, "image/jpeg");
+    const read = await readReceiptImage(image, contentType);
     if (read.ok) receipt.read = read.read;
     else receipt.readError = read.error;
     await save(receipt);
@@ -264,7 +297,7 @@ export async function deleteReceipt(id: string): Promise<Receipt | null> {
   return ok ? receipt : null;
 }
 
-/** The photo, in the clear, for the gated route. */
+/** The file, in the clear, for the gated route. */
 export async function readReceiptFile(id: string): Promise<{ receipt: Receipt; bytes: Buffer } | null> {
   const receipt = await getReceipt(id);
   if (!receipt) return null;

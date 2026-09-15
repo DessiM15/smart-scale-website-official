@@ -108,10 +108,10 @@ export function buildBooksToday(input: BooksTodayInput): TodayItem[] {
       kind: "bill",
       tone: b.daysLate > 3 ? "bad" : "warn",
       title: `${b.bill.vendor} · ${formatCents(b.bill.cents)} due${b.daysLate > 0 ? ` ${b.daysLate} ${b.daysLate === 1 ? "day" : "days"} ago` : " today"}`,
-      detail: `Comes out on the ${ordinal(b.bill.day)} each month · tap Paid once it has, and it's logged for ${monthName(b.month)}`,
+      detail: `Comes out on the ${ordinal(b.bill.day)} each month · tap Paid once it has, and it's logged for ${monthName(b.month)}${b.bill.statementIsEnough ? "" : " · add the invoice PDF if you have it"}`,
       order: -b.daysLate,
       actions: [
-        { type: "logBill", id: b.bill.id, month: b.month } as TodayAction,
+        { type: "logBill", id: b.bill.id, month: b.month, invoice: !b.bill.statementIsEnough } as TodayAction,
         { type: "link", label: "Bills", href: `${BOOKS}/recurring` },
       ],
     });

@@ -51,7 +51,7 @@ export default async function BooksPage({
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 lg:hidden">
-        <BigButton href="#snap" icon="camera" label="Snap a receipt" hint="Photo first, numbers after" solid />
+        <BigButton href="#snap" icon="camera" label="Add a receipt" hint="Photo or PDF first, numbers after" solid />
         <BigButton href="#log" icon="plus" label="Log money" hint="In, out, or money you put in" />
       </div>
 

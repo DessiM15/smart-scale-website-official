@@ -12,6 +12,8 @@ import {
   markPaidAction,
 } from "../actions";
 import { logBillAction, markNoReceiptAction } from "../(app)/books/actions";
+import { fileInputClass } from "./books";
+import { ReceiptFileInput } from "./receipt-picker";
 import type { Board, BoardSlot, SlotState } from "@/lib/ads/board";
 import type { HistoryEntry, TodayAction, TodayItem, TodayKind } from "@/lib/ads/tasks";
 import { formatDate, type AdvertiserView } from "@/lib/ads/roster";
@@ -143,13 +145,21 @@ function ItemAction({ action, item, returnTo }: { action: TodayAction; item: Tod
       return <MarkPaid advertiserId={action.advertiserId} period={action.period} amount={action.amount} returnTo={returnTo} />;
     case "logBill":
       return (
-        <form action={logBillAction}>
+        <form action={logBillAction} className="flex flex-wrap items-center gap-2">
           <input type="hidden" name="id" value={action.id} />
           <input type="hidden" name="month" value={action.month} />
           <input type="hidden" name="returnTo" value={returnTo} />
-          <button type="submit" className={`${btnPrimary} ${btnSm}`}>
-            <CheckIcon /> Paid
-          </button>
+          {action.invoice && (
+            <>
+              <label htmlFor={`today-invoice-${action.id}-${action.month}`} className="sr-only">
+                The invoice, if you have it
+              </label>
+              <ReceiptFileInput id={`today-invoice-${action.id}-${action.month}`} className={fileInputClass} />
+            </>
+          )}
+          <SubmitButton className={`${btnPrimary} ${btnSm}`} pendingLabel="Logging">
+            Paid
+          </SubmitButton>
         </form>
       );
     case "noReceipt":

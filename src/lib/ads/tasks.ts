@@ -235,7 +235,7 @@ export type TodayAction =
   | { type: "clearReply"; advertiserId: string; endDate: string }
   | { type: "completeTask"; id: string }
   /** Post this month's expected charge for a recurring bill. */
-  | { type: "logBill"; id: string; month: string }
+  | { type: "logBill"; id: string; month: string; invoice: boolean }
   /** Say a typed expense has no receipt to attach, so it stops asking. */
   | { type: "noReceipt"; id: string };
 

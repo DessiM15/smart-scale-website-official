@@ -5,8 +5,8 @@ import { bareRowsFor, fileReceipts, filesFor, foldersFor, isYear, yearSummary, y
 import { categoryOf, isCategoryId } from "@/lib/books/categories";
 import { listAllEntries, type Entry } from "@/lib/books/ledger";
 import { formatCents } from "@/lib/books/money";
-import { listAllReceipts, receiptHref } from "@/lib/books/receipts";
-import { BOOKS } from "../../../../../_components/books";
+import { isPdf, listAllReceipts } from "@/lib/books/receipts";
+import { BOOKS, ReceiptThumb } from "../../../../../_components/books";
 import { Icon, PageHeader } from "../../../../../_components/shell";
 import { Badge, Card, Empty, FilterPill, Note, bebas, btnGhost, btnPrimary, btnSm, cardClass, labelClass, numClass, type Tone } from "../../../../../_components/ui";
 import { Shell } from "../../../../shell";
@@ -107,16 +107,13 @@ export default async function ArchivePage({
               <ul>
                 {files.map(({ receipt, entry }) => (
                   <li key={receipt.id} className="flex items-center gap-4 py-4 border-b border-white/[0.06] last:border-b-0">
-                    <a href={receiptHref(receipt.id)} target="_blank" rel="noreferrer" className="shrink-0 block w-16 h-20 border border-white/[0.1] overflow-hidden bg-white/[0.03]" title="Open full size">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={receiptHref(receipt.id)} alt="" className="w-full h-full object-cover" loading="lazy" />
-                    </a>
+                    <ReceiptThumb receipt={receipt} />
                     <div className="flex-1 min-w-0">
                       <p className="text-[15px] text-white leading-snug truncate">{entry.party || c.label}</p>
                       <p className="text-xs text-white/45 leading-snug truncate">
                         {formatDate(entry.date)}
                         {entry.memo ? ` · ${entry.memo}` : ""}
-                        {receipt.who ? ` · snapped by ${receipt.who}` : ""}
+                        {receipt.who ? ` · ${isPdf(receipt) ? "uploaded" : "snapped"} by ${receipt.who}` : ""}
                       </p>
                     </div>
                     <span className={`${numClass} text-lg text-white tabular-nums shrink-0`}>{formatCents(entry.cents)}</span>

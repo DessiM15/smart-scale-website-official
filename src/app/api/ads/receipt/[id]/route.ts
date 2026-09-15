@@ -1,5 +1,5 @@
 /**
- * Serves a receipt photo: GET /api/ads/receipt/<id>
+ * Serves a receipt file, photo or PDF: GET /api/ads/receipt/<id>
  *
  * The only way a receipt leaves the private store. The Blob address stays in
  * the database and is fetched here, server-side, so no browser ever holds it.
@@ -9,7 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isSignedIn } from "@/lib/ads/auth";
 import { booksAccess } from "@/lib/books/passkeys";
-import { readReceiptFile } from "@/lib/books/receipts";
+import { readReceiptFile, receiptExt } from "@/lib/books/receipts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,7 +31,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   return new NextResponse(new Uint8Array(found.bytes), {
     headers: {
       "Content-Type": found.receipt.contentType,
-      "Content-Disposition": `inline; filename="receipt-${id.slice(0, 8)}.jpg"`,
+      "Content-Disposition": `inline; filename="receipt-${id.slice(0, 8)}.${receiptExt(found.receipt)}"`,
       "Cache-Control": "no-store, private",
       "X-Content-Type-Options": "nosniff",
     },

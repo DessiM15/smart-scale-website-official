@@ -14,7 +14,7 @@ import { fileName, fileReceipts, folderName, yearOf, type FiledReceipt } from ".
 import { CATEGORIES, categoryOf } from "./categories";
 import { listClients } from "./clients";
 import { accountLabel, capitalByPartner, listAllEntries, totals, type Entry } from "./ledger";
-import { isReceiptStoreConfigured, listAllReceipts, readReceiptFile } from "./receipts";
+import { isReceiptStoreConfigured, listAllReceipts, readReceiptFile, receiptExt } from "./receipts";
 import type { ZipEntry } from "./zip";
 
 export type PackScope = { year: string; category?: string };
@@ -48,6 +48,7 @@ const KIND_WORDS: Record<Entry["kind"], string> = {
 };
 
 function whyNoReceipt(e: Entry): string {
+  if (e.noReceipt && e.source === "recurring") return "Monthly bill; the bank statement is the record";
   if (e.noReceipt) return "Marked as having none";
   if (e.source === "stripe") return "Stripe is the record";
   if (e.source === "ads") return "Ad payment; the agreement and Stripe or bank record cover it";
@@ -171,7 +172,7 @@ export async function* packEntries(scope: PackScope): AsyncGenerator<ZipEntry> {
   for (const f of filed) byEntry.set(f.entry.id, [...(byEntry.get(f.entry.id) ?? []), f]);
   const names = new Map(clients.map((c) => [c.id, c.name]));
   const clientName = (id?: string) => (id ? names.get(id) ?? "" : "");
-  const filesFor = (e: Entry) => (byEntry.get(e.id) ?? []).map((_, i, all) => fileName(e, i, all.length));
+  const filesFor = (e: Entry) => (byEntry.get(e.id) ?? []).map((f, i, all) => fileName(e, i, all.length, receiptExt(f.receipt)));
   const root = scope.category ? `${scope.year}/${folderName(scope.category)}` : scope.year;
   const stamp = new Date();
 
@@ -189,7 +190,7 @@ export async function* packEntries(scope: PackScope): AsyncGenerator<ZipEntry> {
       continue;
     }
     for (let i = 0; i < onRow.length; i++) {
-      const name = `${scope.year}/${folderName(e.category)}/${fileName(e, i, onRow.length)}`;
+      const name = `${scope.year}/${folderName(e.category)}/${fileName(e, i, onRow.length, receiptExt(onRow[i].receipt))}`;
       const read = storeReady ? await readReceiptFile(onRow[i].receipt.id) : null;
       if (!read) {
         unreadable.push(name);

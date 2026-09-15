@@ -42,7 +42,7 @@ export default async function RecurringPage({
 
       <Card
         title={due ? `${due} due, not yet paid` : "This month"}
-        lede="Each bill shows on Today on its day. Tap Paid when the charge has come out and it's logged for the month; change the amount on the ledger if it differed."
+        lede="Each bill shows on Today on its day. Tap Paid when the charge has come out and it's logged for the month, with the vendor's invoice if you add it; change the amount on the ledger if it differed. A bill the bank statement covers on its own can say so, and its rows won't ask."
         padding="px-5 sm:px-6 pt-5 pb-2"
       >
         <BillsTable bills={bills} expected={expected} month={month} returnTo={PAGE} />

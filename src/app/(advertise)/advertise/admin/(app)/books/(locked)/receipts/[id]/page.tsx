@@ -5,10 +5,11 @@ import { formatDate, today } from "@/lib/ads/roster";
 import { TEAM } from "@/lib/ads/who";
 import { getEntry } from "@/lib/books/ledger";
 import { centsToInput, formatCents } from "@/lib/books/money";
-import { getReceipt, receiptHref } from "@/lib/books/receipts";
+import { getReceipt, isPdf, receiptHref } from "@/lib/books/receipts";
 import { confirmReceiptAction, discardReceiptAction } from "../../../actions";
 import { BOOKS } from "../../../../../_components/books";
 import { EntryForm } from "../../../../../_components/entry-form";
+import { PdfGlyph } from "../../../../../_components/receipt-picker";
 import { PageHeader } from "../../../../../_components/shell";
 import { Badge, Card, Note, btnDanger, btnGhost, btnSm } from "../../../../../_components/ui";
 import { Shell } from "../../../../shell";
@@ -31,12 +32,13 @@ export default async function ConfirmReceiptPage({
   const [clients, entry] = await Promise.all([cachedClients(), receipt.entryId ? getEntry(receipt.entryId) : null]);
   const read = receipt.read;
   const confirmed = receipt.status === "confirmed" && entry;
+  const pdf = isPdf(receipt);
 
   return (
     <Shell active="receipts" banner={query}>
       <PageHeader
-        eyebrow={`Receipt · snapped ${formatDate(receipt.capturedAt.slice(0, 10))}${receipt.who ? ` by ${receipt.who}` : ""}`}
-        title={confirmed ? "Already in the ledger." : read?.vendor ? `${read.vendor}. Check it, then save.` : "Check the photo, fill in the numbers."}
+        eyebrow={`Receipt · ${pdf ? "uploaded" : "snapped"} ${formatDate(receipt.capturedAt.slice(0, 10))}${receipt.who ? ` by ${receipt.who}` : ""}`}
+        title={confirmed ? "Already in the ledger." : read?.vendor ? `${read.vendor}. Check it, then save.` : `Check the ${pdf ? "PDF" : "photo"}, fill in the numbers.`}
         action={
           <a href={PAGE} className={btnGhost}>
             All receipts
@@ -46,16 +48,32 @@ export default async function ConfirmReceiptPage({
 
       <div className="grid lg:grid-cols-[1fr_1fr] gap-5 items-start">
         <Card padding="p-3" className="lg:sticky lg:top-6">
-          <a href={receiptHref(receipt.id)} target="_blank" rel="noreferrer" title="Open full size">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={receiptHref(receipt.id)}
-              alt="The receipt"
-              width={receipt.width || undefined}
-              height={receipt.height || undefined}
-              className="w-full h-auto max-h-[75vh] object-contain bg-black"
-            />
-          </a>
+          {pdf ? (
+            // The browser's own PDF view. A phone shows the first page; the
+            // link underneath opens the whole thing.
+            <div className="flex flex-col gap-3">
+              <object data={receiptHref(receipt.id)} type="application/pdf" className="w-full h-[60vh] lg:h-[75vh] bg-black" aria-label="The receipt PDF">
+                <span className="flex h-full w-full flex-col items-center justify-center gap-2 text-white/55">
+                  <PdfGlyph size={40} />
+                  <span className="text-sm">This browser can&apos;t show PDFs here.</span>
+                </span>
+              </object>
+              <a href={receiptHref(receipt.id)} target="_blank" rel="noreferrer" className={`${btnGhost} ${btnSm} self-start`}>
+                Open the PDF
+              </a>
+            </div>
+          ) : (
+            <a href={receiptHref(receipt.id)} target="_blank" rel="noreferrer" title="Open full size">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={receiptHref(receipt.id)}
+                alt="The receipt"
+                width={receipt.width || undefined}
+                height={receipt.height || undefined}
+                className="w-full h-auto max-h-[75vh] object-contain bg-black"
+              />
+            </a>
+          )}
         </Card>
 
         <div className="flex flex-col gap-5">
@@ -70,7 +88,7 @@ export default async function ConfirmReceiptPage({
             </Card>
           ) : (
             <>
-              <Card title="What it says" lede="Read from the photo. Nothing is saved until you press the button.">
+              <Card title="What it says" lede={`Read from the ${pdf ? "PDF" : "photo"}. Nothing is saved until you press the button.`}>
                 <div className="mb-5">
                   {receipt.readError ? (
                     <Note tone="warn">

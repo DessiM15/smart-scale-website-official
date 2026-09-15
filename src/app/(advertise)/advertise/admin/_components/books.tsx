@@ -15,17 +15,18 @@ import {
   postAdPaymentAction,
   snapReceiptAction,
   toggleBillAction,
+  toggleBillStatementAction,
   updateEntryAction,
 } from "../(app)/books/actions";
 import type { AdPaymentState } from "@/lib/books/ads-bridge";
 import { categoryOf } from "@/lib/books/categories";
 import { ACCOUNTS, accountLabel, type Account, type Entry, type Totals } from "@/lib/books/ledger";
 import { centsToInput, formatCents } from "@/lib/books/money";
-import { receiptHref, type Receipt } from "@/lib/books/receipts";
+import { isPdf, receiptHref, type Receipt } from "@/lib/books/receipts";
 import type { ExpectedBill, RecurringBill } from "@/lib/books/recurring";
 import { formatDate } from "@/lib/ads/roster";
 import { EntryForm } from "./entry-form";
-import { ReceiptPicker } from "./receipt-picker";
+import { PdfGlyph, ReceiptFileInput, ReceiptPicker } from "./receipt-picker";
 import { SubmitButton } from "./submit-button";
 import { Icon } from "./shell";
 import { ADMIN } from "./types";
@@ -107,17 +108,42 @@ function ReceiptMark({ entry, receipts }: { entry: Entry; receipts: Receipt[] })
   return <span className={`${bebas} text-[10px] tracking-[0.2em] text-[#E0B36A]`}>No receipt</span>;
 }
 
-/** The photos on a row, as thumbnails, each with a way off the row. */
+/**
+ * A receipt as a small tile that opens the file: the photo itself, or a PDF
+ * mark for one that came in from an email. Used on the ledger row, the
+ * waiting list and the Filed folders.
+ */
+export function ReceiptThumb({ receipt, className = "w-16 h-20" }: { receipt: Receipt; className?: string }) {
+  const pdf = isPdf(receipt);
+  return (
+    <a
+      href={receiptHref(receipt.id)}
+      target="_blank"
+      rel="noreferrer"
+      className={`shrink-0 block border border-white/[0.1] overflow-hidden bg-white/[0.03] ${className}`}
+      title={pdf ? "Open the PDF" : "Open full size"}
+    >
+      {pdf ? (
+        <span className="flex h-full w-full flex-col items-center justify-center gap-1 text-white/55">
+          <PdfGlyph size={26} />
+          <span className={`${bebas} text-[10px] tracking-[0.2em]`}>PDF</span>
+        </span>
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={receiptHref(receipt.id)} alt="" className="w-full h-full object-cover" loading="lazy" />
+      )}
+    </a>
+  );
+}
+
+/** The files on a row, as thumbnails, each with a way off the row. */
 function ReceiptStrip({ entry, receipts, returnTo }: { entry: Entry; receipts: Receipt[]; returnTo: string }) {
   if (receipts.length === 0) return null;
   return (
     <ul className="flex flex-wrap gap-3">
       {receipts.map((r) => (
         <li key={r.id} className="flex flex-col gap-1.5 w-24">
-          <a href={receiptHref(r.id)} target="_blank" rel="noreferrer" className="block w-24 h-28 border border-white/[0.1] overflow-hidden bg-white/[0.03]" title="Open full size">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={receiptHref(r.id)} alt="" className="w-full h-full object-cover" loading="lazy" />
-          </a>
+          <ReceiptThumb receipt={r} className="w-24 h-28" />
           <span className="text-[11px] text-white/35 leading-snug truncate">
             {formatDate(r.capturedAt.slice(0, 10)).replace(/, \d{4}$/, "")}
             {r.who ? ` · ${r.who}` : ""}
@@ -224,7 +250,7 @@ export function LedgerRow({
 
           <ReceiptStrip entry={entry} receipts={receipts} returnTo={returnTo} />
 
-          {/* Any row can carry a file: the receipt, the invoice, the ATM slip, the signed quote. */}
+          {/* Any row can carry a file: the receipt, the invoice, the ATM slip, the signed quote. A photo, a screenshot or a PDF, from the camera or a folder. */}
           <form action={attachReceiptAction} className="flex flex-col sm:flex-row sm:items-end gap-3">
               <input type="hidden" name="id" value={entry.id} />
               <input type="hidden" name="returnTo" value={returnTo} />
@@ -232,12 +258,8 @@ export function LedgerRow({
                 <label className={labelClass} htmlFor={`attach-${entry.id}`}>
                   {receipts.length > 0 ? "Attach another file" : entry.kind === "income" ? "Attach the invoice or receipt" : "Attach the receipt"}
                 </label>
-                <input
+                <ReceiptFileInput
                   id={`attach-${entry.id}`}
-                  name="photo"
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
                   className={`${inputClass} file:mr-3 file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white`}
                 />
               </div>
@@ -286,9 +308,9 @@ export function RecentLine({ entry, clients }: { entry: Entry; clients: { id: st
 
 export function SnapCard({ configured, returnTo, reader }: { configured: boolean; returnTo: string; reader: boolean }) {
   return (
-    <Card id="snap" title="Snap a receipt" lede={reader ? "Take the photo, and the numbers get read for you to check." : "Take the photo. Reading isn't switched on, so you'll type the numbers."}>
+    <Card id="snap" title="Add a receipt" lede={reader ? "Take a photo, or upload a screenshot or PDF, and the numbers get read for you to check." : "Take a photo, or upload a screenshot or PDF. Reading isn't switched on, so you'll type the numbers."}>
       {!configured && (
-        <p className="mb-4 text-sm text-[#E0B36A]">No file storage is connected, so photos have nowhere to go. It's on the Setup page.</p>
+        <p className="mb-4 text-sm text-[#E0B36A]">No file storage is connected, so receipts have nowhere to go. It's on the Setup page.</p>
       )}
       <form action={snapReceiptAction}>
         <input type="hidden" name="returnTo" value={returnTo} />
@@ -299,6 +321,10 @@ export function SnapCard({ configured, returnTo, reader }: { configured: boolean
 }
 
 /* ---------------------------------- bills --------------------------------- */
+
+/** A file input small enough to sit beside a button. */
+export const fileInputClass =
+  "max-w-[15rem] text-xs text-white/60 file:mr-2 file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white";
 
 export function BillsTable({ bills, expected, month, returnTo }: { bills: RecurringBill[]; expected: ExpectedBill[]; month: string; returnTo: string }) {
   if (bills.length === 0) {
@@ -325,17 +351,34 @@ export function BillsTable({ bills, expected, month, returnTo }: { bills: Recurr
                 {ordinalSuffix(bill.day)} · {categoryOf(bill.category).label} · {accountLabel(bill.account)}
                 {bill.note ? ` · ${bill.note}` : ""}
                 {e?.entry ? ` · paid ${formatDate(e.entry.date)}` : ""}
+                {bill.statementIsEnough ? " · statement is enough" : " · invoice expected"}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2 shrink-0">
               {bill.active && e && e.status !== "logged" && (
-                <form action={logBillAction}>
+                <form action={logBillAction} className="flex flex-wrap items-center gap-2">
                   <input type="hidden" name="id" value={bill.id} />
                   <input type="hidden" name="month" value={month} />
                   <input type="hidden" name="returnTo" value={returnTo} />
-                  <button type="submit" className={`${btnGhost} ${btnSm}`}>Paid this month</button>
+                  {!bill.statementIsEnough && (
+                    <>
+                      <label htmlFor={`bill-invoice-${bill.id}`} className="sr-only">
+                        The invoice, if you have it
+                      </label>
+                      <ReceiptFileInput id={`bill-invoice-${bill.id}`} className={fileInputClass} />
+                    </>
+                  )}
+                  <SubmitButton className={`${btnGhost} ${btnSm}`} pendingLabel="Logging">
+                    Paid this month
+                  </SubmitButton>
                 </form>
               )}
+              <form action={toggleBillStatementAction}>
+                <input type="hidden" name="id" value={bill.id} />
+                <button type="submit" className={`${btnGhost} ${btnSm}`} title={bill.statementIsEnough ? "Start expecting an invoice each month" : "Stop expecting an invoice; the bank statement is the record"}>
+                  {bill.statementIsEnough ? "Expect an invoice" : "Statement is enough"}
+                </button>
+              </form>
               <form action={toggleBillAction}>
                 <input type="hidden" name="id" value={bill.id} />
                 <button type="submit" className={`${btnGhost} ${btnSm}`}>{bill.active ? "Pause" : "Resume"}</button>

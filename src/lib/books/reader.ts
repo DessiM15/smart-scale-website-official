@@ -1,7 +1,7 @@
 /**
- * Reads a receipt photo and proposes what to log.
+ * Reads a receipt, photo or PDF, and proposes what to log.
  *
- * Claude looks at the picture and fills in the form: vendor, date, total,
+ * Claude looks at the file and fills in the form: vendor, date, total,
  * tax, a category. That is all it does. Nothing it says reaches the ledger
  * until one of you has looked at the photo beside the numbers and pressed
  * Save. A misread total is the one mistake this system must not make on its
@@ -37,10 +37,10 @@ export function isReaderConfigured(): boolean {
   return Boolean(process.env.ANTHROPIC_API_KEY);
 }
 
-const SYSTEM = `You read photos of receipts for a two-person web and app studio's bookkeeping.
+const SYSTEM = `You read receipts for a two-person web and app studio's bookkeeping: photos of paper receipts, screenshots, and PDF receipts or invoices from email.
 Report only what is printed on the receipt. If a value is not legible or not present, leave it empty rather than guessing.
 The total is the final amount paid, after tax and tip. Dates are YYYY-MM-DD. Amounts are in US dollars.
-Pick the category that best fits what was bought from the list you are given. Say "low" confidence when the photo is blurry, cut off, or the total is unclear.
+Pick the category that best fits what was bought from the list you are given. Say "low" confidence when the image is blurry, cut off, or the total is unclear.
 An ATM receipt, a teller withdrawal slip, or a cash-back line is a "cash-withdrawal", not a purchase; everything else is a "purchase".`;
 
 const SCHEMA = {
@@ -59,7 +59,7 @@ const SCHEMA = {
   },
 } as const;
 
-type MediaType = "image/jpeg" | "image/png" | "image/webp";
+type MediaType = "image/jpeg" | "image/png" | "image/webp" | "application/pdf";
 
 export async function readReceiptImage(bytes: Buffer, mediaType: MediaType): Promise<ReadResult> {
   if (!isReaderConfigured()) {
@@ -78,7 +78,9 @@ export async function readReceiptImage(bytes: Buffer, mediaType: MediaType): Pro
         {
           role: "user",
           content: [
-            { type: "image", source: { type: "base64", media_type: mediaType, data: bytes.toString("base64") } },
+            mediaType === "application/pdf"
+              ? { type: "document", source: { type: "base64", media_type: mediaType, data: bytes.toString("base64") } }
+              : { type: "image", source: { type: "base64", media_type: mediaType, data: bytes.toString("base64") } },
             {
               type: "text",
               text: `Read this receipt. Categories: ${RECEIPT_CATEGORY_IDS.join(", ")}.`,

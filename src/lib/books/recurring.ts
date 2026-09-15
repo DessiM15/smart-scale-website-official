@@ -23,6 +23,12 @@ export type RecurringBill = {
   day: number;
   active: boolean;
   note: string;
+  /**
+   * The bank statement is the record for this bill; nobody will attach an
+   * invoice, and its rows are not counted as missing one. Off by default:
+   * most vendors email a PDF invoice, and the accountant pack wants it.
+   */
+  statementIsEnough?: boolean;
   createdAt: string;
   createdBy: string;
 };
@@ -100,6 +106,12 @@ export async function setBillActive(id: string, active: boolean): Promise<boolea
   const bill = await getBill(id);
   if (!bill) return false;
   return redisWrite([["SET", KEY(id), JSON.stringify({ ...bill, active })]]);
+}
+
+export async function setBillStatementIsEnough(id: string, statementIsEnough: boolean): Promise<boolean> {
+  const bill = await getBill(id);
+  if (!bill) return false;
+  return redisWrite([["SET", KEY(id), JSON.stringify({ ...bill, statementIsEnough })]]);
 }
 
 export async function deleteBill(id: string): Promise<boolean> {
