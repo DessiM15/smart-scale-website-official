@@ -72,7 +72,7 @@ const PhoneIcon = () => (
 
 function ItemActions({ item, returnTo }: { item: TodayItem; returnTo: string }) {
   return (
-    <div className="flex flex-wrap items-center gap-2 shrink-0">
+    <div className="flex flex-wrap items-center gap-2 ml-auto max-w-full">
       {item.actions.map((a, i) => (
         <ItemAction key={i} action={a} item={item} returnTo={returnTo} />
       ))}
@@ -250,11 +250,15 @@ export function MarkPaid({
 export function TodayRow({ item, returnTo }: { item: TodayItem; returnTo: string }) {
   const kind = KIND[item.kind];
   return (
-    <li className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 py-4 border-b border-white/[0.06] last:border-b-0">
+    // The text keeps a readable width whatever the buttons need: a bill row
+    // carries a file picker and two buttons, and letting those squeeze the
+    // words down to one per line made the list unreadable. When there isn't
+    // room for both, the buttons wrap under the text instead.
+    <li className="flex flex-wrap items-center gap-x-5 gap-y-3 py-4 border-b border-white/[0.06] last:border-b-0">
       <div className="sm:w-28 shrink-0">
         <Badge tone={item.tone === "bad" ? "bad" : item.tone === "warn" ? "warn" : kind.tone}>{kind.label}</Badge>
       </div>
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 basis-[18rem] min-w-0">
         <p className="text-[15px] text-white leading-snug">
           {item.title}
           {item.tag && <span className={`${bebas} ml-2 align-middle text-[10px] tracking-[0.2em] text-white/40 border border-white/[0.1] px-1.5 py-0.5`}>{item.tag}</span>}
