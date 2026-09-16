@@ -40,6 +40,8 @@ export type Entry = {
   party: string;
   /** A Books client, when the money came from one. */
   clientId?: string;
+  /** The screen location this money is about, when it is about one. */
+  venueId?: string;
   /** Whose money, on a contribution or a draw. */
   partner?: string;
   receiptId?: string;

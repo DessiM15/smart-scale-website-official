@@ -12,7 +12,6 @@ import {
   type TestKind,
 } from "@/lib/ads/email";
 import { runBackup } from "@/lib/ads/backup";
-import { getSettings, saveSettings, validateSharePercent } from "@/lib/ads/settings";
 import { runRenewalCheck } from "@/lib/ads/renewals";
 import { clearResponse } from "@/lib/ads/responses";
 import {
@@ -56,9 +55,14 @@ import {
   type ProspectInput,
   type ProspectStatus,
   PLANS,
+  atVenue,
+  venueIdOf,
 } from "@/lib/ads/roster";
 import { lowestFreeSlot } from "@/lib/ads/board";
-import { venueOf } from "@/lib/ads/venues";
+import { listVenues, saveVenue, setVenueStatus, venueOf, WEEKDAYS, type DayHours, type VenueStatus, VENUE_STATUSES } from "@/lib/ads/venues";
+import { currentVenue, setCurrentVenue } from "@/lib/ads/current-venue";
+import { venueDocumentOwner } from "@/lib/ads/venue-dues";
+import { deleteDocument, getDocument, uploadDocument } from "@/lib/ads/documents";
 import { recordPayment, type PaymentMethod } from "@/lib/ads/payments";
 import {
   addTask,
@@ -79,6 +83,7 @@ const PAGES = {
   artwork: `${ADMIN}/artwork`,
   qr: `${ADMIN}/qr`,
   reports: `${ADMIN}/reports`,
+  locations: `${ADMIN}/locations`,
   setup: `${ADMIN}/setup`,
   history: `${ADMIN}/history`,
 } as const;
@@ -204,11 +209,25 @@ export async function saveAdvertiserAction(
   if (!PLANS[plan]) return { err: "plan" };
   if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate)) return { err: "startdate" };
 
-  const roster = await listAdvertisers();
+  const [roster, venues] = await Promise.all([listAdvertisers(), listVenues()]);
+
+  /* ---------------------------- the location ---------------------------- */
+
+  // The form names a location once there is more than one to name. Before
+  // that, an edit keeps the record's own and a new client goes on the one
+  // the portal is looking at.
+  const existingRecord = id ? roster.find((v) => v.id === id) : undefined;
+  const venue = data.has("venueId")
+    ? venueOf(venues, field(data, "venueId"))
+    : existingRecord
+      ? venueOf(venues, existingRecord.venueId)
+      : await currentVenue(venues);
+  if (status !== "ended" && venue.status !== "live") return { err: "venuelive", detail: venue.name };
 
   // Category exclusivity is the product. Verify it rather than trust the form.
+  // Per location: the same category can be held at each.
   if (status === "active") {
-    const clash = categoryConflict(roster, category, id);
+    const clash = categoryConflict(roster, category, id, venue.id);
     if (clash) return { err: "category", clash: clash.business };
   }
 
@@ -233,7 +252,6 @@ export async function saveAdvertiserAction(
 
   /* ----------------------------- the slot ----------------------------- */
 
-  const venue = venueOf(field(data, "venueId") || undefined);
   let slot: number | null = null;
   if (wasFilled(data, "slot")) {
     const n = optionalNumber(data, "slot");
@@ -241,11 +259,13 @@ export async function saveAdvertiserAction(
     slot = n;
   } else if (status !== "ended") {
     // Keep the one they have; give a newcomer the lowest free number.
-    const existing = id ? roster.find((v) => v.id === id) : undefined;
+    // The slot is per location: moving a client to another venue gives them
+    // a fresh number there.
+    const keep = existingRecord && venueIdOf(existingRecord) === venue.id ? existingRecord.slot : undefined;
     slot =
-      existing?.slot ??
+      keep ??
       lowestFreeSlot(
-        roster.filter((v) => v.id !== id && v.status !== "ended").map((v) => v.slot),
+        atVenue(roster, venue.id).filter((v) => v.id !== id && v.status !== "ended").map((v) => v.slot),
         venue.sellable,
       );
   }
@@ -343,6 +363,7 @@ export async function saveAdvertiserAction(
       active: true,
       tagDestination: true,
       advertiserId: savedId,
+      utmSource: venue.utmSource,
     });
     if (!linked) back(PAGES.advertisers, { msg: "addedNoCode", open: savedId });
   }
@@ -432,6 +453,16 @@ export async function saveProspectAction(data: FormData) {
   for (const name of ["campaign", "budget"] as const) {
     const value = present(data, name);
     if (value !== undefined) optional[name] = value;
+  }
+  // The location boxes only exist once there are two locations; a form
+  // without them leaves the answer alone rather than clearing it.
+  if (field(data, "venueIdsPresent") === "1") {
+    const venues = await listVenues();
+    const known = new Set(venues.map((v) => v.id));
+    optional.venueIds = data
+      .getAll("venueIds")
+      .map((v) => String(v))
+      .filter((v) => known.has(v));
   }
 
   const chosen = field(data, "status") as ProspectStatus;
@@ -952,23 +983,109 @@ export async function runBackupAction() {
   );
 }
 
-/* ---------------------------------- venue --------------------------------- */
+/* -------------------------------- locations ------------------------------- */
 
-export async function saveVenueSettingsAction(data: FormData) {
+/** The sidebar switcher. Which location the Board, categories and roster show. */
+export async function setCurrentVenueAction(data: FormData) {
   await requireAdmin();
+  const to = returnPath(data, PAGES.today);
+  if (!(await setCurrentVenue(field(data, "venueId")))) back(to, { err: "venuemissing" });
+  back(to, {});
+}
 
-  const raw = field(data, "venueSharePercent");
-  const percent = raw ? validateSharePercent(raw) : 0;
-  if (percent === null) back(PAGES.payments, { err: "sharepercent" }, "venue");
+/** A whole number field, or null when blank or not a number. */
+function wholeNumber(data: FormData, name: string): number | null {
+  const raw = field(data, name).replace(/[,\s]/g, "");
+  if (!raw) return null;
+  const n = Number(raw);
+  return Number.isInteger(n) ? n : null;
+}
 
-  const current = await getSettings();
-  const ok = await saveSettings({
-    ...current,
-    venueSharePercent: percent,
-    venueOwnerName: field(data, "venueOwnerName"),
-    venueOwnerEmail: field(data, "venueOwnerEmail"),
+export async function saveVenueAction(data: FormData) {
+  await requireAdmin();
+  const to = PAGES.locations;
+  const id = field(data, "id") || undefined;
+
+  const hours: DayHours[] = WEEKDAYS.map((_, i) =>
+    field(data, `closed_${i}`) === "1" ? null : { open: field(data, `open_${i}`), close: field(data, `close_${i}`) },
+  );
+
+  const status = field(data, "status") as VenueStatus;
+  const rent = optionalNumber(data, "rentMonthly");
+  const share = optionalNumber(data, "sharePercent");
+  if ((wasFilled(data, "rentMonthly") && rent === null) || (wasFilled(data, "sharePercent") && share === null)) {
+    back(to, { err: "venue", detail: "Rent and share have to be numbers, or left blank." }, "editor");
+  }
+
+  const result = await saveVenue({
+    id,
+    name: field(data, "name"),
+    place: field(data, "place"),
+    address: field(data, "address"),
+    status: VENUE_STATUSES.some((s) => s.id === status) ? status : "pending",
+    screens: wholeNumber(data, "screens") ?? 1,
+    slides: wholeNumber(data, "slides") ?? 0,
+    sellable: wholeNumber(data, "sellable") ?? 0,
+    slideSeconds: wholeNumber(data, "slideSeconds") ?? 10,
+    hours,
+    ownerName: field(data, "ownerName"),
+    ownerEmail: field(data, "ownerEmail"),
+    ownerPhone: field(data, "ownerPhone"),
+    deal: {
+      rentMonthly: rent ?? 0,
+      sharePercent: share ?? 0,
+      dueDay: wholeNumber(data, "dueDay") ?? 1,
+      note: field(data, "dealNote"),
+    },
+    utmSource: field(data, "utmSource"),
+    notes: field(data, "notes"),
   });
 
-  if (!ok) back(PAGES.payments, { err: "save" }, "venue");
-  back(PAGES.payments, { msg: "venueSaved" }, "venue");
+  if (!result.ok) back(to, { err: result.error ? "venue" : "save", detail: result.error ?? "" }, "editor");
+  await log("other", id ? `Edited the ${field(data, "name")} location.` : `Added ${field(data, "name")} as a location.`, `${to}#venue-${result.id}`);
+  back(to, { msg: id ? "venueUpdated" : "venueAdded", detail: field(data, "name") }, `venue-${result.id}`);
+}
+
+export async function setVenueStatusAction(data: FormData) {
+  await requireAdmin();
+  const to = PAGES.locations;
+  const id = field(data, "id");
+  const status = field(data, "status") as VenueStatus;
+  if (!id || !VENUE_STATUSES.some((s) => s.id === status)) back(to, { err: "missing" });
+  if (!(await setVenueStatus(id, status))) back(to, { err: "save" });
+  const label = VENUE_STATUSES.find((s) => s.id === status)!.label.toLowerCase();
+  await log("other", `${id}: location marked ${label}.`, `${to}#venue-${id}`);
+  back(to, { msg: "venueStatus", detail: label }, `venue-${id}`);
+}
+
+/** The signed agreement with the venue, kept privately like a client's. */
+export async function uploadVenueDocumentAction(data: FormData) {
+  await requireAdmin();
+  const to = PAGES.locations;
+  const venueId = field(data, "venueId");
+  const venues = await listVenues();
+  if (!venues.some((v) => v.id === venueId)) back(to, { err: "venuemissing" });
+
+  const file = data.get("file");
+  if (!(file instanceof File) || file.size === 0) back(to, { err: "docmissing" }, `venue-${venueId}`);
+
+  const stored = await uploadDocument(venueDocumentOwner(venueId), file, {
+    kind: "agreement",
+    label: field(data, "label") || "Venue agreement",
+  });
+  if (!stored.ok) back(to, { err: "docupload", detail: stored.error }, `venue-${venueId}`);
+  await log("other", `Filed a document on the ${venueOf(venues, venueId).name} location.`, `${to}#venue-${venueId}`);
+  back(to, { msg: "venueDoc" }, `venue-${venueId}`);
+}
+
+export async function deleteVenueDocumentAction(data: FormData) {
+  await requireAdmin();
+  const to = PAGES.locations;
+  const venueId = field(data, "venueId");
+  const id = field(data, "id");
+  const doc = await getDocument(id);
+  // Only a document that belongs to this location; the id alone is not enough.
+  if (!doc || doc.advertiserId !== venueDocumentOwner(venueId)) back(to, { err: "missing" });
+  if (!(await deleteDocument(id))) back(to, { err: "save" });
+  back(to, { msg: "venueDocRemoved" }, `venue-${venueId}`);
 }

@@ -22,6 +22,8 @@ export type ExpectedStatus = "paid" | "scheduled" | "due" | "late";
 export type ExpectedPayment = {
   advertiserId: string;
   business: string;
+  /** The location the deal is at, carried so a list across locations can say which. */
+  venueId?: string;
   /** YYYY-MM the payment covers. */
   period: string;
   /** YYYY-MM-DD it falls due. */
@@ -56,6 +58,7 @@ export function scheduleFor(view: AdvertiserView): Omit<ExpectedPayment, "status
       {
         advertiserId: view.id,
         business: view.business,
+        venueId: view.venueId,
         period: view.startDate.slice(0, 7),
         dueDate: view.startDate,
         amount: round(view.termValue),
@@ -72,6 +75,7 @@ export function scheduleFor(view: AdvertiserView): Omit<ExpectedPayment, "status
     out.push({
       advertiserId: view.id,
       business: view.business,
+      venueId: view.venueId,
       period: dueDate.slice(0, 7),
       dueDate,
       amount: round(amount),

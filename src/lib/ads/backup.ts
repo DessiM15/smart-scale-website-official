@@ -13,6 +13,7 @@
 
 import { exportRoster } from "./roster";
 import { listLinks } from "./link-store";
+import { listVenues } from "./venues";
 import { redisPipeline, redisWrite } from "./redis";
 import { isBlobConfigured, putBlob } from "./blob";
 import { exportBooks } from "@/lib/books/export";
@@ -53,7 +54,7 @@ export async function runBackup(): Promise<BackupResult> {
   }
 
   try {
-    const [roster, links, books] = await Promise.all([exportRoster(), listLinks(), exportBooks()]);
+    const [roster, links, books, venues] = await Promise.all([exportRoster(), listLinks(), exportBooks(), listVenues()]);
 
     // The QR logos are data URIs and would dominate the file; the codes and
     // destinations are what actually matter to restore.
@@ -71,6 +72,7 @@ export async function runBackup(): Promise<BackupResult> {
       })),
       // The books ride along in the same file: one snapshot, one restore.
       books,
+      venues,
     });
 
     const date = new Date().toISOString().slice(0, 10);

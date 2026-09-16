@@ -17,6 +17,8 @@ import { isSignedIn } from "@/lib/ads/auth";
 import { buildStatement, monthLabel, type Statement } from "@/lib/ads/statement";
 import { PAYMENT_METHODS } from "@/lib/ads/payments";
 import { formatDate } from "@/lib/ads/roster";
+import { hasSeveral, listVenues, venueOf } from "@/lib/ads/venues";
+import { currentVenue } from "@/lib/ads/current-venue";
 
 export const dynamic = "force-dynamic";
 
@@ -85,7 +87,8 @@ const td = "py-2.5 text-[13px] text-[#1a1210] border-t border-black/[0.07]";
 /* ---------------------------------- page ---------------------------------- */
 
 function StatementBody({ s }: { s: Statement }) {
-  const shareSet = s.settings.venueSharePercent > 0;
+  const shareSet = s.sharePercent > 0;
+  const rentSet = s.rent > 0;
 
   return (
     <>
@@ -99,7 +102,7 @@ function StatementBody({ s }: { s: Statement }) {
             Venue Statement
           </h1>
           <p className="mt-1 text-sm text-[#5c4f45]">
-            Mex Taco House · digital screen advertising
+            {s.venue.name} · digital screen advertising
           </p>
         </div>
         <div className="text-right">
@@ -107,12 +110,12 @@ function StatementBody({ s }: { s: Statement }) {
           <p className="text-xs text-[#7a6a5d] tabular-nums mt-0.5">
             {formatDate(s.from)} – {formatDate(s.to)}
           </p>
-          {s.settings.venueOwnerName && (
+          {s.venue.ownerName && (
             <p className="mt-3 text-xs text-[#7a6a5d]">
               Prepared for
               <br />
               <span className="text-sm font-semibold text-[#1a1210]">
-                {s.settings.venueOwnerName}
+                {s.venue.ownerName}
               </span>
             </p>
           )}
@@ -127,15 +130,23 @@ function StatementBody({ s }: { s: Statement }) {
           note="Payments received between the dates above"
         />
         <Figure
-          label={`Venue share${shareSet ? ` · ${s.settings.venueSharePercent}%` : ""}`}
-          value={shareSet ? money(s.venueShare) : "—"}
-          note={shareSet ? "Due to the venue" : "No share percentage set"}
-          emphasis={shareSet}
+          label={rentSet && shareSet ? `Due to the venue · rent + ${s.sharePercent}%` : rentSet ? "Due to the venue · rent" : `Venue share${shareSet ? ` · ${s.sharePercent}%` : ""}`}
+          value={rentSet || shareSet ? money(s.venueShare + s.rent) : "—"}
+          note={
+            rentSet && shareSet
+              ? `${money(s.rent)} rent and ${money(s.venueShare)} share`
+              : rentSet
+                ? "Fixed monthly rent"
+                : shareSet
+                  ? "Due to the venue"
+                  : "No rent or share set"
+          }
+          emphasis={rentSet || shareSet}
         />
         <Figure
           label="Retained"
           value={shareSet ? money(s.retained) : money(s.collected)}
-          note="Smart Scale, after the venue share"
+          note={rentSet ? "Smart Scale, after the venue share, before rent" : "Smart Scale, after the venue share"}
         />
       </div>
 
@@ -201,7 +212,7 @@ function StatementBody({ s }: { s: Statement }) {
                 <tr>
                   <td className={td} colSpan={4}>
                     <span className="text-[11px] uppercase tracking-[0.12em] font-bold text-[#DC2626]">
-                      Venue share at {s.settings.venueSharePercent}%
+                      Venue share at {s.sharePercent}%
                     </span>
                   </td>
                   <td className={`${td} text-right tabular-nums font-bold text-base text-[#DC2626]`}>
@@ -331,8 +342,14 @@ function StatementBody({ s }: { s: Statement }) {
           {shareSet && (
             <li>
               <span className="font-semibold text-[#1a1210]">Venue share</span> is{" "}
-              {s.settings.venueSharePercent}% of collected revenue, rounded to the
+              {s.sharePercent}% of collected revenue, rounded to the
               cent.
+            </li>
+          )}
+          {rentSet && (
+            <li>
+              <span className="font-semibold text-[#1a1210]">Rent</span> is the fixed
+              monthly amount agreed with the venue, and does not depend on collections.
             </li>
           )}
           <li>
@@ -343,7 +360,7 @@ function StatementBody({ s }: { s: Statement }) {
           <li>
             <span className="font-semibold text-[#1a1210]">Ad plays</span> is an
             estimate, not a measurement: {s.openDays} open days against the
-            three-minute rotation during posted hours. Mondays are closed.
+            rotation during posted hours ({s.hoursLine}).
           </li>
           <li>
             Guest counts are the venue&apos;s own figures and are not warranted by
@@ -354,7 +371,7 @@ function StatementBody({ s }: { s: Statement }) {
 
       <footer className="mt-10 pt-4 border-t border-black/10 flex flex-wrap justify-between gap-3 text-[10px] text-[#9a8b7d]">
         <span>
-          Smart Scale LLC · Mex Taco House digital advertising · {s.monthName}
+          Smart Scale LLC · {s.venue.name} digital advertising · {s.monthName}
         </span>
         <span className="tabular-nums">
           Prepared {formatDate(s.generatedAt.slice(0, 10))}
@@ -366,15 +383,22 @@ function StatementBody({ s }: { s: Statement }) {
 
 export default async function StatementPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ month: string }>;
+  searchParams: Promise<{ venue?: string }>;
 }) {
   if (!(await isSignedIn())) redirect("/advertise/admin");
 
-  const { month } = await params;
+  const [{ month }, query] = await Promise.all([params, searchParams]);
   if (!/^\d{4}-\d{2}$/.test(month)) notFound();
 
-  const statement = await buildStatement(month);
+  // One statement per location. Named in the URL once there are two; before
+  // that, and when a link forgot to say, the one the portal is looking at.
+  const venues = await listVenues();
+  const venue = query.venue ? venueOf(venues, query.venue) : await currentVenue(venues);
+  const venueQuery = hasSeveral(venues) ? `?venue=${venue.id}` : "";
+  const statement = await buildStatement(month, venue);
 
   return (
     <main className="min-h-screen bg-[#e8e4de] py-8 print:bg-white print:py-0">
@@ -388,7 +412,7 @@ export default async function StatementPage({
         </a>
         <div className="flex items-center gap-3">
           <a
-            href={`/advertise/admin/statement/${previousOf(month)}`}
+            href={`/advertise/admin/statement/${previousOf(month)}${venueQuery}`}
             className="text-sm font-semibold text-[#5c4f45] hover:text-[#1a1210]"
           >
             ← {monthLabel(previousOf(month))}

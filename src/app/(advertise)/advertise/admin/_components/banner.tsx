@@ -46,6 +46,12 @@ const notices = (
   testSent: `Test sent to ${detail}${sent ? ` (${sent})` : ""}. If it doesn't arrive within a minute, check spam, then the provider's own log. Accepted and delivered are two different things.`,
   backupDone: `Backed up: ${detail}.`,
   venueSaved: "Saved. It applies to statements from here on, never to one already issued.",
+  venueAdded: `${detail ?? "The location"} is set up. Mark it live when the screens are on, and it appears in the switcher.`,
+  venueUpdated: `${detail ?? "The location"} saved. The deal applies to statements from here on, never to one already issued.`,
+  venueStatus: `Location marked ${detail ?? "updated"}.`,
+  venueDoc: "Filed on the location.",
+  venueDocRemoved: "Document removed.",
+  venuePaid: `Logged in the books: ${detail ?? "paid"}.`,
   alerts:
     Number(checked ?? 0) === 0
       ? "Renewal check ran. Nothing due today."
@@ -138,6 +144,9 @@ const errors = (clash?: string, detail?: string): Record<string, string> => ({
   backupoff: "No file storage connected, so there's nowhere to put a backup.",
   backupfailed: detail ?? "The backup didn't write.",
   sharepercent: "The share has to be a number between 0 and 100. Leave it blank to clear the split.",
+  venue: detail || "That location didn't save.",
+  venuemissing: "That location isn't on the list.",
+  venuelive: `${detail ?? "That location"} isn't live yet. Mark it live on the Locations page first.`,
   dealnote: "Say why this client isn't on list price. Future you will want to know.",
   dealnumber: `"${detail}" isn't a number I can use. Enter the amount in dollars, like 275.`,
   dealmonths: "A custom term has to be at least one whole month.",

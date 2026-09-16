@@ -10,8 +10,9 @@
  */
 
 import type { Metadata } from "next";
-import { listAdvertisers, summarize, SELLABLE_SLOTS } from "@/lib/ads/roster";
+import { atVenue, listAdvertisers, summarize, DEFAULT_VENUE_ID } from "@/lib/ads/roster";
 import { isRedisReachable } from "@/lib/ads/redis";
+import { listVenues, liveVenues, venueOf } from "@/lib/ads/venues";
 import AdvertisePage from "./_components/advertise-page";
 
 /* --------------------------------- config --------------------------------- */
@@ -44,23 +45,30 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 export default async function Page() {
-  const [advertisers, reachable] = await Promise.all([
+  const [advertisers, reachable, venues] = await Promise.all([
     listAdvertisers(),
     isRedisReachable(),
+    listVenues(),
   ]);
 
-  // An unreachable database returns an empty roster, which would otherwise read
+  // The page is still Mex Taco House's, so its slot count is Mex Taco's. An
+  // unreachable database returns an empty roster, which would otherwise read
   // as "every slot is free". Say nothing rather than say something false.
-  const summary = reachable ? summarize(advertisers) : null;
+  const house = venueOf(venues, DEFAULT_VENUE_ID);
+  const summary = reachable ? summarize(atVenue(advertisers, house.id), house.sellable) : null;
+  // The form only asks which location once there is a second live one.
+  const live = liveVenues(venues);
+  const locations = live.length > 1 ? live.map((v) => ({ id: v.id, name: v.name, place: v.place })) : [];
 
   return (
     <AdvertisePage
       phoneDisplay={PHONE_DISPLAY}
       phoneHref={PHONE_HREF}
       startingPrice={STARTING_PRICE}
-      totalSlots={SELLABLE_SLOTS}
+      totalSlots={house.sellable}
       slotsLeft={summary ? summary.openSlots : null}
       metaPixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID}
+      locations={locations}
     />
   );
 }

@@ -35,6 +35,8 @@ import {
 import { formatCents, isIsoDate, isMonth, parseDollars } from "@/lib/books/money";
 import { confirmReceipt, deleteReceipt, getReceipt, listReceiptsForEntry, storeReceipt, unconfirmReceipt } from "@/lib/books/receipts";
 import { addBill, billDueDate, billSourceRef, deleteBill, getBill, setBillActive, setBillStatementIsEnough } from "@/lib/books/recurring";
+import { getVenue } from "@/lib/ads/venues";
+import { venueDueRef } from "@/lib/ads/venue-dues";
 import { bringBackStripeTxn, describeRun, getStripeTxn, runStripeSync } from "@/lib/books/stripe";
 
 const ADMIN = "/advertise/admin";
@@ -431,6 +433,43 @@ export async function logBillAction(data: FormData) {
     back(to, { msg: "billLoggedInvoice", detail: what });
   }
   back(to, { msg: "billLogged", detail: what });
+}
+
+/**
+ * What a location is owed, paid and written down: one expense row with a
+ * reference, so the Today row goes away and the Locations page reads "paid".
+ * The amount is the one worked out for the month; it can be overridden when
+ * a cheque was for something slightly different.
+ */
+export async function logVenueDueAction(data: FormData) {
+  const to = returnPath(data, PAGES.home);
+  const who = await requireBooks(to);
+  const venue = await getVenue(field(data, "venueId"));
+  if (!venue) back(to, { err: "venuemissing" });
+  const month = isMonth(field(data, "month")) ? field(data, "month") : today().slice(0, 7);
+  const part = field(data, "part") === "share" ? "share" : "rent";
+  const cents = parseDollars(field(data, "amount"));
+  if (cents === null || cents <= 0) back(to, { err: "amount" });
+  const date = isIsoDate(field(data, "date")) ? field(data, "date") : today();
+
+  const result = await addEntry({
+    date,
+    cents,
+    kind: "expense",
+    category: part === "rent" ? "venue-rent" : "venue-share",
+    account: (field(data, "account") || "checking") as Account,
+    party: venue.ownerName || venue.name,
+    venueId: venue.id,
+    memo: part === "rent" ? `${venue.name} rent, ${monthName(month)}` : `${venue.name} revenue share for ${monthName(month)}`,
+    who,
+    source: "manual",
+    sourceRef: venueDueRef(venue.id, month, part),
+    noReceipt: true,
+  });
+  if (!result.ok) back(to, { err: "entry", detail: result.error });
+  const what = `${formatCents(cents)} to ${venue.name}`;
+  await log(who, "venue.paid", `Paid ${venue.name} its ${part === "rent" ? "rent" : "revenue share"} for ${monthName(month)}: ${what}.`, `${PAGES.ledger}?month=${date.slice(0, 7)}#entry-${result.entry.id}`, { target: result.entry.id });
+  back(to, { msg: "venuePaid", detail: what });
 }
 
 /* -------------------------------- ad money -------------------------------- */

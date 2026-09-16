@@ -6,35 +6,29 @@
  * paid button is that.
  */
 
-import { saveVenueSettingsAction } from "../actions";
 import type { ExpectedPayment, ExpectedStatus, MonthBook } from "@/lib/ads/expected";
 import { PAYMENT_METHODS } from "@/lib/ads/payments";
 import { formatDate } from "@/lib/ads/roster";
-import { venueShareOf, type Settings } from "@/lib/ads/settings";
 import { monthLabel } from "@/lib/ads/statement";
-import { SubmitButton } from "./submit-button";
+import type { Venue } from "@/lib/ads/venues";
 import { MarkPaid } from "./today";
 import { ADMIN, clientHref } from "./types";
 import {
   Badge,
   Card,
   Empty,
-  Field,
   FilterPill,
   Note,
   Tile,
   bebas,
   btnGhost,
-  btnPrimary,
   btnSm,
   cardClass,
-  inputClass,
   labelClass,
   money,
   numClass,
   selectClass,
   serif,
-  stamp,
   tdClass,
   thClass,
   type Tone,
@@ -92,8 +86,8 @@ export function MonthControls({
   );
 }
 
-export function MonthTiles({ book, sharePercent }: { book: MonthBook; sharePercent: number }) {
-  const share = venueShareOf(book.collected, sharePercent);
+export function MonthTiles({ book, owedToVenues, anyDeal }: { book: MonthBook; owedToVenues: number; anyDeal: boolean }) {
+  const share = owedToVenues;
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
       <Tile
@@ -109,20 +103,20 @@ export function MonthTiles({ book, sharePercent }: { book: MonthBook; sharePerce
         tone={book.counts.late > 0 ? "alert" : book.counts.due > 0 ? "warn" : "plain"}
       />
       <Tile
-        label="Venue share"
-        value={sharePercent > 0 ? money(share) : "Not set"}
-        hint={sharePercent > 0 ? `${sharePercent}% of collected` : "set the split below"}
+        label="Owed to venues"
+        value={anyDeal ? money(share) : "Not set"}
+        hint={anyDeal ? "rent plus each location's share" : "set each location's deal on Locations"}
       />
       <Tile
         label="Net to Smart Scale"
         value={money(book.collected - share)}
-        hint={sharePercent > 0 ? "after the venue share" : "before any venue share"}
+        hint={anyDeal ? "after rent and shares" : "before any venue deal"}
       />
     </div>
   );
 }
 
-function Row({ e, month }: { e: ExpectedPayment; month: string }) {
+function Row({ e, month, venueName }: { e: ExpectedPayment; month: string; venueName?: string }) {
   const status = STATUS[e.status];
   const returnTo = `${PAGE}?month=${month}`;
   return (
@@ -131,7 +125,10 @@ function Row({ e, month }: { e: ExpectedPayment; month: string }) {
         <a href={clientHref(e.advertiserId, "payments")} className="group">
           <span className={`${serif} text-[19px] leading-none text-white group-hover:text-[#f87171] transition-colors`}>{e.business}</span>
         </a>
-        <p className="text-xs text-white/40 mt-1">{e.label}</p>
+        <p className="text-xs text-white/40 mt-1">
+          {e.label}
+          {venueName ? ` · ${venueName}` : ""}
+        </p>
       </td>
       <td className={`${tdClass} text-sm text-white/80 whitespace-nowrap`}>{formatDate(e.dueDate)}</td>
       <td className={`${tdClass} text-sm text-white/80`}>{e.status === "paid" ? methodLabel(e.paidWith) : "—"}</td>
@@ -152,7 +149,7 @@ function Row({ e, month }: { e: ExpectedPayment; month: string }) {
   );
 }
 
-function MobileRow({ e, month }: { e: ExpectedPayment; month: string }) {
+function MobileRow({ e, month, venueName }: { e: ExpectedPayment; month: string; venueName?: string }) {
   const status = STATUS[e.status];
   const returnTo = `${PAGE}?month=${month}`;
   return (
@@ -160,7 +157,10 @@ function MobileRow({ e, month }: { e: ExpectedPayment; month: string }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <a href={clientHref(e.advertiserId, "payments")} className={`${serif} text-[19px] leading-none text-white`}>{e.business}</a>
-          <p className="text-xs text-white/40 mt-1">{e.label} · due {formatDate(e.dueDate)}</p>
+          <p className="text-xs text-white/40 mt-1">
+            {e.label} · due {formatDate(e.dueDate)}
+            {venueName ? ` · ${venueName}` : ""}
+          </p>
         </div>
         <span className={`${numClass} text-xl text-white whitespace-nowrap`}>${e.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
       </div>
@@ -175,8 +175,9 @@ function MobileRow({ e, month }: { e: ExpectedPayment; month: string }) {
   );
 }
 
-export function MonthTable({ book, filter }: { book: MonthBook; filter: PaymentsFilter }) {
+export function MonthTable({ book, filter, venueNames }: { book: MonthBook; filter: PaymentsFilter; venueNames?: Map<string, string> }) {
   const rows = filter === "all" ? book.rows : book.rows.filter((r) => r.status === filter);
+  const nameOf = (e: ExpectedPayment) => venueNames?.get(e.venueId || "mex-taco-house");
   if (rows.length === 0) {
     return (
       <Empty>
@@ -203,14 +204,14 @@ export function MonthTable({ book, filter }: { book: MonthBook; filter: Payments
           </thead>
           <tbody>
             {rows.map((e) => (
-              <Row key={`${e.advertiserId}-${e.period}`} e={e} month={book.month} />
+              <Row key={`${e.advertiserId}-${e.period}`} e={e} month={book.month} venueName={nameOf(e)} />
             ))}
           </tbody>
         </table>
       </div>
       <ul className="md:hidden flex flex-col gap-3">
         {rows.map((e) => (
-          <MobileRow key={`${e.advertiserId}-${e.period}`} e={e} month={book.month} />
+          <MobileRow key={`${e.advertiserId}-${e.period}`} e={e} month={book.month} venueName={nameOf(e)} />
         ))}
       </ul>
       <p className="mt-4 text-xs text-white/35 leading-relaxed max-w-2xl">
@@ -222,79 +223,80 @@ export function MonthTable({ book, filter }: { book: MonthBook; filter: Payments
   );
 }
 
-/* --------------------------------- venue ---------------------------------- */
+/* -------------------------------- locations ------------------------------- */
 
-export function VenueSplit({
-  settings,
-  collectedThisMonth,
-  currentMonth,
-}: {
-  settings: Settings;
-  collectedThisMonth: number;
-  currentMonth: string;
-}) {
-  const share = settings.venueSharePercent;
-  const months: string[] = [];
-  const base = new Date(`${currentMonth}-01T12:00:00Z`);
-  for (let i = 0; i < 12; i += 1) {
-    const d = new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth() - i, 1));
-    months.push(d.toISOString().slice(0, 7));
-  }
+export type VenueOwedLine = {
+  venue: Venue;
+  /** Collected this month from this location's advertisers. */
+  collected: number;
+  rent: number;
+  share: number;
+  total: number;
+  hasDeal: boolean;
+};
 
+/**
+ * What each location is owed for the month: its rent, and its share of what
+ * its own advertisers paid. The deal itself is set on the Locations page;
+ * when a payment falls due it appears on Today, and logging it there is what
+ * writes it into the books.
+ */
+export function VenuesOwed({ lines, month, several }: { lines: VenueOwedLine[]; month: string; several: boolean }) {
   return (
-    <div id="venue" className="grid lg:grid-cols-[1.2fr_1fr] gap-5 mt-10 scroll-mt-28">
+    <div id="venue" className="mt-10 scroll-mt-28">
       <Card
-        title="The venue's split"
-        lede="What the venue owner takes of what advertisers actually pay. Changing it applies to statements from here on, never to one already issued."
+        title={several ? "Owed to each location" : "Owed to the venue"}
+        lede={`For ${monthLabel(month)}: rent is fixed, the share is on money actually collected from that location's advertisers. Set or change a deal on the Locations page.`}
+        action={
+          <a href={`${ADMIN}/locations`} className={`${btnGhost} ${btnSm}`}>
+            Locations
+          </a>
+        }
       >
-        {share === 0 && (
+        {lines.every((l) => !l.hasDeal) && (
           <div className="mb-5">
             <Note tone="warn">
-              <p className="text-sm text-white">No revenue share is set. Statements report what was collected without splitting it.</p>
+              <p className="text-sm text-white">No rent or revenue share is set on any location. Statements report what was collected without splitting it.</p>
             </Note>
           </div>
         )}
-        <form action={saveVenueSettingsAction} className="grid sm:grid-cols-3 gap-4">
-          <div>
-            <label className={labelClass} htmlFor="venueSharePercent">Their percentage</label>
-            <input
-              id="venueSharePercent"
-              name="venueSharePercent"
-              inputMode="decimal"
-              defaultValue={share ? String(share) : ""}
-              placeholder="30"
-              className={inputClass}
-            />
-            <p className="mt-1.5 text-xs text-white/30">Of money collected, not invoiced.</p>
-          </div>
-          <Field label="Owner's name" name="venueOwnerName" id="venueOwnerName" defaultValue={settings.venueOwnerName} />
-          <Field label="Owner's email" name="venueOwnerEmail" id="venueOwnerEmail" type="email" defaultValue={settings.venueOwnerEmail} />
-          <div className="sm:col-span-3 flex flex-wrap items-center gap-4">
-            <SubmitButton className={`${btnPrimary} ${btnSm}`} pendingLabel="Saving">
-              Save
-            </SubmitButton>
-            {settings.updatedAt && <span className="text-xs text-white/30">Last changed {stamp(settings.updatedAt)}</span>}
-            <span className="text-xs text-white/30">
-              Owed so far this month: {money(venueShareOf(collectedThisMonth, share))}
-            </span>
-          </div>
-        </form>
-      </Card>
-
-      <Card
-        title="Statements"
-        lede="One per month: every payment received, what each advertiser did, and the share owed. Open one and print it to PDF."
-      >
-        <ul className="grid grid-cols-2 gap-2">
-          {months.map((m) => (
-            <li key={m}>
-              <a
-                href={`${ADMIN}/statement/${m}`}
-                className={`flex items-center justify-between gap-2 border border-white/[0.08] px-3.5 py-3 hover:border-white/30 hover:bg-white/[0.03] transition-colors`}
-              >
-                <span className="text-sm text-white">{monthLabel(m)}</span>
-                <span className={`${bebas} text-[10px] tracking-[0.2em] text-white/35`}>{m === currentMonth ? "So far" : "Open"}</span>
-              </a>
+        <ul className="grid md:grid-cols-2 gap-3">
+          {lines.map((l) => (
+            <li key={l.venue.id} className={`${cardClass} p-4 flex flex-col gap-3`}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className={`${serif} text-[20px] leading-none text-white`}>{l.venue.name}</p>
+                  <p className="text-xs text-white/40 mt-1">
+                    {l.hasDeal
+                      ? [l.venue.deal.rentMonthly > 0 && `${money(l.venue.deal.rentMonthly)} rent`, l.venue.deal.sharePercent > 0 && `${l.venue.deal.sharePercent}% share`].filter(Boolean).join(" + ")
+                      : "no deal set"}
+                    {l.venue.ownerName ? ` · ${l.venue.ownerName}` : ""}
+                  </p>
+                </div>
+                <span className={`${numClass} text-2xl text-white whitespace-nowrap`}>{l.hasDeal ? money(l.total) : "—"}</span>
+              </div>
+              <dl className="grid grid-cols-3 gap-2 text-xs">
+                <div>
+                  <dt className={`${labelClass} !mb-0.5`}>Collected</dt>
+                  <dd className="text-white/80 tabular-nums">{money(l.collected)}</dd>
+                </div>
+                <div>
+                  <dt className={`${labelClass} !mb-0.5`}>Rent</dt>
+                  <dd className="text-white/80 tabular-nums">{l.rent > 0 ? money(l.rent) : "—"}</dd>
+                </div>
+                <div>
+                  <dt className={`${labelClass} !mb-0.5`}>Share</dt>
+                  <dd className="text-white/80 tabular-nums">{l.venue.deal.sharePercent > 0 ? money(l.share) : "—"}</dd>
+                </div>
+              </dl>
+              <div className="flex flex-wrap items-center gap-3">
+                <a href={`${ADMIN}/statement/${month}${several ? `?venue=${l.venue.id}` : ""}`} className={`${bebas} text-[11px] tracking-[0.22em] text-white/60 hover:text-white border-b border-white/20 hover:border-white pb-0.5`}>
+                  Statement for {monthLabel(month)}
+                </a>
+                <a href={`${ADMIN}/locations#venue-${l.venue.id}`} className={`${bebas} text-[11px] tracking-[0.22em] text-white/40 hover:text-white`}>
+                  The deal
+                </a>
+              </div>
             </li>
           ))}
         </ul>

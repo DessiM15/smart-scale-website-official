@@ -69,6 +69,26 @@ export type EditingAdvertiser = {
   endDateLabel: string;
   slot?: number | null;
   artworkStatus?: string;
+  venueId?: string;
+};
+
+/** A location the form can put a client on. */
+export type LocationOption = { id: string; name: string; live: boolean; sellable: number };
+
+/**
+ * An existing client at another location, copied onto this one. Two rows,
+ * one per location, by Dessi's call: the contact details come across, the
+ * deal does not, because the second location is usually a different rate.
+ */
+export type CopyPrefill = {
+  fromId: string;
+  business: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  category: string;
+  notes: string;
+  fromVenueName: string;
 };
 
 /**
@@ -93,6 +113,8 @@ export type ConversionPrefill = {
   /** Another active advertiser already holds the category they asked for. */
   categoryHeldBy?: string;
   openSlots: number;
+  /** The location they asked about, or the one the portal is looking at. */
+  venueId?: string;
 };
 
 const numberValue = (v: number | null | undefined) =>
@@ -125,7 +147,9 @@ function refusal(state: NonNullable<AdvertiserFormState>): string {
     case "codetaken":
       return `"${state.detail}" is already in use. A printed code can never be reassigned — pick a different name.`;
     case "slot":
-      return "A slot is a number from 1 to 16.";
+      return "A slot is a number from 1 to the location's sellable count.";
+    case "venuelive":
+      return `${state.detail ?? "That location"} isn't live yet. Mark it live on the Locations page first, or keep this client as Ended.`;
     case "save":
       return "The database didn't accept that. Check the connection and try again.";
     default:
@@ -136,30 +160,38 @@ function refusal(state: NonNullable<AdvertiserFormState>): string {
 export function AdvertiserForm({
   editing,
   prefill,
+  copy,
   codes,
   plans,
   today,
+  locations = [],
+  currentVenueId,
 }: {
   editing?: EditingAdvertiser;
   prefill?: ConversionPrefill;
+  copy?: CopyPrefill;
   codes: LinkView[];
   plans: PlanOption[];
   today: string;
+  locations?: LocationOption[];
+  currentVenueId?: string;
 }) {
   const [state, formAction] = useActionState<AdvertiserFormState, FormData>(
     saveAdvertiserAction,
     null,
   );
 
-  /** What each field starts as: the client being edited, or the prospect. */
-  const start = editing ?? prefill;
+  /** What each field starts as: the client being edited, the prospect, or the client being copied. */
+  const start = editing ?? prefill ?? copy;
+  const several = locations.length > 1;
+  const startVenue = editing?.venueId ?? prefill?.venueId ?? currentVenueId ?? locations[0]?.id ?? "";
 
   return (
     <details
       id="editor"
       // Open while editing, and open after a refusal — closing it on the reader
       // is how the values looked lost even when they weren't.
-      open={Boolean(editing) || Boolean(prefill) || Boolean(state)}
+      open={Boolean(editing) || Boolean(prefill) || Boolean(copy) || Boolean(state)}
       className="group border border-white/[0.08] bg-white/[0.02] overflow-hidden scroll-mt-28"
     >
       <summary className="flex cursor-pointer items-center justify-between gap-4 px-5 sm:px-6 py-4 list-none [&::-webkit-details-marker]:hidden hover:bg-white/[0.02] transition-colors">
@@ -168,7 +200,9 @@ export function AdvertiserForm({
             ? `Edit ${editing.business}`
             : prefill
               ? `Sign up ${prefill.business}`
-              : "Add an advertiser"}
+              : copy
+                ? `Add ${copy.business} here too`
+                : "Add an advertiser"}
         </span>
         <span className={`${bebas} text-[11px] tracking-[0.22em] text-white/35`}>
           <span className="group-open:hidden">Open</span>
@@ -229,6 +263,21 @@ export function AdvertiserForm({
           </div>
         )}
 
+        {copy && !state && (
+          <div className="mb-5">
+            <Note tone="ok">
+              <p className="text-sm font-semibold text-white">
+                Copied from {copy.business} at {copy.fromVenueName}.
+              </p>
+              <p className="mt-1.5 text-sm text-white/70">
+                Their contact details are filled in; the deal is not, because a second location is usually its own
+                rate. Same three packages apply. If they get a multi-location discount, put it under Custom deal with
+                &ldquo;also at {copy.fromVenueName}&rdquo; as the reason.
+              </p>
+            </Note>
+          </div>
+        )}
+
         {state && (
           <div className="mb-5">
             <Note tone="bad">
@@ -253,6 +302,27 @@ export function AdvertiserForm({
               />
               <input type="hidden" name="prospectSource" value={prefill.source} />
             </>
+          )}
+
+          {several && (
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className={labelClass} htmlFor="venueId">
+                  Location <span className="text-[#DC2626]">*</span>
+                </label>
+                <select id="venueId" name="venueId" defaultValue={startVenue} className={selectClass}>
+                  {locations.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.name}
+                      {l.live ? "" : " (not live yet)"}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1.5 text-xs text-white/30">
+                  Exclusivity, slots and the venue&apos;s share are all per location. A client at two locations is two rows.
+                </p>
+              </div>
+            </div>
           )}
 
           <div className="grid sm:grid-cols-2 gap-4">
@@ -356,7 +426,7 @@ export function AdvertiserForm({
               inputMode="numeric"
               defaultValue={editing?.slot ? String(editing.slot) : ""}
               placeholder="next free"
-              hint="1 to 16. Left blank, they take the lowest free one."
+              hint="Left blank, they take the lowest free one at their location."
             />
             <div>
               <label className={labelClass} htmlFor="artworkStatus">

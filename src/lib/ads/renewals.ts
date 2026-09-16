@@ -21,6 +21,7 @@ import { isLinkSigningConfigured, renewalUrl } from "./links";
 import { hasResponded } from "./responses";
 import { getCombinedStats } from "./scan-store";
 import { codesForAdvertiser } from "./link-store";
+import { listVenues, venueOf } from "./venues";
 
 const ADMIN_URL = "https://smartscaleagent.com/advertise/admin";
 
@@ -271,10 +272,12 @@ async function emailAdvertiser(
     scanTotal = undefined;
   }
 
+  const venue = venueOf(await listVenues(), advertiser.venueId);
   const { subject, html, text } = renewalEmail(
     advertiser,
     { renew: links.renew, change: links.change, cancel: links.cancel },
     scanTotal,
+    venue.name,
   );
 
   return sendEmail({ to: advertiser.email, subject, html, text });

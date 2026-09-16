@@ -160,8 +160,8 @@ const MUTED = "#7a6a5d";
 const RED = "#DC2626";
 const CREAM = "#faf6f0";
 
-/** The venue these emails are about, kept in step with the agreement template. */
-const VENUE_NAME = "Mex Taco House";
+/** What emails say when a record predates locations: the first one. */
+const DEFAULT_VENUE_NAME = "Mex Taco House";
 
 function button(href: string, label: string, primary: boolean): string {
   const bg = primary ? RED : "#ffffff";
@@ -184,7 +184,9 @@ export function renewalEmail(
   view: AdvertiserView,
   links: RenewalEmailLinks,
   scanTotal?: number,
+  venueName: string = DEFAULT_VENUE_NAME,
 ) {
+  const VENUE_NAME = venueName;
   const daysLeft = view.daysRemaining;
   const urgency =
     daysLeft <= 0
@@ -195,8 +197,8 @@ export function renewalEmail(
 
   const subject =
     daysLeft <= 0
-      ? `Your ad at Mex Taco House ends today`
-      : `Your ad at Mex Taco House ${urgency}`;
+      ? `Your ad at ${VENUE_NAME} ends today`
+      : `Your ad at ${VENUE_NAME} ${urgency}`;
 
   const scanLine =
     scanTotal && scanTotal > 0
@@ -211,13 +213,13 @@ export function renewalEmail(
   const html = `<!doctype html>
 <html><body style="margin:0;padding:0;background:${CREAM};">
 <div style="max-width:560px;margin:0 auto;padding:32px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:${INK};">
-  <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:${RED};font-weight:700;">Mex Taco House · Screen Advertising</p>
+  <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:${RED};font-weight:700;">${VENUE_NAME} · Screen Advertising</p>
   <h1 style="margin:0 0 18px;font-size:26px;line-height:1.25;font-weight:600;">Your spot ${urgency}</h1>
 
   <div style="background:#ffffff;border:1px solid rgba(0,0,0,0.06);border-radius:18px;padding:22px 24px;margin-bottom:24px;">
     <p style="margin:0 0 10px;font-size:15px;line-height:1.6;">Hi${view.contactName ? ` ${view.contactName}` : ""},</p>
     <p style="margin:0 0 10px;font-size:15px;line-height:1.6;">
-      <strong>${view.business}</strong> has been running on the dining-room screens at Mex Taco House${view.category ? ` as our only <strong>${view.category}</strong> advertiser` : ""}. Your ${view.planName} term ends on <strong>${formatDate(view.endDate)}</strong>.
+      <strong>${view.business}</strong> has been running on the dining-room screens at ${VENUE_NAME}${view.category ? ` as our only <strong>${view.category}</strong> advertiser` : ""}. Your ${view.planName} term ends on <strong>${formatDate(view.endDate)}</strong>.
     </p>
     ${scanLine ? `<p style="margin:0 0 10px;font-size:15px;line-height:1.6;">${scanLine}</p>` : ""}
     <p style="margin:0;font-size:15px;line-height:1.6;color:${MUTED};">
@@ -236,18 +238,18 @@ export function renewalEmail(
   </p>
 
   <p style="margin:28px 0 0;font-size:12px;line-height:1.6;color:#9a8b7d;">
-    Mex Taco House screen advertising is managed by Smart Scale.
+    ${VENUE_NAME} screen advertising is managed by Smart Scale.
   </p>
 </div>
 </body></html>`;
 
-  const text = `MEX TACO HOUSE - SCREEN ADVERTISING
+  const text = `${VENUE_NAME.toUpperCase()} - SCREEN ADVERTISING
 
 Your spot ${urgency}.
 
 Hi${view.contactName ? ` ${view.contactName}` : ""},
 
-${view.business} has been running on the dining-room screens at Mex Taco House${view.category ? ` as our only ${view.category} advertiser` : ""}. Your ${view.planName} term ends on ${formatDate(view.endDate)}.
+${view.business} has been running on the dining-room screens at ${VENUE_NAME}${view.category ? ` as our only ${view.category} advertiser` : ""}. Your ${view.planName} term ends on ${formatDate(view.endDate)}.
 
 ${scanLineText}Renewing keeps your category locked. If the term lapses, it goes back on the market and another business in your category can take it.
 
@@ -259,7 +261,7 @@ What would you like to do?
 
 Nothing changes until you confirm on the next screen, and we'll follow up personally either way. Questions? Just reply to this email.
 
-Mex Taco House screen advertising is managed by Smart Scale.`;
+${VENUE_NAME} screen advertising is managed by Smart Scale.`;
 
   return { subject, html, text };
 }
@@ -280,7 +282,8 @@ function statTile(value: string, label: string): string {
  * the narrative, which has already been checked for invented numbers.
  */
 export function reportEmail(facts: ReportFacts, narrative: Narrative) {
-  const subject = `${facts.business} — your ${facts.monthName} report`;
+  const VENUE_NAME = facts.venueName || DEFAULT_VENUE_NAME;
+  const subject = `${facts.business}, your ${facts.monthName} report`;
 
   const change =
     facts.changePercent === null
@@ -348,7 +351,7 @@ export function reportEmail(facts: ReportFacts, narrative: Narrative) {
   const html = `<!doctype html>
 <html><body style="margin:0;padding:0;background:${CREAM};">
 <div style="max-width:560px;margin:0 auto;padding:32px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:${INK};">
-  <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:${RED};font-weight:700;">Mex Taco House · ${facts.monthName}</p>
+  <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:${RED};font-weight:700;">${VENUE_NAME} · ${facts.monthName}</p>
   <h1 style="margin:0 0 6px;font-size:26px;line-height:1.25;font-weight:600;">${narrative.headline}</h1>
   <p style="margin:0 0 22px;font-size:14px;color:${MUTED};">${facts.business}${facts.category ? ` · our only ${facts.category} advertiser` : ""}</p>
 
@@ -370,12 +373,12 @@ export function reportEmail(facts: ReportFacts, narrative: Narrative) {
     A "scan" is someone pointing their phone at your code and opening your page — not a view. Times played is how often your ad appeared on the screens, counted only for the days it was actually running.
   </p>
   <p style="margin:0;font-size:12px;line-height:1.6;color:#9a8b7d;">
-    Questions, or want to change your artwork? Just reply to this email. Mex Taco House screen advertising is managed by Smart Scale.
+    Questions, or want to change your artwork? Just reply to this email. ${VENUE_NAME} screen advertising is managed by Smart Scale.
   </p>
 </div>
 </body></html>`;
 
-  const text = `MEX TACO HOUSE - ${facts.monthName.toUpperCase()}
+  const text = `${VENUE_NAME.toUpperCase()} - ${facts.monthName.toUpperCase()}
 
 ${narrative.headline}
 ${facts.business}${facts.category ? ` - our only ${facts.category} advertiser` : ""}
@@ -389,7 +392,7 @@ ${detail.length ? `\n${detail.join(" ")}\n` : ""}
 A "scan" is someone pointing their phone at your code and opening your page - not a view. Times played is how often your ad appeared on the screens, counted only for the days it was actually running.
 
 Questions, or want to change your artwork? Just reply to this email.
-Mex Taco House screen advertising is managed by Smart Scale.`;
+${VENUE_NAME} screen advertising is managed by Smart Scale.`;
 
   return { subject, html, text };
 }
@@ -519,10 +522,12 @@ export function agreementEmail(
     months: number;
     startDate: string;
     endDate: string;
+    venueName?: string;
   },
   signUrl: string,
 ) {
-  const subject = `Your ${VENUE_NAME} advertising agreement — ready to sign`;
+  const VENUE_NAME = terms.venueName || DEFAULT_VENUE_NAME;
+  const subject = `Your ${VENUE_NAME} advertising agreement is ready to sign`;
   const rate =
     terms.monthly > 0
       ? `$${terms.monthly.toLocaleString()}/month`
@@ -596,8 +601,10 @@ export function agreementCopyEmail(
   signerName: string,
   signedAt: string,
   body: string,
+  venueName: string = DEFAULT_VENUE_NAME,
 ) {
-  const subject = `Signed — your ${VENUE_NAME} advertising agreement`;
+  const VENUE_NAME = venueName;
+  const subject = `Signed: your ${VENUE_NAME} advertising agreement`;
 
   const html = `<!doctype html>
 <html><body style="margin:0;padding:0;background:${CREAM};">

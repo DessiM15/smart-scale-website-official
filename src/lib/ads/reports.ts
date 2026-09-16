@@ -29,6 +29,7 @@ import { codesForAdvertiser } from "./link-store";
 import { getAdvertiser, listAdvertisers, toView, type AdvertiserView } from "./roster";
 import { localStamp } from "./scan-store";
 import { notifyTeam } from "./notify";
+import { listVenues, venueOf, type Venue } from "./venues";
 
 export type ReportStatus = "draft" | "sent" | "skipped";
 
@@ -104,12 +105,14 @@ export type GenerationResult = {
 export async function generateReports(
   month: MonthKey = lastCompleteMonth(),
 ): Promise<GenerationResult> {
-  const advertisers = (await listAdvertisers()).filter((a) => a.status === "active");
+  const [roster, venues] = await Promise.all([listAdvertisers(), listVenues()]);
+  const advertisers = roster.filter((a) => a.status === "active");
   const notes: string[] = [];
   let created = 0;
   let skipped = 0;
 
   for (const advertiser of advertisers) {
+    const venue = venueOf(venues, advertiser.venueId);
     if (!advertiser.email) {
       skipped += 1;
       notes.push(`${advertiser.business}: no email address on file.`);
@@ -125,7 +128,7 @@ export async function generateReports(
     }
     // A report for a month the ad never ran in is worse than no report: it
     // reads as a month of nothing rather than a month that never happened.
-    if (runInMonth(advertiser, month).openDays === 0) {
+    if (runInMonth(advertiser, month, venue).openDays === 0) {
       skipped += 1;
       notes.push(`${advertiser.business}: wasn't on screen in ${monthLabel(month)}.`);
       continue;
@@ -135,7 +138,7 @@ export async function generateReports(
       continue;
     }
 
-    const facts = await buildReportFacts(advertiser, month);
+    const facts = await buildReportFacts(advertiser, month, venue);
     const narrative = await writeNarrative(facts);
 
     const ok = await put({
@@ -191,9 +194,10 @@ export async function updateNarrative(
 export function isReportStale(
   report: MonthlyReport,
   advertiser: AdvertiserView | undefined,
+  venue: Venue,
 ): boolean {
   if (!advertiser) return false;
-  const expected = runInMonth(advertiser, report.month);
+  const expected = runInMonth(advertiser, report.month, venue);
   return (
     report.facts.plays !== expected.plays ||
     report.facts.openDays !== expected.openDays
@@ -242,7 +246,8 @@ export async function recalculateReport(
     return { ok: false, error: "That advertiser is no longer on the roster." };
   }
 
-  const facts = await buildReportFacts(toView(advertiser), month);
+  const venue = venueOf(await listVenues(), advertiser.venueId);
+  const facts = await buildReportFacts(toView(advertiser), month, venue);
   const changed = JSON.stringify(facts) !== JSON.stringify(report.facts);
 
   const stale = unsupportedNumbers(

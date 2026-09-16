@@ -39,6 +39,8 @@ import { documentHref, type DocumentRecord } from "@/lib/ads/documents";
 import { describeBlobEnv } from "@/lib/ads/blob";
 import { PAYMENT_METHODS, standing, type Payment } from "@/lib/ads/payments";
 import { expectedFor } from "@/lib/ads/expected";
+import { playsBetween } from "@/lib/ads/report-data";
+import type { Venue } from "@/lib/ads/venues";
 import { agreementText, TEMPLATE_REVIEWED, TEMPLATE_VERSION } from "@/lib/ads/agreement-template";
 import { SubmitButton } from "./submit-button";
 import { ADMIN, clientHref, tabHref } from "./types";
@@ -79,6 +81,8 @@ export const CLIENT_PANELS: { id: ClientPanel; label: string }[] = [
 
 export type ClientData = {
   view: AdvertiserView;
+  /** Where their slide runs: its hours decide the plays below. */
+  venue: Venue;
   codes: { link: AdLinkRecord; stats: CodeStats }[];
   artwork: Artwork[];
   agreements: Agreement[];
@@ -106,7 +110,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 
 /* --------------------------------- the deal -------------------------------- */
 
-function DealPanel({ view }: { view: AdvertiserView }) {
+function DealPanel({ view, venue }: { view: AdvertiserView; venue: Venue }) {
   return (
     <div className="grid lg:grid-cols-[1fr_1fr] gap-6">
       <div>
@@ -192,7 +196,7 @@ function DealPanel({ view }: { view: AdvertiserView }) {
         </dl>
         <div className="mt-5">
           <SubHead>Since they started</SubHead>
-          <ClientFigures view={view} />
+          <ClientFigures view={view} venue={venue} />
         </div>
       </div>
     </div>
@@ -204,12 +208,13 @@ function DealPanel({ view }: { view: AdvertiserView }) {
  * elapsed. Plays are a shape of the rotation (20 an hour while the room is
  * open) and are only claimed once the slide is on the screens.
  */
-function ClientFigures({ view }: { view: AdvertiserView }) {
+function ClientFigures({ view, venue }: { view: AdvertiserView; venue: Venue }) {
   const asOf = today();
   const started = view.startDate <= asOf;
   const onScreen = artworkStatusOf(view) === "on-screen";
   const end = view.endDate < asOf ? view.endDate : asOf;
-  const days = started ? Math.max(0, daysOpenBetween(view.startDate, end)) : 0;
+  const run = started ? playsBetween(view.startDate, end, venue) : { plays: 0, openDays: 0 };
+  const days = run.openDays;
   return (
     <div className="grid grid-cols-3 gap-3">
       <div>
@@ -217,7 +222,7 @@ function ClientFigures({ view }: { view: AdvertiserView }) {
         <p className="text-[11px] text-white/40">days open so far</p>
       </div>
       <div>
-        <p className={`${numClass} text-2xl text-white`}>{onScreen && started ? (days * 160).toLocaleString() : "—"}</p>
+        <p className={`${numClass} text-2xl text-white`}>{onScreen && started ? run.plays.toLocaleString() : "—"}</p>
         <p className="text-[11px] text-white/40">{onScreen ? "plays, about" : "no slide on screen"}</p>
       </div>
       <div>
@@ -228,16 +233,6 @@ function ClientFigures({ view }: { view: AdvertiserView }) {
   );
 }
 
-/** Opening days between two dates: closed Mondays. */
-function daysOpenBetween(from: string, to: string): number {
-  const [fy, fm, fd] = from.split("-").map(Number);
-  const [ty, tm, td] = to.split("-").map(Number);
-  let count = 0;
-  for (let t = Date.UTC(fy, fm - 1, fd); t <= Date.UTC(ty, tm - 1, td); t += 86_400_000) {
-    if (new Date(t).getUTCDay() !== 1) count += 1;
-  }
-  return count;
-}
 
 /* --------------------------------- QR codes -------------------------------- */
 
@@ -900,7 +895,7 @@ export function ClientDetail({ data, panel }: { data: ClientData; panel: ClientP
         </a>
       </div>
 
-      {panel === "deal" && <DealPanel view={view} />}
+      {panel === "deal" && <DealPanel view={view} venue={data.venue} />}
       {panel === "codes" && <CodesPanel view={view} codes={data.codes} />}
       {panel === "artwork" && <ArtworkPanel view={view} artwork={data.artwork} configured={data.storageConfigured} returnTo={returnTo} />}
       {panel === "agreement" && <AgreementPanel data={data} />}

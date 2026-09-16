@@ -79,14 +79,14 @@ function Row({ row }: { row: CategoryRow }) {
   );
 }
 
-export function CategoriesSection({ rows, openSlots }: { rows: CategoryRow[]; openSlots: number }) {
+export function CategoriesSection({ rows, openSlots, venueName }: { rows: CategoryRow[]; openSlots: number; venueName?: string }) {
   const held = rows.filter((r) => r.holder);
   const open = rows.filter((r) => !r.holder);
   return (
     <Card
       id="categories"
-      title="Categories"
-      lede={`One business per category. Held ones are listed soonest to free up, which is the order worth working. ${
+      title={venueName ? `Categories · ${venueName}` : "Categories"}
+      lede={`One business per category${venueName ? " per location; switch locations in the sidebar to see the other" : ""}. Held ones are listed soonest to free up, which is the order worth working. ${
         openSlots > 0 ? `${openSlots} ${openSlots === 1 ? "slot is" : "slots are"} free in the rotation.` : "The rotation is full."
       }`}
       className="mt-10 scroll-mt-28"

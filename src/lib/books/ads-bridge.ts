@@ -8,6 +8,7 @@
  */
 
 import type { Payment } from "@/lib/ads/payments";
+import { getAdvertiser } from "@/lib/ads/roster";
 import { ensureClientForAdvertiser } from "./clients";
 import { addEntry, deleteEntry, entryBySource, ignoreSource, linkSource, listEntries, monthOf, sourceStatus, unignoreSource, unlinkSource, updateEntry, type Account, type Entry } from "./ledger";
 import { shiftMonth } from "./money";
@@ -39,10 +40,12 @@ async function adoptStripeEntry(payment: Payment, clientId: string | undefined):
     .sort((a, b) => daysApart(a.date, payment.receivedOn) - daysApart(b.date, payment.receivedOn));
   const match = candidates[0];
   if (!match) return null;
+  const venueId = (await getAdvertiser(payment.advertiserId))?.venueId || "mex-taco-house";
   const result = await updateEntry(match.id, {
     category: "ad-revenue",
     party: payment.business,
     clientId: clientId ?? match.clientId,
+    venueId,
     memo: [payment.period ? `Screen ad, ${payment.period}` : "Screen ad", payment.reference, payment.note, match.stripeRef].filter(Boolean).join(" · "),
   });
   if (!result.ok) return null;
@@ -53,6 +56,9 @@ async function adoptStripeEntry(payment: Payment, clientId: string | undefined):
 /** One ledger row for one ad payment. Returns the row, new or already there. */
 export async function postAdPayment(payment: Payment, who: string): Promise<Entry | null> {
   const client = await ensureClientForAdvertiser(payment.advertiserId, payment.business);
+  // Tagged with the location, so profit per location can be read off the
+  // ledger later without going back to the roster.
+  const venueId = (await getAdvertiser(payment.advertiserId))?.venueId || "mex-taco-house";
   if (payment.method === "stripe") {
     const already = await sourceStatus(adPaymentRef(payment.id));
     if (already?.kind === "entry") return already.entry;
@@ -69,6 +75,7 @@ export async function postAdPayment(payment: Payment, who: string): Promise<Entr
     account: accountFor(payment.method),
     party: payment.business,
     clientId: client?.id,
+    venueId,
     memo: [payment.period ? `Screen ad, ${payment.period}` : "Screen ad", payment.reference, payment.note].filter(Boolean).join(" · "),
     who,
     source: "ads",

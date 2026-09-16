@@ -25,6 +25,7 @@ import {
   voidAgreement,
 } from "@/lib/ads/agreements";
 import { deleteDocument, uploadDocument } from "@/lib/ads/documents";
+import { listVenues, venueOf } from "@/lib/ads/venues";
 import {
   deletePayment,
   recordPayment,
@@ -203,7 +204,8 @@ export async function prepareAgreementAction(data: FormData) {
   const advertiser = id ? await getAdvertiser(id) : null;
   if (!advertiser) back(id, { err: "missing" });
 
-  const { ok } = await prepareAgreement(advertiser);
+  const venue = venueOf(await listVenues(), advertiser.venueId);
+  const { ok } = await prepareAgreement(advertiser, venue);
   if (!ok) back(id, { err: "save" });
   back(id, { msg: "agreementPrepared" }, "agreement");
 }
@@ -307,14 +309,18 @@ export async function uploadAgreementAction(data: FormData) {
   });
   if (!stored.ok) back(id, { err: "docupload", detail: stored.error });
 
-  const { ok } = await fileAgreement(advertiser, {
-    documentId: stored.document.id,
-    bodyHash: stored.document.sha256,
-    signerName,
-    signedOn,
-    coversEndDate,
-    note: field(data, "note"),
-  });
+  const { ok } = await fileAgreement(
+    advertiser,
+    {
+      documentId: stored.document.id,
+      bodyHash: stored.document.sha256,
+      signerName,
+      signedOn,
+      coversEndDate,
+      note: field(data, "note"),
+    },
+    venueOf(await listVenues(), advertiser.venueId),
+  );
 
   if (!ok) {
     // The record is what makes the file reachable; an orphan helps nobody.

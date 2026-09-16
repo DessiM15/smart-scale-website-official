@@ -9,16 +9,11 @@
  * that quietly rounds is one nobody can check.
  */
 
-import { daysBetween, listAdvertisers, today, type AdvertiserView } from "./roster";
+import { atVenue, daysBetween, listAdvertisers, today, type AdvertiserView } from "./roster";
 import { paymentsInMonth, sumPayments, type Payment } from "./payments";
-import { getSettings, venueShareOf, type Settings } from "./settings";
 import { listLinks, linksForAdvertiser } from "./link-store";
 import { getCombinedStats, localStamp } from "./scan-store";
-import { SELLABLE_SLOTS } from "./roster";
-
-/** Plays per open day, from the rotation: 18 slides x 10s = a 3-minute loop. */
-const PLAYS_PER_OPEN_DAY_WEEKDAY = 160;
-const PLAYS_PER_OPEN_DAY_SUNDAY = 140;
+import { describeHours, hoursOpen, owedForMonth, playsOnWeekday, type Venue } from "./venues";
 
 export type StatementLine = {
   advertiserId: string;
@@ -42,7 +37,12 @@ export type Statement = {
   from: string;
   to: string;
 
-  settings: Settings;
+  venue: Venue;
+  /** The venue's cut, as a percentage. Zero when no share is set. */
+  sharePercent: number;
+  /** Fixed rent for the month, if the deal has one. */
+  rent: number;
+  hoursLine: string;
 
   /** Money that actually arrived this month. */
   collected: number;
@@ -105,14 +105,16 @@ function monthBounds(month: string): { from: string; to: string; days: number } 
 }
 
 /**
- * Mondays are closed; Sunday runs shorter hours than the rest of the week.
+ * Plays follow the venue's own hours: a closed day counts nothing, a short
+ * day counts less.
  *
  * Stops at today, because a statement opened part-way through a month would
- * otherwise count days that have not happened — and this is a document about
+ * otherwise count days that have not happened, and this is a document about
  * what was delivered, handed to the person owed money for it.
  */
 function playsForMonth(
   month: string,
+  venue: Venue,
   asOf = today(),
 ): { plays: number; openDays: number } {
   const [y, m] = month.split("-").map(Number);
@@ -123,9 +125,9 @@ function playsForMonth(
     const date = `${month}-${String(day).padStart(2, "0")}`;
     if (date > asOf) break;
     const weekday = new Date(Date.UTC(y, m - 1, day)).getUTCDay();
-    if (weekday === 1) continue; // closed Mondays
+    if (hoursOpen(venue, weekday) <= 0) continue;
     openDays += 1;
-    plays += weekday === 0 ? PLAYS_PER_OPEN_DAY_SUNDAY : PLAYS_PER_OPEN_DAY_WEEKDAY;
+    plays += playsOnWeekday(venue, weekday);
   }
   return { plays, openDays };
 }
@@ -135,19 +137,22 @@ function ranIn(view: AdvertiserView, from: string, to: string): boolean {
   return view.startDate <= to && view.endDate >= from;
 }
 
-export async function buildStatement(month: string): Promise<Statement> {
+export async function buildStatement(month: string, venue: Venue): Promise<Statement> {
   const { from, to } = monthBounds(month);
   const prev = previousMonth(month);
   const prevBounds = monthBounds(prev);
 
-  const [advertisers, payments, prevPayments, settings, links] = await Promise.all([
+  const [roster, allPayments, links] = await Promise.all([
     listAdvertisers(),
     paymentsInMonth(month),
-    paymentsInMonth(prev),
-    getSettings(),
     listLinks(),
   ]);
-  void prevPayments;
+  // This location's advertisers only, and only their money. A payment from a
+  // client at the other venue is not this owner's business.
+  const advertisers = atVenue(roster, venue.id);
+  const ours = new Set(advertisers.map((a) => a.id));
+  const elsewhere = new Set(roster.filter((a) => !ours.has(a.id)).map((a) => a.id));
+  const payments = allPayments.filter((p) => !elsewhere.has(p.advertiserId));
 
   // Scans need a window long enough to cover this month and the one before it,
   // so the comparison figure comes from the same series rather than a second
@@ -201,8 +206,9 @@ export async function buildStatement(month: string): Promise<Statement> {
   const unattributed = payments.filter((p) => !known.has(p.advertiserId));
 
   const collected = sumPayments(payments);
-  const venueShare = venueShareOf(collected, settings.venueSharePercent);
-  const { plays, openDays } = playsForMonth(month);
+  const owed = owedForMonth(venue, collected);
+  const venueShare = owed.share;
+  const { plays, openDays } = playsForMonth(month, venue);
 
   const active = advertisers.filter((a) => a.status === "active");
 
@@ -211,7 +217,10 @@ export async function buildStatement(month: string): Promise<Statement> {
     monthName: monthLabel(month),
     from,
     to,
-    settings,
+    venue,
+    sharePercent: venue.deal.sharePercent,
+    rent: owed.rent,
+    hoursLine: describeHours(venue),
     collected,
     venueShare,
     retained: Math.round((collected - venueShare) * 100) / 100,
@@ -220,7 +229,7 @@ export async function buildStatement(month: string): Promise<Statement> {
       .sort((a, b) => b.collected - a.collected || b.scans - a.scans),
     unattributed,
     activeCount: active.length,
-    openSlots: Math.max(0, SELLABLE_SLOTS - active.length),
+    openSlots: Math.max(0, venue.sellable - active.length),
     categories: [...new Set(active.map((a) => a.category).filter(Boolean))].sort(),
     scans: lines.reduce((sum, l) => sum + l.scans, 0),
     previousScans: lines.reduce((sum, l) => sum + l.previousScans, 0),
