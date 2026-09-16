@@ -4,7 +4,7 @@ import { recentBackups } from "@/lib/ads/backup";
 import { isArtworkStoreConfigured } from "@/lib/ads/artwork";
 import { isEmailConfigured } from "@/lib/ads/email";
 import { isLinkSigningConfigured } from "@/lib/ads/links";
-import { alertRecipients, isAlertingConfigured, isSmsConfigured, recentRuns } from "@/lib/ads/notify";
+import { alertRecipients, isAlertingConfigured, recentRuns } from "@/lib/ads/notify";
 import { findDueNotices, upcomingSchedule } from "@/lib/ads/renewals";
 import { setupItems, setupProgress } from "@/lib/ads/setup";
 import { PageHeader } from "../../_components/shell";
@@ -14,11 +14,6 @@ import { Badge, Card, Note, SubHead, btnPrimary, stamp } from "../../_components
 import { Shell } from "../shell";
 
 export const metadata: Metadata = { title: "Setup" };
-
-function maskPhone(phone: string): string {
-  const digits = phone.replace(/\D/g, "");
-  return digits.length >= 4 ? `···${digits.slice(-4)}` : phone;
-}
 
 function noticeLabel(point: number): string {
   if (point > 0) return `${point}-day warning`;
@@ -41,14 +36,14 @@ async function RenewalWatch() {
   const lastRun = runs[0];
   const emailArmed = isEmailConfigured() && isLinkSigningConfigured();
   const missing: string[] = [];
-  if (!isSmsConfigured()) missing.push("TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_PHONE_NUMBER");
-  if (recipients.length === 0) missing.push("ADS_ALERT_PHONES");
+  if (!isEmailConfigured()) missing.push("RESEND_API_KEY");
+  if (recipients.length === 0) missing.push("ADS_ALERT_EMAILS");
 
   return (
     <Card
       id="renewal-watch"
       title="Renewal watch"
-      lede="Checks every morning and texts the team as a term winds down: 30, 14, 7 and 3 days out, on the final day, then again if it lapses. Advertisers get an email at 30, 7 and 0."
+      lede="Checks every morning and emails the team as a term winds down: 30, 14, 7 and 3 days out, on the final day, then again if it lapses. Advertisers get their own email at 30, 7 and 0."
       action={
         <form action={runAlertsAction}>
           <input type="hidden" name="returnTo" value="/advertise/admin/setup" />
@@ -60,9 +55,9 @@ async function RenewalWatch() {
       className="mb-5"
     >
       <div className="flex flex-wrap items-center gap-3 text-sm mb-6">
-        <Badge tone={armed ? "ok" : "bad"}>{armed ? "Texting the team" : "Not texting"}</Badge>
+        <Badge tone={armed ? "ok" : "bad"}>{armed ? "Emailing the team" : "Team alerts off"}</Badge>
         {armed ? (
-          <span className="text-white/45 text-xs">to {recipients.map(maskPhone).join(", ")}</span>
+          <span className="text-white/45 text-xs">to {recipients.join(", ")}</span>
         ) : (
           <span className="text-[#f87171] text-xs">Set {missing.join(" and ")} in Vercel, then redeploy.</span>
         )}

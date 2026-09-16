@@ -21,7 +21,7 @@ import {
   saveProspect,
   type Prospect,
 } from "./roster";
-import { sendTeamSms } from "./notify";
+import { notifyTeam } from "./notify";
 
 /** Per-IP submissions allowed in a rolling hour. Generous; this is anti-flood. */
 const RATE_LIMIT = 5;
@@ -130,7 +130,7 @@ function noteFor(lead: LeadInput, stampedAt: string): string {
 }
 
 /**
- * Records the lead and texts whoever is on the alert list. Never throws — the
+ * Records the lead and emails whoever is on the alert list. Never throws: the
  * caller is a public endpoint whose first duty is not breaking the form.
  */
 export async function recordLead(
@@ -156,7 +156,7 @@ export async function recordLead(
 
     // Somebody already on the screens filling the form in again is not a lead.
     // Treating them as one puts a paying client back at the top of the queue
-    // and texts the team about winning business they already have.
+    // and emails the team about winning business they already have.
     const isClient = existing?.status === "won";
 
     const { ok } = await saveProspect(
@@ -198,7 +198,7 @@ export async function recordLead(
     if (!ok) return { ok: false, error: "save" };
 
     // Whether their category is free is the first thing you'd want to know
-    // before calling back, so it goes in the text rather than making you look
+    // before calling back, so it goes in the email rather than making you look
     // it up.
     const clash = lead.industry
       ? categoryConflict(advertisers, lead.industry)
@@ -209,18 +209,31 @@ export async function recordLead(
         : `${lead.industry} is OPEN`
       : "no category given";
 
-    await sendTeamSms(
+    const name = lead.business || lead.name;
+    await notifyTeam(
       isClient
-        ? `Mex Taco ads · CURRENT CLIENT enquiry: ${
-            lead.business || lead.name
-          } used the advertise form. ${lead.phone || lead.email}${
-            lead.message ? `. "${lead.message.slice(0, 120)}"` : ""
-          }. smartscaleagent.com/advertise/admin/pipeline`
-        : `Mex Taco ads · NEW LEAD${existing ? " (repeat)" : ""}: ${
-            lead.business || lead.name
-          }. ${category}. ${lead.phone || lead.email}. Budget ${
-            lead.budget || "not given"
-          }${lead.campaign ? `. From ${lead.campaign}` : ""}. smartscaleagent.com/advertise/admin/pipeline`,
+        ? {
+            subject: `Current client enquiry: ${name}`,
+            lines: [
+              "Already on the screens, and filled in the advertise form again.",
+              [lead.name, lead.phone, lead.email].filter(Boolean).join(" · "),
+              lead.message ? `"${lead.message.slice(0, 300)}"` : "",
+            ],
+            href: "https://smartscaleagent.com/advertise/admin/pipeline",
+            cta: "Open the pipeline",
+          }
+        : {
+            subject: `New lead${existing ? " (repeat)" : ""}: ${name}`,
+            lines: [
+              category,
+              [lead.name, lead.phone, lead.email].filter(Boolean).join(" · "),
+              `Budget ${lead.budget || "not given"}${lead.packageInterest ? ` · wants ${lead.packageInterest}` : ""}`,
+              lead.campaign ? `Came from ${lead.campaign}` : "",
+              lead.message ? `"${lead.message.slice(0, 300)}"` : "",
+            ],
+            href: "https://smartscaleagent.com/advertise/admin/pipeline",
+            cta: "Open the pipeline",
+          },
     );
 
     return { ok: true };

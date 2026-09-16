@@ -311,17 +311,20 @@ you get the 3-day one, which is the one that matters.
 
 ### Setup
 
-Twilio is already configured for the contact form, so only two new variables:
+Team alerts are email now (texting was removed in September 2026), so they
+ride on the same Resend key as the advertiser email:
 
 ```
-ADS_ALERT_PHONES = 8324070773,+1832XXXXXXX      # you and Jay, comma-separated
-CRON_SECRET      = <a long random string>
+RESEND_API_KEY    = re_...                         # from resend.com, sending access
+ADS_FROM_EMAIL    = Smart Scale <info@smartscaleagent.com>
+ADS_ALERT_EMAILS  = you@example.com,jay@example.com   # who gets the alerts
+CRON_SECRET       = <a long random string>
 ```
 
 `CRON_SECRET` is what makes the daily job run at all. Vercel attaches it to
 scheduled invocations automatically once the variable exists — and **without it
-the endpoint refuses everything**, deliberately: an open URL that sends SMS is an
-open URL that can run up a Twilio bill.
+the endpoint refuses everything**, deliberately: an open URL that sends email is
+an open URL somebody else can make send email.
 
 The schedule lives in `vercel.json` — `0 13 * * *`, which is 8am Central during
 daylight saving (7am in winter). Vercel triggers daily crons within the hour, so

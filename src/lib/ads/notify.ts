@@ -1,108 +1,71 @@
 /**
- * Outbound alerts for the ad business, plus the ledger that keeps them from
+ * Internal alerts for the ad business, plus the ledger that keeps them from
  * repeating.
+ *
+ * The team hears about things by email now. Texts went through Twilio until
+ * September 2026, when Dessi asked for texting to go: one provider to look
+ * after instead of two, and email is where the renewal notices and reports
+ * already live. Everything that used to be a text is a short email to the
+ * addresses in `ADS_ALERT_EMAILS`, sent through the same Resend transport
+ * the advertiser email uses.
  *
  * Two rules shape this file:
  *   1. A notice fires once. The cron runs every day, so without a durable
  *      record of what has already gone out, a 7-day warning becomes a daily
  *      one and everybody stops reading them.
- *   2. Nothing here throws. A Twilio outage or a missing env var degrades to a
- *      recorded failure, never a 500 on the cron endpoint.
- *
- * Twilio is called over its REST API with `fetch` rather than through the SDK.
- * Sending an SMS is one form-encoded POST, and importing the SDK drags its
- * entire generated type surface — thousands of .d.ts files for every Twilio
- * product — into the type-check graph of every module that touches alerts,
- * which measurably slows `next build`. It also matches how the rest of this
- * folder talks to Upstash and Plunk, and it makes the send path testable.
+ *   2. Nothing here throws. A provider outage or a missing env var degrades
+ *      to a recorded failure, never a 500 on the cron endpoint.
  */
 
 import { redisPipeline, redisWrite } from "./redis";
+import { isEmailConfigured, sendEmail, teamEmail } from "./email";
 
 const LEDGER_TTL_SECONDS = 400 * 24 * 60 * 60;
 const RUN_LOG_LIMIT = 30;
 
-/** Who gets the internal alerts. Comma-separated, E.164 or 10-digit US. */
+/** Who gets the internal alerts. Comma-separated email addresses. */
 export function alertRecipients(): string[] {
-  return (process.env.ADS_ALERT_PHONES ?? "")
+  return (process.env.ADS_ALERT_EMAILS ?? "")
     .split(",")
     .map((n) => n.trim())
-    .filter(Boolean)
-    .map(toE164);
+    .filter((n) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(n));
 }
 
-function toE164(raw: string): string {
-  if (raw.startsWith("+")) return raw;
-  const digits = raw.replace(/\D/g, "");
-  return digits.length === 10 ? `+1${digits}` : `+${digits}`;
-}
-
-export function isSmsConfigured(): boolean {
-  return Boolean(
-    process.env.TWILIO_ACCOUNT_SID &&
-      process.env.TWILIO_AUTH_TOKEN &&
-      process.env.TWILIO_PHONE_NUMBER,
-  );
+/** Email can send at all: the key is present. Recipients are a separate question. */
+export function isAlertTransportConfigured(): boolean {
+  return isEmailConfigured();
 }
 
 export function isAlertingConfigured(): boolean {
-  return isSmsConfigured() && alertRecipients().length > 0;
+  return isEmailConfigured() && alertRecipients().length > 0;
 }
 
 export type SendResult = { to: string; ok: boolean; error?: string };
 
-/** Overridable so the send path can be pointed at a local stand-in under test. */
-function twilioBase(): string {
-  return (process.env.TWILIO_API_BASE || "https://api.twilio.com").replace(/\/$/, "");
-}
+export type TeamNotice = {
+  /** The subject line. Say what happened; the name of the business goes here. */
+  subject: string;
+  /** Short lines, one fact each. Rendered as a plain list. */
+  lines: string[];
+  /** Where in the portal to go and deal with it. */
+  href?: string;
+  /** The button's wording. Defaults to "Open Ad Ops". */
+  cta?: string;
+};
 
-async function sendOne(to: string, body: string): Promise<SendResult> {
-  const sid = process.env.TWILIO_ACCOUNT_SID!;
-  const token = process.env.TWILIO_AUTH_TOKEN!;
-  const from = process.env.TWILIO_PHONE_NUMBER!;
-
-  try {
-    const res = await fetch(
-      `${twilioBase()}/2010-04-01/Accounts/${encodeURIComponent(sid)}/Messages.json`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Basic ${Buffer.from(`${sid}:${token}`).toString("base64")}`,
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({ To: to, From: from, Body: body }).toString(),
-        cache: "no-store",
-        signal: AbortSignal.timeout(8000),
-      },
-    );
-
-    if (res.ok) return { to, ok: true };
-
-    // Twilio returns a JSON body with a human-readable `message` on failure.
-    let detail = `HTTP ${res.status}`;
-    try {
-      const parsed = (await res.json()) as { message?: string; code?: number };
-      if (parsed?.message) detail = parsed.message;
-    } catch {
-      /* keep the status code */
-    }
-    return { to, ok: false, error: detail };
-  } catch (err) {
-    return {
-      to,
-      ok: false,
-      error: err instanceof Error ? err.message : "send failed",
-    };
-  }
-}
-
-/** Sends one message to every internal recipient. Never throws. */
-export async function sendTeamSms(body: string): Promise<SendResult[]> {
+/** Sends one notice to every internal recipient. Never throws. */
+export async function notifyTeam(notice: TeamNotice): Promise<SendResult[]> {
   const recipients = alertRecipients();
-  if (!isSmsConfigured() || recipients.length === 0) {
+  if (!isEmailConfigured() || recipients.length === 0) {
     return recipients.map((to) => ({ to, ok: false, error: "not configured" }));
   }
-  return Promise.all(recipients.map((to) => sendOne(to, body)));
+  const message = teamEmail(notice);
+  return Promise.all(
+    recipients.map(async (to) => {
+      const result = await sendEmail({ to, ...message });
+      return { to, ok: result.ok, error: result.error };
+    }),
+  );
 }
 
 /* --------------------------------- ledger --------------------------------- */
@@ -112,9 +75,9 @@ export async function sendTeamSms(body: string): Promise<SendResult[]> {
  * on purpose: renew someone and their new term gets a fresh set of notices,
  * while re-running the cron against the same term stays silent.
  *
- * `marker` is the milestone for a team text and `e<milestone>` for an
- * advertiser email, so the two channels retry independently — a failed email
- * isn't swallowed just because the text went out.
+ * `marker` is the milestone for a team notice and `e<milestone>` for an
+ * advertiser email, so the two retry independently — a failed advertiser
+ * email isn't swallowed just because the team's went out.
  */
 function ledgerKey(
   advertiserId: string,

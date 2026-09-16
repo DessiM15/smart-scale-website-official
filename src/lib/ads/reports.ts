@@ -28,7 +28,7 @@ import {
 import { codesForAdvertiser } from "./link-store";
 import { getAdvertiser, listAdvertisers, toView, type AdvertiserView } from "./roster";
 import { localStamp } from "./scan-store";
-import { sendTeamSms } from "./notify";
+import { notifyTeam } from "./notify";
 
 export type ReportStatus = "draft" | "sent" | "skipped";
 
@@ -324,9 +324,15 @@ export async function runMonthlyReports(
   const result = await generateReports();
 
   if (result.created > 0) {
-    await sendTeamSms(
-      `Mex Taco ads · ${result.created} monthly report${result.created === 1 ? "" : "s"} drafted and waiting for your review: smartscaleagent.com/advertise/admin`,
-    );
+    await notifyTeam({
+      subject: `${result.created} monthly report${result.created === 1 ? "" : "s"} drafted`,
+      lines: [
+        "Waiting for your review. Nothing goes to a client until you read it and press send.",
+        result.skipped ? `${result.skipped} skipped: no run in the month, or already drafted.` : "",
+      ],
+      href: "https://smartscaleagent.com/advertise/admin/reports",
+      cta: "Read the drafts",
+    });
   }
 
   return result;

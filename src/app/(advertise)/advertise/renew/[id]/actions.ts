@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { verifyRenewalToken } from "@/lib/ads/links";
 import { getAdvertiser, toView, PLANS, type PlanId } from "@/lib/ads/roster";
 import { recordResponse, type RenewalChoice } from "@/lib/ads/responses";
-import { sendTeamSms } from "@/lib/ads/notify";
+import { notifyTeam } from "@/lib/ads/notify";
 
 const CHOICES: RenewalChoice[] = ["renew", "change", "cancel"];
 
@@ -41,24 +41,22 @@ export async function submitRenewalChoice(data: FormData) {
 
   if (!saved) redirect(`${base}&err=save`);
 
-  await sendTeamSms(teamMessage(view.business, view.endDate, choice, plan, note));
-
-  redirect(`${base}&done=${choice}`);
-}
-
-function teamMessage(
-  business: string,
-  endDate: string,
-  choice: RenewalChoice,
-  plan?: PlanId,
-  note?: string,
-): string {
   const what =
     choice === "renew"
-      ? "wants to RENEW"
+      ? "wants to renew"
       : choice === "change"
-        ? `wants to CHANGE to ${plan ? PLANS[plan].name : "a different package"}`
-        : "wants to END their run";
-  const tail = note ? ` Note: "${note.slice(0, 80)}"` : "";
-  return `Mex Taco ads · ${business} ${what} (term ends ${endDate}).${tail} Confirm in the tracker: smartscaleagent.com/advertise/admin`;
+        ? `wants to change to ${plan ? PLANS[plan].name : "a different package"}`
+        : "wants to end their run";
+  await notifyTeam({
+    subject: `${view.business} ${what}`,
+    lines: [
+      `Replied to the renewal notice for the term ending ${view.endDate}.`,
+      note ? `"${note}"` : "",
+      "Nothing changes until you confirm it in Ad Ops.",
+    ],
+    href: `https://smartscaleagent.com/advertise/admin/advertisers?open=${encodeURIComponent(id)}`,
+    cta: `Open ${view.business}`,
+  });
+
+  redirect(`${base}&done=${choice}`);
 }

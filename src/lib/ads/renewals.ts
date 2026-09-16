@@ -2,8 +2,8 @@
  * Renewal watch for the Mex Taco House rotation.
  *
  * A term that lapses quietly costs a category and the revenue behind it, so a
- * daily job walks the roster and texts the team as each advertiser approaches
- * the end of their term — and keeps nagging for a while after, if a term ended
+ * daily job walks the roster and emails the team as each advertiser approaches
+ * the end of their term, and keeps nagging for a while after if a term ended
  * and nobody closed it out.
  */
 
@@ -12,8 +12,8 @@ import {
   alreadySent,
   isAlertingConfigured,
   markSent,
+  notifyTeam,
   recordRun,
-  sendTeamSms,
   type RunLogEntry,
 } from "./notify";
 import { isEmailConfigured, renewalEmail, sendEmail } from "./email";
@@ -22,7 +22,7 @@ import { hasResponded } from "./responses";
 import { getCombinedStats } from "./scan-store";
 import { codesForAdvertiser } from "./link-store";
 
-const ADMIN_URL = "smartscaleagent.com/advertise/admin";
+const ADMIN_URL = "https://smartscaleagent.com/advertise/admin";
 
 /**
  * Days-remaining thresholds that trigger a notice, largest first. Negative
@@ -43,22 +43,35 @@ export function milestoneFor(daysRemaining: number): number | null {
   return reached.length > 0 ? Math.min(...reached) : null;
 }
 
-/** Kept short — Twilio bills per 160-character segment. */
+/** One line, the way it reads in the run log and as the email's subject. */
 export function alertMessage(view: AdvertiserView, milestone: number): string {
   const who = `${view.business}${view.category ? ` (${view.category})` : ""}`;
 
   if (milestone < 0) {
     const days = Math.abs(view.daysRemaining);
-    return `Mex Taco ads · ${who} term ENDED ${formatDate(view.endDate)}, ${days} days ago, still marked running. Renew or close it out: ${ADMIN_URL}`;
+    return `${who} term ended ${formatDate(view.endDate)}, ${days} days ago, still marked running`;
   }
 
   const when =
     view.daysRemaining === 0
-      ? "ends TODAY"
-      : `ends ${formatDate(view.endDate)} — ${view.daysRemaining} days`;
-  const rate = view.monthly ? `$${view.monthly}/mo ${view.planName}. ` : "";
+      ? "ends today"
+      : `ends ${formatDate(view.endDate)}, ${view.daysRemaining} days`;
 
-  return `Mex Taco ads · ${who} ${when}. ${rate}Renew or the category goes back on the market: ${ADMIN_URL}`;
+  return `${who} ${when}`;
+}
+
+/** The facts under the subject line. */
+function alertLines(view: AdvertiserView, milestone: number): string[] {
+  const lines = [
+    view.monthly ? `$${view.monthly}/mo on ${view.planName}` : `${view.planName}, no monthly charge`,
+    view.category ? `Holds the ${view.category} category` : "No category on record",
+  ];
+  if (milestone < 0) lines.push("Renew them or mark the run ended, or the roster keeps counting them as live.");
+  else lines.push("Renew before the end date or the category goes back on the market.");
+  if (view.contactName || view.phone || view.email) {
+    lines.push([view.contactName, view.phone, view.email].filter(Boolean).join(" · "));
+  }
+  return lines;
 }
 
 /**
@@ -75,8 +88,8 @@ export type PendingNotice = {
   advertiser: AdvertiserView;
   milestone: number;
   message: string;
-  /** The team text hasn't gone out for this threshold yet. */
-  needsSms: boolean;
+  /** The team's own notice hasn't gone out for this threshold yet. */
+  needsTeam: boolean;
   /** The advertiser email is due, deliverable, and they haven't replied yet. */
   needsEmail: boolean;
 };
@@ -91,7 +104,7 @@ export async function findDueNotices(): Promise<PendingNotice[]> {
       const milestone = milestoneFor(advertiser.daysRemaining);
       if (milestone === null) return null;
 
-      const needsSms = !(await alreadySent(
+      const needsTeam = !(await alreadySent(
         advertiser.id,
         advertiser.endDate,
         milestone,
@@ -113,13 +126,13 @@ export async function findDueNotices(): Promise<PendingNotice[]> {
         )) &&
         !(await hasResponded(advertiser.id, advertiser.endDate));
 
-      if (!needsSms && !needsEmail) return null;
+      if (!needsTeam && !needsEmail) return null;
 
       return {
         advertiser,
         milestone,
         message: alertMessage(advertiser, milestone),
-        needsSms,
+        needsTeam,
         needsEmail,
       };
     }),
@@ -169,36 +182,43 @@ export async function runRenewalCheck(trigger: string): Promise<RunLogEntry> {
   let sent = 0;
   let failed = 0;
 
-  const canText = isAlertingConfigured();
-  if (!canText) {
+  const canNotify = isAlertingConfigured();
+  if (!canNotify) {
     notes.push(
-      "Team texts are off — set TWILIO_* and ADS_ALERT_PHONES. Nothing was marked as sent.",
+      isEmailConfigured()
+        ? "Team alerts are off: set ADS_ALERT_EMAILS to the addresses that should get them. Nothing was marked as sent."
+        : "Team alerts are off: set RESEND_API_KEY and ADS_ALERT_EMAILS. Nothing was marked as sent.",
     );
   }
   if (!isEmailConfigured()) {
-    notes.push("Advertiser email is off — set PLUNK_API_KEY.");
+    notes.push("Advertiser email is off: set RESEND_API_KEY.");
   } else if (!isLinkSigningConfigured()) {
-    notes.push("Advertiser email is off — set ADS_LINK_SECRET to sign reply links.");
+    notes.push("Advertiser email is off: set ADS_LINK_SECRET to sign reply links.");
   }
 
   for (const notice of due) {
     const { advertiser, milestone } = notice;
 
-    if (notice.needsSms && canText) {
-      const results = await sendTeamSms(notice.message);
+    if (notice.needsTeam && canNotify) {
+      const results = await notifyTeam({
+        subject: milestone < 0 ? `Overdue: ${notice.message}` : `Renewal: ${notice.message}`,
+        lines: alertLines(advertiser, milestone),
+        href: `${ADMIN_URL}/advertisers?open=${encodeURIComponent(advertiser.id)}`,
+        cta: `Open ${advertiser.business}`,
+      });
       const delivered = results.filter((r) => r.ok).length;
       if (delivered > 0) {
-        // Only burn the notice once it has actually reached somebody; a Twilio
+        // Only burn the notice once it has actually reached somebody; a provider
         // outage should mean "try again tomorrow", not "warning lost".
         await markSent(advertiser.id, advertiser.endDate, milestone);
         sent += 1;
         notes.push(
-          `${advertiser.business}: team texted (${delivered} recipient${delivered === 1 ? "" : "s"}).`,
+          `${advertiser.business}: team emailed (${delivered} recipient${delivered === 1 ? "" : "s"}).`,
         );
       } else {
         failed += 1;
         const why = results.find((r) => r.error)?.error ?? "unknown error";
-        notes.push(`${advertiser.business}: text failed (${why}). Will retry.`);
+        notes.push(`${advertiser.business}: team email failed (${why}). Will retry.`);
       }
     }
 

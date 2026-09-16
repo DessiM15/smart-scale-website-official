@@ -2,9 +2,9 @@
  * Daily ad-operations job. Scheduled by vercel.json.
  *
  * Fails closed: without CRON_SECRET set this endpoint refuses everything,
- * because an open URL that sends SMS is an open URL that can run up a Twilio
- * bill. Vercel attaches `Authorization: Bearer $CRON_SECRET` to scheduled
- * invocations automatically once the variable exists.
+ * because an open URL that sends email is an open URL somebody else can make
+ * send email. Vercel attaches `Authorization: Bearer $CRON_SECRET` to
+ * scheduled invocations automatically once the variable exists.
  */
 
 import { NextRequest, NextResponse } from "next/server";
