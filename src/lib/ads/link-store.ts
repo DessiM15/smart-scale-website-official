@@ -44,6 +44,9 @@ export type AdLinkRecord = {
    */
   utmSource?: string;
   utmMedium?: string;
+  /** The campaign placement this code was printed for, if it was. */
+  campaignId?: string;
+  placementId?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -171,6 +174,9 @@ export type LinkInput = {
   /** undefined leaves the tags alone. */
   utmSource?: string;
   utmMedium?: string;
+  /** undefined leaves the campaign alone; null takes the code off it. */
+  campaignId?: string | null;
+  placementId?: string | null;
 };
 
 export async function saveLink(input: LinkInput): Promise<boolean> {
@@ -194,6 +200,8 @@ export async function saveLink(input: LinkInput): Promise<boolean> {
         : (input.advertiserId ?? existing?.advertiserId),
     utmSource: input.utmSource ?? existing?.utmSource,
     utmMedium: input.utmMedium ?? existing?.utmMedium,
+    campaignId: input.campaignId === null ? undefined : (input.campaignId ?? existing?.campaignId),
+    placementId: input.placementId === null ? undefined : (input.placementId ?? existing?.placementId),
     createdAt: existing?.createdAt || now,
     updatedAt: now,
   };

@@ -19,6 +19,7 @@ import {
   cachedTasks,
   cachedVault,
   cachedVenues,
+  cachedCampaigns,
 } from "@/lib/ads/cached";
 import { venueDuesDue } from "@/lib/ads/venue-dues";
 import { isStripeConfigured } from "@/lib/books/stripe";
@@ -100,7 +101,7 @@ export async function navCounts(): Promise<Partial<Record<NavKey, NavCount>>> {
     payments: { value: late, hot: late > 0 },
     artwork: { value: artworkPending },
     reports: { value: drafts, hot: drafts > 0 },
-    flyers: { soon: true },
+    campaigns: { value: (await cachedCampaigns()).filter((c) => c.status === "draft").length },
     locations: { value: data.venueDues.length, hot: data.venueDues.some((d) => d.daysLate > 7) },
     books: { value: data.books.length, hot: data.books.some((i) => i.tone === "bad") },
     receipts: { value: data.pendingReceipts.length, hot: data.pendingReceipts.length > 0 },

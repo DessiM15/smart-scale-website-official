@@ -22,6 +22,7 @@ import {
   type Prospect,
 } from "./roster";
 import { notifyTeam } from "./notify";
+import { recordConversion } from "./conversions";
 
 /** Per-IP submissions allowed in a rolling hour. Generous; this is anti-flood. */
 const RATE_LIMIT = 5;
@@ -248,6 +249,12 @@ export async function recordLead(
             cta: "Open the pipeline",
           },
     );
+
+    // The code that sent them gets the lead against its name, so a campaign
+    // page can say what a magnet or a flyer actually brought in.
+    if (lead.campaign && lead.campaign !== "advertise-page") {
+      await recordConversion({ code: lead.campaign, form: "advertise" }).catch(() => {});
+    }
 
     return { ok: true };
   } catch (err) {

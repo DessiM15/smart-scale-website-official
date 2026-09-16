@@ -62,6 +62,24 @@ import { lowestFreeSlot } from "@/lib/ads/board";
 import { listVenues, saveVenue, setVenueStatus, venueOf, WEEKDAYS, type DayHours, type VenueStatus, VENUE_STATUSES } from "@/lib/ads/venues";
 import { currentVenue, setCurrentVenue } from "@/lib/ads/current-venue";
 import { venueDocumentOwner } from "@/lib/ads/venue-dues";
+import {
+  addPlacement,
+  getCampaign,
+  getPlacement,
+  listAllPlacements,
+  listCampaigns,
+  MEDIA,
+  mediumOf,
+  removePlacement,
+  saveCampaign,
+  saveCampaignClient,
+  setCampaignStatus,
+  updatePlacement,
+  CAMPAIGN_STATUSES,
+  SMART_SCALE_CLIENT_ID,
+  type CampaignMedium,
+  type CampaignStatus,
+} from "@/lib/ads/campaigns";
 import { deleteDocument, getDocument, uploadDocument } from "@/lib/ads/documents";
 import { recordPayment, type PaymentMethod } from "@/lib/ads/payments";
 import {
@@ -84,6 +102,7 @@ const PAGES = {
   qr: `${ADMIN}/qr`,
   reports: `${ADMIN}/reports`,
   locations: `${ADMIN}/locations`,
+  campaigns: `${ADMIN}/campaigns`,
   setup: `${ADMIN}/setup`,
   history: `${ADMIN}/history`,
 } as const;
@@ -1088,4 +1107,185 @@ export async function deleteVenueDocumentAction(data: FormData) {
   if (!doc || doc.advertiserId !== venueDocumentOwner(venueId)) back(to, { err: "missing" });
   if (!(await deleteDocument(id))) back(to, { err: "save" });
   back(to, { msg: "venueDocRemoved" }, `venue-${venueId}`);
+}
+
+/* -------------------------------- campaigns ------------------------------- */
+
+export async function saveCampaignAction(data: FormData) {
+  await requireAdmin();
+  const to = PAGES.campaigns;
+  const id = field(data, "id") || undefined;
+  const medium = field(data, "medium") as CampaignMedium;
+  const status = field(data, "status") as CampaignStatus;
+
+  const destError = validateDestination(field(data, "destination"));
+  if (destError) back(to, { err: "campaign", detail: destError }, "campaign-form");
+
+  const result = await saveCampaign(
+    {
+      name: field(data, "name"),
+      clientId: field(data, "clientId") || SMART_SCALE_CLIENT_ID,
+      medium: MEDIA.some((m) => m.id === medium) ? medium : "other",
+      status: CAMPAIGN_STATUSES.some((s) => s.id === status) ? status : "draft",
+      startDate: field(data, "startDate"),
+      endDate: field(data, "endDate"),
+      destination: field(data, "destination"),
+      tagDestination: field(data, "tagDestination") === "1",
+      notes: field(data, "notes"),
+    },
+    id,
+  );
+  if (!result.ok) back(to, { err: "campaign", detail: result.error ?? "That didn't save." }, "campaign-form");
+
+  await log("other", id ? `Edited the ${field(data, "name")} campaign.` : `Started the ${field(data, "name")} campaign.`, `${to}/${result.id}`);
+  if (id) back(`${to}/${id}`, { msg: "campaignUpdated" });
+  back(`${to}/${result.id}`, { msg: "campaignAdded" });
+}
+
+export async function setCampaignStatusAction(data: FormData) {
+  await requireAdmin();
+  const id = field(data, "id");
+  const status = field(data, "status") as CampaignStatus;
+  if (!id || !CAMPAIGN_STATUSES.some((s) => s.id === status)) back(PAGES.campaigns, { err: "missing" });
+  if (!(await setCampaignStatus(id, status))) back(PAGES.campaigns, { err: "save" });
+  const label = CAMPAIGN_STATUSES.find((s) => s.id === status)!.label.toLowerCase();
+  back(`${PAGES.campaigns}/${id}`, { msg: "campaignStatus", detail: label });
+}
+
+export async function saveCampaignClientAction(data: FormData) {
+  await requireAdmin();
+  const to = PAGES.campaigns;
+  const name = field(data, "name");
+  if (!name) back(to, { err: "business" }, "campaign-client-form");
+  const { ok } = await saveCampaignClient({
+    name,
+    contactName: field(data, "contactName"),
+    email: field(data, "email"),
+    phone: field(data, "phone"),
+    notes: field(data, "notes"),
+  });
+  if (!ok) back(to, { err: "save" }, "campaign-client-form");
+  back(to, { msg: "cclientAdded", detail: name }, "campaign-form");
+}
+
+/**
+ * A placement gets its code the moment it is saved: a new one named off the
+ * campaign, or one already in the registry for something already printed.
+ * The link carries the campaign's destination and tags, so every code in a
+ * campaign lands in the same place and reads the same way in analytics.
+ */
+export async function addPlacementAction(data: FormData) {
+  await requireAdmin();
+  const campaignId = field(data, "campaignId");
+  const campaign = await getCampaign(campaignId);
+  if (!campaign) back(PAGES.campaigns, { err: "campaignmissing" });
+  const to = `${PAGES.campaigns}/${campaignId}`;
+
+  const label = field(data, "label");
+  if (!label) back(to, { err: "placementlabel" });
+
+  const quantity = optionalNumber(data, "quantity");
+  const cost = optionalNumber(data, "cost");
+  if ((wasFilled(data, "quantity") && quantity === null) || (wasFilled(data, "cost") && cost === null)) {
+    back(to, { err: "dealnumber", detail: field(data, "cost") || field(data, "quantity") });
+  }
+
+  const links = await listLinks();
+  const taken = links.map((l) => l.code);
+  const existingCode = normalizeCode(field(data, "existingCode"));
+  const medium = mediumOf(campaign.medium);
+
+  let code: string;
+  if (existingCode) {
+    const link = links.find((l) => l.code === existingCode);
+    if (!link) back(to, { err: "codemissing", detail: existingCode });
+    // Already in a campaign is the one thing that stops it: a code counts once.
+    const everywhere = await listAllPlacements(await listCampaigns());
+    if ([...everywhere.values()].flat().some((p) => p.code === existingCode)) back(to, { err: "codeinuse", detail: existingCode });
+    code = existingCode;
+  } else {
+    const requested = normalizeCode(field(data, "code"));
+    code = requested || suggestCode(`${campaign.name} ${label}`, taken);
+    const codeError = validateCode(code);
+    if (codeError) back(to, { err: "code", detail: codeError });
+    if (taken.includes(code)) back(to, { err: "codetaken", detail: code });
+  }
+
+  const logo = await readLogo(data);
+  if (logo.error) back(to, { err: logo.error });
+
+  const placed = await addPlacement({
+    campaignId,
+    label,
+    code,
+    quantity: quantity !== null ? Math.round(quantity) : null,
+    cost,
+    note: field(data, "note"),
+  });
+  if (!placed.ok) back(to, { err: "save" });
+
+  const existing = existingCode ? links.find((l) => l.code === existingCode) : undefined;
+  const linked = await saveLink({
+    code,
+    label: existing?.label || `${campaign.name} · ${label}`,
+    // An existing code keeps where it already points; the campaign's
+    // destination is for codes made here.
+    destination: existing?.destination || campaign.destination,
+    active: existing?.active ?? true,
+    tagDestination: existing ? existing.tagDestination : campaign.tagDestination,
+    logoDataUri: logo.dataUri,
+    utmSource: existing?.utmSource ?? "smart-scale",
+    utmMedium: existing?.utmMedium ?? medium.utmMedium,
+    campaignId,
+    placementId: placed.id,
+  });
+  if (!linked) {
+    await removePlacement(placed.id);
+    back(to, { err: "save" });
+  }
+
+  await log("other", `${campaign.name}: added the ${label} placement as /go/${code}.`, `${to}#placement-${placed.id}`);
+  back(to, { msg: "placementAdded", detail: code }, `placement-${placed.id}`);
+}
+
+export async function updatePlacementAction(data: FormData) {
+  await requireAdmin();
+  const campaignId = field(data, "campaignId");
+  const to = `${PAGES.campaigns}/${campaignId}`;
+  const id = field(data, "id");
+  const placement = await getPlacement(id);
+  if (!placement || placement.campaignId !== campaignId) back(to, { err: "placementmissing" });
+
+  const label = field(data, "label");
+  if (!label) back(to, { err: "placementlabel" }, `placement-${id}`);
+  const quantity = optionalNumber(data, "quantity");
+  const cost = optionalNumber(data, "cost");
+  if ((wasFilled(data, "quantity") && quantity === null) || (wasFilled(data, "cost") && cost === null)) {
+    back(to, { err: "dealnumber", detail: field(data, "cost") || field(data, "quantity") }, `placement-${id}`);
+  }
+
+  const ok = await updatePlacement(id, {
+    label,
+    quantity: quantity !== null ? Math.round(quantity) : null,
+    cost,
+    note: field(data, "note"),
+  });
+  if (!ok) back(to, { err: "save" }, `placement-${id}`);
+  back(to, { msg: "placementSaved" }, `placement-${id}`);
+}
+
+export async function removePlacementAction(data: FormData) {
+  await requireAdmin();
+  const campaignId = field(data, "campaignId");
+  const to = `${PAGES.campaigns}/${campaignId}`;
+  const id = field(data, "id");
+  const placement = await getPlacement(id);
+  if (!placement || placement.campaignId !== campaignId) back(to, { err: "placementmissing" });
+
+  const removed = await removePlacement(id);
+  if (!removed) back(to, { err: "save" });
+  // The code stays, with its history; it just stops being this campaign's.
+  const link = await getLink(removed.code);
+  if (link) await saveLink({ ...link, logoDataUri: link.logoDataUri ?? null, advertiserId: link.advertiserId ?? null, campaignId: null, placementId: null });
+  back(to, { msg: "placementRemoved", detail: removed.label });
 }

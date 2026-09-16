@@ -1,6 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+/** The code a QR scan left behind, if any. Cleaned to what a code can be. */
+function scannedCode(): string {
+  if (typeof document === "undefined") return "";
+  const cookie = document.cookie.split("; ").find((c) => c.startsWith("ss_src="));
+  if (!cookie) return "";
+  return decodeURIComponent(cookie.slice("ss_src=".length)).toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 24);
+}
 
 export default function ContactForm() {
   const [formData, setFormData] = useState({
@@ -14,6 +22,11 @@ export default function ContactForm() {
     type: "success" | "error" | null;
     message: string;
   }>({ type: null, message: "" });
+  const [source, setSource] = useState("");
+
+  useEffect(() => {
+    setSource(scannedCode());
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,12 +47,23 @@ export default function ContactForm() {
           phone: formData.phone,
           message: formData.message,
           subject: `Contact Form Submission from ${formData.name}`,
+          // Stamped so the email says which magnet or flyer sent them.
+          ...(source ? { came_from: `Scanned QR code /go/${source}` } : {}),
         }),
       });
 
       const result = await response.json();
 
       if (result.success) {
+        if (source) {
+          // Counted against the code, after the real send and never in its way.
+          void fetch("/api/ads/conversion", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code: source, form: "contact" }),
+            keepalive: true,
+          }).catch(() => {});
+        }
         setSubmitStatus({
           type: "success",
           message: "Thank you! Your message has been sent successfully.",

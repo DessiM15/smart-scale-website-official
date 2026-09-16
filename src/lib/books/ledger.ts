@@ -42,6 +42,8 @@ export type Entry = {
   clientId?: string;
   /** The screen location this money is about, when it is about one. */
   venueId?: string;
+  /** The print campaign this money paid for, when it did. */
+  campaignId?: string;
   /** Whose money, on a contribution or a draw. */
   partner?: string;
   receiptId?: string;

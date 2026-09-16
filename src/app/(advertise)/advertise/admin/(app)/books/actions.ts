@@ -37,6 +37,7 @@ import { confirmReceipt, deleteReceipt, getReceipt, listReceiptsForEntry, storeR
 import { addBill, billDueDate, billSourceRef, deleteBill, getBill, setBillActive, setBillStatementIsEnough } from "@/lib/books/recurring";
 import { getVenue } from "@/lib/ads/venues";
 import { venueDueRef } from "@/lib/ads/venue-dues";
+import { getCampaign } from "@/lib/ads/campaigns";
 import { bringBackStripeTxn, describeRun, getStripeTxn, runStripeSync } from "@/lib/books/stripe";
 
 const ADMIN = "/advertise/admin";
@@ -470,6 +471,39 @@ export async function logVenueDueAction(data: FormData) {
   const what = `${formatCents(cents)} to ${venue.name}`;
   await log(who, "venue.paid", `Paid ${venue.name} its ${part === "rent" ? "rent" : "revenue share"} for ${monthName(month)}: ${what}.`, `${PAGES.ledger}?month=${date.slice(0, 7)}#entry-${result.entry.id}`, { target: result.entry.id });
   back(to, { msg: "venuePaid", detail: what });
+}
+
+/**
+ * What a campaign cost: the printer's invoice, logged once and tagged, so the
+ * campaign page can read the total back as cost per scan.
+ */
+export async function logCampaignCostAction(data: FormData) {
+  const to = returnPath(data, PAGES.home);
+  const who = await requireBooks(to);
+  const campaign = await getCampaign(field(data, "campaignId"));
+  if (!campaign) back(to, { err: "campaignmissing" });
+  const cents = parseDollars(field(data, "amount"));
+  if (cents === null || cents <= 0) back(to, { err: "amount" });
+  const date = isIsoDate(field(data, "date")) ? field(data, "date") : today();
+  const party = field(data, "party");
+  if (!party) back(to, { err: "party" });
+
+  const result = await addEntry({
+    date,
+    cents,
+    kind: "expense",
+    category: "advertising",
+    account: (field(data, "account") || "checking") as Account,
+    party,
+    campaignId: campaign.id,
+    memo: [campaign.name, field(data, "memo")].filter(Boolean).join(" · "),
+    who,
+    source: "manual",
+  });
+  if (!result.ok) back(to, { err: "entry", detail: result.error });
+  const what = `${formatCents(cents)} to ${party}`;
+  await log(who, "campaign.cost", `Logged ${what} against the ${campaign.name} campaign.`, `${PAGES.ledger}?month=${date.slice(0, 7)}#entry-${result.entry.id}`, { target: result.entry.id });
+  back(to, { msg: "costLogged", detail: what });
 }
 
 /* -------------------------------- ad money -------------------------------- */

@@ -142,8 +142,13 @@ export default function AdvertisePage({
    * and the query string must not become part of what gets cached.
    */
   useEffect(() => {
+    const clean = (v: string) => v.slice(0, 40).replace(/[^a-zA-Z0-9_-]/g, "");
     const src = new URLSearchParams(window.location.search).get("src");
-    if (src) setSource(src.slice(0, 40).replace(/[^a-zA-Z0-9_-]/g, ""));
+    if (src) return setSource(clean(src));
+    // A scan of one of our codes leaves a cookie behind; a flyer that sent
+    // someone here still gets the credit if they came back a week later.
+    const cookie = document.cookie.split("; ").find((c) => c.startsWith("ss_src="));
+    if (cookie) setSource(clean(decodeURIComponent(cookie.slice("ss_src=".length))));
   }, []);
 
   /** The gallery walks itself until someone takes hold of it. */
