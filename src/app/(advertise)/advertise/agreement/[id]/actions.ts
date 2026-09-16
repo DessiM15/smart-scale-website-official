@@ -6,7 +6,7 @@ import { getAgreement, signAgreement } from "@/lib/ads/agreements";
 import { agreementText } from "@/lib/ads/agreement-template";
 import { agreementCopyEmail, isEmailConfigured, sendEmail } from "@/lib/ads/email";
 import { verifyAgreementToken } from "@/lib/ads/links";
-import { sendTeamSms } from "@/lib/ads/notify";
+import { notifyTeam } from "@/lib/ads/notify";
 import { formatDate } from "@/lib/ads/roster";
 
 const field = (data: FormData, name: string) =>
@@ -53,7 +53,7 @@ export async function signAgreementAction(data: FormData) {
   if (!result.ok) back(id, token, { err: result.error ?? "save" });
 
   // Everything past this point is courtesy. The signature is recorded; a failed
-  // email or text must not make the client think it didn't take.
+  // email must not make the client think it didn't take.
   const agreement = await getAgreement(id);
   if (agreement?.signature) {
     const signedOn = formatDate(agreement.signature.at.slice(0, 10));
@@ -68,9 +68,15 @@ export async function signAgreementAction(data: FormData) {
       await sendEmail({ to: agreement.terms.email, ...copy });
     }
 
-    await sendTeamSms(
-      `Mex Taco ads · SIGNED: ${agreement.terms.business} agreement signed by ${agreement.signature.name}. Countersign it: smartscaleagent.com/advertise/admin/advertisers?open=${agreement.advertiserId}&panel=agreement`,
-    );
+    await notifyTeam({
+      subject: `Signed: ${agreement.terms.business}`,
+      lines: [
+        `Signed by ${agreement.signature.name} on ${signedOn}.`,
+        "It needs your countersignature before the term is covered.",
+      ],
+      href: `https://smartscaleagent.com/advertise/admin/advertisers?open=${encodeURIComponent(agreement.advertiserId)}&panel=agreement`,
+      cta: "Countersign it",
+    });
   }
 
   back(id, token, { msg: "signed" });

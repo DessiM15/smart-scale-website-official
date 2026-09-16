@@ -44,7 +44,7 @@ export type BackupResult = {
 };
 
 /**
- * Never throws. This runs inside the daily cron alongside renewal texts, and a
+ * Never throws. This runs inside the daily cron alongside renewal alerts, and a
  * storage hiccup must not take the alerts down with it.
  */
 export async function runBackup(): Promise<BackupResult> {

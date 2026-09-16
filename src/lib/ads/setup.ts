@@ -4,7 +4,7 @@
  * Every feature in this folder degrades quietly when its credentials are
  * missing, which is the right behaviour for a cron job and the wrong one for
  * the person who has to run the business — "the renewal emails aren't sending"
- * and "I never set PLUNK_API_KEY" look identical from the outside.
+ * and "I never set RESEND_API_KEY" look identical from the outside.
  *
  * So the checks that were scattered across a dozen `isXConfigured()` calls are
  * collected here, each with what it unlocks and the steps to finish it. The
@@ -13,7 +13,7 @@
 
 import { isRedisConfigured } from "./redis";
 import { isEmailConfigured, fromAddress, replyToAddress } from "./email";
-import { alertRecipients, isSmsConfigured } from "./notify";
+import { alertRecipients } from "./notify";
 import { isLinkSigningConfigured } from "./links";
 import { isArtworkStoreConfigured } from "./artwork";
 import { describeBlobEnv } from "./blob";
@@ -119,30 +119,31 @@ export function setupItems(): SetupItem[] {
         "Redeploy. Vercel attaches it to the scheduled run automatically.",
       ],
       caution:
-        "The job refuses to run without this, on purpose — an open URL that sends texts is an open URL that can run up a bill.",
+        "The job refuses to run without this, on purpose. An open URL that sends email is an open URL somebody else can make send email.",
     },
     {
       id: "email",
-      name: "Advertiser email",
+      name: "Email",
       unlocks:
-        "Renewal notices and monthly reports to your clients. Drafts still generate without it; they just can't be sent.",
+        "Every email the system sends: renewal notices and monthly reports to clients, agreements to sign, and the team's own alerts. Drafts still generate without it; they just can't be sent.",
       status: flag(isEmailConfigured()),
       detail: isEmailConfigured()
         ? `Sending as ${fromAddress()}${
             replyToAddress() ? `, replies to ${replyToAddress()}` : ""
           }`
         : undefined,
-      vars: ["PLUNK_API_KEY", "ADS_FROM_EMAIL", "ADS_REPLY_TO"],
+      vars: ["RESEND_API_KEY", "ADS_FROM_EMAIL", "ADS_REPLY_TO"],
       steps: [
-        "In Plunk, add smartscaleagent.com as a sending domain.",
+        "In Resend: Domains, Add domain, smartscaleagent.com.",
         "Paste the DKIM and SPF records it gives you at your domain registrar, then verify. DNS can take an hour, sometimes longer.",
-        "In Vercel, set PLUNK_API_KEY to your Plunk secret key — the one starting sk_.",
-        "Set ADS_FROM_EMAIL to an address on the verified domain, e.g. Smart Scale <ads@smartscaleagent.com>.",
+        "In Resend: API Keys, Create. Sending access is enough. Copy the value starting re_ (it is shown once).",
+        "In Vercel: Settings, Environment Variables, add RESEND_API_KEY with that value, Production ticked.",
+        "Set ADS_FROM_EMAIL to an address on the verified domain, e.g. Smart Scale <info@smartscaleagent.com>.",
         "Set ADS_REPLY_TO to the inbox you actually read.",
         "Redeploy, then send yourself a test below before it ever reaches a client.",
       ],
       caution:
-        "Sending from ads@smartscaleagent.com does not create an inbox at that address. Every email tells the client to reply — make sure something receives at it, or those replies bounce.",
+        "Sending from an address does not create an inbox at it. Every email tells the client to reply, so make sure something receives at the from or reply-to address, or those replies bounce.",
     },
     {
       id: "links",
@@ -159,25 +160,25 @@ export function setupItems(): SetupItem[] {
         "Set this once and never change it. Changing it invalidates every reply link already sitting in a client's inbox.",
     },
     {
-      id: "sms",
-      name: "Team texts",
+      id: "alerts",
+      name: "Team alerts",
       unlocks:
-        "Texts to you when a term is running down, and when a new lead comes in from the advertise page.",
+        "An email to you and Jay when a lead comes in, when a term is running down, and when report drafts are waiting. Rides on Email above.",
       status:
-        isSmsConfigured() && recipients.length > 0
+        isEmailConfigured() && recipients.length > 0
           ? "on"
-          : isSmsConfigured()
+          : isEmailConfigured()
             ? "partial"
             : "off",
-      detail: isSmsConfigured()
+      detail: isEmailConfigured()
         ? recipients.length > 0
-          ? `Texting ${recipients.length} number${recipients.length === 1 ? "" : "s"}`
-          : "Twilio is connected but nobody is listed to receive the texts"
+          ? `Emailing ${recipients.join(", ")}`
+          : "Email is connected but nobody is listed to receive the alerts"
         : undefined,
-      vars: ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_PHONE_NUMBER", "ADS_ALERT_PHONES"],
+      vars: ["ADS_ALERT_EMAILS"],
       steps: [
-        "Twilio is already connected from the contact form.",
-        "Set ADS_ALERT_PHONES to the numbers that should get alerts, comma-separated — 10 digits or +1 form.",
+        "Finish Email above first.",
+        "In Vercel, set ADS_ALERT_EMAILS to the addresses that should get alerts, comma-separated.",
         "Redeploy.",
       ],
     },
