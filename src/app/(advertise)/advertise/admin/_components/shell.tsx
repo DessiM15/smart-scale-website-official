@@ -22,7 +22,7 @@ const PATHS: Record<string, string> = {
   qr: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v7h-4"/>',
   reports: '<path d="M6 2h9l5 5v15H6z"/><path d="M9 13h6M9 17h6M9 9h2"/>',
   locations: '<path d="M12 22s7-7 7-12a7 7 0 1 0-14 0c0 5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>',
-  flyers: '<path d="M4 3h12l4 4v14H4z"/><path d="M8 12h8M8 16h5"/>',
+  campaigns: '<path d="M4 3h12l4 4v14H4z"/><path d="M8 12h8M8 16h5"/>',
   history: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   setup: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
   more: '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',
@@ -73,7 +73,7 @@ export type NavKey =
   | "artwork"
   | "qr"
   | "reports"
-  | "flyers"
+  | "campaigns"
   | "locations"
   | "history"
   | "setup"
@@ -98,7 +98,7 @@ export const NAV: { key: NavKey; label: string; href: string }[] = [
   { key: "artwork", label: "Artwork", href: `${ADMIN}/artwork` },
   { key: "qr", label: "QR codes", href: `${ADMIN}/qr` },
   { key: "reports", label: "Reports", href: `${ADMIN}/reports` },
-  { key: "flyers", label: "Flyers", href: `${ADMIN}/flyers` },
+  { key: "campaigns", label: "Campaigns", href: `${ADMIN}/campaigns` },
   { key: "locations", label: "Locations", href: `${ADMIN}/locations` },
 ];
 
@@ -353,7 +353,7 @@ const MOBILE_TABS: { key: NavKey; label: string; href: string }[] = [
   { key: "more", label: "More", href: `${ADMIN}/more` },
 ];
 
-const MORE_KEYS: NavKey[] = ["artwork", "qr", "reports", "flyers", "locations", "history", "setup", "more"];
+const MORE_KEYS: NavKey[] = ["artwork", "qr", "reports", "campaigns", "locations", "history", "setup", "more"];
 
 /** The phone tab bar. Every Books page lights the Books tab. */
 export function MobileTabs({ active, counts }: { active: NavKey; counts: Partial<Record<NavKey, NavCount>> }) {

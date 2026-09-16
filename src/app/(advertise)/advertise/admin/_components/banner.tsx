@@ -52,6 +52,14 @@ const notices = (
   venueDoc: "Filed on the location.",
   venueDocRemoved: "Document removed.",
   venuePaid: `Logged in the books: ${detail ?? "paid"}.`,
+  campaignAdded: "Campaign created. Add a placement for each car or batch; each gets its own QR.",
+  campaignUpdated: "Campaign saved.",
+  campaignStatus: `Campaign marked ${detail ?? "updated"}.`,
+  cclientAdded: `${detail ?? "Client"} added. Pick them when you create their campaign.`,
+  placementAdded: `Placement added and its QR is live at /go/${detail}. Download the artwork on the card.`,
+  placementSaved: "Placement saved.",
+  placementRemoved: `${detail ?? "Placement"} taken off the campaign. Its code and scans stay in the registry.`,
+  costLogged: `Logged in the books: ${detail ?? "the expense"}. It now feeds cost per scan.`,
   alerts:
     Number(checked ?? 0) === 0
       ? "Renewal check ran. Nothing due today."
@@ -147,6 +155,12 @@ const errors = (clash?: string, detail?: string): Record<string, string> => ({
   venue: detail || "That location didn't save.",
   venuemissing: "That location isn't on the list.",
   venuelive: `${detail ?? "That location"} isn't live yet. Mark it live on the Locations page first.`,
+  campaign: detail || "That campaign didn't save.",
+  campaignmissing: "That campaign isn't on the list any more.",
+  placementmissing: "That placement isn't on the campaign any more.",
+  placementlabel: "Give the placement a label: whose car, which batch, which zone.",
+  codeinuse: `/go/${detail} is already in another campaign. A code counts once; make a new one for this placement.`,
+  party: "Who was it paid to?",
   dealnote: "Say why this client isn't on list price. Future you will want to know.",
   dealnumber: `"${detail}" isn't a number I can use. Enter the amount in dollars, like 275.`,
   dealmonths: "A custom term has to be at least one whole month.",
