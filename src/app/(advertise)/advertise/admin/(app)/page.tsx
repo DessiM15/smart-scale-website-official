@@ -5,7 +5,8 @@ import { collectFacts, writeBriefing } from "@/lib/ads/briefing";
 import { monthBook } from "@/lib/ads/expected";
 import { currentWho } from "@/lib/ads/who";
 import { historyOn, listHistory } from "@/lib/ads/tasks";
-import { venueOf } from "@/lib/ads/venues";
+import { currentVenue } from "@/lib/ads/current-venue";
+import { hasSeveral } from "@/lib/ads/venues";
 import { PageHeader } from "../_components/shell";
 import { BriefingLine, DoneToday, ExpiringSoon, TheBoard, TodayList } from "../_components/today";
 import { ADMIN } from "../_components/types";
@@ -55,8 +56,9 @@ export default async function TodayPage({
   searchParams: Promise<{ msg?: string; err?: string; detail?: string; sent?: string; checked?: string }>;
 }) {
   const [params, data, who, history] = await Promise.all([searchParams, todayData(), currentWho(), listHistory(60)]);
-  const venue = venueOf();
-  const board = buildBoard(data.advertisers, data.prospects, venue.id);
+  const venue = await currentVenue(data.venues);
+  const board = buildBoard(data.advertisers, data.prospects, venue);
+  const several = hasSeveral(data.venues);
   const month = monthBook(data.advertisers, data.payments, data.asOf.slice(0, 7), data.asOf);
   const expiringSoon = [...data.summary.overdue, ...data.summary.expiring].slice(0, 5);
   const within30 = data.summary.expiring.filter((v) => v.daysRemaining <= 30);
@@ -66,7 +68,7 @@ export default async function TodayPage({
   return (
     <Shell active="today" banner={params}>
       <PageHeader
-        eyebrow={`${todayLine()} · ${venue.name}`}
+        eyebrow={several ? todayLine() : `${todayLine()} · ${venue.name}`}
         title={greeting(who)}
         action={
           <a href={`${ADMIN}/pipeline#prospect-add`} className={btnPrimary}>

@@ -19,6 +19,7 @@ import {
   type AdLinkRecord,
 } from "@/lib/ads/link-store";
 import { recordScan } from "@/lib/ads/scan-store";
+import { SOURCE_COOKIE, SOURCE_COOKIE_DAYS } from "@/lib/ads/conversions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -95,5 +96,16 @@ export async function GET(
   const res = NextResponse.redirect(target, 302);
   // A cached redirect is an uncounted scan.
   res.headers.set("Cache-Control", "no-store, max-age=0");
+  // Remembered for a month on our own domain, so a form filled in later on
+  // smartscaleagent.com can say which code sent them. Nothing personal in it,
+  // and it does nothing at all on a destination that isn't ours.
+  if (link && !skipLogging) {
+    res.cookies.set(SOURCE_COOKIE, link.code, {
+      path: "/",
+      maxAge: SOURCE_COOKIE_DAYS * 24 * 60 * 60,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
+  }
   return res;
 }

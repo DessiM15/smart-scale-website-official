@@ -4,9 +4,10 @@
  */
 
 import type { ReactNode } from "react";
-import { setWhoAction, signOutAction } from "../actions";
+import { setCurrentVenueAction, setWhoAction, signOutAction } from "../actions";
 import { TEAM } from "@/lib/ads/who";
-import type { Venue } from "@/lib/ads/venues";
+import { hasSeveral, type Venue } from "@/lib/ads/venues";
+import { SubmitButton } from "./submit-button";
 import { ADMIN } from "./types";
 import { bebas, eyebrowClass, headlineClass } from "./ui";
 
@@ -20,7 +21,8 @@ const PATHS: Record<string, string> = {
   artwork: '<rect x="3" y="3" width="18" height="18"/><path d="M3 16l5-5 4 4 3-3 6 6"/><circle cx="16" cy="8" r="1.5"/>',
   qr: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v7h-4"/>',
   reports: '<path d="M6 2h9l5 5v15H6z"/><path d="M9 13h6M9 17h6M9 9h2"/>',
-  flyers: '<path d="M4 3h12l4 4v14H4z"/><path d="M8 12h8M8 16h5"/>',
+  locations: '<path d="M12 22s7-7 7-12a7 7 0 1 0-14 0c0 5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>',
+  campaigns: '<path d="M4 3h12l4 4v14H4z"/><path d="M8 12h8M8 16h5"/>',
   history: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   setup: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
   more: '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',
@@ -71,7 +73,8 @@ export type NavKey =
   | "artwork"
   | "qr"
   | "reports"
-  | "flyers"
+  | "campaigns"
+  | "locations"
   | "history"
   | "setup"
   | "more"
@@ -95,7 +98,8 @@ export const NAV: { key: NavKey; label: string; href: string }[] = [
   { key: "artwork", label: "Artwork", href: `${ADMIN}/artwork` },
   { key: "qr", label: "QR codes", href: `${ADMIN}/qr` },
   { key: "reports", label: "Reports", href: `${ADMIN}/reports` },
-  { key: "flyers", label: "Flyers", href: `${ADMIN}/flyers` },
+  { key: "campaigns", label: "Campaigns", href: `${ADMIN}/campaigns` },
+  { key: "locations", label: "Locations", href: `${ADMIN}/locations` },
 ];
 
 /** The books: the whole LLC's money, not just the screens. Its own group in the sidebar. */
@@ -209,16 +213,65 @@ function WhoPicker({ who, returnTo }: { who: string; returnTo: string }) {
   );
 }
 
+/**
+ * Which location the per-location pages show. A real switcher once there is
+ * a second location; before that, a label that says where the screens are.
+ */
+function VenueSwitcher({ venue, venues, returnTo, compact = false }: { venue: Venue; venues: Venue[]; returnTo: string; compact?: boolean }) {
+  if (!hasSeveral(venues)) {
+    return (
+      <div
+        className={`flex items-center gap-2 border border-white/[0.12] bg-white/[0.03] text-white ${compact ? "px-2.5 py-1.5 text-[11px]" : "px-3 py-2 text-xs"}`}
+        title="Add a second location on the Locations page and this becomes a switcher"
+      >
+        <Icon name="pin" size={compact ? 12 : 14} className="text-[#DC2626] shrink-0" />
+        <span className="truncate">{venue.name}</span>
+      </div>
+    );
+  }
+  return (
+    <form action={setCurrentVenueAction} className="flex items-stretch gap-1.5">
+      <input type="hidden" name="returnTo" value={returnTo} />
+      <label className="sr-only" htmlFor={compact ? "venue-switch-m" : "venue-switch"}>
+        Location
+      </label>
+      <span className={`flex items-center border border-white/[0.12] bg-white/[0.03] ${compact ? "px-2" : "px-2.5"}`}>
+        <Icon name="pin" size={compact ? 12 : 14} className="text-[#DC2626]" />
+      </span>
+      <select
+        id={compact ? "venue-switch-m" : "venue-switch"}
+        name="venueId"
+        defaultValue={venue.id}
+        className={`min-w-0 flex-1 appearance-none border border-white/[0.12] bg-white/[0.03] text-white [&>option]:bg-[#161616] ${compact ? "px-2 py-1.5 text-[11px]" : "px-2.5 py-2 text-xs"}`}
+      >
+        {venues
+          .filter((v) => v.status !== "ended" || v.id === venue.id)
+          .map((v) => (
+            <option key={v.id} value={v.id}>
+              {v.name}
+              {v.status === "pending" ? " (not live)" : ""}
+            </option>
+          ))}
+      </select>
+      <SubmitButton className={`${bebas} border border-white/[0.12] text-white/70 hover:text-white hover:border-white/40 ${compact ? "px-2 text-[10px]" : "px-2.5 text-[11px]"} tracking-[0.18em]`} pendingLabel="…">
+        Go
+      </SubmitButton>
+    </form>
+  );
+}
+
 export function Sidebar({
   active,
   counts,
   venue,
+  venues,
   who,
   returnTo,
 }: {
   active: NavKey;
   counts: Partial<Record<NavKey, NavCount>>;
   venue: Venue;
+  venues: Venue[];
   who: string;
   returnTo: string;
 }) {
@@ -235,16 +288,7 @@ export function Sidebar({
           <p className={eyebrowClass}>Ad Ops</p>
           <p className="text-xs text-white/40 mt-0.5">Screen advertising</p>
         </div>
-        <div
-          className="flex items-center justify-between gap-3 border border-white/[0.12] bg-white/[0.03] px-3 py-2 text-xs text-white"
-          title="A second location will appear here when it signs"
-        >
-          <span className="flex items-center gap-2 min-w-0">
-            <Icon name="pin" size={14} className="text-[#DC2626] shrink-0" />
-            <span className="truncate">{venue.name}</span>
-          </span>
-          <Icon name="down" size={14} className="text-white/40 shrink-0" />
-        </div>
+        <VenueSwitcher venue={venue} venues={venues} returnTo={returnTo} />
       </div>
 
       <nav className="flex flex-col gap-0.5 px-3 py-4 flex-1">
@@ -284,17 +328,17 @@ export function Sidebar({
   );
 }
 
-/** The phone header: logo and the location. */
-export function MobileTop({ venue, who, returnTo }: { venue: Venue; who: string; returnTo: string }) {
+/** The phone header: logo, who, and the location. */
+export function MobileTop({ venue, venues, who, returnTo }: { venue: Venue; venues: Venue[]; who: string; returnTo: string }) {
+  const several = hasSeveral(venues);
   return (
     <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 border-b border-white/[0.07] bg-[#0A0A0A]/90 backdrop-blur-xl">
       <Logo size={30} />
       <div className="flex items-center gap-2">
         <WhoPicker who={who} returnTo={returnTo} />
-        <span className="hidden sm:flex items-center gap-2 border border-white/[0.12] px-2.5 py-1.5 text-[11px] text-white">
-          <Icon name="pin" size={12} className="text-[#DC2626]" />
-          {venue.name}
-        </span>
+        <div className={several ? "" : "hidden sm:block"}>
+          <VenueSwitcher venue={venue} venues={venues} returnTo={returnTo} compact />
+        </div>
       </div>
     </div>
   );
@@ -309,7 +353,7 @@ const MOBILE_TABS: { key: NavKey; label: string; href: string }[] = [
   { key: "more", label: "More", href: `${ADMIN}/more` },
 ];
 
-const MORE_KEYS: NavKey[] = ["artwork", "qr", "reports", "flyers", "history", "setup", "more"];
+const MORE_KEYS: NavKey[] = ["artwork", "qr", "reports", "campaigns", "locations", "history", "setup", "more"];
 
 /** The phone tab bar. Every Books page lights the Books tab. */
 export function MobileTabs({ active, counts }: { active: NavKey; counts: Partial<Record<NavKey, NavCount>> }) {

@@ -11,20 +11,15 @@
 import { getCombinedStats, localStamp, TZ } from "./scan-store";
 import { codesForAdvertiser } from "./link-store";
 import { daysBetween, formatDate, today, type AdvertiserView } from "./roster";
+import { playsOnWeekday, type Venue } from "./venues";
 
 /**
- * The rotation: 18 slides of 10 seconds is a 3-minute loop, so a spot plays 20
- * times an hour. Open 6am–2pm Mon–Sat (8 hours) and 7am–2pm Sunday (7 hours),
- * closed Mondays.
+ * The rotation belongs to the location: its loop length against the hours
+ * its doors are open. Mex Taco House is 18 slides of 10 seconds, open
+ * 6am–2pm Mon–Sat and 7am–2pm Sunday, closed Mondays, which is 160 plays a
+ * day and 140 on a Sunday. Another venue is whatever its record says.
  */
-const PLAYS_PER_HOUR = 20;
-const HOURS = { weekday: 8, sunday: 7 };
-
-/** 0 = Sunday. Mondays are closed. */
-function playsOnWeekday(weekday: number): number {
-  if (weekday === 1) return 0;
-  return PLAYS_PER_HOUR * (weekday === 0 ? HOURS.sunday : HOURS.weekday);
-}
+export type Rotation = Pick<Venue, "hours" | "slides" | "slideSeconds">;
 
 /**
  * Plays and open days across a window of dates, inclusive.
@@ -36,7 +31,7 @@ function playsOnWeekday(weekday: number): number {
  * days the ad was actually in the rotation, and only for days that have
  * happened.
  */
-function playsBetween(from: string, to: string): { plays: number; openDays: number } {
+export function playsBetween(from: string, to: string, venue: Rotation): { plays: number; openDays: number } {
   if (!from || !to || from > to) return { plays: 0, openDays: 0 };
 
   let plays = 0;
@@ -47,7 +42,7 @@ function playsBetween(from: string, to: string): { plays: number; openDays: numb
 
   for (let offset = 0; offset <= total; offset += 1) {
     const day = new Date(Date.UTC(fy, fm - 1, fd + offset));
-    const dayPlays = playsOnWeekday(day.getUTCDay());
+    const dayPlays = playsOnWeekday(venue, day.getUTCDay());
     if (dayPlays > 0) openDays += 1;
     plays += dayPlays;
   }
@@ -116,10 +111,11 @@ export function lastCompleteMonth(): MonthKey {
 export function runInMonth(
   advertiser: AdvertiserView,
   month: MonthKey,
+  venue: Rotation,
 ): { from: string; to: string; plays: number; openDays: number } {
   const bounds = monthBounds(month);
   const onScreen = onScreenWindow(advertiser, bounds.from, bounds.to);
-  return { ...onScreen, ...playsBetween(onScreen.from, onScreen.to) };
+  return { ...onScreen, ...playsBetween(onScreen.from, onScreen.to, venue) };
 }
 
 export type ReportFacts = {
@@ -128,6 +124,8 @@ export type ReportFacts = {
   contactName: string;
   category: string;
   planName: string;
+  /** The location the ad ran at. Absent on reports drafted before locations existed: Mex Taco House. */
+  venueName?: string;
   month: MonthKey;
   monthName: string;
 
@@ -185,6 +183,7 @@ const HOUR_LABEL = (h: number) => {
 export async function buildReportFacts(
   advertiser: AdvertiserView,
   month: MonthKey,
+  venue: Venue,
 ): Promise<ReportFacts> {
   // Every code they own, added together — a client with a flyer code as well as
   // a screen code is owed both in their report.
@@ -222,9 +221,9 @@ export async function buildReportFacts(
 
   // Only the days this ad was actually in the rotation, and only days that have
   // happened. A month is not a run.
-  const { plays, openDays } = runInMonth(advertiser, month);
+  const { plays, openDays } = runInMonth(advertiser, month, venue);
 
-  const term = playsBetween(termSoFar.from, termSoFar.to);
+  const term = playsBetween(termSoFar.from, termSoFar.to, venue);
   const termScans = series
     .filter((p) => p.date >= termSoFar.from && p.date <= termSoFar.to)
     .reduce((sum, p) => sum + p.count, 0);
@@ -240,6 +239,7 @@ export async function buildReportFacts(
     contactName: advertiser.contactName,
     category: advertiser.category,
     planName: advertiser.planName,
+    venueName: venue.name,
     month,
     monthName: monthLabel(month),
     scans,
@@ -313,6 +313,7 @@ function collectNumbers(facts: Omit<ReportFacts, "allowedNumbers">): number[] {
     facts.business,
     facts.category,
     facts.planName,
+    facts.venueName ?? "",
     facts.monthName,
     facts.bestHourWindow ?? "",
     facts.bestDay?.label ?? "",

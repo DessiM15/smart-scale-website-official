@@ -7,7 +7,7 @@
  */
 
 import { deleteAdvertiserAction } from "../actions";
-import { AdvertiserForm, type ConversionPrefill, type EditingAdvertiser } from "./advertiser-form";
+import { AdvertiserForm, type ConversionPrefill, type CopyPrefill, type EditingAdvertiser, type LocationOption } from "./advertiser-form";
 import { ClientDetail, type ClientData, type ClientPanel } from "./client-detail";
 import {
   artworkStatusOf,
@@ -57,6 +57,8 @@ export type RowExtras = {
   /** Their next expected payment that is not yet paid, or the last one paid. */
   payment?: ExpectedPayment;
   scans30: number;
+  /** Set once there is more than one location, so a row says which. */
+  venueName?: string;
 };
 
 function ChevronIcon({ open }: { open: boolean }) {
@@ -81,6 +83,7 @@ function RosterRow({ view, extras, open }: { view: AdvertiserView; extras: RowEx
           <span className="block text-xs text-white/40 mt-1">
             {view.category || "no category"}
             {view.slot ? ` · slot ${view.slot}` : ""}
+            {extras.venueName ? ` · ${extras.venueName}` : ""}
             {view.needsPaperwork && view.status === "active" ? " · unsigned" : ""}
           </span>
         </a>
@@ -140,6 +143,7 @@ function RosterCard({ view, extras, open }: { view: AdvertiserView; extras: RowE
             <p className="text-xs text-white/40 mt-1">
               {view.category || "no category"} · {view.planName}
               {view.slot ? ` · slot ${view.slot}` : ""}
+              {extras.venueName ? ` · ${extras.venueName}` : ""}
             </p>
           </div>
           <Badge tone={status.tone}>{status.label}</Badge>
@@ -188,6 +192,7 @@ function toEditing(view: AdvertiserView): EditingAdvertiser {
     endDateLabel: formatDate(view.endDate),
     slot: view.slot ?? null,
     artworkStatus: artworkStatusOf(view),
+    venueId: view.venueId,
   };
 }
 
@@ -268,7 +273,11 @@ export function AdvertisersTab({
   links,
   editing,
   prefill,
+  copy,
   query,
+  locations,
+  currentVenueId,
+  copyCandidates,
 }: {
   advertisers: AdvertiserView[];
   shown: AdvertiserView[];
@@ -280,7 +289,12 @@ export function AdvertisersTab({
   links: LinkView[];
   editing?: AdvertiserView;
   prefill?: ConversionPrefill;
+  copy?: CopyPrefill;
   query: string;
+  locations: LocationOption[];
+  currentVenueId: string;
+  /** Clients at other locations, offered for copying onto this one. */
+  copyCandidates: { id: string; label: string }[];
 }) {
   const empty = { scans30: 0 };
   return (
@@ -329,12 +343,29 @@ export function AdvertisersTab({
       )}
 
       <div className="mt-8">
+        {copyCandidates.length > 0 && !editing && !prefill && (
+          <form method="get" className="mb-3 flex flex-wrap items-center gap-2">
+            <label htmlFor="copy-from" className={`${bebas} text-[11px] tracking-[0.22em] text-white/40`}>
+              Already a client elsewhere?
+            </label>
+            <select id="copy-from" name="copy" defaultValue="" className={`${inputClass} w-auto min-w-[240px] py-2 appearance-none [&>option]:bg-[#161616]`}>
+              <option value="">Copy their details from…</option>
+              {copyCandidates.map((c) => (
+                <option key={c.id} value={c.id}>{c.label}</option>
+              ))}
+            </select>
+            <button type="submit" className={`${btnGhost} ${btnSm}`}>Copy</button>
+          </form>
+        )}
         <AdvertiserForm
           editing={editing ? toEditing(editing) : undefined}
           prefill={prefill}
+          copy={copy}
           codes={links}
           plans={planOptions()}
           today={today()}
+          locations={locations}
+          currentVenueId={currentVenueId}
         />
       </div>
 

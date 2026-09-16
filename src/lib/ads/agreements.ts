@@ -16,6 +16,7 @@
  * the database, served only through pages that check who is asking.
  */
 
+import { describeHours, type Venue } from "./venues";
 import { createHash, randomUUID } from "crypto";
 import { redisPipeline, redisWrite } from "./redis";
 import {
@@ -163,9 +164,22 @@ export function pendingAgreement(list: Agreement[]): Agreement | undefined {
 /* -------------------------------- building -------------------------------- */
 
 /** Takes a snapshot of what this client is on right now. */
-export function termsFromAdvertiser(advertiser: Advertiser): AgreementTerms {
+export function termsFromAdvertiser(advertiser: Advertiser, venue?: Venue): AgreementTerms {
   const view = toView(advertiser);
+  // The first location's wording is the frozen default in the template, so
+  // it is left unset: an agreement for Mex Taco House reads exactly as every
+  // one before it did. Any other location writes its own details in.
+  const at: Partial<AgreementTerms> =
+    venue && !venue.builtIn
+      ? {
+          venueName: venue.name,
+          venueAddress: venue.address || venue.place,
+          venuePlace: venue.place || venue.address,
+          venueHours: describeHours(venue),
+        }
+      : {};
   return {
+    ...at,
     business: view.business,
     contactName: view.contactName,
     email: view.email,
@@ -228,6 +242,7 @@ async function put(agreement: Agreement): Promise<boolean> {
  */
 export async function prepareAgreement(
   advertiser: Advertiser,
+  venue?: Venue,
 ): Promise<{ ok: boolean; agreement?: Agreement }> {
   const existing = await listAgreements(advertiser.id);
 
@@ -242,7 +257,7 @@ export async function prepareAgreement(
     }
   }
 
-  const terms = termsFromAdvertiser(advertiser);
+  const terms = termsFromAdvertiser(advertiser, venue);
   const agreement: Agreement = {
     id: randomUUID(),
     advertiserId: advertiser.id,
@@ -372,13 +387,14 @@ export type FileAgreementInput = {
 export async function fileAgreement(
   advertiser: Advertiser,
   input: FileAgreementInput,
+  venue?: Venue,
 ): Promise<{ ok: boolean; agreement?: Agreement }> {
   const agreement: Agreement = {
     id: randomUUID(),
     advertiserId: advertiser.id,
     status: "filed",
     source: "uploaded",
-    terms: termsFromAdvertiser(advertiser),
+    terms: termsFromAdvertiser(advertiser, venue),
     templateVersion: "uploaded",
     bodyHash: input.bodyHash,
     documentId: input.documentId,

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { generateReportsAction } from "../../actions";
-import { cachedAdvertisers, cachedReports } from "@/lib/ads/cached";
+import { cachedAdvertisers, cachedReports, cachedVenues } from "@/lib/ads/cached";
 import { PageHeader } from "../../_components/shell";
 import { ReportsTab } from "../../_components/reports";
 import { SubmitButton } from "../../_components/submit-button";
@@ -14,7 +14,7 @@ export default async function ReportsPage({
 }: {
   searchParams: Promise<{ msg?: string; err?: string; detail?: string; sent?: string; checked?: string }>;
 }) {
-  const [params, reports, advertisers] = await Promise.all([searchParams, cachedReports(), cachedAdvertisers()]);
+  const [params, reports, advertisers, venues] = await Promise.all([searchParams, cachedReports(), cachedAdvertisers(), cachedVenues()]);
   const drafts = reports.filter((r) => r.status === "draft").length;
 
   return (
@@ -30,7 +30,7 @@ export default async function ReportsPage({
           </form>
         }
       />
-      <ReportsTab reports={reports} advertisers={advertisers} />
+      <ReportsTab reports={reports} advertisers={advertisers} venues={venues} />
     </Shell>
   );
 }

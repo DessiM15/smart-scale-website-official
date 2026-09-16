@@ -22,6 +22,7 @@ import {
   type Prospect,
 } from "./roster";
 import { notifyTeam } from "./notify";
+import { recordConversion } from "./conversions";
 
 /** Per-IP submissions allowed in a rolling hour. Generous; this is anti-flood. */
 const RATE_LIMIT = 5;
@@ -41,6 +42,8 @@ export type LeadInput = {
   budget: string;
   /** Which flyer or drop sent them, from ?src= on the page they filled in. */
   campaign: string;
+  /** The locations they ticked, once the form offers more than one. */
+  venueIds: string[];
   /** Hidden field. A human never fills this in; a bot fills in everything. */
   honeypot: string;
 };
@@ -61,8 +64,14 @@ const clean = (value: unknown, max: number) =>
 
 export function readLead(form: {
   get(name: string): FormDataEntryValue | null;
+  getAll?(name: string): FormDataEntryValue[];
 }): LeadInput {
+  const venueIds = (form.getAll?.("locations") ?? [])
+    .map((v) => clean(v, 40).toLowerCase().replace(/[^a-z0-9-]/g, ""))
+    .filter(Boolean)
+    .slice(0, 8);
   return {
+    venueIds,
     name: clean(form.get("name"), 120),
     business: clean(form.get("business_name"), 160),
     email: clean(form.get("email"), 160),
@@ -122,6 +131,7 @@ function noteFor(lead: LeadInput, stampedAt: string): string {
     lead.budget && `Budget: ${lead.budget}`,
     lead.packageInterest && `Wants: ${lead.packageInterest}`,
     lead.campaign && `Came from: ${lead.campaign}`,
+    lead.venueIds.length && `Asked about: ${lead.venueIds.join(", ")}`,
     lead.hasCreative && `Creative: ${lead.hasCreative}`,
     lead.hasLogos && `Logos: ${lead.hasLogos}`,
     lead.message && `"${lead.message}"`,
@@ -153,6 +163,7 @@ export async function recordLead(
     const existing = matchExisting(prospects, lead);
     const stampedAt = new Date().toISOString().slice(0, 10);
     const note = noteFor(lead, stampedAt);
+    const venueIds = lead.venueIds.length ? lead.venueIds : existing?.venueIds;
 
     // Somebody already on the screens filling the form in again is not a lead.
     // Treating them as one puts a paying client back at the top of the queue
@@ -171,6 +182,7 @@ export async function recordLead(
         // first arrived through a flyer keeps that attribution on a repeat.
         campaign: lead.campaign || existing?.campaign,
         budget: lead.budget || existing?.budget,
+        venueIds,
         // Never downgrade one you've already worked — a prospect you marked
         // hot is still hot when they fill the form in a second time. Somebody
         // you'd passed on coming back is the exception: that is news, and it
@@ -200,8 +212,10 @@ export async function recordLead(
     // Whether their category is free is the first thing you'd want to know
     // before calling back, so it goes in the email rather than making you look
     // it up.
+    // Checked at the first location they asked about. Exclusivity is per
+    // location, so the same category can be open at one and taken at another.
     const clash = lead.industry
-      ? categoryConflict(advertisers, lead.industry)
+      ? categoryConflict(advertisers, lead.industry, undefined, venueIds?.[0])
       : undefined;
     const category = lead.industry
       ? clash
@@ -235,6 +249,12 @@ export async function recordLead(
             cta: "Open the pipeline",
           },
     );
+
+    // The code that sent them gets the lead against its name, so a campaign
+    // page can say what a magnet or a flyer actually brought in.
+    if (lead.campaign && lead.campaign !== "advertise-page") {
+      await recordConversion({ code: lead.campaign, form: "advertise" }).catch(() => {});
+    }
 
     return { ok: true };
   } catch (err) {

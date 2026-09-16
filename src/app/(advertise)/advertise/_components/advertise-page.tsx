@@ -34,6 +34,8 @@ export type AdvertisePageProps = {
   /** Live from the roster. Null when the database could not be reached. */
   slotsLeft: number | null;
   metaPixelId?: string;
+  /** Live locations to pick from. Empty until there is more than one, and then the form asks. */
+  locations?: { id: string; name: string; place: string }[];
 };
 
 /**
@@ -122,6 +124,7 @@ export default function AdvertisePage({
   totalSlots,
   slotsLeft,
   metaPixelId,
+  locations = [],
 }: AdvertisePageProps) {
   useGSAPAnimations();
 
@@ -139,8 +142,13 @@ export default function AdvertisePage({
    * and the query string must not become part of what gets cached.
    */
   useEffect(() => {
+    const clean = (v: string) => v.slice(0, 40).replace(/[^a-zA-Z0-9_-]/g, "");
     const src = new URLSearchParams(window.location.search).get("src");
-    if (src) setSource(src.slice(0, 40).replace(/[^a-zA-Z0-9_-]/g, ""));
+    if (src) return setSource(clean(src));
+    // A scan of one of our codes leaves a cookie behind; a flyer that sent
+    // someone here still gets the credit if they came back a week later.
+    const cookie = document.cookie.split("; ").find((c) => c.startsWith("ss_src="));
+    if (cookie) setSource(clean(decodeURIComponent(cookie.slice("ss_src=".length))));
   }, []);
 
   /** The gallery walks itself until someone takes hold of it. */
@@ -395,6 +403,23 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
                   placeholder="Auto repair, insurance, real estate"
                   required
                 />
+
+                {locations.length > 1 && (
+                  <fieldset>
+                    <legend className="block text-xs font-semibold text-[#5c4f45] mb-1.5">
+                      Which location? <span className="font-normal text-[#9a8b7d]">(pick all that interest you)</span>
+                    </legend>
+                    <div className="flex flex-wrap gap-x-5 gap-y-2">
+                      {locations.map((l) => (
+                        <label key={l.id} htmlFor={`loc-${l.id}`} className="flex items-center gap-2 text-sm text-[#1a1210]">
+                          <input id={`loc-${l.id}`} type="checkbox" name="locations" value={l.id} className="accent-[#DC2626]" />
+                          {l.name}
+                          {l.place ? <span className="text-[#9a8b7d]"> · {l.place}</span> : null}
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+                )}
 
                 <div>
                   <label htmlFor="budget" className="block text-xs font-semibold text-[#5c4f45] mb-1.5">

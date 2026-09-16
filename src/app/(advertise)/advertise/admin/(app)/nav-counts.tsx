@@ -18,7 +18,10 @@ import {
   cachedStripeState,
   cachedTasks,
   cachedVault,
+  cachedVenues,
+  cachedCampaigns,
 } from "@/lib/ads/cached";
+import { venueDuesDue } from "@/lib/ads/venue-dues";
 import { isStripeConfigured } from "@/lib/books/stripe";
 import { filingsDue } from "@/lib/books/company";
 import { expectedBills } from "@/lib/books/recurring";
@@ -34,7 +37,7 @@ import type { NavCount, NavKey } from "../_components/shell";
 export const todayData = cache(async function todayData() {
   const asOf = today();
   const month = asOf.slice(0, 7);
-  const [advertisers, prospects, replies, reports, tasks, entries, pendingReceipts, bills, vault, company, stripe] = await Promise.all([
+  const [advertisers, prospects, replies, reports, tasks, entries, pendingReceipts, bills, vault, company, stripe, venues] = await Promise.all([
     cachedAdvertisers(),
     cachedProspects(),
     cachedResponses(),
@@ -46,8 +49,11 @@ export const todayData = cache(async function todayData() {
     cachedVault(),
     cachedCompany(),
     isStripeConfigured() ? cachedStripeState() : Promise.resolve(null),
+    cachedVenues(),
   ]);
   const payments = await cachedPaymentsByAdvertiser(advertisers.map((a) => a.id));
+  const venueDues = await venueDuesDue(venues, advertisers, payments, asOf);
+  const venueNames = new Map(venues.map((v) => [v.id, v.name]));
   const summary = summarize(advertisers);
   const newLeads = prospects.filter((p) => p.status === "new" && p.source === "Advertise page");
   const followUps = followUpsDue(prospects, asOf);
@@ -72,9 +78,9 @@ export const todayData = cache(async function todayData() {
     stripe,
     done,
   });
-  const items = buildToday({ ...partial, books, done });
+  const items = buildToday({ ...partial, books, done, venueDues, venueNames });
 
-  return { asOf, advertisers, prospects, replies, reports, tasks, payments, summary, newLeads, followUps, overduePayments, items, books, pendingReceipts };
+  return { asOf, advertisers, prospects, replies, reports, tasks, payments, summary, newLeads, followUps, overduePayments, items, books, pendingReceipts, venues, venueDues };
 });
 
 export async function navCounts(): Promise<Partial<Record<NavKey, NavCount>>> {
@@ -95,7 +101,8 @@ export async function navCounts(): Promise<Partial<Record<NavKey, NavCount>>> {
     payments: { value: late, hot: late > 0 },
     artwork: { value: artworkPending },
     reports: { value: drafts, hot: drafts > 0 },
-    flyers: { soon: true },
+    campaigns: { value: (await cachedCampaigns()).filter((c) => c.status === "draft").length },
+    locations: { value: data.venueDues.length, hot: data.venueDues.some((d) => d.daysLate > 7) },
     books: { value: data.books.length, hot: data.books.some((i) => i.tone === "bad") },
     receipts: { value: data.pendingReceipts.length, hot: data.pendingReceipts.length > 0 },
     setup: { value: setupTodo, hot: setup.some((i) => i.essential && i.status !== "on") },

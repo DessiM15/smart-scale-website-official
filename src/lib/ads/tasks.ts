@@ -17,6 +17,7 @@ import { randomUUID } from "crypto";
 import { redisPipeline, redisWrite } from "./redis";
 import type { ExpectedPayment } from "./expected";
 import type { RenewalResponse } from "./responses";
+import type { VenueDueRow } from "./venue-dues";
 import {
   formatDate,
   isOpenProspect,
@@ -219,7 +220,8 @@ export type TodayKind =
   | "task"
   | "receipt"
   | "bill"
-  | "document";
+  | "document"
+  | "venue";
 
 /**
  * How a row can be acted on. Each becomes a button; the page decides how.
@@ -237,7 +239,9 @@ export type TodayAction =
   /** Post this month's expected charge for a recurring bill. */
   | { type: "logBill"; id: string; month: string; invoice: boolean }
   /** Say a typed expense has no receipt to attach, so it stops asking. */
-  | { type: "noReceipt"; id: string };
+  | { type: "noReceipt"; id: string }
+  /** Post what a venue is owed for a month into the books as paid. */
+  | { type: "logVenueDue"; venueId: string; month: string; part: "rent" | "share"; amount: number };
 
 export type TodayItem = {
   key: string;
@@ -249,6 +253,8 @@ export type TodayItem = {
   /** For sorting: earlier is more urgent. */
   order: number;
   actions: TodayAction[];
+  /** The location this is about, shown once there is more than one. */
+  tag?: string;
 };
 
 const KIND_ORDER: Record<TodayKind, number> = {
@@ -257,6 +263,7 @@ const KIND_ORDER: Record<TodayKind, number> = {
   payment: 2,
   receipt: 3,
   bill: 4,
+  venue: 4,
   followup: 5,
   renewal: 6,
   paperwork: 7,
@@ -286,8 +293,18 @@ export type TodayInput = {
   tasks: Task[];
   /** Rows the books want on the list, built by ./books/today. */
   books: TodayItem[];
+  /** Rent and revenue share that has fallen due, per location. */
+  venueDues?: VenueDueRow[];
+  /** Location names by id, for the tag on each row. Empty when there is only one. */
+  venueNames?: Map<string, string>;
   done: Set<string>;
 };
+
+/** The location a row is about, only worth saying once there are several. */
+function tagFor(names: Map<string, string> | undefined, venueId?: string | null): string | undefined {
+  if (!names || names.size < 2) return undefined;
+  return names.get(venueId || "mex-taco-house") ?? undefined;
+}
 
 /** Every key the list could show, so the page can ask which are done. */
 export function candidateKeys(input: Omit<TodayInput, "done">): string[] {
@@ -316,6 +333,7 @@ export function buildToday(input: TodayInput): TodayItem[] {
       key: `lead:${lead.id}`,
       kind: "lead",
       tone: "bad",
+      tag: lead.venueIds?.length ? lead.venueIds.map((id) => input.venueNames?.get(id) ?? id).join(" + ") : undefined,
       title: `${lead.business}${lead.category ? ` · ${lead.category}` : ""}`,
       detail: [
         `Came in ${relative(lead.addedAt, today)}`,
@@ -364,6 +382,7 @@ export function buildToday(input: TodayInput): TodayItem[] {
       key: `payment:${advertiserId}:${oldest.period}`,
       kind: "payment",
       tone: late ? "bad" : "warn",
+      tag: tagFor(input.venueNames, oldest.venueId),
       title:
         list.length === 1
           ? `${oldest.business} · $${oldest.amount.toLocaleString("en-US", { maximumFractionDigits: 0 })} ${oldest.status}`
@@ -416,6 +435,7 @@ export function buildToday(input: TodayInput): TodayItem[] {
       key,
       kind: "renewal",
       tone: v.overdue || v.daysRemaining <= 7 ? "bad" : "warn",
+      tag: tagFor(input.venueNames, v.venueId),
       title: v.business,
       detail: v.overdue
         ? `Term ended ${formatDate(v.endDate)} · ${Math.abs(v.daysRemaining)} days ago · still on the screens`
@@ -436,6 +456,7 @@ export function buildToday(input: TodayInput): TodayItem[] {
       key,
       kind: "paperwork",
       tone: "",
+      tag: tagFor(input.venueNames, v.venueId),
       title: v.business,
       detail: `Running with no signed agreement for the term ending ${formatDate(v.endDate)}`,
       order: v.daysRemaining,
@@ -476,6 +497,23 @@ export function buildToday(input: TodayInput): TodayItem[] {
     });
   }
 
+  for (const d of input.venueDues ?? []) {
+    const part = d.part === "rent" ? "rent" : "revenue share";
+    items.push({
+      key: d.key,
+      kind: "venue",
+      tone: d.daysLate > 7 ? "bad" : "warn",
+      title: `${d.venueName} · $${d.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })} ${part}${d.part === "share" ? ` for ${monthWord(d.month)}` : ""}`,
+      detail: `${d.ownerName ? `To ${d.ownerName} · ` : ""}due ${formatDate(d.dueDate)}${d.daysLate > 0 ? ` · ${d.daysLate} days ago` : " · today"} · Paid writes it into the books`,
+      order: -d.daysLate,
+      actions: [
+        { type: "logVenueDue", venueId: d.venueId, month: d.month, part: d.part, amount: d.amount },
+        { type: "link", label: "Statement", href: `${ADMIN}/statement/${d.month}?venue=${d.venueId}` },
+      ],
+      tag: tagFor(input.venueNames, d.venueId),
+    });
+  }
+
   items.push(...input.books);
 
   return items.sort((a, b) => KIND_ORDER[a.kind] - KIND_ORDER[b.kind] || a.order - b.order);
@@ -491,6 +529,11 @@ export function upcomingFollowUps(prospects: Prospect[], today: string): Prospec
   return prospects
     .filter((p) => isOpenProspect(p) && p.followUpDate && p.followUpDate > today)
     .sort((a, b) => (a.followUpDate ?? "").localeCompare(b.followUpDate ?? ""));
+}
+
+function monthWord(month: string): string {
+  const [y, m] = month.split("-").map(Number);
+  return new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(y, m - 1, 1)));
 }
 
 function relative(iso: string, today: string): string {

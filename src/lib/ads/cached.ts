@@ -15,6 +15,8 @@ import { listLinks } from "./link-store";
 import { listResponses } from "./responses";
 import { listTasks } from "./tasks";
 import { listPayments } from "./payments";
+import { listVenues } from "./venues";
+import { listCampaignClients, listCampaigns } from "./campaigns";
 import { listEntries, listMonths } from "@/lib/books/ledger";
 import { listPendingReceipts } from "@/lib/books/receipts";
 import { listBills } from "@/lib/books/recurring";
@@ -30,6 +32,9 @@ export const cachedReports = cache(listReports);
 export const cachedLinks = cache(listLinks);
 export const cachedResponses = cache(listResponses);
 export const cachedTasks = cache(listTasks);
+export const cachedVenues = cache(listVenues);
+export const cachedCampaigns = cache(listCampaigns);
+export const cachedCampaignClients = cache(listCampaignClients);
 
 /* The books. Read by the Today list, the sidebar counts and the Books pages. */
 export const cachedEntries = cache(listEntries);

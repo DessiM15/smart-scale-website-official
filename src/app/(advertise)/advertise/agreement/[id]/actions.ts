@@ -64,6 +64,7 @@ export async function signAgreementAction(data: FormData) {
         agreement.signature.name,
         signedOn,
         agreementText(agreement.terms),
+        agreement.terms.venueName,
       );
       await sendEmail({ to: agreement.terms.email, ...copy });
     }

@@ -201,8 +201,30 @@ function FollowUpLine({ p, today }: { p: Prospect; today: string }) {
   );
 }
 
-function ProspectCard({ prospect, today }: { prospect: Prospect; today: string }) {
+type LocationChoice = { id: string; name: string };
+
+/** Which locations they asked about. Only rendered once there are two. */
+function LocationBoxes({ locations, chosen, idPrefix }: { locations: LocationChoice[]; chosen: string[]; idPrefix: string }) {
+  if (locations.length < 2) return null;
+  return (
+    <div className="sm:col-span-3">
+      <p className={labelClass}>Interested in</p>
+      <input type="hidden" name="venueIdsPresent" value="1" />
+      <div className="flex flex-wrap gap-x-5 gap-y-2">
+        {locations.map((l) => (
+          <label key={l.id} htmlFor={`${idPrefix}-${l.id}`} className="flex items-center gap-2 text-sm text-white/70">
+            <input id={`${idPrefix}-${l.id}`} type="checkbox" name="venueIds" value={l.id} defaultChecked={chosen.includes(l.id)} className="accent-[#DC2626]" />
+            {l.name}
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ProspectCard({ prospect, today, locations }: { prospect: Prospect; today: string; locations: LocationChoice[] }) {
   const p = prospect;
+  const asked = locations.length > 1 ? locations.filter((l) => p.venueIds?.includes(l.id)) : [];
   const log = p.log ?? [];
   const last = log[log.length - 1];
   const stage = stageOf(p);
@@ -216,6 +238,9 @@ function ProspectCard({ prospect, today }: { prospect: Prospect; today: string }
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             <span className={`${serif} text-[22px] leading-none text-white`}>{p.business}</span>
             {p.category && <Badge dot={false}>{p.category}</Badge>}
+            {asked.map((l) => (
+              <Badge key={l.id} dot={false} className="!text-white/60">{l.name}</Badge>
+            ))}
             {p.status === "hot" && <Badge tone="brand" dot={false}>Hot</Badge>}
             <span className="text-xs text-white/40">
               {stamp(p.addedAt)}
@@ -335,6 +360,7 @@ function ProspectCard({ prospect, today }: { prospect: Prospect; today: string }
             <Field label="Budget" name="budget" id={`edit-budget-${p.id}`} defaultValue={p.budget ?? ""} />
             <Field label="Source" name="source" id={`edit-source-${p.id}`} defaultValue={p.source} />
             <Field label="Campaign" name="campaign" id={`edit-campaign-${p.id}`} defaultValue={p.campaign ?? ""} hint="Which flyer or drop sent them." />
+            <LocationBoxes locations={locations} chosen={p.venueIds ?? []} idPrefix={`edit-venue-${p.id}`} />
             <div className="sm:col-span-3">
               <label className={labelClass} htmlFor={`edit-notes-${p.id}`}>Notes</label>
               <textarea id={`edit-notes-${p.id}`} name="notes" rows={3} defaultValue={p.notes} className={inputClass} />
@@ -380,7 +406,7 @@ function ProspectCard({ prospect, today }: { prospect: Prospect; today: string }
 
 /* -------------------------------- the stages ------------------------------- */
 
-function Stage({ stage, prospects, today }: { stage: ProspectStage; prospects: Prospect[]; today: string }) {
+function Stage({ stage, prospects, today, locations }: { stage: ProspectStage; prospects: Prospect[]; today: string; locations: LocationChoice[] }) {
   const copy = STAGES[stage];
   return (
     <section id={`stage-${stage}`} className="mb-8 scroll-mt-28">
@@ -395,7 +421,7 @@ function Stage({ stage, prospects, today }: { stage: ProspectStage; prospects: P
       ) : (
         <ul className="flex flex-col gap-4">
           {prospects.map((p) => (
-            <ProspectCard key={p.id} prospect={p} today={today} />
+            <ProspectCard key={p.id} prospect={p} today={today} locations={locations} />
           ))}
         </ul>
       )}
@@ -442,11 +468,12 @@ function Closed({ title, lede, prospects }: { title: string; lede: string; prosp
   );
 }
 
-export function AddProspect({ open }: { open: boolean }) {
+export function AddProspect({ open, locations = [] }: { open: boolean; locations?: LocationChoice[] }) {
   return (
     <Disclosure id="prospect-add" open={open} summary={<span>Add to the list</span>} hint="a walk-in, a referral, a cold call">
       <form action={saveProspectAction} className="grid sm:grid-cols-3 gap-4 pt-4">
         <input type="hidden" name="returnTo" value={PAGE} />
+        <LocationBoxes locations={locations} chosen={[]} idPrefix="add-venue" />
         <Field label="Business" name="business" id="prospect-business" required />
         <Field label="Category wanted" name="category" id="prospect-category" />
         <Field label="Contact name" name="contactName" id="prospect-contact" />
@@ -500,7 +527,7 @@ export function PipelineFilters({ prospects, filter }: { prospects: Prospect[]; 
   );
 }
 
-export function ProspectsTab({ prospects, today, filter = "all" }: { prospects: Prospect[]; today: string; filter?: PipelineFilter }) {
+export function ProspectsTab({ prospects, today, filter = "all", locations = [] }: { prospects: Prospect[]; today: string; filter?: PipelineFilter; locations?: LocationChoice[] }) {
   const byStage = (stage: ProspectStage) => prospects.filter((p) => stageOf(p) === stage);
   const open = prospects.filter((p) => stageOf(p) !== null);
   const won = prospects.filter((p) => p.status === "won");
@@ -520,7 +547,7 @@ export function ProspectsTab({ prospects, today, filter = "all" }: { prospects: 
       )}
 
       {stages.map((stage) => (
-        <Stage key={stage} stage={stage} prospects={byStage(stage)} today={today} />
+        <Stage key={stage} stage={stage} prospects={byStage(stage)} today={today} locations={locations} />
       ))}
 
       {(filter === "all" || filter === "won") && (
@@ -534,7 +561,7 @@ export function ProspectsTab({ prospects, today, filter = "all" }: { prospects: 
         />
       )}
 
-      <AddProspect open={open.length === 0} />
+      <AddProspect open={open.length === 0} locations={locations} />
     </>
   );
 }

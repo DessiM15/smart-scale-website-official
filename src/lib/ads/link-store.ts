@@ -37,9 +37,22 @@ export type AdLinkRecord = {
    * are matched by the advertiser's legacy `qrCode` field instead.
    */
   advertiserId?: string;
+  /**
+   * What the tagged destination says about where the scan came from. Absent
+   * on older codes, which are all Mex Taco House screen codes and read that
+   * way. A second location names itself; a print campaign names its medium.
+   */
+  utmSource?: string;
+  utmMedium?: string;
+  /** The campaign placement this code was printed for, if it was. */
+  campaignId?: string;
+  placementId?: string;
   createdAt: string;
   updatedAt: string;
 };
+
+export const DEFAULT_UTM_SOURCE = "mex-taco-house";
+export const DEFAULT_UTM_MEDIUM = "qr-instore-screen";
 
 const KEY = (code: string) => `ads:link:${code}`;
 const INDEX = "ads:links";
@@ -136,8 +149,8 @@ export function resolveDestination(link: AdLinkRecord): string {
   try {
     const url = new URL(link.destination);
     if (!url.searchParams.has("utm_source")) {
-      url.searchParams.set("utm_source", "mex-taco-house");
-      url.searchParams.set("utm_medium", "qr-instore-screen");
+      url.searchParams.set("utm_source", link.utmSource || DEFAULT_UTM_SOURCE);
+      url.searchParams.set("utm_medium", link.utmMedium || DEFAULT_UTM_MEDIUM);
       url.searchParams.set("utm_campaign", link.code);
     }
     return url.toString();
@@ -158,6 +171,12 @@ export type LinkInput = {
   logoDataUri?: string | null;
   /** undefined leaves the owner alone; null unassigns it. */
   advertiserId?: string | null;
+  /** undefined leaves the tags alone. */
+  utmSource?: string;
+  utmMedium?: string;
+  /** undefined leaves the campaign alone; null takes the code off it. */
+  campaignId?: string | null;
+  placementId?: string | null;
 };
 
 export async function saveLink(input: LinkInput): Promise<boolean> {
@@ -179,6 +198,10 @@ export async function saveLink(input: LinkInput): Promise<boolean> {
       input.advertiserId === null
         ? undefined
         : (input.advertiserId ?? existing?.advertiserId),
+    utmSource: input.utmSource ?? existing?.utmSource,
+    utmMedium: input.utmMedium ?? existing?.utmMedium,
+    campaignId: input.campaignId === null ? undefined : (input.campaignId ?? existing?.campaignId),
+    placementId: input.placementId === null ? undefined : (input.placementId ?? existing?.placementId),
     createdAt: existing?.createdAt || now,
     updatedAt: now,
   };

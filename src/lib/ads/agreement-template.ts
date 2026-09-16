@@ -58,7 +58,29 @@ export type AgreementTerms = {
   dealNote: string;
   /** Absent means monthly — the shape every plan in the price list takes. */
   paymentType?: PaymentType;
+  /**
+   * The location, frozen with the rest. Absent on agreements prepared before
+   * locations existed, which were all Mex Taco House and read exactly as they
+   * did: the defaults below are that wording, character for character.
+   */
+  venueName?: string;
+  venueAddress?: string;
+  /** "Cypress, TX": the town in brackets in the service description. */
+  venuePlace?: string;
+  /** The hours line, already written out. */
+  venueHours?: string;
 };
+
+const DEFAULT_VENUE_HOURS = "Monday – Saturday, 6:00 AM – 2:00 PM; Sunday, 7:00 AM – 2:00 PM";
+
+function venueOf(terms: AgreementTerms) {
+  return {
+    name: terms.venueName || VENUE,
+    address: terms.venueAddress || VENUE_ADDRESS,
+    place: terms.venuePlace || "Cypress, TX",
+    hours: terms.venueHours || DEFAULT_VENUE_HOURS,
+  };
+}
 
 export type Clause = { heading: string; body: string[] };
 
@@ -74,7 +96,7 @@ function paymentTypeOf(terms: AgreementTerms): PaymentType {
 }
 
 export function agreementTitle(terms: AgreementTerms): string {
-  return `${VENUE} Digital Advertising Agreement — ${terms.business}`;
+  return `${venueOf(terms).name} Digital Advertising Agreement — ${terms.business}`;
 }
 
 /** The red line under the title on the printed version. */
@@ -123,7 +145,7 @@ export function agreementClauses(terms: AgreementTerms): Clause[] {
       heading: "The parties",
       body: [
         `This Agreement is made between ${COMPANY} (${COMPANY_CITY}) ("Company") and ${terms.business}${terms.contactName ? `, represented by ${terms.contactName}` : ""}${terms.phone ? `, Phone: ${terms.phone}` : ""}${terms.email ? `, Email: ${terms.email}` : ""} ("Advertiser"), effective as of ${formatDate(terms.startDate)} (the "Effective Date").`,
-        `The advertising described in this Agreement is displayed on digital screens located at ${VENUE}, ${VENUE_ADDRESS} (the "Venue"). The Venue is not a party to this Agreement but is an intended third-party beneficiary of the Sections titled "Advertiser Content Responsibility," "Removal Rights," "Indemnification," and "Limitation of Liability."`,
+        `The advertising described in this Agreement is displayed on digital screens located at ${venueOf(terms).name}, ${venueOf(terms).address} (the "Venue"). The Venue is not a party to this Agreement but is an intended third-party beneficiary of the Sections titled "Advertiser Content Responsibility," "Removal Rights," "Indemnification," and "Limitation of Liability."`,
       ],
     },
     {
@@ -139,7 +161,7 @@ export function agreementClauses(terms: AgreementTerms): Clause[] {
     {
       heading: "The placement",
       body: [
-        `A 10-second static ad on the dining-room screens at ${VENUE} (Cypress, TX), rotating during all posted business hours — cycling roughly every three (3) minutes while guests are seated. Venue Hours: Monday – Saturday, 6:00 AM – 2:00 PM; Sunday, 7:00 AM – 2:00 PM.`,
+        `A 10-second static ad on the dining-room screens at ${venueOf(terms).name} (${venueOf(terms).place}), rotating during all posted business hours — cycling roughly every three (3) minutes while guests are seated. Venue Hours: ${venueOf(terms).hours}.`,
       ],
     },
     {
@@ -209,7 +231,7 @@ export function agreementClauses(terms: AgreementTerms): Clause[] {
     {
       heading: "Service delivery & venue",
       body: [
-        `Company's responsibility is to display the Advertiser's ad in the agreed rotation at ${VENUE}. If Company fails to run the ad as promised, Advertiser's sole remedy is a pro-rated credit or refund for the days it did not run. Should the Venue close, change ownership, or otherwise become permanently unavailable through no fault of Company during the term, Company will, in good faith, refund the unused portion of prepaid fees for the remaining days of the term. Company is not otherwise liable for circumstances beyond its control. All creative is subject to the Venue's approval. Reach figures are the Venue's reported guest counts, given in good faith as an estimate, not a guarantee. This Agreement is governed by the laws of the State of ${GOVERNING_STATE}; exclusive venue for any dispute lies in the courts located in ${DISPUTE_VENUE}.`,
+        `Company's responsibility is to display the Advertiser's ad in the agreed rotation at ${venueOf(terms).name}. If Company fails to run the ad as promised, Advertiser's sole remedy is a pro-rated credit or refund for the days it did not run. Should the Venue close, change ownership, or otherwise become permanently unavailable through no fault of Company during the term, Company will, in good faith, refund the unused portion of prepaid fees for the remaining days of the term. Company is not otherwise liable for circumstances beyond its control. All creative is subject to the Venue's approval. Reach figures are the Venue's reported guest counts, given in good faith as an estimate, not a guarantee. This Agreement is governed by the laws of the State of ${GOVERNING_STATE}; exclusive venue for any dispute lies in the courts located in ${DISPUTE_VENUE}.`,
       ],
     },
     {

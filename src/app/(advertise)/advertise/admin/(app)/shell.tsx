@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { currentWho } from "@/lib/ads/who";
-import { venueOf } from "@/lib/ads/venues";
+import { currentVenue } from "@/lib/ads/current-venue";
+import { cachedVenues } from "@/lib/ads/cached";
 import { isRedisConfigured, isRedisReachable } from "@/lib/ads/redis";
 import { MobileTabs, MobileTop, Sidebar, type NavKey } from "../_components/shell";
 import { Banner, type BannerParams } from "../_components/banner";
@@ -57,15 +58,15 @@ export async function Shell({
   banner?: BannerParams;
   children: ReactNode;
 }) {
-  const [who, counts, reachable] = await Promise.all([currentWho(), navCounts(), isRedisReachable()]);
-  const venue = venueOf();
+  const [who, counts, reachable, venues] = await Promise.all([currentWho(), navCounts(), isRedisReachable(), cachedVenues()]);
+  const venue = await currentVenue(venues);
   const returnTo = pathFor(active);
 
   return (
     <div className="min-h-screen lg:flex">
-      <Sidebar active={active} counts={counts} venue={venue} who={who} returnTo={returnTo} />
+      <Sidebar active={active} counts={counts} venue={venue} venues={venues} who={who} returnTo={returnTo} />
       <div className="flex-1 min-w-0 flex flex-col">
-        <MobileTop venue={venue} who={who} returnTo={returnTo} />
+        <MobileTop venue={venue} venues={venues} who={who} returnTo={returnTo} />
         <main className="flex-1 w-full max-w-[1200px] px-4 sm:px-8 lg:px-12 pt-7 sm:pt-10 pb-28 lg:pb-16">
           <DatabaseWarning reachable={reachable} />
           {banner && <Banner {...banner} />}

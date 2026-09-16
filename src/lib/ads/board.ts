@@ -9,11 +9,13 @@
 
 import {
   artworkStatusOf,
+  atVenue,
   isOpenProspect,
+  prospectsForVenue,
   type AdvertiserView,
   type Prospect,
 } from "./roster";
-import { venueOf, type Venue } from "./venues";
+import type { Venue } from "./venues";
 
 export type SlotState = "active" | "expiring" | "pending" | "house" | "open";
 
@@ -51,11 +53,12 @@ export function lowestFreeSlot(taken: Iterable<number | null | undefined>, sella
 }
 
 export function buildBoard(
-  views: AdvertiserView[],
-  prospects: Prospect[],
-  venueId?: string,
+  allViews: AdvertiserView[],
+  allProspects: Prospect[],
+  venue: Venue,
 ): Board {
-  const venue = venueOf(venueId);
+  const views = atVenue(allViews, venue.id);
+  const prospects = prospectsForVenue(allProspects, venue.id);
   const onBoard = views.filter((v) => v.status === "active" || v.status === "pending");
 
   // Fixed slots first, then the unplaced take whatever is left, running

@@ -15,6 +15,7 @@ import { isNarrativeConfigured } from "@/lib/ads/narrative";
 import { runInMonth } from "@/lib/ads/report-data";
 import { isReportStale, type MonthlyReport } from "@/lib/ads/reports";
 import { formatDate, type AdvertiserView } from "@/lib/ads/roster";
+import { venueOf, type Venue } from "@/lib/ads/venues";
 import {
   Card,
   Empty,
@@ -31,9 +32,11 @@ import {
 function ReportCard({
   report,
   advertiser,
+  venue,
 }: {
   report: MonthlyReport;
   advertiser?: AdvertiserView;
+  venue: Venue;
 }) {
   const f = report.facts;
   const sent = report.status === "sent";
@@ -43,8 +46,8 @@ function ReportCard({
   // already sent and wrong for one still waiting, so a draft is checked against
   // the roster every time it is looked at. Only a draft: a skipped report is one
   // you have already decided not to send, and flagging it is noise.
-  const stale = report.status === "draft" && isReportStale(report, advertiser);
-  const expected = stale && advertiser ? runInMonth(advertiser, report.month) : null;
+  const stale = report.status === "draft" && isReportStale(report, advertiser, venue);
+  const expected = stale && advertiser ? runInMonth(advertiser, report.month, venue) : null;
 
   return (
     <li className=" border border-white/[0.07] bg-white/[0.02] p-5 sm:p-6">
@@ -241,14 +244,17 @@ function ReportCard({
 export function ReportsTab({
   reports,
   advertisers,
+  venues,
 }: {
   reports: MonthlyReport[];
   advertisers: AdvertiserView[];
+  venues: Venue[];
 }) {
   const waiting = reports.filter((r) => r.status === "draft");
   const rest = reports.filter((r) => r.status !== "draft").slice(0, 6);
   const aiOn = isNarrativeConfigured();
   const byId = new Map(advertisers.map((a) => [a.id, a]));
+  const venueFor = (id: string) => venueOf(venues, byId.get(id)?.venueId);
 
   return (
     <Card
@@ -284,6 +290,7 @@ export function ReportsTab({
                   key={`${r.advertiserId}-${r.month}`}
                   report={r}
                   advertiser={byId.get(r.advertiserId)}
+                  venue={venueFor(r.advertiserId)}
                 />
               ))}
             </ul>
@@ -299,6 +306,7 @@ export function ReportsTab({
                     key={`${r.advertiserId}-${r.month}`}
                     report={r}
                     advertiser={byId.get(r.advertiserId)}
+                  venue={venueFor(r.advertiserId)}
                   />
                 ))}
               </ul>

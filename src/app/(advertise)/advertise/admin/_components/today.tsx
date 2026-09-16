@@ -11,7 +11,7 @@ import {
   markDoneAction,
   markPaidAction,
 } from "../actions";
-import { logBillAction, markNoReceiptAction } from "../(app)/books/actions";
+import { logBillAction, logVenueDueAction, markNoReceiptAction } from "../(app)/books/actions";
 import { fileInputClass } from "./books";
 import { ReceiptFileInput } from "./receipt-picker";
 import type { Board, BoardSlot, SlotState } from "@/lib/ads/board";
@@ -54,6 +54,7 @@ const KIND: Record<TodayKind, { label: string; tone: Tone }> = {
   receipt: { label: "Receipt", tone: "warn" },
   bill: { label: "Bill", tone: "warn" },
   document: { label: "Document", tone: "neutral" },
+  venue: { label: "Venue", tone: "warn" },
 };
 
 const CheckIcon = () => (
@@ -162,6 +163,19 @@ function ItemAction({ action, item, returnTo }: { action: TodayAction; item: Tod
           </SubmitButton>
         </form>
       );
+    case "logVenueDue":
+      return (
+        <form action={logVenueDueAction} className="flex flex-wrap items-center gap-2">
+          <input type="hidden" name="venueId" value={action.venueId} />
+          <input type="hidden" name="month" value={action.month} />
+          <input type="hidden" name="part" value={action.part} />
+          <input type="hidden" name="amount" value={String(action.amount)} />
+          <input type="hidden" name="returnTo" value={returnTo} />
+          <SubmitButton className={`${btnPrimary} ${btnSm}`} pendingLabel="Logging">
+            Paid
+          </SubmitButton>
+        </form>
+      );
     case "noReceipt":
       return (
         <form action={markNoReceiptAction}>
@@ -241,7 +255,10 @@ export function TodayRow({ item, returnTo }: { item: TodayItem; returnTo: string
         <Badge tone={item.tone === "bad" ? "bad" : item.tone === "warn" ? "warn" : kind.tone}>{kind.label}</Badge>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[15px] text-white leading-snug">{item.title}</p>
+        <p className="text-[15px] text-white leading-snug">
+          {item.title}
+          {item.tag && <span className={`${bebas} ml-2 align-middle text-[10px] tracking-[0.2em] text-white/40 border border-white/[0.1] px-1.5 py-0.5`}>{item.tag}</span>}
+        </p>
         <p className="text-xs text-white/45 mt-0.5 leading-snug">{item.detail}</p>
       </div>
       <ItemActions item={item} returnTo={returnTo} />

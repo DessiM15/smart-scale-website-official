@@ -12,7 +12,11 @@ import { randomUUID } from "crypto";
 import { redisPipeline, redisWrite } from "./redis";
 import { localStamp } from "./scan-store";
 
-/** 18 slides in the loop; two are Mex Taco's own. */
+/**
+ * Mex Taco House's sellable slots. Every location carries its own count now
+ * (see ./venues); this is the fallback for a caller that has no location in
+ * hand, and the figure the public advertise page still uses.
+ */
 export const SELLABLE_SLOTS = 16;
 
 /** Terms are counted from the start date, in whole months. */
@@ -137,6 +141,13 @@ export type Advertiser = {
   updatedAt: string;
 };
 
+/** The location an advertiser or prospect belongs to, for records written before locations existed. */
+export const DEFAULT_VENUE_ID = "mex-taco-house";
+
+export function venueIdOf(a: { venueId?: string }): string {
+  return a.venueId || DEFAULT_VENUE_ID;
+}
+
 /**
  * The artwork pipeline. Plays are only counted for a slide that is actually
  * on the screens, which is the last of these, so the status is a business
@@ -222,6 +233,11 @@ export type Prospect = {
   campaign?: string;
   /** What they said they could spend, in their own words or a chosen band. */
   budget?: string;
+  /**
+   * The locations they asked about. Empty or absent means they didn't say,
+   * which for anyone before the second location meant Mex Taco House.
+   */
+  venueIds?: string[];
   status: ProspectStatus;
   notes: string;
   /** Every update logged against them, oldest first. */
@@ -453,7 +469,7 @@ export type RosterSummary = {
   unsigned: AdvertiserView[];
 };
 
-export function summarize(views: AdvertiserView[]): RosterSummary {
+export function summarize(views: AdvertiserView[], sellable = SELLABLE_SLOTS): RosterSummary {
   const active = views.filter((v) => v.status === "active");
   const pending = views.filter((v) => v.status === "pending");
   const byEndDate = (a: AdvertiserView, b: AdvertiserView) =>
@@ -462,7 +478,7 @@ export function summarize(views: AdvertiserView[]): RosterSummary {
   return {
     active: active.length,
     pending: pending.length,
-    openSlots: Math.max(0, SELLABLE_SLOTS - active.length),
+    openSlots: Math.max(0, sellable - active.length),
     takenCategories: [...new Set(active.map((v) => v.category).filter(Boolean))].sort(),
     expiring: active.filter((v) => v.expiringSoon).sort(byEndDate),
     overdue: active.filter((v) => v.overdue).sort(byEndDate),
@@ -479,22 +495,37 @@ export function summarize(views: AdvertiserView[]): RosterSummary {
 }
 
 /**
- * Another active advertiser already owns this category. Exclusivity is the
- * thing we sell, so this is checked on every save rather than trusted.
+ * Another active advertiser already owns this category at this location.
+ * Exclusivity is the thing we sell, so this is checked on every save rather
+ * than trusted. It is per location, by Dessi's call: a roofer at Mex Taco
+ * House does not stop a different roofer at the next venue.
  */
 export function categoryConflict(
   views: AdvertiserView[],
   category: string,
   excludeId?: string,
+  venueId?: string,
 ): AdvertiserView | undefined {
   const wanted = category.trim().toLowerCase();
   if (!wanted) return undefined;
+  const at = venueId || DEFAULT_VENUE_ID;
   return views.find(
     (v) =>
       v.status === "active" &&
       v.id !== excludeId &&
+      venueIdOf(v) === at &&
       v.category.trim().toLowerCase() === wanted,
   );
+}
+
+/** The advertisers on one location's screens. */
+export function atVenue<T extends { venueId?: string }>(list: T[], venueId: string): T[] {
+  return list.filter((a) => venueIdOf(a) === venueId);
+}
+
+/** Prospects interested in a location, plus anyone who never said which. */
+export function prospectsForVenue(prospects: Prospect[], venueId: string): Prospect[] {
+  return prospects.filter((p) => !p.venueIds || p.venueIds.length === 0 || p.venueIds.includes(venueId));
 }
 
 /* -------------------------------- storage --------------------------------- */
