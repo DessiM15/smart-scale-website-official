@@ -5,7 +5,7 @@ import Image from "next/image";
 const clientLogos = [
   { name: "Botmakers", src: "/assets/client-logos/botmakers.png" },
   { name: "Gulf Coast Alloys", src: "/assets/client-logos/gulf-coast-alloys.png" },
-  { name: "APEX Affinity", src: "/assets/client-logos/apex-affinity.png" },
+  { name: "Andre Thomas Law", src: "/assets/client-logos/andre-thomas-law.png" },
 ];
 
 export default function SocialProof() {

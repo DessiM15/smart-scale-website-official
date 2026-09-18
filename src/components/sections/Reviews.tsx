@@ -5,10 +5,10 @@ import Link from "next/link";
 import {
   REVIEWS,
   HAS_REVIEWS,
-  reviewProjects,
+  reviewLinks,
   type Review,
+  type ReviewLink,
 } from "@/data/reviews";
-import type { Project } from "@/data/projects";
 import { GBP_URL } from "@/lib/business";
 
 /**
@@ -118,23 +118,23 @@ function Avatar({ author }: { author: string }) {
 
 /** The work behind the review, linked. `inert` for the marquee's clone row. */
 function ProjectLinks({
-  projects,
+  links,
   inert = false,
 }: {
-  projects: Project[];
+  links: ReviewLink[];
   inert?: boolean;
 }) {
-  if (projects.length === 0) return null;
+  if (links.length === 0) return null;
   return (
     <div className="mt-4 flex flex-wrap gap-1.5">
-      {projects.map((project) => (
+      {links.map((link) => (
         <Link
-          key={project.slug}
-          href={`/portfolio/${project.slug}`}
+          key={link.href}
+          href={link.href}
           tabIndex={inert ? -1 : undefined}
           className="group/pill inline-flex items-center gap-1.5 rounded-full border border-white/[0.10] bg-white/[0.04] px-2.5 py-1 text-[0.7rem] text-white/50 transition-colors duration-300 hover:border-[#DC2626]/40 hover:bg-[#DC2626]/10 hover:text-white/85"
         >
-          {project.title}
+          {link.label}
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -170,7 +170,7 @@ function ReviewCard({
   const when = formatDate(review.date);
   const isStatic = variant === "static";
   const { preview, truncated } = previewOf(review.text);
-  const projects = reviewProjects(review);
+  const links = reviewLinks(review);
 
   return (
     <figure
@@ -216,7 +216,7 @@ function ReviewCard({
             )}
           </span>
         </div>
-        <ProjectLinks projects={projects} inert={inert} />
+        <ProjectLinks links={links} inert={inert} />
       </figcaption>
     </figure>
   );
@@ -231,7 +231,7 @@ function ReviewModal({
 }) {
   const closeRef = useRef<HTMLButtonElement>(null);
   const when = formatDate(review.date);
-  const projects = reviewProjects(review);
+  const links = reviewLinks(review);
 
   useEffect(() => {
     closeRef.current?.focus();
@@ -318,12 +318,12 @@ function ReviewModal({
             </span>
           </div>
 
-          {projects.length > 0 && (
+          {links.length > 0 && (
             <>
               <p className="mt-6 text-xs uppercase tracking-widest text-white/30">
                 What we built
               </p>
-              <ProjectLinks projects={projects} />
+              <ProjectLinks links={links} />
             </>
           )}
         </div>
