@@ -138,7 +138,7 @@ export const projects: Project[] = [
     vercelUrl: "https://barber-website-mock.vercel.app",
     githubUrl: "https://github.com/DessiM15/barber-website-mock",
     featured: true,
-    featuredOrder: 6,
+    featuredOrder: 7,
     caseStudy: {
       challenge:
         "Many barbershops rely on a third-party booking platform like StyleSeat but have no branded website of their own, sending clients off-site to book and losing the chance to build their own identity. The goal was to design a premium web presence that keeps booking on the shop's own site while integrating with the booking system they already use.",
@@ -169,7 +169,7 @@ export const projects: Project[] = [
     vercelUrl: "https://www.gulfcoastalloys.net",
     githubUrl: "https://github.com/DessiM15/GCA2",
     featured: true,
-    featuredOrder: 3,
+    featuredOrder: 4,
     caseStudy: {
       challenge:
         "A specialty metals distributor needed a modern web presence that could effectively communicate their product range and capabilities to industrial B2B buyers.",
@@ -252,7 +252,7 @@ export const projects: Project[] = [
     vercelUrl: "https://www.taylormadeesthetics.net",
     githubUrl: "https://github.com/DessiM15/taylor-made-esthetics",
     featured: true,
-    featuredOrder: 4,
+    featuredOrder: 5,
     caseStudy: {
       challenge:
         "A growing esthetics studio needed a premium web presence that reflects their luxury brand positioning and makes it easy for clients to book services online.",
@@ -308,7 +308,7 @@ export const projects: Project[] = [
     githubUrl: "https://github.com/DessiM15/repo911",
     isAIPowered: true,
     featured: true,
-    featuredOrder: 2,
+    featuredOrder: 3,
     caseStudy: {
       challenge:
         "The repossession dispute space needed a comprehensive platform that could handle case management, document processing, and client communication at scale while leveraging AI for case analysis.",
@@ -416,7 +416,7 @@ export const projects: Project[] = [
     vercelUrl: "https://dos-tacos.vercel.app",
     githubUrl: "https://github.com/DessiM15/dos-tacos",
     featured: true,
-    featuredOrder: 5,
+    featuredOrder: 6,
     caseStudy: {
       challenge:
         "A neighborhood taqueria had built genuine local reputation — 1,020 five-star Google reviews, a loyal Katy following, and one of the better vegan menus in the area — but none of it showed up online. The harder problem was the pitch itself: restaurant owners rarely respond to a flat mockup, and picking a creative direction from a PDF asks them to imagine motion, texture, and personality that isn't on the page.",
@@ -448,7 +448,7 @@ export const projects: Project[] = [
     vercelUrl: "https://www.ginandjackbar.com",
     githubUrl: "https://github.com/DessiM15/Gin-Jack-Emily",
     featured: true,
-    featuredOrder: 1,
+    featuredOrder: 2,
     caseStudy: {
       challenge:
         "A growing mobile bartending business needed a premium web presence that conveys the sophistication and celebratory energy of their brand while making it easy for couples and event planners to explore packages and book services.",
@@ -541,6 +541,67 @@ export const projects: Project[] = [
         "Media, press, and speaking collected in one place",
         "GSAP reveals and Lenis smooth scroll, paced so the writing stays the focus",
         "Sitemap, robots, and per-page metadata configured for search",
+      ],
+    },
+  },
+  {
+    slug: "andre-thomas-law",
+    businessType: "Personal Injury Law Firm",
+    city: "Houston, TX",
+    title: "Andre Thomas Law",
+    clientName: "Andre Thomas",
+    serviceType: "Website",
+    industry: "Legal / Personal Injury",
+    techStack: ["Next.js 15", "React 19", "TypeScript", "Tailwind CSS", "Framer Motion", "Web3Forms", "Vercel"],
+    description:
+      "The full website for Andre Thomas Law, PLLC, a Houston personal injury firm led by a former prosecutor licensed in Texas and Tennessee. Every page is published in English and Spanish, sixteen practice areas each get their own page, and a bilingual chat assistant answers common questions and screens a lead before it ever reaches the inbox.",
+    shortDescription: "Bilingual personal injury firm site with a lead-screening chat assistant.",
+    thumbnailImage: "/assets/portfolio/andre-thomas-law/andre-thomas-law-houston-personal-injury-attorney-website-design.webp",
+    vercelUrl: "https://www.andrethomaslaw.com",
+    githubUrl: "https://github.com/DessiM15/andre-thomas-law",
+    featured: true,
+    featuredOrder: 1,
+    caseStudy: {
+      challenge:
+        "A trial attorney with real credentials had no website to match them. Much of the firm's Houston audience speaks Spanish first, so a one-language site would have turned away half the people it was meant to reach. And injury leads are time-sensitive: a form that collects a name and a paragraph tells the firm nothing about whether the case is worth a same-day call.",
+      solution:
+        "Built the site twice over, once in English and once in Spanish, with a language switch that keeps the visitor on the same page. Sixteen practice areas each have a dedicated, indexable page with the firm's own copy. A chat assistant answers common questions in either language from a curated knowledge base, then runs the visitor through an intake screen: what happened, when, and where. That screening rides along with every lead, whether it arrives through the form or the chat, so the firm can triage before picking up the phone.",
+      results: [
+        "Every page live in English and Spanish, not a machine-translated afterthought",
+        "Sixteen practice areas, each with its own page and metadata for search",
+        "Bilingual chat assistant that answers from the firm's own knowledge base and never gives legal advice",
+        "Intake screening on every lead, including a beacon when a visitor abandons the chat partway through",
+        "Reviews, team, and attorney bio pages that put the former-prosecutor credential front and center",
+        "Serverless lead delivery through Web3Forms, sitemap and robots configured for search",
+      ],
+    },
+  },
+  {
+    slug: "ascension-athlete-group",
+    businessType: "Athlete Development",
+    city: "Houston, TX",
+    title: "Ascension Athlete Group",
+    clientName: "Ascension Athlete Group",
+    serviceType: "Landing Page",
+    industry: "Sports / Athlete Development",
+    techStack: ["Next.js 15", "TypeScript", "Tailwind CSS", "Motion", "Web3Forms", "Vercel"],
+    description:
+      "A launch landing page for Ascension Athlete Group, a Houston athlete development company built around three divisions: elite performance training, career advisory, and a talent network that connects athletes with opportunity on and off the field. Designed to introduce the founders, show where their athletes have been placed, and take the first inquiry.",
+    shortDescription: "Launch landing page for a Houston athlete development company.",
+    thumbnailImage: "/assets/portfolio/ascension-athlete-group/ascension-athlete-group-houston-athlete-development-landing-page.webp",
+    vercelUrl: "https://ascension-group-landing-page.vercel.app",
+    githubUrl: "https://github.com/DessiM15/ascension-group-landing-page",
+    caseStudy: {
+      challenge:
+        "A new athlete development company needed a presence before its first season of programs. The founders bring decades of football experience between them, but with no site there was nowhere to send an athlete or a parent who asked what Ascension actually does, and no way to collect interest ahead of events.",
+      solution:
+        "Built a single, fast landing page that explains the three divisions in plain terms, introduces the two founders and their track records, lists placements and upcoming events, and ends in an inquiry form. Motion is used sparingly to guide the eye down the page rather than decorate it. Leads post straight to the inbox through Web3Forms with no backend to run.",
+      results: [
+        "Three divisions explained in one scroll: performance, advisory, network",
+        "Founder profiles that lead with experience, the thing parents and athletes ask about first",
+        "Placements and events sections ready to grow as the roster does",
+        "Inquiry form with serverless delivery, so leads land the day the page went live",
+        "Mobile-first layout for the audience most likely to arrive from a shared link",
       ],
     },
   },

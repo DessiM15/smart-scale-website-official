@@ -40,9 +40,53 @@ export interface Review {
    * link, so renaming a project can't strand a review.
    */
   projectSlugs?: string[];
+  /**
+   * Work that has no portfolio entry, such as an advertising placement.
+   * Rendered as the same pill as a project link, in the same row, after any
+   * projects. Kept separate from `projectSlugs` so a project rename can't
+   * silently break these and so the href is explicit.
+   */
+  links?: ReviewLink[];
+}
+
+export interface ReviewLink {
+  /** Pill label, e.g. "Mex Taco House Advertising". */
+  label: string;
+  /** Internal path the pill goes to. */
+  href: string;
 }
 
 export const REVIEWS: Review[] = [
+  {
+    author: "Kiante Northington",
+    rating: 5,
+    date: "2026-09-13",
+    projectSlugs: ["ascension-athlete-group"],
+    text:
+      "Did a wonderful job, quick turnaround, and was very detailed " +
+      "oriented! Provided everything we asked for.",
+  },
+  {
+    author: "Jeff Ejekam",
+    rating: 5,
+    date: "2026-09-13",
+    projectSlugs: ["ascension-athlete-group"],
+    text:
+      "Smart Scale made an exceptional website for me. Multiple websites " +
+      "actually! I had to keep coming back because of how efficient and " +
+      "quick their work is! Definitely recommend.",
+  },
+  {
+    author: "Donna Washington",
+    rating: 5,
+    date: "2026-09-04",
+    links: [{ label: "Mex Taco House Advertising", href: "/advertise" }],
+    text:
+      "The turn around time was absolutely amazing! Dessiah, was on top of " +
+      "everything and quick to make adjustments to anything I asked. She is " +
+      "easy to communicate with and always delivers. I’d recommend HER 10 " +
+      "times over again!",
+  },
   {
     author: "Sella Hall",
     rating: 5,
@@ -130,4 +174,18 @@ export function reviewProjects(review: Review): Project[] {
   return (review.projectSlugs ?? [])
     .map((slug) => BY_SLUG.get(slug))
     .filter((p): p is Project => p !== undefined);
+}
+
+/**
+ * Everything a review card should link to, projects first and then any
+ * non-portfolio work, already shaped for rendering.
+ */
+export function reviewLinks(review: Review): ReviewLink[] {
+  return [
+    ...reviewProjects(review).map((p) => ({
+      label: p.title,
+      href: `/portfolio/${p.slug}`,
+    })),
+    ...(review.links ?? []),
+  ];
 }
