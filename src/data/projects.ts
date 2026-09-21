@@ -71,6 +71,8 @@ export function getFeaturedProjects(): Project[] {
 export const projects: Project[] = [
   {
     slug: "bloxify",
+    businessType: "Mobile Game",
+    city: "Katy, TX",
     title: "Bloxify",
     clientName: "Bloxify",
     serviceType: "Mobile App",
@@ -98,6 +100,8 @@ export const projects: Project[] = [
   },
   {
     slug: "bloxify-landing",
+    businessType: "Mobile Game",
+    city: "Katy, TX",
     title: "Bloxify Landing Page",
     clientName: "Bloxify",
     serviceType: "Landing Page",
@@ -185,6 +189,8 @@ export const projects: Project[] = [
   },
   {
     slug: "botmakers-crm",
+    businessType: "AI Agency",
+    city: "Katy, TX",
     title: "Botmakers CRM",
     clientName: "Botmakers",
     serviceType: "Platform/CRM",
@@ -211,6 +217,8 @@ export const projects: Project[] = [
   },
   {
     slug: "botmakers-website",
+    businessType: "AI Agency",
+    city: "Katy, TX",
     title: "Botmakers Website",
     clientName: "Botmakers",
     serviceType: "Website",
@@ -239,7 +247,7 @@ export const projects: Project[] = [
   {
     slug: "taylor-made-esthetics",
     businessType: "Esthetician",
-    city: "Houston, TX",
+    city: "Pearland, TX",
     title: "Taylor Made Esthetics",
     clientName: "Taylor Made Esthetics",
     serviceType: "Website",
@@ -268,6 +276,8 @@ export const projects: Project[] = [
   },
   {
     slug: "fight-my-repo",
+    businessType: "Legal Tech",
+    city: "Katy, TX",
     title: "Fight My Repo",
     clientName: "Fight My Repo",
     serviceType: "Landing Page",
@@ -295,6 +305,8 @@ export const projects: Project[] = [
   },
   {
     slug: "repo911",
+    businessType: "Legal Tech",
+    city: "Katy, TX",
     title: "Repo911",
     clientName: "Repo911",
     serviceType: "Platform/CRM",
@@ -350,6 +362,8 @@ export const projects: Project[] = [
   },
   {
     slug: "apex-affinity-group",
+    businessType: "Business Services",
+    city: "Sugar Land, TX",
     title: "APEX Affinity Group",
     clientName: "APEX Affinity Group",
     serviceType: "Website",
@@ -405,7 +419,7 @@ export const projects: Project[] = [
   {
     slug: "dos-tacos",
     businessType: "Restaurant",
-    city: "Houston, TX",
+    city: "Katy, TX",
     title: "Dos Tacos",
     clientName: "Dos Tacos (Concept)",
     serviceType: "Website",
@@ -437,7 +451,7 @@ export const projects: Project[] = [
   {
     slug: "gin-and-jack",
     businessType: "Mobile Bar",
-    city: "Houston, TX",
+    city: "Cypress, TX",
     title: "Gin & Jack",
     clientName: "Emily & Corey",
     serviceType: "Website",
