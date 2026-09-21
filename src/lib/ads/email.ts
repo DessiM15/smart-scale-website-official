@@ -15,7 +15,7 @@
 import { addMonths, formatDate, toView, type AdvertiserView } from "./roster";
 import type { ReportFacts } from "./report-data";
 import type { Narrative } from "./narrative";
-import { SALES_CONTACT } from "./contact";
+import { SALES_CALL_TEXT, SALES_CONTACTS, SALES_NAMES, salesCallHtml } from "./contact";
 
 /** Overridable so the send path can be pointed at a local stand-in under test. */
 function resendEndpoint(): string {
@@ -244,8 +244,8 @@ export function renewalEmail(
     ? `as the only ${view.category} business in the rotation`
     : "on the dining-room screens";
 
-  const callLine = `Call ${SALES_CONTACT.name} at <a href="${SALES_CONTACT.phoneHref}" style="color:${INK};font-weight:600;">${SALES_CONTACT.phoneDisplay}</a> before you decide. Clients who renew with us may qualify for a special offer, and it only takes a minute to find out.`;
-  const callText = `Call ${SALES_CONTACT.name} at ${SALES_CONTACT.phoneDisplay} before you decide. Clients who renew with us may qualify for a special offer, and it only takes a minute to find out.`;
+  const callLine = `Call ${salesCallHtml("#ffffff")} before you decide. Clients who renew with us may qualify for a special offer, and it only takes a minute to find out.`;
+  const callText = `Call ${SALES_CALL_TEXT} before you decide. Clients who renew with us may qualify for a special offer, and it only takes a minute to find out.`;
 
   const html = `<!doctype html>
 <html><body style="margin:0;padding:0;background:${CREAM};">
@@ -271,7 +271,7 @@ export function renewalEmail(
 
   <div style="background:${INK};color:#ffffff;border-radius:16px;padding:20px 24px;margin-bottom:22px;">
     <p style="margin:0 0 6px;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#f3b1ac;font-weight:700;">Before you decide</p>
-    <p style="margin:0;font-size:15px;line-height:1.6;color:#ffffff;">${callLine.replace(`color:${INK}`, "color:#ffffff")}</p>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#ffffff;">${callLine}</p>
   </div>
 
   <p style="margin:0 0 12px;font-size:15px;font-weight:600;">Or answer right here:</p>
@@ -281,7 +281,7 @@ export function renewalEmail(
     ${button(links.cancel, "End my run", false)}
   </div>
   <p style="margin:14px 0 0;font-size:13px;line-height:1.6;color:${MUTED};">
-    Nothing changes until you confirm on the next screen, and we'll follow up personally either way. Questions? Reply to this email or call ${SALES_CONTACT.phoneDisplay}.
+    Nothing changes until you confirm on the next screen, and we'll follow up personally either way. Questions? Reply to this email or call ${SALES_CALL_TEXT}.
   </p>
 
   <p style="margin:28px 0 0;font-size:12px;line-height:1.6;color:#9a8b7d;">
@@ -309,7 +309,7 @@ Or answer right here:
   Change my package:  ${links.change}
   End my run:         ${links.cancel}
 
-Nothing changes until you confirm on the next screen, and we'll follow up personally either way. Questions? Reply to this email or call ${SALES_CONTACT.phoneDisplay}.
+Nothing changes until you confirm on the next screen, and we'll follow up personally either way. Questions? Reply to this email or call ${SALES_CALL_TEXT}.
 
 ${VENUE_NAME} screen advertising is managed by Smart Scale, Katy, TX.`;
 
@@ -759,7 +759,7 @@ export function leadReplyEmail(lead: {
       Your rate card is attached. It has the three plans, what's included with every one of them, and the add-ons. Have a look while it's fresh.
     </p>
     <p style="margin:0;font-size:15px;line-height:1.65;">
-      ${SALES_CONTACT.name} will call you shortly to answer questions and talk through which plan fits${lead.business ? ` ${lead.business}` : ""}. If you'd rather not wait, his number is below.
+      ${SALES_NAMES} will call you shortly to answer questions and talk through which plan fits${lead.business ? ` ${lead.business}` : ""}. If you'd rather not wait, our numbers are below.
     </p>
   </div>
 
@@ -769,7 +769,7 @@ export function leadReplyEmail(lead: {
   </div>
 
   <div style="margin-bottom:8px;">
-    <a href="${SALES_CONTACT.phoneHref}" style="display:inline-block;background:${RED};color:#ffffff;border-radius:10px;padding:12px 22px;font-weight:600;font-size:15px;text-decoration:none;margin:0 8px 10px 0;">Call ${SALES_CONTACT.name}: ${SALES_CONTACT.phoneDisplay}</a>
+    ${SALES_CONTACTS.map((c) => `<a href="${c.phoneHref}" style="display:inline-block;background:${RED};color:#ffffff;border-radius:10px;padding:12px 22px;font-weight:600;font-size:15px;text-decoration:none;margin:0 8px 10px 0;">Call ${c.name}: ${c.phoneDisplay}</a>`).join("")}
     <a href="https://smartscaleagent.com/advertise" style="display:inline-block;background:#ffffff;color:${INK};border:1px solid rgba(0,0,0,0.12);border-radius:10px;padding:12px 22px;font-weight:600;font-size:15px;text-decoration:none;margin:0 8px 10px 0;">See the screens</a>
   </div>
 
@@ -790,7 +790,7 @@ You saw one of our ads on the screens at ${VENUE_NAME} and took the time to reac
 
 Your rate card is attached. It has the three plans, what's included with every one of them, and the add-ons. Have a look while it's fresh.
 
-${SALES_CONTACT.name} will call you shortly to answer questions and talk through which plan fits${lead.business ? ` ${lead.business}` : ""}. If you'd rather not wait: ${SALES_CONTACT.phoneDisplay}.
+${SALES_NAMES} will call you shortly to answer questions and talk through which plan fits${lead.business ? ` ${lead.business}` : ""}. If you'd rather not wait, call ${SALES_CALL_TEXT}.
 
 ONE THING TO KNOW
 Categories are exclusive and go to whoever calls first. If yours is open today, it may not be next month.
