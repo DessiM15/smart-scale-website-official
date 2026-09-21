@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 
   return {
-    title: `${post.title} | Smart Scale Blog`,
+    title: post.title,
     description: post.metaDescription,
     openGraph: {
       title: post.title,
@@ -236,16 +236,16 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             {/* CTA */}
             <div className="mt-16 p-8 rounded-3xl bg-[#161616] border border-white/[0.08] border-l-4 border-l-[#DC2626]">
               <h3 className="text-2xl font-bold mb-4 text-white">
-                Ready to Transform Your Development Process?
+                Want a number for your project?
               </h3>
               <p className="text-white/60 mb-6 text-lg">
-                Experience the power of AI-accelerated development with Smart Scale. Get your MVP in 7 days with direct founder involvement.
+                One call, about thirty minutes. You leave with a scope and a price in writing, and no obligation. Most sites go live within two weeks.
               </p>
               <Link
                 href="/contact"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-[#DC2626] text-white rounded-full font-semibold hover:bg-red-700 transition-colors"
               >
-                Schedule Free Consultation
+                Get a quote
                 <ArrowLeft className="w-4 h-4 rotate-180" />
               </Link>
             </div>
