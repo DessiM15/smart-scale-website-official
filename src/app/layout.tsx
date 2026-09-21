@@ -3,6 +3,7 @@ import { Inter, Playfair_Display, Bebas_Neue, Shadows_Into_Light } from "next/fo
 import "./globals.css";
 import SmoothScrollProvider from "@/components/SmoothScrollProvider";
 import SchemaOrg from "@/components/SchemaOrg";
+import Analytics from "@/components/Analytics";
 import { SITE_URL } from "@/lib/business";
 
 const inter = Inter({
@@ -86,6 +87,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${playfair.variable} ${bebasNeue.variable} ${shadowsIntoLight.variable}`}>
       <body className="bg-[#0A0A0A] text-white">
         <SchemaOrg />
+        <Analytics />
         <SmoothScrollProvider>
           {children}
         </SmoothScrollProvider>

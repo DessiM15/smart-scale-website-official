@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { track } from "@/lib/analytics";
 
 /** The code a QR scan left behind, if any. Cleaned to what a code can be. */
 function scannedCode(): string {
@@ -64,6 +65,7 @@ export default function ContactForm() {
             keepalive: true,
           }).catch(() => {});
         }
+        track("generate_lead", { form: "contact", source });
         setSubmitStatus({
           type: "success",
           message: "Thank you! Your message has been sent successfully.",
