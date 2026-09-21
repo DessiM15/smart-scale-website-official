@@ -178,7 +178,7 @@ export const projects: Project[] = [
     githubUrl: "https://github.com/DessiM15/mex-taco-house-website",
     caseStudy: {
       challenge:
-        "A growing Houston restaurant needed a modern website that could drive online orders and integrate seamlessly with third-party delivery platforms.",
+        "A growing Cypress restaurant needed a modern website that could drive online orders and integrate seamlessly with third-party delivery platforms.",
       solution:
         "Built a vibrant restaurant website with integrated Uber Eats and Grubhub ordering, full menu showcase, location information, analytics tracking, and mobile-first design.",
       results: [
