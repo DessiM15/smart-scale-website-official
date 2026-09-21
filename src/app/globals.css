@@ -9,7 +9,7 @@
   --color-gray-800: #1F2937;
   --color-gray-500: #6B7280;
   --color-gray-100: #F3F4F6;
-  --color-surface-primary: #0A0A0A;
+  --color-surface-primary: #0C0B0A;
   --color-surface-secondary: #0F0F0F;
   --color-surface-card: #161616;
   --color-surface-elevated: #1A1A1A;
@@ -381,3 +381,8 @@ html.lenis, html.lenis body {
     display: none;
   }
 }
+
+/* Client ticker on the homepage. */
+.ticker-row { animation: ticker 52s linear infinite; }
+@keyframes ticker { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .ticker-row { animation: none; } }

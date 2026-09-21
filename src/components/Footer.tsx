@@ -12,17 +12,17 @@ const navLinks = [
 
 export default function Footer() {
   return (
-    <footer className="bg-[#0A0A0A] text-white" data-theme="dark">
+    <footer className="bg-[#0C0B0A] text-white" data-theme="dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div className="col-span-1 md:col-span-2">
             <Link href="/" className="inline-block mb-6">
               <Image
-                src="/assets/smart-scale-logo-official.png"
+                src="/assets/smart-scale-logo-light-red.png"
                 alt="Smart Scale web design agency logo"
-                width={320}
-                height={128}
-                className="h-20 w-auto brightness-0 invert"
+                width={485}
+                height={320}
+                className="h-16 w-auto"
               />
             </Link>
             <p className="text-sm text-white/40 max-w-md">

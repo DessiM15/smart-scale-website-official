@@ -389,14 +389,17 @@ export default function Reviews() {
 
   if (!HAS_REVIEWS) return null;
 
-  const useMarquee = REVIEWS.length >= MARQUEE_MIN;
-  const midpoint = Math.ceil(REVIEWS.length / 2);
+  // Advertising clients' reviews are shown in the advertising section, so
+  // the wall is website work only.
+  const WALL = REVIEWS.filter((r) => !r.links?.some((l) => l.href === "/advertise"));
+  const useMarquee = WALL.length >= MARQUEE_MIN;
+  const midpoint = Math.ceil(WALL.length / 2);
   // Three reviews in a two-column grid leaves an orphan on its own row.
-  const threeUp = REVIEWS.length === 3;
+  const threeUp = WALL.length === 3;
 
   return (
     <section
-      className={`relative py-32 bg-[#0A0A0A] noise-overlay overflow-hidden ${
+      className={`relative py-24 sm:py-32 bg-[#0C0B0A] overflow-hidden ${
         active ? "reviews-paused" : ""
       }`}
       data-theme="dark"
@@ -409,20 +412,19 @@ export default function Reviews() {
         <h2
           id="reviews-heading"
           className="text-4xl sm:text-5xl md:text-6xl text-white text-center mb-6"
-          data-animate="word-reveal"
         >
-          What our clients say
+          In their <em className="italic text-[#DC2626]">words.</em>
         </h2>
         <p className="text-center text-white/50 max-w-xl mx-auto mb-16">
-          Unedited reviews from the businesses we&apos;ve built for.
+          Every review is on our Google profile, unedited. The pills open the work they hired us for.
         </p>
       </div>
 
       {useMarquee ? (
         <div className="relative z-10 space-y-5">
-          <MarqueeRow reviews={REVIEWS.slice(0, midpoint)} onOpen={openReview} />
+          <MarqueeRow reviews={WALL.slice(0, midpoint)} onOpen={openReview} />
           <MarqueeRow
-            reviews={REVIEWS.slice(midpoint)}
+            reviews={WALL.slice(midpoint)}
             reverse
             onOpen={openReview}
           />
@@ -452,7 +454,7 @@ export default function Reviews() {
             }`}
             data-animate="stagger"
           >
-            {REVIEWS.map((review, i) => (
+            {WALL.map((review, i) => (
               <ReviewCard
                 key={`${review.author}-${i}`}
                 review={review}
