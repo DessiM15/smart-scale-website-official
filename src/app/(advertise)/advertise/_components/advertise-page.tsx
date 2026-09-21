@@ -193,7 +193,7 @@ export default function AdvertisePage({
     // must never be able to hold that up or turn into an error in front of them.
     void fetch("/api/ads/lead", { method: "POST", body: formData }).catch(() => {});
 
-    formData.append("access_key", "f9fd4eed-280e-4c3e-bf11-579f9ff00522");
+    formData.append("access_key", "c4b7142e-949d-4397-9399-3e6c25cea67f");
 
     try {
       const response = await fetch("https://api.web3forms.com/submit", {

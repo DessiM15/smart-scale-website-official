@@ -5,10 +5,10 @@ import Image from "next/image";
 import { getFeaturedProjects } from "@/data/projects";
 
 export default function SelectedWork() {
-  // Four, not the full featured set: the hero already scrolls the whole
-  // body of work, so this section earns its place by going deeper on a
-  // short list rather than repeating the same grid a screen later.
-  const featured = getFeaturedProjects().slice(0, 4);
+  // Six: the projects Dessi wants seen first (2026-09-21), three rows of
+  // two. The hero already scrolls the whole body of work, so this stops
+  // there rather than repeating the portfolio grid a screen later.
+  const featured = getFeaturedProjects().slice(0, 6);
 
   return (
     <section id="work" className="relative py-32 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A] noise-overlay" data-theme="dark">
