@@ -87,9 +87,6 @@ const STATIC = {
   "/services": ["src/app/(main)/services/page.tsx", "src/lib/constants.ts"],
   "/contact": ["src/app/(main)/contact"],
   "/about": ["src/app/(main)/about"],
-  "/industries": ["src/app/(main)/industries"],
-  "/process": ["src/app/(main)/process"],
-  "/why-us": ["src/app/(main)/why-us"],
   "/blog": ["src/app/(main)/blog/page.tsx", "src/lib/blog.ts"],
 };
 for (const [p, files] of Object.entries(STATIC)) dates[p] = fileDate(files);

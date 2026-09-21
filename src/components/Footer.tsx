@@ -34,7 +34,7 @@ export default function Footer() {
             {/*
               NAP block. Rendered as crawlable text (never an image) and driven
               from src/lib/business.ts so it stays byte-identical to the
-              Google Business Profile — Google cross-references the two when
+              Google Business Profile; Google cross-references the two when
               deciding whether to trust the listing.
             */}
             <address className="mt-8 not-italic text-sm text-white/40 space-y-2">

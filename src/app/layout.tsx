@@ -38,9 +38,6 @@ export const metadata: Metadata = {
   },
   description:
     "Custom websites for local businesses across Katy, Cypress, and Houston. Built fast, built to get you found on Google. See our work.",
-  alternates: {
-    canonical: "/",
-  },
   openGraph: {
     type: "website",
     locale: "en_US",

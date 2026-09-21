@@ -24,6 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: post.title,
     description: post.metaDescription,
+    alternates: { canonical: `/blog/${post.slug}` },
     openGraph: {
       title: post.title,
       description: post.metaDescription,
@@ -69,7 +70,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           headerText = headerText.replace(/\*\*([^\*]+)\*\*/g, '<strong class="text-white font-semibold">$1</strong>');
           const headerParts = headerText.split(/(<[^>]+>)/);
           headerText = headerParts.map(part => part.startsWith('<') ? part : escapeHtml(part)).join('');
-          html += `<h1 class="text-4xl font-bold mb-6 text-white mt-12 first:mt-0">${headerText}</h1>`;
+          // The page already renders the title as its H1; a second one inside
+          // the body is a duplicate. Demote to h2.
+          html += `<h2 class="text-3xl font-bold mb-4 text-white mt-10">${headerText}</h2>`;
           continue;
         }
         if (trimmed.startsWith("## ")) {
