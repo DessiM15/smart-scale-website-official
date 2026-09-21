@@ -132,6 +132,37 @@ export const projects: Project[] = [
     },
   },
   {
+    slug: "ascension-athlete-group",
+    businessType: "Athlete Development",
+    city: "Houston, TX",
+    title: "Ascension Athlete Group",
+    clientName: "Ascension Athlete Group",
+    serviceType: "Landing Page",
+    industry: "Sports / Athlete Development",
+    techStack: ["Next.js 15", "TypeScript", "Tailwind CSS", "Motion", "Web3Forms", "Vercel"],
+    description:
+      "A launch landing page for Ascension Athlete Group, a Houston athlete development company built around three divisions: elite performance training, career advisory, and a talent network that connects athletes with opportunity on and off the field. Designed to introduce the founders, show where their athletes have been placed, and take the first inquiry.",
+    shortDescription: "Launch landing page for a Houston athlete development company.",
+    thumbnailImage: "/assets/portfolio/ascension-athlete-group/ascension-athlete-group-houston-athlete-development-landing-page.webp",
+    vercelUrl: "https://ascension-group-landing-page.vercel.app",
+    featured: true,
+    featuredOrder: 3,
+    githubUrl: "https://github.com/DessiM15/ascension-group-landing-page",
+    caseStudy: {
+      challenge:
+        "A new athlete development company needed a presence before its first season of programs. The founders bring decades of football experience between them, but with no site there was nowhere to send an athlete or a parent who asked what Ascension actually does, and no way to collect interest ahead of events.",
+      solution:
+        "Built a single, fast landing page that explains the three divisions in plain terms, introduces the two founders and their track records, lists placements and upcoming events, and ends in an inquiry form. Motion is used sparingly to guide the eye down the page rather than decorate it. Leads post straight to the inbox through Web3Forms with no backend to run.",
+      results: [
+        "Three divisions explained in one scroll: performance, advisory, network",
+        "Founder profiles that lead with experience, the thing parents and athletes ask about first",
+        "Placements and events sections ready to grow as the roster does",
+        "Inquiry form with serverless delivery, so leads land the day the page went live",
+        "Mobile-first layout for the audience most likely to arrive from a shared link",
+      ],
+    },
+  },
+  {
     slug: "gin-and-jack",
     businessType: "Mobile Bar",
     city: "Cypress, TX",
@@ -147,7 +178,7 @@ export const projects: Project[] = [
     vercelUrl: "https://www.ginandjackbar.com",
     githubUrl: "https://github.com/DessiM15/Gin-Jack-Emily",
     featured: true,
-    featuredOrder: 3,
+    featuredOrder: 4,
     caseStudy: {
       challenge:
         "A growing mobile bartending business needed a premium web presence that conveys the sophistication and celebratory energy of their brand while making it easy for couples and event planners to explore packages and book services.",
@@ -158,34 +189,6 @@ export const projects: Project[] = [
         "Service package showcase driving qualified inquiries",
         "Event gallery building trust with prospective clients",
         "Mobile-optimized booking flow for on-the-go event planners",
-      ],
-    },
-  },
-  {
-    slug: "mex-taco-house",
-    businessType: "Restaurant",
-    city: "Cypress, TX",
-    title: "Mex Taco House",
-    clientName: "Mex Taco House",
-    serviceType: "Website",
-    industry: "Food Service",
-    techStack: ["Next.js", "TypeScript", "Tailwind CSS", "Vercel"],
-    description:
-      "A complete digital presence for a popular Cypress taco restaurant, featuring online ordering integration with Uber Eats and Grubhub, menu showcase, and location information.",
-    shortDescription: "Cypress restaurant website with delivery integrations.",
-    thumbnailImage: "/assets/portfolio/mex-taco-house/mex-taco-house-restaurant-website-design.webp",
-    vercelUrl: "https://mextacohouse.com",
-    githubUrl: "https://github.com/DessiM15/mex-taco-house-website",
-    caseStudy: {
-      challenge:
-        "A growing Cypress restaurant needed a modern website that could drive online orders and integrate seamlessly with third-party delivery platforms.",
-      solution:
-        "Built a vibrant restaurant website with integrated Uber Eats and Grubhub ordering, full menu showcase, location information, analytics tracking, and mobile-first design.",
-      results: [
-        "30% increase in online orders within first quarter",
-        "Integrated Uber Eats and Grubhub ordering from website",
-        "Analytics tracking to measure website ROI",
-        "Mobile-optimized for the majority of restaurant traffic",
       ],
     },
   },
@@ -216,6 +219,66 @@ export const projects: Project[] = [
         "Integrated online booking reducing phone call volume",
         "Service menu with detailed treatment descriptions",
         "Mobile-optimized for on-the-go booking",
+      ],
+    },
+  },
+  {
+    slug: "dos-tacos",
+    businessType: "Restaurant",
+    city: "Katy, TX",
+    title: "Dos Tacos",
+    clientName: "Dos Tacos (Concept)",
+    serviceType: "Website",
+    industry: "Food Service",
+    techStack: ["Next.js 16", "React 19", "TypeScript", "Tailwind CSS v4", "Motion", "Vercel"],
+    description:
+      "A concept website refresh built for Dos Tacos, an authentic taqueria in Katy, TX with a 4.9-star rating and over 1,000 Google reviews. Rather than pitching a single direction, the build ships four complete hero concepts at once (Taco Cannon, Build-A-Taco, Loteria, and Color Block), switchable live from the home page so the owners can experience each one and pick a direction instead of judging it from a static mockup.",
+    shortDescription: "Concept taqueria refresh with four live-switchable hero designs.",
+    thumbnailImage: "/assets/portfolio/dos-tacos/dos-tacos-restaurant-website-design.webp",
+    vercelUrl: "https://dos-tacos.vercel.app",
+    githubUrl: "https://github.com/DessiM15/dos-tacos",
+    featured: true,
+    featuredOrder: 6,
+    caseStudy: {
+      challenge:
+        "A neighborhood taqueria had built genuine local reputation, with 1,020 five-star Google reviews, a loyal Katy following, and one of the better vegan menus in the area, but none of it showed up online. The harder problem was the pitch itself: restaurant owners rarely respond to a flat mockup, and picking a creative direction from a PDF asks them to imagine motion, texture, and personality that isn't on the page.",
+      solution:
+        "Designed and built a full multi-page site in Next.js 16 with four entirely distinct hero concepts shipped simultaneously, switchable in real time from a floating control on the home page with the choice persisted to localStorage. Each hero is a genuine design direction: kinetic type with parallax ingredients, a taco that assembles itself as you scroll, a vintage mercado poster with animated papel picado, and hover-expanding color panels. The rest of the site turns the restaurant's real assets into conversion: a browsable menu with the full lineup, verbatim Google reviews as social proof, a dedicated vegan section, a catering inquiry form, and a location block with hours and directions.",
+      results: [
+        "Four complete hero directions shipped in one build. Owners switch live and choose, no imagination required",
+        "1,020 five-star Google reviews turned into on-page social proof instead of an off-site number",
+        "Full menu browser, dedicated vegan section, and catering inquiry flow",
+        "Built on Next.js 16 and React 19 with Tailwind v4 and Motion-driven animation throughout",
+        "Location, hours, and directions surfaced for local search intent",
+        "Per-page SEO metadata with generated sitemap and robots configuration",
+      ],
+    },
+  },
+  {
+    slug: "mex-taco-house",
+    businessType: "Restaurant",
+    city: "Cypress, TX",
+    title: "Mex Taco House",
+    clientName: "Mex Taco House",
+    serviceType: "Website",
+    industry: "Food Service",
+    techStack: ["Next.js", "TypeScript", "Tailwind CSS", "Vercel"],
+    description:
+      "A complete digital presence for a popular Cypress taco restaurant, featuring online ordering integration with Uber Eats and Grubhub, menu showcase, and location information.",
+    shortDescription: "Cypress restaurant website with delivery integrations.",
+    thumbnailImage: "/assets/portfolio/mex-taco-house/mex-taco-house-restaurant-website-design.webp",
+    vercelUrl: "https://mextacohouse.com",
+    githubUrl: "https://github.com/DessiM15/mex-taco-house-website",
+    caseStudy: {
+      challenge:
+        "A growing Cypress restaurant needed a modern website that could drive online orders and integrate seamlessly with third-party delivery platforms.",
+      solution:
+        "Built a vibrant restaurant website with integrated Uber Eats and Grubhub ordering, full menu showcase, location information, analytics tracking, and mobile-first design.",
+      results: [
+        "30% increase in online orders within first quarter",
+        "Integrated Uber Eats and Grubhub ordering from website",
+        "Analytics tracking to measure website ROI",
+        "Mobile-optimized for the majority of restaurant traffic",
       ],
     },
   },
@@ -360,6 +423,8 @@ export const projects: Project[] = [
   },
   {
     slug: "lomeli-financial",
+    businessType: "Financial Advisor",
+    city: "Edinburg, TX",
     title: "Lomeli Financial Group",
     clientName: "Jorge Lomeli",
     serviceType: "Landing Page",
@@ -381,35 +446,6 @@ export const projects: Project[] = [
         "Streamlined lead capture with contact forms",
         "Mobile-responsive for on-the-go prospects",
         "SEO-optimized for local financial advisor searches",
-      ],
-    },
-  },
-  {
-    slug: "ascension-athlete-group",
-    businessType: "Athlete Development",
-    city: "Houston, TX",
-    title: "Ascension Athlete Group",
-    clientName: "Ascension Athlete Group",
-    serviceType: "Landing Page",
-    industry: "Sports / Athlete Development",
-    techStack: ["Next.js 15", "TypeScript", "Tailwind CSS", "Motion", "Web3Forms", "Vercel"],
-    description:
-      "A launch landing page for Ascension Athlete Group, a Houston athlete development company built around three divisions: elite performance training, career advisory, and a talent network that connects athletes with opportunity on and off the field. Designed to introduce the founders, show where their athletes have been placed, and take the first inquiry.",
-    shortDescription: "Launch landing page for a Houston athlete development company.",
-    thumbnailImage: "/assets/portfolio/ascension-athlete-group/ascension-athlete-group-houston-athlete-development-landing-page.webp",
-    vercelUrl: "https://ascension-group-landing-page.vercel.app",
-    githubUrl: "https://github.com/DessiM15/ascension-group-landing-page",
-    caseStudy: {
-      challenge:
-        "A new athlete development company needed a presence before its first season of programs. The founders bring decades of football experience between them, but with no site there was nowhere to send an athlete or a parent who asked what Ascension actually does, and no way to collect interest ahead of events.",
-      solution:
-        "Built a single, fast landing page that explains the three divisions in plain terms, introduces the two founders and their track records, lists placements and upcoming events, and ends in an inquiry form. Motion is used sparingly to guide the eye down the page rather than decorate it. Leads post straight to the inbox through Web3Forms with no backend to run.",
-      results: [
-        "Three divisions explained in one scroll: performance, advisory, network",
-        "Founder profiles that lead with experience, the thing parents and athletes ask about first",
-        "Placements and events sections ready to grow as the roster does",
-        "Inquiry form with serverless delivery, so leads land the day the page went live",
-        "Mobile-first layout for the audience most likely to arrive from a shared link",
       ],
     },
   },
@@ -442,38 +478,6 @@ export const projects: Project[] = [
     },
   },
   {
-    slug: "dos-tacos",
-    businessType: "Restaurant",
-    city: "Katy, TX",
-    title: "Dos Tacos",
-    clientName: "Dos Tacos (Concept)",
-    serviceType: "Website",
-    industry: "Food Service",
-    techStack: ["Next.js 16", "React 19", "TypeScript", "Tailwind CSS v4", "Motion", "Vercel"],
-    description:
-      "A concept website refresh built for Dos Tacos, an authentic taqueria in Katy, TX with a 4.9-star rating and over 1,000 Google reviews. Rather than pitching a single direction, the build ships four complete hero concepts at once (Taco Cannon, Build-A-Taco, Loteria, and Color Block), switchable live from the home page so the owners can experience each one and pick a direction instead of judging it from a static mockup.",
-    shortDescription: "Concept taqueria refresh with four live-switchable hero designs.",
-    thumbnailImage: "/assets/portfolio/dos-tacos/dos-tacos-restaurant-website-design.webp",
-    vercelUrl: "https://dos-tacos.vercel.app",
-    githubUrl: "https://github.com/DessiM15/dos-tacos",
-    featured: true,
-    featuredOrder: 6,
-    caseStudy: {
-      challenge:
-        "A neighborhood taqueria had built genuine local reputation, with 1,020 five-star Google reviews, a loyal Katy following, and one of the better vegan menus in the area, but none of it showed up online. The harder problem was the pitch itself: restaurant owners rarely respond to a flat mockup, and picking a creative direction from a PDF asks them to imagine motion, texture, and personality that isn't on the page.",
-      solution:
-        "Designed and built a full multi-page site in Next.js 16 with four entirely distinct hero concepts shipped simultaneously, switchable in real time from a floating control on the home page with the choice persisted to localStorage. Each hero is a genuine design direction: kinetic type with parallax ingredients, a taco that assembles itself as you scroll, a vintage mercado poster with animated papel picado, and hover-expanding color panels. The rest of the site turns the restaurant's real assets into conversion: a browsable menu with the full lineup, verbatim Google reviews as social proof, a dedicated vegan section, a catering inquiry form, and a location block with hours and directions.",
-      results: [
-        "Four complete hero directions shipped in one build. Owners switch live and choose, no imagination required",
-        "1,020 five-star Google reviews turned into on-page social proof instead of an off-site number",
-        "Full menu browser, dedicated vegan section, and catering inquiry flow",
-        "Built on Next.js 16 and React 19 with Tailwind v4 and Motion-driven animation throughout",
-        "Location, hours, and directions surfaced for local search intent",
-        "Per-page SEO metadata with generated sitemap and robots configuration",
-      ],
-    },
-  },
-  {
     slug: "the-houston-barber",
     businessType: "Barbershop",
     city: "Houston, TX",
@@ -489,7 +493,7 @@ export const projects: Project[] = [
     vercelUrl: "https://barber-website-mock.vercel.app",
     githubUrl: "https://github.com/DessiM15/barber-website-mock",
     featured: true,
-    featuredOrder: 7,
+    featuredOrder: 8,
     caseStudy: {
       challenge:
         "Many barbershops rely on a third-party booking platform like StyleSeat but have no branded website of their own, sending clients off-site to book and losing the chance to build their own identity. The goal was to design a premium web presence that keeps booking on the shop's own site while integrating with the booking system they already use.",
@@ -521,7 +525,7 @@ export const projects: Project[] = [
     githubUrl: "https://github.com/DessiM15/repo911",
     isAIPowered: true,
     featured: true,
-    featuredOrder: 4,
+    featuredOrder: 7,
     caseStudy: {
       challenge:
         "The repossession dispute space needed a comprehensive platform that could handle case management, document processing, and client communication at scale while leveraging AI for case analysis.",
