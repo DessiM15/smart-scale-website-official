@@ -10,6 +10,7 @@ import {
   sendEmail,
   testEmail,
   type TestKind,
+  rateCardAttachment,
 } from "@/lib/ads/email";
 import { runBackup } from "@/lib/ads/backup";
 import { runRenewalCheck } from "@/lib/ads/renewals";
@@ -82,6 +83,7 @@ import {
 } from "@/lib/ads/campaigns";
 import { deleteDocument, getDocument, uploadDocument } from "@/lib/ads/documents";
 import { recordPayment, type PaymentMethod } from "@/lib/ads/payments";
+import { setAutoSendReports } from "@/lib/ads/settings";
 import {
   addTask,
   clearDone,
@@ -975,9 +977,12 @@ export async function sendTestEmailAction(data: FormData) {
   if (!isEmailConfigured()) back(PAGES.setup, { err: "testunconfigured" }, TEST_ANCHOR);
 
   const kind = (field(data, "kind") || "delivery") as TestKind;
-  const message = testEmail(kind === "renewal" ? "renewal" : "delivery");
+  const message = testEmail(kind === "renewal" || kind === "lead" ? kind : "delivery");
+  // The lead sample carries the real rate card, because "does the attachment
+  // arrive and open" is the thing worth testing about it.
+  const attachment = kind === "lead" ? await rateCardAttachment() : null;
 
-  const result = await sendEmail({ to, ...message });
+  const result = await sendEmail({ to, ...message, attachments: attachment ? [attachment] : [] });
   if (!result.ok) {
     const note = /401|unauthor|token/i.test(result.error ?? "")
       ? ` (the key this deployment is using: ${keyFingerprint()})`
@@ -1046,6 +1051,7 @@ export async function saveVenueAction(data: FormData) {
     slides: wholeNumber(data, "slides") ?? 0,
     sellable: wholeNumber(data, "sellable") ?? 0,
     slideSeconds: wholeNumber(data, "slideSeconds") ?? 10,
+    monthlyGuests: wholeNumber(data, "monthlyGuests") ?? 0,
     hours,
     ownerName: field(data, "ownerName"),
     ownerEmail: field(data, "ownerEmail"),
@@ -1288,4 +1294,14 @@ export async function removePlacementAction(data: FormData) {
   const link = await getLink(removed.code);
   if (link) await saveLink({ ...link, logoDataUri: link.logoDataUri ?? null, advertiserId: link.advertiserId ?? null, campaignId: null, placementId: null });
   back(to, { msg: "placementRemoved", detail: removed.label });
+}
+
+/* ------------------------- automatic report sending ------------------------ */
+
+export async function setAutoSendReportsAction(data: FormData) {
+  await requireAdmin();
+  const on = field(data, "on") === "1";
+  const ok = await setAutoSendReports(on);
+  if (!ok) back(PAGES.reports, { err: "settings" });
+  back(PAGES.reports, { msg: on ? "autoOn" : "autoOff" });
 }

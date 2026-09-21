@@ -29,7 +29,19 @@ const ADMIN_URL = "https://smartscaleagent.com/advertise/admin";
  * Days-remaining thresholds that trigger a notice, largest first. Negative
  * values are the post-expiry nags.
  */
-export const NOTICE_POINTS = [30, 14, 7, 3, 0, -1, -7, -21] as const;
+export const NOTICE_POINTS = [90, 30, 7, 0, -1, -7, -21] as const;
+
+/**
+ * The three-month heads-up only makes sense on a term long enough to have
+ * three months of runway left after signing. A Short Term client is on a
+ * three-month plan: told on day two that their term "ends in 90 days", they
+ * would reasonably wonder what they just paid for. Six- and twelve-month
+ * terms get it; anything shorter starts at the 30-day notice.
+ */
+export const LONG_TERM_MONTHS = 6;
+export function pointApplies(point: number, termMonths: number): boolean {
+  return point < 90 || termMonths >= LONG_TERM_MONTHS;
+}
 
 /**
  * Which notice an advertiser is due for today, or null if none.
@@ -39,8 +51,10 @@ export const NOTICE_POINTS = [30, 14, 7, 3, 0, -1, -7, -21] as const;
  * just arrives a little late. It also means a long outage won't fire a stale
  * 30-day notice at 5 days out; you get the 3-day one, which is the right call.
  */
-export function milestoneFor(daysRemaining: number): number | null {
-  const reached = NOTICE_POINTS.filter((point) => daysRemaining <= point);
+export function milestoneFor(daysRemaining: number, termMonths = 12): number | null {
+  const reached = NOTICE_POINTS.filter(
+    (point) => daysRemaining <= point && pointApplies(point, termMonths),
+  );
   return reached.length > 0 ? Math.min(...reached) : null;
 }
 
@@ -76,11 +90,13 @@ function alertLines(view: AdvertiserView, milestone: number): string[] {
 }
 
 /**
- * The advertiser hears from us three times, not eight. A heads-up with the
- * decision buttons, one reminder, and a last call — anything more reads as
- * pestering a paying customer. The overdue nags stay internal.
+ * The advertiser hears from us three times, not seven: three months out on
+ * the longer terms, one month out, and one week out (Dessi, 2026-09-21).
+ * Each carries the decision buttons and an invitation to call, because a
+ * renewal is where a better deal can be offered. The day-of notice and the
+ * overdue nags stay internal.
  */
-export const ADVERTISER_EMAIL_POINTS = [30, 7, 0];
+export const ADVERTISER_EMAIL_POINTS = [90, 30, 7];
 
 /** Email marker for the ledger, kept distinct from the team-text marker. */
 const emailMarker = (milestone: number) => `e${milestone}`;
@@ -102,7 +118,7 @@ export async function findDueNotices(): Promise<PendingNotice[]> {
 
   const notices = await Promise.all(
     active.map(async (advertiser) => {
-      const milestone = milestoneFor(advertiser.daysRemaining);
+      const milestone = milestoneFor(advertiser.daysRemaining, advertiser.months);
       if (milestone === null) return null;
 
       const needsTeam = !(await alreadySent(

@@ -49,6 +49,14 @@ export type Venue = {
   slideSeconds: number;
   /** Seven entries, Sunday first. */
   hours: DayHours[];
+  /**
+   * Guests through the door in a typical month, from the venue. The one
+   * input behind "seen by approximately N people" in the monthly report:
+   * the loop repeats every few minutes during every open hour, so every
+   * guest who sits down sees each ad at least once. Zero means unknown, and
+   * the report leaves the figure out rather than invent one.
+   */
+  monthlyGuests: number;
   ownerName: string;
   ownerEmail: string;
   ownerPhone: string;
@@ -97,6 +105,7 @@ function seed(): Venue {
     sellable: 16,
     slideSeconds: 10,
     hours: MEX_TACO_HOURS,
+    monthlyGuests: 10_000,
     ownerName: "",
     ownerEmail: "",
     ownerPhone: "",
@@ -154,6 +163,7 @@ function blank(): Venue {
     sellable: 16,
     slideSeconds: 10,
     hours: MEX_TACO_HOURS.map((h) => (h ? { ...h } : null)),
+    monthlyGuests: 0,
     ownerName: "",
     ownerEmail: "",
     ownerPhone: "",
