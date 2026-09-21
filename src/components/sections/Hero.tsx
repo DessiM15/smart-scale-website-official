@@ -144,7 +144,7 @@ export default function Hero() {
                 aria-hidden="true"
                 className="mr-4 inline-block h-px w-10 align-middle bg-white/25"
               />
-              Web Design &amp; Local SEO &mdash; Katy, TX
+              Web Design &amp; Local SEO, Katy, TX
             </p>
 
             {/* The page's single H1. max-w in ch so the line breaks land in a
@@ -163,8 +163,8 @@ export default function Hero() {
               className="mt-7 opacity-0 text-base sm:text-lg text-white/55 leading-relaxed max-w-[44ch]"
             >
               We build fast, mobile-first websites for local businesses across
-              Katy, Cypress, Houston, Sugar Land, Richmond, and Fulshear
-              &mdash; then keep them ranking.
+              Katy, Cypress, Houston, Sugar Land, Richmond, and Fulshear,
+              then keep them ranking.
             </p>
 
             <div
@@ -270,7 +270,7 @@ export default function Hero() {
                       <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-white/[0.08] bg-[#111111] transition-colors duration-500 group-hover:border-white/25">
                         <Image
                           src={project.thumbnailImage}
-                          alt={`${project.title} website designed by Smart Scale — ${project.industry}`}
+                          alt={`${project.title} website designed by Smart Scale, ${project.industry}`}
                           fill
                           className="object-cover opacity-85 transition-all duration-500 group-hover:scale-[1.04] group-hover:opacity-100"
                           sizes="(max-width: 1024px) 0px, 460px"

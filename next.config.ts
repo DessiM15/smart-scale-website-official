@@ -33,6 +33,13 @@ const nextConfig: NextConfig = {
       },
       { source: "/what-we-do", destination: "/services", permanent: true },
       { source: "/company", destination: "/about", permanent: true },
+      // Three pages left over from the software-agency era ("Week 1: Your
+      // MVP", "Every Industry Deserves Modern Technology"). Nothing linked to
+      // them, they carried the homepage title, and they described a business
+      // this is not. Retired 2026-09-21.
+      { source: "/industries", destination: "/services", permanent: true },
+      { source: "/process", destination: "/about", permanent: true },
+      { source: "/why-us", destination: "/about", permanent: true },
       // Service pages consolidated from seven to the four we actually sell
       // (2026-09-21). Each retired slug goes to its nearest surviving page.
       { source: "/services/email-client-development", destination: "/services", permanent: true },

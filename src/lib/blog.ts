@@ -35,8 +35,6 @@ export const BLOG_POSTS: BlogPost[] = [
     metaDescription:
       "How much does a website cost in Katy or Houston? What actually sets the price of a landing page, a business website, or an app, what should be included, and what to watch for in a quote.",
     content: `
-# How Much Does a Website Cost in Katy and Houston?
-
 If you have asked three web designers in the Houston area for a price, you probably got three numbers that had nothing to do with each other, and no explanation of why. This is the explanation.
 
 We do not publish a price list, and this guide will not give you one. Not because the numbers are secret, but because a price without a scope is a guess, and a guess is how projects go wrong. What we can do is show you exactly how we decide the number, so that when you get a quote from us or from anyone else, you know what you are looking at.

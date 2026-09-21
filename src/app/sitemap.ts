@@ -41,9 +41,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       { url: `${SITE_URL}/services`, changeFrequency: "monthly", priority: 0.9 },
       { url: `${SITE_URL}/contact`, changeFrequency: "monthly", priority: 0.8 },
       { url: `${SITE_URL}/about`, changeFrequency: "monthly", priority: 0.7 },
-      { url: `${SITE_URL}/industries`, changeFrequency: "monthly", priority: 0.6 },
-      { url: `${SITE_URL}/process`, changeFrequency: "monthly", priority: 0.5 },
-      { url: `${SITE_URL}/why-us`, changeFrequency: "monthly", priority: 0.5 },
       { url: `${SITE_URL}/blog`, changeFrequency: "weekly", priority: 0.6 },
     ] satisfies Omit<MetadataRoute.Sitemap[number], "lastModified">[]
   ).map((page) => ({

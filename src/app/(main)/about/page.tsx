@@ -62,7 +62,7 @@ export default function Company() {
           </h1>
           <p className="text-xl sm:text-2xl text-black/50 max-w-3xl mx-auto mb-8 hero-subheadline">
             A small team in Katy, TX. Every project gets founder-level
-            attention — you talk to the people who build your site.
+            attention. You talk to the people who build your site.
           </p>
           <div className="flex justify-center">
             <Link
@@ -86,8 +86,8 @@ export default function Company() {
           <div className="space-y-6 text-lg text-white/50 leading-relaxed">
             <p>
               At Smart Scale, every project is led directly by the company&apos;s
-              founders. This isn&apos;t a sales pitch — it&apos;s our core
-              operating model. When you work with us, you get direct access to
+              founders. This isn&apos;t a sales pitch. It is how we
+              operate. When you work with us, you get direct access to
               decision-makers who understand both the technical and business
               sides of your project.
             </p>
@@ -120,7 +120,7 @@ export default function Company() {
               <p className="text-lg text-black/50 leading-relaxed mb-6">
                 Our partnership with BotMakers.ai gives us access to
                 cutting-edge AI development capabilities. This isn&apos;t just
-                about using AI tools — it&apos;s about leveraging advanced AI
+                about using AI tools. It is about leveraging advanced AI
                 workflows to engineer solutions with greater precision and
                 efficiency.
               </p>

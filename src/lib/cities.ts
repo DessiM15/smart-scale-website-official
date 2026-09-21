@@ -46,7 +46,7 @@ export const CITIES: CityContent[] = [
       "Website design and local SEO for Katy, TX businesses. We're based in Katy and build fast, mobile-first sites that get found on Google. See our work.",
     h1: "Website Design for Katy Businesses",
     intro: [
-      "Smart Scale is a web design company based in Katy, Texas. We build websites and manage local SEO for businesses across Katy — from the shops along Mason Road to the service companies working out of Old Katy and the growing corridor west toward Fulshear.",
+      "Smart Scale is a web design company based in Katy, Texas. We build websites and manage local SEO for businesses across Katy, from the shops along Mason Road to the service companies working out of Old Katy and the growing corridor west toward Fulshear.",
       "Katy is not one market. A med spa in Cinco Ranch is competing for a completely different customer than an HVAC company running calls out toward Brookshire, and the websites that work for each look nothing alike. We build for the customer you actually want.",
     ],
     landmarks: [
@@ -66,7 +66,7 @@ export const CITIES: CityContent[] = [
       {
         name: "Med spas & aesthetics",
         blurb:
-          "Cinco Ranch and LaCenterra support a dense cluster of med spas, injectors, and estheticians. This is a photo-first, booking-first category — the site has to look premium and take an appointment in two taps.",
+          "Cinco Ranch and LaCenterra support a dense cluster of med spas, injectors, and estheticians. This is a photo-first, booking-first category: the site has to look premium and take an appointment in two taps.",
       },
       {
         name: "Youth sports & enrichment",
@@ -82,7 +82,7 @@ export const CITIES: CityContent[] = [
     localAngle: {
       heading: "Why being based in Katy actually matters",
       body: [
-        "Google weighs proximity heavily in local results. A business physically in Katy has a structural advantage for Katy searches that an agency in another state cannot buy its way around — and we can meet you in person, which still closes more work than any funnel.",
+        "Google weighs proximity heavily in local results. A business physically in Katy has a structural advantage for Katy searches that an agency in another state cannot buy its way around. And we can meet you in person, which still closes more work than any funnel.",
         "It also means we know the seasonality. We know that Katy home-services searches spike with the first real cold snap and again in July, and that back-to-school timing drives the enrichment businesses. We plan content around that calendar instead of a generic one.",
       ],
     },
@@ -90,12 +90,12 @@ export const CITIES: CityContent[] = [
       {
         question: "How much does a website cost for a Katy business?",
         answer:
-          "Most small-business sites we build in Katy land in the low four figures, depending on page count and whether you need booking, payments, or a menu system. We quote a fixed price before we start — no hourly surprises.",
+          "It depends on page count and on whether you need booking, payments, or a menu system, which is why we don't publish a price list. What we do is quote a fixed price before we start, in writing, after one call. No hourly surprises. Our guide to how the number is decided is on the blog.",
       },
       {
         question: "How long until my Katy business shows up on Google?",
         answer:
-          "A new site typically gets indexed within a week or two. Ranking in the Katy map pack takes longer — usually two to four months of consistent Google Business Profile work and reviews. Anyone promising page one in 30 days is selling you something.",
+          "A new site typically gets indexed within a week or two. Ranking in the Katy map pack takes longer, usually two to four months of consistent Google Business Profile work and reviews. Anyone promising page one in 30 days is selling you something.",
       },
       {
         question: "Do you work with businesses outside Katy proper?",
@@ -105,7 +105,7 @@ export const CITIES: CityContent[] = [
       {
         question: "Can you take over a website someone else built?",
         answer:
-          "Usually. If it's on a common platform we can often improve what's there. If it's on a locked-down proprietary builder, rebuilding is generally cheaper than fighting it — we'll tell you honestly which one you're in.",
+          "Usually. If it's on a common platform we can often improve what's there. If it's on a locked-down proprietary builder, rebuilding is generally cheaper than fighting it. We'll tell you honestly which one you're in.",
       },
     ],
     nearby: ["cypress", "houston"],
@@ -118,7 +118,7 @@ export const CITIES: CityContent[] = [
       "Website design and local SEO for Cypress, TX businesses. Fast, mobile-first sites built for the Cy-Fair market. See our work and get a fixed quote.",
     h1: "Website Design for Cypress Businesses",
     intro: [
-      "Smart Scale builds websites and runs local SEO for businesses in Cypress, Texas. We work with companies across the 290 and Grand Parkway corridor — Bridgeland, Towne Lake, Fairfield, Coles Crossing, and the older parts of Cypress closer to Huffmeister.",
+      "Smart Scale builds websites and runs local SEO for businesses in Cypress, Texas. We work with companies across the 290 and Grand Parkway corridor: Bridgeland, Towne Lake, Fairfield, Coles Crossing, and the older parts of Cypress closer to Huffmeister.",
       "Cypress is unincorporated, which quietly changes how local search works here. There's no single downtown to anchor to, so customers search by subdivision and by landmark far more than they do in a city with a defined center. Sites that only say \"Cypress\" leave a lot of traffic on the table.",
     ],
     landmarks: [
@@ -138,7 +138,7 @@ export const CITIES: CityContent[] = [
       {
         name: "Boutique fitness & wellness",
         blurb:
-          "Cypress supports an unusual density of studios — pilates, cold plunge, recovery, kids' fitness. Class schedules and trial-offer signup are the whole conversion path.",
+          "Cypress supports an unusual density of studios: pilates, cold plunge, recovery, kids' fitness. Class schedules and trial-offer signup are the whole conversion path.",
       },
       {
         name: "Family dental, ortho & pediatrics",
@@ -155,7 +155,7 @@ export const CITIES: CityContent[] = [
       heading: "Ranking in a place without a downtown",
       body: [
         "Because Cypress is unincorporated and spread across a wide area, proximity-based ranking scatters. A business near Fairfield and one near Bridgeland can both be \"in Cypress\" and be fifteen minutes apart, and Google will show different results to each of their neighborhoods.",
-        "The practical answer is to build out subdivision-level relevance — naming the communities you actually serve in your content and your Google Business Profile — rather than repeating the word \"Cypress\" and hoping. That's how we structure Cypress sites.",
+        "The practical answer is to build out subdivision-level relevance, naming the communities you actually serve in your content and your Google Business Profile, rather than repeating the word \"Cypress\" and hoping. That's how we structure Cypress sites.",
       ],
     },
     faqs: [
@@ -167,17 +167,17 @@ export const CITIES: CityContent[] = [
       {
         question: "I run a mobile business with no storefront. Can I still rank in Cypress?",
         answer:
-          "Yes — you set up as a service-area business, hide your address, and define your service radius. It's a specific configuration and a lot of businesses get it wrong, which leaves them invisible. We set it up as part of the build.",
+          "Yes. You set up as a service-area business, hide your address, and define your service radius. It's a specific configuration and a lot of businesses get it wrong, which leaves them invisible. We set it up as part of the build.",
       },
       {
         question: "How much does a website cost for a Cypress business?",
         answer:
-          "Most small-business builds land in the low four figures, quoted at a fixed price up front. Booking systems, online ordering, or a customer portal push it higher — we'll tell you before you commit.",
+          "We quote every build at a fixed price up front, after one call, so there is nothing to guess at. Booking systems, online ordering, or a customer portal add to the scope, and we tell you exactly how before you commit. How we arrive at the number is explained in our pricing guide on the blog.",
       },
       {
         question: "Do you handle the Google Business Profile too, or just the website?",
         answer:
-          "Both, and they should be done together. The website and the profile feed each other — a great site with a neglected profile won't crack the Cypress map pack.",
+          "Both, and they should be done together. The website and the profile feed each other. A great site with a neglected profile won't crack the Cypress map pack.",
       },
     ],
     nearby: ["katy", "houston"],
@@ -190,7 +190,7 @@ export const CITIES: CityContent[] = [
       "Website design and local SEO for Houston, TX businesses. We build fast, mobile-first sites for restaurants, shops, and service companies across Houston.",
     h1: "Website Design for Houston Businesses",
     intro: [
-      "Smart Scale designs websites and runs local SEO for businesses in Houston, Texas. Our Houston work spans restaurants, barbershops, estheticians, mobile bars, and industrial suppliers — the kind of businesses that need a phone to ring, not a brand deck.",
+      "Smart Scale designs websites and runs local SEO for businesses in Houston, Texas. Our Houston work spans restaurants, barbershops, estheticians, mobile bars, and industrial suppliers, the kind of businesses that need a phone to ring, not a brand deck.",
       "Houston is the fourth-largest city in the country and the hardest local market in Texas to rank in. We'll be straight with you about that below, because the strategy that works here is different from the one that works in Katy or Cypress.",
     ],
     landmarks: [
@@ -220,14 +220,14 @@ export const CITIES: CityContent[] = [
       {
         name: "Industrial & B2B suppliers",
         blurb:
-          "Houston runs on energy and industrial supply. These sites need product catalogs, spec sheets, and a request-for-quote flow — a different build entirely from a consumer site.",
+          "Houston runs on energy and industrial supply. These sites need product catalogs, spec sheets, and a request-for-quote flow, a different build entirely from a consumer site.",
       },
     ],
     localAngle: {
       heading: "An honest word about ranking in Houston",
       body: [
         "\"Web designer Houston\" and similar city-wide terms are dominated by agencies with years of domain authority and large link budgets. If someone tells you they'll get you to the top of a city-wide Houston term quickly and cheaply, they are not being straight with you.",
-        "What does work: neighborhood-level and niche targeting. Ranking for \"barber shop Montrose\" or \"mobile bar rental Houston\" is achievable, and those searches convert far better than a generic city-wide term anyway — the person searching them is closer to booking.",
+        "What does work: neighborhood-level and niche targeting. Ranking for \"barber shop Montrose\" or \"mobile bar rental Houston\" is achievable, and those searches convert far better than a generic city-wide term anyway. The person searching them is closer to booking.",
         "So for Houston clients we build around the neighborhoods you actually serve and the specific service you actually sell, then expand outward as the site earns authority. It's slower to say and faster to work.",
       ],
     },
@@ -240,12 +240,12 @@ export const CITIES: CityContent[] = [
       {
         question: "How long does local SEO take to work in Houston?",
         answer:
-          "Expect three to six months for meaningful movement in a competitive Houston category — longer than in Katy or Cypress, because there's simply more competition per search. Reviews and consistent Google Business Profile activity move it fastest.",
+          "Expect three to six months for meaningful movement in a competitive Houston category, longer than in Katy or Cypress, because there's simply more competition per search. Reviews and consistent Google Business Profile activity move it fastest.",
       },
       {
         question: "Do you work with Houston restaurants specifically?",
         answer:
-          "Yes. We've built for Mex Taco House and Dos Tacos, among others. Restaurant sites have their own requirements — menu updates you can make yourself, fast mobile loads, and accurate hours everywhere Google reads them.",
+          "Yes. We've built for Mex Taco House and Dos Tacos, among others. Restaurant sites have their own requirements: menu updates you can make yourself, fast mobile loads, and accurate hours everywhere Google reads them.",
       },
       {
         question: "My business is in Houston but I serve the whole metro. How should that be set up?",

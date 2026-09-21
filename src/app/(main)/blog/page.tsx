@@ -6,6 +6,7 @@ import BlogCoverImage from "@/components/BlogCoverImage";
 import RedSeparator from "@/components/ui/RedSeparator";
 
 export const metadata = {
+  alternates: { canonical: "/blog" },
   title: "Blog: Websites, Local Search, and Pricing for Houston-Area Businesses",
   description: "Straight answers for Katy, Cypress, and Houston business owners: what a website costs, what it should include, and how to get found on Google.",
 };

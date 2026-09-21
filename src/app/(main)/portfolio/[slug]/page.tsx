@@ -12,22 +12,34 @@ export async function generateStaticParams() {
   return projects.map((p) => ({ slug: p.slug }));
 }
 
+/**
+ * The full description, cut to search-snippet length at a word boundary.
+ * The one-line summaries were too thin for a meta description ("Houston
+ * restaurant website with delivery integrations.") and one of them had the
+ * wrong city.
+ */
+function metaDescription(text: string, max = 155): string {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max - 1);
+  return cut.slice(0, cut.lastIndexOf(" ")) + "…";
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const project = projects.find((p) => p.slug === slug);
   if (!project) return { title: "Project Not Found | Smart Scale" };
 
-  // "Barbershop Website Design — The Houston Barber, Houston TX" reads as a
+  // "Barbershop Website Design for The Houston Barber, Houston TX" reads as a
   // local search result; the bare project name does not.
   const label = project.businessType
-    ? `${project.businessType} Website Design — ${project.title}${
+    ? `${project.businessType} Website Design for ${project.title}${
         project.city ? `, ${project.city}` : ""
       }`
-    : `${project.title} — Case Study`;
+    : `${project.title}: Case Study`;
 
   return {
     title: label,
-    description: project.shortDescription,
+    description: metaDescription(project.description),
     alternates: { canonical: `/portfolio/${project.slug}` },
     openGraph: {
       title: `${label} | Smart Scale`,
