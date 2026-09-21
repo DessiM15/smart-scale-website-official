@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { BUSINESS, SERVICE_AREAS, SOCIALS } from "@/lib/business";
+import { BOOKING_URL, BUSINESS, SERVICE_AREAS, SOCIALS } from "@/lib/business";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -92,6 +92,17 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <a
+                  href={BOOKING_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-track="book_call"
+                  className="text-sm text-white/40 hover:text-white transition-colors duration-300"
+                >
+                  Book a call
+                </a>
+              </li>
             </ul>
           </div>
 

@@ -56,5 +56,14 @@ export const SOCIALS = [
   { name: "YouTube", url: "https://www.youtube.com/@smartscaleagent" },
 ] as const;
 
+/**
+ * Google Calendar appointment schedule for a discovery call. The short link
+ * is what Dessi shares; the long form is what the embed needs (`gv=true`
+ * renders it as a widget). Both point at the same schedule.
+ */
+export const BOOKING_URL = "https://calendar.app.google/b1gQXqqNLL9CsJjr6";
+export const BOOKING_EMBED_URL =
+  "https://calendar.google.com/calendar/appointments/schedules/AcZssZ3hhMc0Hzx2p_oifbHVCUkFHLXZHWBMVyj11VOTMEZch797t54a31aX1o_gbR1SWVchER4900D9?gv=true";
+
 /** Public Google Business Profile link, used for the reviews CTA. */
 export const GBP_URL = "https://share.google/kKkXs3Nicidp8n8jy";

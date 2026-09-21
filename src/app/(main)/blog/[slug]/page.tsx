@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { BOOKING_URL } from "@/lib/business";
 import { getBlogPost, getAllBlogPosts } from "@/lib/blog";
 import { Calendar, Clock, ArrowLeft } from "lucide-react";
 import SocialShareButtons from "@/components/SocialShareButtons";
@@ -241,13 +242,16 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               <p className="text-white/60 mb-6 text-lg">
                 One call, about thirty minutes. You leave with a scope and a price in writing, and no obligation. Most sites go live within two weeks.
               </p>
-              <Link
-                href="/contact"
+              <a
+                href={BOOKING_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-track="book_call"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-[#DC2626] text-white rounded-full font-semibold hover:bg-red-700 transition-colors"
               >
-                Get a quote
+                Book a call
                 <ArrowLeft className="w-4 h-4 rotate-180" />
-              </Link>
+              </a>
             </div>
           </div>
         </article>
