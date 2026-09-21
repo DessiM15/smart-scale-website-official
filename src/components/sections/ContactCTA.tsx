@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BOOKING_URL } from "@/lib/business";
 
 export default function ContactCTA() {
   return (
@@ -39,6 +40,15 @@ export default function ContactCTA() {
               />
             </svg>
           </Link>
+          <a
+            href={BOOKING_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-track="book_call"
+            className="inline-flex items-center gap-3 px-10 py-4 border border-black/20 text-[#111111] rounded-full text-sm uppercase tracking-widest hover:border-[#DC2626] hover:text-[#DC2626] transition-all duration-500"
+          >
+            Book a call
+          </a>
         </div>
       </div>
     </section>

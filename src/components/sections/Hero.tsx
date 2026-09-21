@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { projects } from "@/data/projects";
 import { REVIEWS } from "@/data/reviews";
-import { GBP_URL } from "@/lib/business";
+import { GBP_URL, BOOKING_URL } from "@/lib/business";
 
 /**
  * The homepage hero.
@@ -191,12 +191,15 @@ export default function Hero() {
                   />
                 </svg>
               </Link>
-              <Link
-                href="/contact"
+              <a
+                href={BOOKING_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-track="book_call"
                 className="border-b border-white/25 pb-1 text-xs uppercase tracking-[0.2em] text-white/60 transition-colors duration-300 hover:border-white/60 hover:text-white"
               >
-                Get in touch
-              </Link>
+                Book a call
+              </a>
             </div>
 
             {/* Social proof, above the fold. Display only — never marked up as
