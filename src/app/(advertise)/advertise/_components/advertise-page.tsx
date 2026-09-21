@@ -24,6 +24,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
 import { useGSAPAnimations } from "@/hooks/useGSAPAnimations";
+import { track } from "@/lib/analytics";
 
 export type AdvertisePageProps = {
   phoneDisplay: string;
@@ -202,6 +203,7 @@ export default function AdvertisePage({
 
       if (response.ok) {
         setIsSubmitted(true);
+        track("generate_lead", { form: "advertise_quote" });
         if (typeof window !== "undefined") {
           const w = window as unknown as { fbq?: (...args: unknown[]) => void };
           w.fbq?.("track", "Lead");
@@ -586,6 +588,7 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
 
           <a
             href="#quote"
+            data-track="advertise_quote"
             className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#DC2626] text-white text-2xl px-8 py-3.5 hover:bg-[#b91c1c] transition-colors"
             style={{ fontFamily: "var(--font-bebas), Impact, sans-serif" }}
           >
@@ -692,6 +695,7 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
               ))}
               <a
                 href="#quote"
+            data-track="advertise_quote"
                 className="bg-[#0b0b0d] rounded-xl p-2 col-span-4 lg:col-span-1"
               >
                 <div className="rounded border-2 border-dashed border-[#f0c674]/50 aspect-[16/10] flex flex-col items-center justify-center">
@@ -798,6 +802,7 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
             <div className="flex flex-wrap gap-3 mt-2">
               <a
                 href="#quote"
+            data-track="advertise_quote"
                 className="px-7 py-3 rounded-full bg-[#DC2626] text-white text-2xl hover:bg-[#b91c1c] transition-colors"
                 style={{ fontFamily: "var(--font-bebas), Impact, sans-serif" }}
               >
@@ -897,6 +902,7 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
           <div className="relative flex flex-col gap-3 flex-shrink-0">
             <a
               href="#quote"
+            data-track="advertise_quote"
               className="px-8 py-4 rounded-full bg-white text-[#DC2626] text-2xl text-center hover:bg-white/90 transition-colors"
               style={{ fontFamily: "var(--font-bebas), Impact, sans-serif" }}
             >
@@ -932,6 +938,7 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
         <div className="lg:hidden fixed bottom-0 inset-x-0 z-50 bg-white/97 backdrop-blur border-t border-black/10 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex items-center gap-3">
           <a
             href="#quote"
+            data-track="advertise_quote"
             className="flex-1 text-center rounded-full bg-[#DC2626] text-white text-2xl py-3"
             style={{ fontFamily: "var(--font-bebas), Impact, sans-serif" }}
           >
