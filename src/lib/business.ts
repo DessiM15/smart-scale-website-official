@@ -52,6 +52,7 @@ export const SOCIALS = [
   { name: "Instagram", url: "https://www.instagram.com/smartscaleagent" },
   { name: "TikTok", url: "https://www.tiktok.com/@smartscaleagent" },
   { name: "Facebook", url: "https://www.facebook.com/smartscalellc" },
+  { name: "YouTube", url: "https://www.youtube.com/@smartscaleagent" },
 ] as const;
 
 /** Public Google Business Profile link, used for the reviews CTA. */
