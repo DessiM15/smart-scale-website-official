@@ -6,11 +6,8 @@ import { SERVICES } from "@/lib/constants";
 import {
   Smartphone,
   Globe,
-  Mail,
   Building2,
   Brain,
-  Layout,
-  Zap,
 } from "lucide-react";
 import ServiceNavigation from "@/components/ServiceNavigation";
 import GlowCard from "@/components/ui/GlowCard";
@@ -20,11 +17,8 @@ import { projectsForService } from "@/lib/related-work";
 const iconMap: Record<string, React.ReactNode> = {
   "mobile-development": <Smartphone className="w-12 h-12" />,
   "web-development": <Globe className="w-12 h-12" />,
-  "email-client-development": <Mail className="w-12 h-12" />,
   "enterprise-systems": <Building2 className="w-12 h-12" />,
   "ai-enhancement-ai-workflows": <Brain className="w-12 h-12" />,
-  "web-applications": <Layout className="w-12 h-12" />,
-  "integrations-and-automation": <Zap className="w-12 h-12" />,
 };
 
 interface ServicePageClientProps {
