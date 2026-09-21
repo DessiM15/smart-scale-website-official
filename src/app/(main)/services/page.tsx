@@ -7,42 +7,34 @@ import {
   Globe,
   Brain,
   Building2,
-  Layout,
-  Zap,
 } from "lucide-react";
 import GlowCard from "@/components/ui/GlowCard";
 import RedSeparator from "@/components/ui/RedSeparator";
 
 const capabilities = [
   {
-    title: "Web Applications",
-    description: "Full-stack platforms built for performance, security, and scale.",
+    slug: "web-development",
+    title: "Website Design & Development",
+    description: "Fast, mobile-first websites that turn a Google search into a phone call.",
     icon: <Globe className="w-8 h-8" />,
   },
   {
-    title: "Mobile Development",
-    description: "Native and cross-platform applications for iOS and Android.",
+    slug: "mobile-development",
+    title: "Mobile App Development",
+    description: "iOS and Android apps, shipped to both stores from one codebase.",
     icon: <Smartphone className="w-8 h-8" />,
   },
   {
-    title: "AI Systems",
-    description: "Intelligent automation, NLP, and machine learning integrated into your workflows.",
+    slug: "ai-enhancement-ai-workflows",
+    title: "Automation & AI",
+    description: "Review requests, lead routing, follow-ups, and assistants that answer from your own content.",
     icon: <Brain className="w-8 h-8" />,
   },
   {
+    slug: "enterprise-systems",
     title: "Custom Software & CRM",
     description: "Scheduling, quoting, and customer tracking built around how your business actually runs.",
     icon: <Building2 className="w-8 h-8" />,
-  },
-  {
-    title: "Web Development",
-    description: "Modern, responsive websites with meticulous attention to craft.",
-    icon: <Layout className="w-8 h-8" />,
-  },
-  {
-    title: "Integrations & Automation",
-    description: "Seamless API connections and automated data workflows.",
-    icon: <Zap className="w-8 h-8" />,
   },
 ];
 
@@ -102,10 +94,11 @@ export default function WhatWeDo() {
           <h2 className="text-4xl mb-12 text-center text-white" data-animate="slide-left">
             Capabilities
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-animate="stagger">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6" data-animate="stagger">
             {capabilities.map((capability, index) => (
               <ServiceCard
                 key={index}
+                slug={capability.slug}
                 title={capability.title}
                 description={capability.description}
                 icon={capability.icon}

@@ -33,6 +33,16 @@ const nextConfig: NextConfig = {
       },
       { source: "/what-we-do", destination: "/services", permanent: true },
       { source: "/company", destination: "/about", permanent: true },
+      // Service pages consolidated from seven to the four we actually sell
+      // (2026-09-21). Each retired slug goes to its nearest surviving page.
+      { source: "/services/email-client-development", destination: "/services", permanent: true },
+      { source: "/services/web-applications", destination: "/services/enterprise-systems", permanent: true },
+      { source: "/services/integrations-and-automation", destination: "/services/ai-enhancement-ai-workflows", permanent: true },
+      // Three 2024 posts about offshore development and MVPs, written for a
+      // software agency this no longer is. Retired the same day.
+      { source: "/blog/how-ai-is-revolutionizing-custom-software-development", destination: "/blog", permanent: true },
+      { source: "/blog/why-your-business-needs-an-mvp-first", destination: "/blog", permanent: true },
+      { source: "/blog/the-hidden-costs-of-offshore-development", destination: "/blog", permanent: true },
     ];
   },
 };
