@@ -6,6 +6,8 @@ import Image from "next/image";
 import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import type { Project } from "@/data/projects";
+import { SERVICES } from "@/lib/constants";
+import { serviceSlugForProject } from "@/lib/related-work";
 
 interface ProjectDetailProps {
   project: Project;
@@ -18,6 +20,9 @@ export default function ProjectDetail({
   prevProject,
   nextProject,
 }: ProjectDetailProps) {
+  const service = SERVICES.find(
+    (svc) => svc.slug === serviceSlugForProject(project),
+  );
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [iframeError, setIframeError] = useState(false);
 
@@ -191,6 +196,31 @@ export default function ProjectDetail({
                 ))}
               </ul>
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* The service page this project is proof for. */}
+      {service && (
+        <section className="px-4 sm:px-6 lg:px-8 pb-16">
+          <div className="max-w-4xl mx-auto border-t border-white/[0.08] pt-8">
+            <p className="text-white/50">
+              This is our{" "}
+              <Link
+                href={`/services/${service.slug}`}
+                className="text-white underline underline-offset-4 hover:text-[#DC2626] transition-colors"
+              >
+                {service.title.toLowerCase()}
+              </Link>{" "}
+              work. Want the same for your business?{" "}
+              <Link
+                href="/contact"
+                className="text-white underline underline-offset-4 hover:text-[#DC2626] transition-colors"
+              >
+                Start a project
+              </Link>
+              .
+            </p>
           </div>
         </section>
       )}

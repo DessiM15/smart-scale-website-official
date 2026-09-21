@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start -p 3001",
     "lint": "next lint",
-    "qr": "node scripts/make-qr.mjs"
+    "qr": "node scripts/make-qr.mjs",
+    "page-dates": "node scripts/page-dates.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.117.1",

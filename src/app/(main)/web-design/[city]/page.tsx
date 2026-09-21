@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { CITIES, getCity } from "@/lib/cities";
 import { BUSINESS, SITE_URL } from "@/lib/business";
 import RedSeparator from "@/components/ui/RedSeparator";
+import RelatedWork from "@/components/portfolio/RelatedWork";
+import { projectsForCity } from "@/lib/related-work";
 
 export function generateStaticParams() {
   return CITIES.map((city) => ({ city: city.slug }));
@@ -41,6 +43,7 @@ export default async function CityPage({
   const city = getCity(slug);
   if (!city) notFound();
 
+  const work = projectsForCity(city.name);
   const pageUrl = `${SITE_URL}/web-design/${city.slug}`;
 
   const serviceSchema = {
@@ -194,6 +197,23 @@ export default async function CityPage({
           </div>
         </div>
       </section>
+
+      {/* Work for businesses in this city, or the featured set until there is some. */}
+      <RelatedWork
+        heading={
+          work.local
+            ? `Websites we've built in ${city.name}`
+            : `Recent work near ${city.name}`
+        }
+        intro={
+          work.local
+            ? `Real ${city.name} businesses, live today. Each one opens a full case study.`
+            : `We haven't published a ${city.name} case study yet. Here is what we've built for businesses a short drive away.`
+        }
+        projects={work.projects}
+      />
+
+      <RedSeparator />
 
       {/* Local angle */}
       <section
