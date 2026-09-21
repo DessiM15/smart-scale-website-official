@@ -34,6 +34,8 @@ const PROJECTS = [
   { slug: "the-houston-barber", url: "https://barber-website-mock.vercel.app" },
   { slug: "fgt-solutions", url: "https://www.fgtsco.com" },
   { slug: "cheryl-baptiste", url: "https://www.cherylbaptiste.me" },
+  { slug: "andre-thomas-law", url: "https://www.andrethomaslaw.com" },
+  { slug: "ascension-athlete-group", url: "https://ascension-group-landing-page.vercel.app" },
 ];
 
 const OUTPUT_DIR = path.resolve(__dirname, "../public/assets/portfolio");

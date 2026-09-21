@@ -45,12 +45,13 @@ const capabilities: Capability[] = [
     description:
       "Google Business Profile management, local SEO, and monthly optimization so customers find you first.",
     href: "/services",
-    image: "/assets/portfolio/mex-taco-house/mex-taco-house-restaurant-website-design.webp",
-    logo: "/assets/mex-taco-logo-ss.jpg",
-    // Solid-red lockup rather than a transparent mark, so it needs a corner
-    // radius to read as a badge instead of a stray rectangle.
-    logoBoxed: true,
-    alt: "Mex Taco House restaurant website, built by Smart Scale in Houston",
+    image: "/assets/portfolio/gulf-coast-alloys/gulf-coast-alloys-industrial-website-design.webp",
+    // Mex Taco House used to sit here, but the Local Advertising card below
+    // is Mex Taco by definition, and two identical red lockups in one row
+    // read as a mistake. The GCA mark has white in it, hence mono.
+    logo: "/assets/client-logos/gulf-coast-alloys.png",
+    logoMono: true,
+    alt: "Gulf Coast Alloys industrial website, built by Smart Scale in Houston",
   },
   {
     title: "Custom Software & CRM",
@@ -80,6 +81,20 @@ const capabilities: Capability[] = [
     logo: "/assets/client-logos/repo911.svg",
     logoMono: true,
     alt: "Repo911 case management platform with AI-powered document analysis",
+  },
+  {
+    title: "Local Advertising",
+    description:
+      "Your ad on the TVs at Mex Taco House in Cypress, in front of a full dining room every day.",
+    href: "/advertise",
+    // The dining room itself, with a client's spot on screen, rather than a
+    // website screenshot: this is the one card that isn't selling a website.
+    image: "/images/screens-wall.jpg",
+    // Solid-red lockup rather than a transparent mark, so it needs a corner
+    // radius to read as a badge instead of a stray rectangle.
+    logo: "/assets/mex-taco-logo-ss.jpg",
+    logoBoxed: true,
+    alt: "Mex Taco House dining room in Cypress with an Andre Thomas Law ad playing on the wall TVs",
   },
 ];
 
