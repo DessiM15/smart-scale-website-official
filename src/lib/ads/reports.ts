@@ -28,7 +28,8 @@ import {
 import { codesForAdvertiser } from "./link-store";
 import { getAdvertiser, listAdvertisers, toView, type AdvertiserView } from "./roster";
 import { localStamp } from "./scan-store";
-import { notifyTeam } from "./notify";
+import { alertRecipients, notifyTeam } from "./notify";
+import { getSettings } from "./settings";
 import { listVenues, venueOf, type Venue } from "./venues";
 
 export type ReportStatus = "draft" | "sent" | "skipped";
@@ -317,28 +318,102 @@ export async function sendReport(
 }
 
 /**
- * Called by the daily job. Drafts the previous month's reports on the first of
- * the month and tells the team they're waiting — it never sends anything.
+ * Called by the daily job.
+ *
+ * On the first of the month: drafts the previous month's reports and tells
+ * the team. With automatic sending on, each draft is also mailed to the team
+ * addresses as a preview, so the numbers are seen by a person before a
+ * client sees them.
+ *
+ * On every other day, with automatic sending on: sends any draft that is at
+ * least a day old to its client. A day, because that is the window in which
+ * "Skip" on the reports page stops one going out. Nothing stale is ever
+ * sent on its own: a draft whose figures no longer match the roster waits
+ * for a person to recalculate it.
  */
 export async function runMonthlyReports(
   force = false,
-): Promise<GenerationResult | null> {
+): Promise<GenerationResult | { autoSent: number; held: number } | null> {
   const isFirstOfMonth = localStamp().date.endsWith("-01");
-  if (!isFirstOfMonth && !force) return null;
+  const settings = await getSettings();
 
-  const result = await generateReports();
-
-  if (result.created > 0) {
-    await notifyTeam({
-      subject: `${result.created} monthly report${result.created === 1 ? "" : "s"} drafted`,
-      lines: [
-        "Waiting for your review. Nothing goes to a client until you read it and press send.",
-        result.skipped ? `${result.skipped} skipped: no run in the month, or already drafted.` : "",
-      ],
-      href: "https://smartscaleagent.com/advertise/admin/reports",
-      cta: "Read the drafts",
-    });
+  if (isFirstOfMonth || force) {
+    const result = await generateReports();
+    if (result.created > 0) {
+      await notifyTeam({
+        subject: `${result.created} monthly report${result.created === 1 ? "" : "s"} drafted`,
+        lines: [
+          settings.autoSendReports
+            ? "Automatic sending is on: each goes to its client on tomorrow's run. Previews are in your inbox now. Skip any that reads wrong."
+            : "Waiting for your review. Nothing goes to a client until you read it and press send.",
+          result.skipped ? `${result.skipped} skipped: no run in the month, or already drafted.` : "",
+        ],
+        href: "https://smartscaleagent.com/advertise/admin/reports",
+        cta: "Read the drafts",
+      });
+      if (settings.autoSendReports) await previewDraftsToTeam(result.month);
+    }
+    return result;
   }
 
-  return result;
+  if (!settings.autoSendReports) return null;
+  return sendDueDrafts();
+}
+
+/** Every draft for the month, mailed to the team addresses with a preview banner. */
+async function previewDraftsToTeam(month: MonthKey): Promise<void> {
+  const recipients = alertRecipients();
+  if (recipients.length === 0) return;
+  const drafts = (await listReports()).filter((r) => r.month === month && r.status === "draft");
+  for (const report of drafts) {
+    const { subject, html, text } = reportEmail(report.facts, report.narrative);
+    const banner = `<div style="background:#1a1210;color:#ffffff;padding:14px 18px;border-radius:12px;margin-bottom:20px;font-size:13px;line-height:1.5;"><strong style="letter-spacing:0.08em;text-transform:uppercase;font-size:11px;">Preview</strong><br/>This goes to ${report.email} on tomorrow's run unless you skip it on the reports page.</div>`;
+    for (const to of recipients) {
+      await sendEmail({
+        to,
+        subject: `[Preview for ${report.facts.business}] ${subject}`,
+        html: html.replace(/(<div style="max-width:560px[^>]*>)/, `$1${banner}`),
+        text: `*** PREVIEW. Goes to ${report.email} on tomorrow's run unless skipped. ***\n\n${text}`,
+      });
+    }
+  }
+}
+
+/** Drafts at least a day old go to their clients; stale ones wait for a person. */
+async function sendDueDrafts(): Promise<{ autoSent: number; held: number }> {
+  const cutoff = Date.now() - 20 * 60 * 60 * 1000;
+  const advertisers = await listAdvertisers();
+  const venues = await listVenues();
+  let autoSent = 0;
+  let held = 0;
+  const sentTo: string[] = [];
+  for (const report of await listReports()) {
+    if (report.status !== "draft") continue;
+    if (new Date(report.createdAt).getTime() > cutoff) continue;
+    const advertiser = advertisers.find((a) => a.id === report.advertiserId);
+    const venue = advertiser ? venueOf(venues, advertiser.venueId) : undefined;
+    if (!advertiser || !venue || isReportStale(report, advertiser, venue)) {
+      held += 1;
+      continue;
+    }
+    const result = await sendReport(report.advertiserId, report.month);
+    if (result.ok) {
+      autoSent += 1;
+      sentTo.push(report.facts.business);
+    } else {
+      held += 1;
+    }
+  }
+  if (autoSent > 0 || held > 0) {
+    await notifyTeam({
+      subject: `${autoSent} monthly report${autoSent === 1 ? "" : "s"} sent to clients${held ? `, ${held} held` : ""}`,
+      lines: [
+        sentTo.length ? `Sent: ${sentTo.join(", ")}.` : "",
+        held ? `${held} held: figures no longer match the roster, or the send failed. Open the reports page to recalculate or send by hand.` : "",
+      ],
+      href: "https://smartscaleagent.com/advertise/admin/reports",
+      cta: "Open reports",
+    });
+  }
+  return { autoSent, held };
 }

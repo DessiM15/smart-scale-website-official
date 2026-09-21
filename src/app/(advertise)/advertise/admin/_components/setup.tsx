@@ -203,6 +203,7 @@ function TestEmail({
               <select id="testKind" name="kind" className={selectClass} defaultValue="delivery">
                 <option value="delivery">Plain check — did it arrive?</option>
                 <option value="renewal">Full renewal notice, with sample figures</option>
+                <option value="lead">Lead auto-reply, with the rate card attached</option>
               </select>
             </div>
           </div>

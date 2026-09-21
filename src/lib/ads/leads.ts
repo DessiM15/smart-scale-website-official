@@ -22,6 +22,8 @@ import {
   type Prospect,
 } from "./roster";
 import { notifyTeam } from "./notify";
+import { getVenue } from "./venues";
+import { isEmailConfigured, leadReplyEmail, rateCardAttachment, sendEmail } from "./email";
 import { recordConversion } from "./conversions";
 
 /** Per-IP submissions allowed in a rolling hour. Generous; this is anti-flood. */
@@ -249,6 +251,36 @@ export async function recordLead(
             cta: "Open the pipeline",
           },
     );
+
+    // The lead hears back at once, with the rate card, so the call that
+    // follows can happen with the card open in front of them. Current
+    // clients asking a question are not sent a rate card they already have.
+    if (!isClient && lead.email && isEmailConfigured()) {
+      const venueName = venueIds?.[0] ? (await getVenue(venueIds[0]).catch(() => null))?.name : undefined;
+      const attachment = await rateCardAttachment();
+      const reply = leadReplyEmail({
+        name: lead.name,
+        business: lead.business,
+        industry: lead.industry,
+        venueName: venueName ?? undefined,
+      });
+      const sent = await sendEmail({
+        to: lead.email,
+        ...reply,
+        attachments: attachment ? [attachment] : [],
+      });
+      if (!sent.ok || !attachment) {
+        await notifyTeam({
+          subject: `Lead reply ${sent.ok ? "went without the rate card" : "did not send"}: ${name}`,
+          lines: [
+            sent.ok ? "The rate card PDF could not be fetched, so the reply went out without it." : sent.error ?? "Send failed.",
+            `Send the card to ${lead.email} by hand.`,
+          ],
+          href: "https://smartscaleagent.com/advertise/admin/pipeline",
+          cta: "Open the pipeline",
+        }).catch(() => {});
+      }
+    }
 
     // The code that sent them gets the lead against its name, so a campaign
     // page can say what a magnet or a flyer actually brought in.

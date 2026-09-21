@@ -134,6 +134,16 @@ function ReportCard({
             plays
           </span>
         </span>
+        {typeof f.viewers === "number" && f.viewers > 0 && (
+          <span title={`${f.monthlyGuests.toLocaleString()} guests a month at the venue, scaled to ${f.openDays} of ${f.venueOpenDays} open days`}>
+            <span className="text-2xl font-semibold text-white tabular-nums">
+              ~{f.viewers.toLocaleString()}
+            </span>{" "}
+            <span className="text-xs uppercase tracking-[0.14em] text-white/35 font-semibold">
+              saw it
+            </span>
+          </span>
+        )}
         <span>
           <span className="text-2xl font-semibold text-white tabular-nums">
             {f.openDays.toLocaleString()}

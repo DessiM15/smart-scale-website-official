@@ -19,7 +19,7 @@ import { playsOnWeekday, type Venue } from "./venues";
  * 6am–2pm Mon–Sat and 7am–2pm Sunday, closed Mondays, which is 160 plays a
  * day and 140 on a Sunday. Another venue is whatever its record says.
  */
-export type Rotation = Pick<Venue, "hours" | "slides" | "slideSeconds">;
+export type Rotation = Pick<Venue, "hours" | "slides" | "slideSeconds"> & Partial<Pick<Venue, "monthlyGuests">>;
 
 /**
  * Plays and open days across a window of dates, inclusive.
@@ -153,6 +153,16 @@ export type ReportFacts = {
   plays: number;
   /** Days the restaurant was open in the month. */
   openDays: number;
+  /**
+   * Guests who were in the room while the ad was running, approximately.
+   * The venue's monthly guest count, scaled to the share of the month's open
+   * days the ad was on screen. Null when the venue has no guest count.
+   */
+  viewers: number | null;
+  /** The venue's stated guests per month, so the report can say where the figure comes from. */
+  monthlyGuests: number;
+  /** Open days in the whole month, ad or no ad. */
+  venueOpenDays: number;
 
   /* ------------------------- the whole run so far ------------------------- */
 
@@ -233,6 +243,10 @@ export async function buildReportFacts(
       ? Math.round(((scans - previousScans) / previousScans) * 100)
       : null;
 
+  const monthlyGuests = venue.monthlyGuests ?? 0;
+  const wholeMonth = monthBounds(month);
+  const venueOpenDays = playsBetween(wholeMonth.from, wholeMonth.to, venue).openDays;
+  const viewers = viewersFor(monthlyGuests, openDays, venueOpenDays);
   const facts: Omit<ReportFacts, "allowedNumbers"> = {
     advertiserId: advertiser.id,
     business: advertiser.business,
@@ -260,6 +274,9 @@ export async function buildReportFacts(
     daysWithScans: inMonth.filter((p) => p.count > 0).length,
     plays,
     openDays,
+    viewers,
+    monthlyGuests,
+    venueOpenDays,
     termPlays: term.plays,
     termOpenDays: term.openDays,
     termScans,
@@ -271,6 +288,21 @@ export async function buildReportFacts(
   };
 
   return { ...facts, allowedNumbers: collectNumbers(facts) };
+}
+
+/**
+ * "Seen by approximately N people" for a month.
+ *
+ * Every guest who sits down sees every ad in the loop at least once, so the
+ * ceiling on viewers is the number of guests, and the only honest scaling is
+ * by how much of the month the ad was actually on screen. Rounded to the
+ * nearest hundred, because the input is a round number from the venue and
+ * a figure like 9,677 would claim a precision nobody has.
+ */
+export function viewersFor(monthlyGuests: number, adOpenDays: number, venueOpenDays: number): number | null {
+  if (monthlyGuests <= 0 || venueOpenDays <= 0 || adOpenDays <= 0) return null;
+  const raw = monthlyGuests * (Math.min(adOpenDays, venueOpenDays) / venueOpenDays);
+  return Math.max(100, Math.round(raw / 100) * 100);
 }
 
 /** Every distinct number appearing in a piece of text. */
@@ -301,6 +333,9 @@ function collectNumbers(facts: Omit<ReportFacts, "allowedNumbers">): number[] {
     ...facts.topPlaces.map((p) => p.count),
     facts.plays,
     facts.openDays,
+    facts.viewers ?? undefined,
+    facts.monthlyGuests,
+    facts.venueOpenDays,
     facts.termPlays,
     facts.termOpenDays,
     facts.termScans,

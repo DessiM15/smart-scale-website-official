@@ -337,6 +337,7 @@ export function LocationForm({ editing, blank, error }: { editing?: Venue; blank
             <Field label="Screens" name="screens" defaultValue={String(v.screens)} inputMode="numeric" required />
             <Field label="Slides in the loop" name="slides" defaultValue={String(v.slides)} inputMode="numeric" required />
             <Field label="Slides for sale" name="sellable" defaultValue={String(v.sellable)} inputMode="numeric" required hint="The rest are the house's own." />
+            <Field label="Guests per month" name="monthlyGuests" defaultValue={String(v.monthlyGuests)} inputMode="numeric" hint="From the venue. Behind the &quot;seen by approximately&quot; figure in client reports. Leave 0 if unknown and the report omits it." />
             <Field label="Seconds per slide" name="slideSeconds" defaultValue={String(v.slideSeconds)} inputMode="numeric" required />
           </div>
         </div>

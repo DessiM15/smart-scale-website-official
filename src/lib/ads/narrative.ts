@@ -76,7 +76,7 @@ export function templateNarrative(facts: ReportFacts): Narrative {
     if (facts.bestHourWindow) {
       parts.push(`Scans cluster around ${facts.bestHourWindow}.`);
     }
-    parts.push(`It played ${facts.plays} times across ${days}.`);
+    parts.push(`It played ${facts.plays} times across ${days}${typeof facts.viewers === "number" && facts.viewers > 0 ? `, in front of roughly ${facts.viewers.toLocaleString()} guests` : ""}.`);
   } else {
     // Said in one sentence rather than two, so "opening days" isn't repeated.
     parts.push(
@@ -128,6 +128,9 @@ function factSheet(facts: ReportFacts): string {
     `Days in the month with at least one scan: ${facts.daysWithScans}`,
     `Times the ad played: ${facts.plays}`,
     `Days the restaurant was open: ${facts.openDays}`,
+    ...(typeof facts.viewers === "number" && facts.viewers > 0
+      ? [`People who saw it, approximately (guest count from the venue, scaled to days on screen): ${facts.viewers}`]
+      : []),
     `Scans since they started: ${facts.scansAllTime}`,
     `Distinct phones since they started: ${facts.uniquePhones}`,
   ];

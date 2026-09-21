@@ -17,6 +17,14 @@ export type Settings = {
   /** Who the statement is addressed to. */
   venueOwnerName: string;
   venueOwnerEmail: string;
+  /**
+   * Monthly reports go to clients on their own. Off: the daily job drafts
+   * them on the 1st and someone presses Send on each. On: the drafts still
+   * appear on the 1st, a preview of each lands at the team addresses, and
+   * the next daily run sends whatever is still a draft, so there is always
+   * one day to skip a report that reads wrong.
+   */
+  autoSendReports: boolean;
   updatedAt: string;
 };
 
@@ -26,6 +34,7 @@ export const DEFAULT_SETTINGS: Settings = {
   venueSharePercent: 0,
   venueOwnerName: "",
   venueOwnerEmail: "",
+  autoSendReports: false,
   updatedAt: "",
 };
 
@@ -52,6 +61,11 @@ export async function saveSettings(
 ): Promise<boolean> {
   const record: Settings = { ...input, updatedAt: new Date().toISOString() };
   return redisWrite([["SET", KEY, JSON.stringify(record)]]);
+}
+
+export async function setAutoSendReports(on: boolean): Promise<boolean> {
+  const current = await getSettings();
+  return saveSettings({ ...current, autoSendReports: on });
 }
 
 /** The venue owner's cut of a given amount, rounded to the cent. */
