@@ -82,7 +82,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable} ${bebasNeue.variable} ${shadowsIntoLight.variable}`}>
-      <body className="bg-[#0A0A0A] text-white">
+      <body className="bg-[#0C0B0A] text-white">
         <SchemaOrg />
         <Analytics />
         <SmoothScrollProvider>

@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
+import { BOOKING_URL } from "@/lib/business";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useLayoutEffect } from "react";
 import { gsap } from "gsap";
@@ -108,30 +110,15 @@ export default function Navbar() {
   const isLight = navTheme === "light";
   const textColor = isLight ? "text-[#111111]/60" : "text-white/60";
   const textHover = isLight ? "hover:text-[#111111]" : "hover:text-white";
-  const logoColor = isLight ? "black" : "white";
-  const borderColor = isLight ? "border-black/20" : "border-white/20";
-  const borderHover = isLight ? "hover:border-black/40" : "hover:border-white/40";
   const ctaText = isLight ? "text-[#111111]/80" : "text-white/80";
-  const ctaTextHover = isLight ? "hover:text-[#111111]" : "hover:text-white";
   const scrolledBg = isLight ? "bg-white/80" : "bg-black/80";
   const scrolledBorder = isLight ? "border-black/[0.08]" : "border-white/[0.08]";
   const hamburgerColor = isLight ? "text-[#111111]" : "text-white";
 
-  // The logo is a mask tinted to the active section theme, so one PNG works on
-  // both light and dark bands. The source art is square (1024x1024) — callers
-  // set height only and let the ratio size the box to the mark.
-  const logoMask: React.CSSProperties = {
-    WebkitMaskImage: "url(/assets/smart-scale-logo-official.png)",
-    maskImage: "url(/assets/smart-scale-logo-official.png)",
-    WebkitMaskSize: "contain",
-    maskSize: "contain",
-    WebkitMaskRepeat: "no-repeat",
-    maskRepeat: "no-repeat",
-    WebkitMaskPosition: "center",
-    maskPosition: "center",
-    backgroundColor: logoColor,
-    aspectRatio: "1 / 1",
-  };
+  // Two logo files, not a mask: the mark is red and the wordmark is white
+  // or black depending on the band behind it. The "Light w/ Red" file goes
+  // on dark bands, the regular one on light bands. Both are 485x320.
+  const logoSrc = isLight ? "/assets/smart-scale-logo-reg.png" : "/assets/smart-scale-logo-light-red.png";
 
   return (
     <header
@@ -151,12 +138,7 @@ export default function Navbar() {
           }`}
         >
           <Link href="/" className="flex items-center">
-            <div
-              className="h-12 w-auto transition-colors duration-300"
-              style={logoMask}
-              role="img"
-              aria-label="Smart Scale"
-            />
+            <Image src={logoSrc} alt="Smart Scale" width={485} height={320} priority className="h-14 w-auto" />
           </Link>
 
           <div className="flex items-center gap-12">
@@ -169,12 +151,15 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              href="/contact"
-              className={`px-6 py-2.5 border rounded-full text-xs uppercase tracking-widest transition-all duration-300 ${borderColor} ${ctaText} ${borderHover} ${ctaTextHover}`}
+            <a
+              href={BOOKING_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-track="book_call"
+              className="px-6 py-2.5 rounded-full bg-[#DC2626] text-white text-xs uppercase tracking-widest font-semibold transition-colors duration-300 hover:bg-[#B91C1C]"
             >
-              Get in Touch
-            </Link>
+              Book a call
+            </a>
           </div>
         </div>
 
@@ -204,12 +189,7 @@ export default function Navbar() {
             href="/"
             className="relative flex items-center justify-center mx-6"
           >
-            <div
-              className="h-12 w-auto transition-colors duration-300"
-              style={logoMask}
-              role="img"
-              aria-label="Smart Scale"
-            />
+            <Image src={logoSrc} alt="Smart Scale" width={485} height={320} priority className="h-14 w-auto" />
           </Link>
 
           {/* Right links + CTA */}
@@ -223,24 +203,22 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              href="/contact"
-              className={`px-6 py-2.5 border rounded-full text-xs uppercase tracking-widest transition-all duration-300 ${borderColor} ${ctaText} ${borderHover} ${ctaTextHover}`}
+            <a
+              href={BOOKING_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-track="book_call"
+              className="px-6 py-2.5 rounded-full bg-[#DC2626] text-white text-xs uppercase tracking-widest font-semibold transition-colors duration-300 hover:bg-[#B91C1C]"
             >
-              Get in Touch
-            </Link>
+              Book a call
+            </a>
           </div>
         </div>
 
         {/* ===== MOBILE: always same layout ===== */}
         <div className="flex md:hidden items-center justify-between h-20">
           <Link href="/" className="flex items-center">
-            <div
-              className="h-10 w-auto transition-colors duration-300"
-              style={logoMask}
-              role="img"
-              aria-label="Smart Scale"
-            />
+            <Image src={logoSrc} alt="Smart Scale" width={485} height={320} priority className="h-11 w-auto" />
           </Link>
 
           <button
@@ -285,13 +263,16 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              href="/contact"
-              className={`block w-full px-6 py-2.5 border rounded-full text-xs uppercase tracking-widest text-center transition-all duration-300 ${borderColor} ${ctaText} ${borderHover} ${ctaTextHover}`}
+            <a
+              href={BOOKING_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-track="book_call"
+              className="block w-full px-6 py-2.5 rounded-full bg-[#DC2626] text-white text-xs uppercase tracking-widest font-semibold text-center transition-colors duration-300 hover:bg-[#B91C1C]"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Get in Touch
-            </Link>
+              Book a call
+            </a>
           </div>
         )}
       </nav>
