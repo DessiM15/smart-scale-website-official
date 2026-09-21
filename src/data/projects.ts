@@ -376,6 +376,8 @@ export const projects: Project[] = [
   },
   {
     slug: "mex-taco-house",
+    businessType: "Restaurant",
+    city: "Cypress, TX",
     title: "Mex Taco House",
     clientName: "Mex Taco House",
     serviceType: "Website",

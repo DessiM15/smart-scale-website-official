@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import ServiceNavigation from "@/components/ServiceNavigation";
 import GlowCard from "@/components/ui/GlowCard";
+import RelatedWork from "@/components/portfolio/RelatedWork";
+import { projectsForService } from "@/lib/related-work";
 
 const iconMap: Record<string, React.ReactNode> = {
   "mobile-development": <Smartphone className="w-12 h-12" />,
@@ -37,6 +39,7 @@ export default function ServicePageClient({ slug }: ServicePageClientProps) {
   }
 
   const icon = iconMap[service.slug];
+  const work = projectsForService(service.slug);
 
   return (
     <div className="min-h-screen">
@@ -145,6 +148,13 @@ export default function ServicePageClient({ slug }: ServicePageClientProps) {
       </section>
 
       {/* CTA — DARK */}
+      {/* Proof: the case studies this service produced. */}
+      <RelatedWork
+        heading={`${service.title} we've shipped`}
+        intro="Live client work, not mockups. Each one opens a full case study with the problem, what we built, and what changed."
+        projects={work}
+      />
+
       <section data-theme="dark" className="py-24 px-4 sm:px-6 lg:px-8 bg-[#111111]">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl mb-6 text-white">
