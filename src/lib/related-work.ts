@@ -11,6 +11,20 @@ import { getFeaturedProjects, projects, type Project } from "@/data/projects";
  * further from the pages Google already trusted.
  */
 
+/**
+ * One card per client. Bloxify has an app and a landing page, Botmakers a
+ * site and a CRM; showing both of either in a four-card section reads as
+ * padding when the point is "we have built for several businesses here".
+ */
+function distinctClients(list: Project[]): Project[] {
+  const seen = new Set<string>();
+  return list.filter((p) => {
+    if (seen.has(p.clientName)) return false;
+    seen.add(p.clientName);
+    return true;
+  });
+}
+
 /** How many cards a related-work section shows. */
 export const RELATED_WORK_LIMIT = 4;
 
@@ -24,9 +38,11 @@ export function projectsForCity(cityName: string): {
   local: boolean;
 } {
   const prefix = `${cityName},`;
-  const local = projects
-    .filter((p) => p.city?.startsWith(prefix))
-    .sort((a, b) => (a.featuredOrder ?? 99) - (b.featuredOrder ?? 99));
+  const local = distinctClients(
+    projects
+      .filter((p) => p.city?.startsWith(prefix))
+      .sort((a, b) => (a.featuredOrder ?? 99) - (b.featuredOrder ?? 99)),
+  );
   if (local.length > 0) {
     return { projects: local.slice(0, RELATED_WORK_LIMIT), local: true };
   }
@@ -61,10 +77,7 @@ export function projectsForService(serviceSlug: string): Project[] {
   const matches = (p: Project): boolean => {
     switch (serviceSlug) {
       case "ai-enhancement-ai-workflows":
-      case "integrations-and-automation":
         return Boolean(p.isAIPowered);
-      case "web-applications":
-        return p.serviceType === "Platform/CRM";
       default:
         return serviceSlugForProject(p) === serviceSlug;
     }

@@ -42,6 +42,7 @@ export const SERVICE_AREAS = [
   { name: "Cypress", slug: "cypress", page: true },
   { name: "Houston", slug: "houston", page: true },
   { name: "Sugar Land", slug: "sugar-land", page: false },
+  { name: "Pearland", slug: "pearland", page: false },
   { name: "Richmond", slug: "richmond", page: false },
   { name: "Fulshear", slug: "fulshear", page: false },
 ] as const;
