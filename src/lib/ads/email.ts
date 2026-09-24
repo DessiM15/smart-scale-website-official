@@ -715,9 +715,15 @@ Questions about any of it? Just reply to this email.`;
 
 /* ------------------------------- lead reply ------------------------------- */
 
-/** Where the current rate card lives. Fetched at send time and attached. */
+/**
+ * Where the current rate card lives. Fetched at send time and attached.
+ *
+ * Since 2026-09-24 this is the promo flyer Dessi supplied (source PNG beside
+ * it in public/print), not the list-price card: the advertise page shows the
+ * promo, and the email must not contradict the page it follows.
+ */
 export const RATE_CARD_URL =
-  "https://smartscaleagent.com/print/mex-taco-rate-card-sept-2026.pdf";
+  "https://smartscaleagent.com/print/mex-taco-rate-card-promo-2026.pdf";
 export const RATE_CARD_FILENAME = "Smart-Scale-Rate-Card-Mex-Taco-House.pdf";
 
 /**
@@ -756,7 +762,7 @@ export function leadReplyEmail(lead: {
       You saw one of our ads on the screens at ${VENUE_NAME} and took the time to reach out. That means a lot, and it also means you already know exactly how this works: a full dining room, every guest looking up at the screens, and one business per category on them.
     </p>
     <p style="margin:0 0 12px;font-size:15px;line-height:1.65;">
-      Your rate card is attached. It has the three plans, what's included with every one of them, and the add-ons. Have a look while it's fresh.
+      Your rate card is attached. It has the three plans at the current promo pricing, and every one of them comes with your category locked and the ad designed for you. Have a look while it's fresh.
     </p>
     <p style="margin:0;font-size:15px;line-height:1.65;">
       ${SALES_NAMES} will call you shortly to answer questions and talk through which plan fits${lead.business ? ` ${lead.business}` : ""}. If you'd rather not wait, our numbers are below.
@@ -788,7 +794,7 @@ Thanks${first ? `, ${first}` : ""}. We hope lunch was good.
 
 You saw one of our ads on the screens at ${VENUE_NAME} and took the time to reach out. That means a lot, and it also means you already know exactly how this works: a full dining room, every guest looking up at the screens, and one business per category on them.
 
-Your rate card is attached. It has the three plans, what's included with every one of them, and the add-ons. Have a look while it's fresh.
+Your rate card is attached. It has the three plans at the current promo pricing, and every one of them comes with your category locked and the ad designed for you. Have a look while it's fresh.
 
 ${SALES_NAMES} will call you shortly to answer questions and talk through which plan fits${lead.business ? ` ${lead.business}` : ""}. If you'd rather not wait, call ${SALES_CALL_TEXT}.
 
