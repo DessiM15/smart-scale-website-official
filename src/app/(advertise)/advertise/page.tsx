@@ -10,10 +10,18 @@
  */
 
 import type { Metadata } from "next";
-import { atVenue, listAdvertisers, summarize, DEFAULT_VENUE_ID } from "@/lib/ads/roster";
+import {
+  atVenue,
+  listAdvertisers,
+  listPlanOf,
+  planTermValue,
+  summarize,
+  DEFAULT_VENUE_ID,
+  PUBLIC_PLANS,
+} from "@/lib/ads/roster";
 import { isRedisReachable } from "@/lib/ads/redis";
 import { listVenues, liveVenues, venueOf } from "@/lib/ads/venues";
-import AdvertisePage from "./_components/advertise-page";
+import AdvertisePage, { type PublicPlan } from "./_components/advertise-page";
 
 /* --------------------------------- config --------------------------------- */
 /* The bits you are most likely to want to change. */
@@ -21,8 +29,25 @@ import AdvertisePage from "./_components/advertise-page";
 const PHONE_DISPLAY = "832.407.0773";
 const PHONE_HREF = "tel:+18324070773";
 
-/** Shown as the anchor. The full rate card stays off the page, on the call. */
-const STARTING_PRICE = "$300 a month";
+/**
+ * The prices come from the same table the tracker bills against, so the page
+ * cannot quote a rate the agreement then contradicts. Flattened to plain
+ * numbers here because the client half must not import the roster.
+ */
+const PLANS_SHOWN: PublicPlan[] = PUBLIC_PLANS.map((plan) => {
+  const list = listPlanOf(plan);
+  return {
+    id: plan.id,
+    name: plan.name,
+    months: plan.months,
+    monthly: plan.monthly,
+    setup: plan.setup,
+    oneTime: Boolean(plan.oneTime),
+    termValue: planTermValue(plan),
+    listMonthly: list.monthly,
+    listTermValue: planTermValue(list),
+  };
+});
 
 /* -------------------------------- metadata -------------------------------- */
 
@@ -30,7 +55,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/advertise" },
   title: "Advertise at Mex Taco House | In-Restaurant TV Advertising",
   description:
-    "Own your category on Mex Taco House's dining-room screens in Cypress, TX. 10,000+ impressions a month, one business per category, and we design your ad for you. Plans from $300/mo. Managed by Smart Scale.",
+    "Own your category on Mex Taco House's dining-room screens in Cypress, TX. 10,000+ impressions a month, one business per category, and we design your ad for you. Promo plans from $275 a month, or $3,000 for the year. Managed by Smart Scale.",
   openGraph: {
     title: "Advertise at Mex Taco House | In-Restaurant TV Advertising",
     description:
@@ -65,7 +90,7 @@ export default async function Page() {
     <AdvertisePage
       phoneDisplay={PHONE_DISPLAY}
       phoneHref={PHONE_HREF}
-      startingPrice={STARTING_PRICE}
+      plans={PLANS_SHOWN}
       totalSlots={house.sellable}
       slotsLeft={summary ? summary.openSlots : null}
       metaPixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID}

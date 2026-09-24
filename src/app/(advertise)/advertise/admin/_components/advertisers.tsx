@@ -13,6 +13,7 @@ import {
   artworkStatusOf,
   ARTWORK_STATUSES,
   formatDate,
+  planTermValue,
   today,
   PLAN_LIST,
   type AdvertiserView,
@@ -92,7 +93,8 @@ function RosterRow({ view, extras, open }: { view: AdvertiserView; extras: RowEx
         <p className="text-sm text-white/85">{view.planName}</p>
         <p className="text-xs tabular-nums">
           <span className={view.isCustom ? "text-[#E0B36A]" : "text-white/40"}>{view.monthly ? `${money(view.monthly)}/mo` : "no charge"}</span>
-          {view.isCustom && view.monthly !== view.listMonthly && <span className="ml-1.5 text-white/25 line-through">{money(view.listMonthly)}</span>}
+          {/* Under list: a custom deal, or a promo package priced against the plan it discounts. */}
+          {view.monthly !== view.listMonthly && <span className="ml-1.5 text-white/25 line-through">{money(view.listMonthly)}</span>}
           {view.soldAsTotal && <span className="ml-1.5 text-white/40">{money(view.termValue)} once</span>}
         </p>
       </td>
@@ -162,10 +164,23 @@ function RosterCard({ view, extras, open }: { view: AdvertiserView; extras: RowE
 
 /* ---------------------------------- form ----------------------------------- */
 
+/**
+ * The dropdown, promos first because they are what the advertise page is
+ * selling and so what a new client will have asked for. A one-time package
+ * says its whole-term figure, since that is the number on the flyer.
+ */
 function planOptions() {
-  return PLAN_LIST.map((plan) => ({
+  const rate = (plan: (typeof PLAN_LIST)[number]) =>
+    !plan.monthly
+      ? "no charge"
+      : plan.oneTime
+        ? `${money(planTermValue(plan))} one time`
+        : `${money(plan.monthly)}/mo${plan.setup ? ` + ${money(plan.setup)} setup` : ""}`;
+  const ordered = [...PLAN_LIST.filter((p) => p.promo), ...PLAN_LIST.filter((p) => !p.promo)];
+  return ordered.map((plan) => ({
     id: plan.id,
-    label: `${plan.name} · ${plan.months} mo${plan.monthly ? ` · ${money(plan.monthly)}/mo` : " · no charge"}${plan.internalOnly ? " (internal)" : ""}`,
+    label: `${plan.name} · ${plan.months} mo · ${rate(plan)}${plan.promo ? " (advertise page)" : plan.internalOnly ? " (internal)" : " (list)"}`,
+    oneTime: Boolean(plan.oneTime),
   }));
 }
 

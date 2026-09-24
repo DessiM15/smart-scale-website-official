@@ -16,7 +16,9 @@
  *
  * The live half comes from the tracker. How many slots are left is read from
  * the roster on the server, so the page cannot claim a slot is going after it
- * has been sold.
+ * has been sold. The prices come from the same place: three promo packages,
+ * shown against list the way the printed flyer shows them (2026-09-24), and
+ * picking one carries the choice into the form so the lead arrives tagged.
  */
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
@@ -26,10 +28,27 @@ import Script from "next/script";
 import { useGSAPAnimations } from "@/hooks/useGSAPAnimations";
 import { track } from "@/lib/analytics";
 
+/** A package as the page shows it: plain numbers, flattened on the server. */
+export type PublicPlan = {
+  id: string;
+  name: string;
+  months: number;
+  monthly: number;
+  setup: number;
+  /** Quoted as one figure for the whole term rather than a monthly rate. */
+  oneTime: boolean;
+  /** Whole-term price at the promo rate, setup included. */
+  termValue: number;
+  /** The list price this promo is struck through against. */
+  listMonthly: number;
+  listTermValue: number;
+};
+
 export type AdvertisePageProps = {
   phoneDisplay: string;
   phoneHref: string;
-  startingPrice: string;
+  /** The packages on offer, in the order they are shown. */
+  plans: PublicPlan[];
   /** Every slot the rotation sells, taken or not. */
   totalSlots: number;
   /** Live from the roster. Null when the database could not be reached. */
@@ -86,9 +105,22 @@ const BUDGETS = [
 const TICKER = [
   { text: "AD DESIGN DONE FOR YOU", gold: true },
   { text: "ONE BUSINESS PER CATEGORY", gold: false },
-  { text: "LIVE IN DAYS, NOT WEEKS", gold: true },
-  { text: "10,000+ IMPRESSIONS A MONTH", gold: false },
+  { text: "PROMO PRICING FOR A LIMITED TIME", gold: true },
+  { text: "LIVE IN DAYS, NOT WEEKS", gold: false },
+  { text: "10,000+ IMPRESSIONS A MONTH", gold: true },
 ];
+
+/** Dollars, whole, with the thousands comma the flyer uses. */
+const money = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
+
+/**
+ * How a package reads in the form and in the lead that lands in the tracker:
+ * "6 Month Promo, $275/mo". Human first, because Jay reads it off an email.
+ */
+const planLabel = (plan: PublicPlan) =>
+  plan.oneTime
+    ? `${plan.name}, ${money(plan.termValue)} one time`
+    : `${plan.name}, ${money(plan.monthly)}/mo`;
 
 const INCLUDED = [
   "Your ad designed and built for you",
@@ -114,14 +146,14 @@ const FAQ = [
   },
   {
     q: "What am I committing to?",
-    a: "It depends which package you take. Terms start at three months, and the longer ones cost less per month. Whichever you choose is written into the agreement before anything starts, and we go through it with you on the call.",
+    a: "Three, six or twelve months, your pick. The longer terms cost less, and the rate you sign at is held for the whole term. Whichever you choose is written into the agreement before anything starts, and we go through it with you on the call.",
   },
 ];
 
 export default function AdvertisePage({
   phoneDisplay,
   phoneHref,
-  startingPrice,
+  plans,
   totalSlots,
   slotsLeft,
   metaPixelId,
@@ -133,6 +165,13 @@ export default function AdvertisePage({
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [source, setSource] = useState("advertise-page");
+  /** The package they picked from the cards, carried into the form. */
+  const [plan, setPlan] = useState("");
+
+  const choosePlan = useCallback((chosen: PublicPlan) => {
+    setPlan(planLabel(chosen));
+    track("select_plan", { plan: chosen.id });
+  }, []);
 
   const [slide, setSlide] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -423,23 +462,44 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
                   </fieldset>
                 )}
 
-                <div>
-                  <label htmlFor="budget" className="block text-xs font-semibold text-[#5c4f45] mb-1.5">
-                    Monthly budget
-                  </label>
-                  <select
-                    id="budget"
-                    name="budget"
-                    defaultValue=""
-                    className="w-full px-4 h-12 rounded-xl border border-black/10 bg-[#faf6f0] text-[#1a1210] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/25 focus:border-[#DC2626]/40 transition"
-                  >
-                    <option value="">Not sure yet</option>
-                    {BUDGETS.map((b) => (
-                      <option key={b} value={b}>
-                        {b}
-                      </option>
-                    ))}
-                  </select>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="package_interest" className="block text-xs font-semibold text-[#5c4f45] mb-1.5">
+                      Which plan?
+                    </label>
+                    <select
+                      id="package_interest"
+                      name="package_interest"
+                      value={plan}
+                      onChange={(e) => setPlan(e.target.value)}
+                      className="w-full px-4 h-12 rounded-xl border border-black/10 bg-[#faf6f0] text-[#1a1210] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/25 focus:border-[#DC2626]/40 transition"
+                    >
+                      <option value="">Not sure yet, help me pick</option>
+                      {plans.map((p) => (
+                        <option key={p.id} value={planLabel(p)}>
+                          {planLabel(p)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="budget" className="block text-xs font-semibold text-[#5c4f45] mb-1.5">
+                      Monthly budget
+                    </label>
+                    <select
+                      id="budget"
+                      name="budget"
+                      defaultValue=""
+                      className="w-full px-4 h-12 rounded-xl border border-black/10 bg-[#faf6f0] text-[#1a1210] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/25 focus:border-[#DC2626]/40 transition"
+                    >
+                      <option value="">Not sure yet</option>
+                      {BUDGETS.map((b) => (
+                        <option key={b} value={b}>
+                          {b}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 <div>
@@ -602,6 +662,54 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
         </div>
       </section>
 
+      {/* ------------------------------- pricing ----------------------------- */}
+      {/* The three packages, laid out the way the printed flyer lays them out:
+          list price struck through, promo price big, one line on who each is
+          for. Picking one drops the choice into the form above. */}
+      <section id="pricing" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 scroll-mt-24">
+        <div className="max-w-7xl mx-auto" data-animate="fade-up">
+          <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-4 mb-8">
+            <div>
+              <p
+                className="text-2xl sm:text-[1.7rem] text-[#DC2626] leading-none mb-1"
+                style={{ fontFamily: "var(--font-shadows), cursive" }}
+              >
+                Limited promo pricing
+              </p>
+              <h2
+                className="text-5xl sm:text-6xl lg:text-7xl leading-[0.88]"
+                style={{ fontFamily: "var(--font-bebas), Impact, sans-serif" }}
+              >
+                Pick your term
+              </h2>
+            </div>
+            <p className="text-[#7a6a5d] leading-relaxed max-w-md lg:pb-2">
+              Same screens, same category lock, ad designed for you. The longer
+              you run, the less it costs, and your rate is held for the whole
+              term.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-5" data-animate="stagger">
+            {plans.map((p, i) => (
+              <PlanCard
+                key={p.id}
+                plan={p}
+                featured={i === plans.length - 1}
+                selected={plan === planLabel(p)}
+                onPick={choosePlan}
+              />
+            ))}
+          </div>
+
+          <p className="text-sm text-[#9a8b7d] mt-6">
+            Promo pricing for a limited time. Prices are locked for your full
+            term, and every plan includes your category held and the ad
+            designed for you.
+          </p>
+        </div>
+      </section>
+
       {/* ------------------------------- gallery ----------------------------- */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto" data-animate="fade-up">
@@ -751,19 +859,6 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
               On the screens the next business day.
             </Step>
           </div>
-        </div>
-      </section>
-
-      {/* ---------------------------- price anchor --------------------------- */}
-      <section className="px-4 sm:px-6 lg:px-8 pb-16 sm:pb-20">
-        <div className="max-w-7xl mx-auto border-y-2 border-black/10 py-9 text-center">
-          <p
-            className="text-3xl sm:text-4xl lg:text-5xl leading-tight"
-            style={{ fontFamily: "var(--font-bebas), Impact, sans-serif" }}
-          >
-            Plans start at <span className="text-[#DC2626]">{startingPrice}</span>, category exclusivity included
-          </p>
-          <p className="text-[#9a8b7d] mt-3">Full rate card on your call.</p>
         </div>
       </section>
 
@@ -1041,6 +1136,112 @@ function Stat({ value, label, note }: { value: string; label: string; note: stri
   );
 }
 
+/**
+ * One package. The last one is the featured card, dark like the highlighted
+ * step further down, because the year is the one we would rather sell.
+ */
+function PlanCard({
+  plan,
+  featured,
+  selected,
+  onPick,
+}: {
+  plan: PublicPlan;
+  featured: boolean;
+  selected: boolean;
+  onPick: (plan: PublicPlan) => void;
+}) {
+  const bebas = { fontFamily: "var(--font-bebas), Impact, sans-serif" };
+  const was = plan.oneTime ? `${money(plan.listTermValue)} one time` : `${money(plan.listMonthly)}/mo`;
+  const now = plan.oneTime ? money(plan.termValue) : money(plan.monthly);
+  const unit = plan.oneTime ? "one time" : "/mo";
+
+  const lines = [
+    plan.oneTime ? `That is ${money(plan.monthly)} a month, paid once.` : null,
+    plan.months === 3 ? "Great for getting started." : null,
+    plan.months === 6 ? "Better value, month for month." : null,
+    plan.months === 12 ? "Category locked all year." : null,
+    plan.setup > 0 ? `${money(plan.setup)} design and setup, one time.` : "Design fee waived.",
+  ].filter((line): line is string => Boolean(line));
+
+  const ink = featured ? "text-white" : "text-[#1a1210]";
+  const muted = featured ? "text-white/60" : "text-[#7a6a5d]";
+
+  return (
+    <div
+      className={`relative overflow-hidden rounded-3xl flex flex-col transition-shadow ${
+        featured
+          ? "bg-[#1a1210] shadow-xl shadow-black/20"
+          : "bg-white border border-black/[0.06] shadow-lg shadow-black/[0.04]"
+      } ${selected ? "ring-2 ring-[#DC2626] ring-offset-2 ring-offset-[#faf6f0]" : ""}`}
+    >
+      {featured && (
+        <div
+          className="pointer-events-none absolute inset-0"
+          aria-hidden
+          style={{
+            background:
+              "radial-gradient(70% 70% at 50% 100%, rgba(220,38,38,0.28), transparent 70%)",
+          }}
+        />
+      )}
+
+      <div className="relative bg-[#DC2626] px-6 py-3 flex items-center justify-between gap-3">
+        <span className="text-white text-2xl sm:text-[1.7rem] leading-none tracking-wide" style={bebas}>
+          {plan.months} month plan
+        </span>
+        {featured && (
+          <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#1a1210] bg-[#f0c674] rounded-full px-2.5 py-1">
+            Best value
+          </span>
+        )}
+      </div>
+
+      <div className="relative p-6 sm:p-7 flex flex-col gap-3 flex-1">
+        <p className={`text-lg leading-none line-through decoration-[#DC2626] decoration-2 ${featured ? "text-white/40" : "text-[#9a8b7d]"}`}>
+          {was}
+        </p>
+        <p className="flex items-baseline gap-1.5 flex-wrap">
+          <span className="text-6xl sm:text-7xl leading-[0.84] text-[#DC2626]" style={bebas}>
+            {now}
+          </span>
+          <span className={`text-2xl sm:text-3xl leading-none ${ink}`} style={bebas}>
+            {unit}
+          </span>
+        </p>
+
+        <ul className={`mt-1 space-y-1.5 leading-snug ${muted}`}>
+          {lines.map((line) => (
+            <li key={line} className="flex items-start gap-2.5">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 flex-shrink-0 mt-[3px]">
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+              <span>{line}</span>
+            </li>
+          ))}
+        </ul>
+
+        <a
+          href="#quote"
+          data-track="advertise_quote"
+          onClick={() => onPick(plan)}
+          className={`mt-4 inline-flex items-center justify-center gap-2 rounded-full text-2xl py-3 px-6 transition-colors ${
+            featured
+              ? "bg-[#DC2626] text-white hover:bg-[#b91c1c]"
+              : "bg-[#1a1210] text-white hover:bg-[#DC2626]"
+          }`}
+          style={bebas}
+        >
+          {selected ? "Picked, finish the form" : "Claim this plan"}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-[18px] h-[18px]">
+            <path d="M5 12h14m0 0l-6-6m6 6l-6 6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  );
+}
+
 function Step({
   n,
   title,
@@ -1148,8 +1349,8 @@ function SuccessCard({
         We will come back to you within 24 hours.
       </p>
       <p className="text-sm text-[#9a8b7d] mb-6 animate-[fade-slide-up_0.5s_ease-out_1.4s_both]">
-        We will call or email with whether your category is open and what the
-        spot would cost.
+        We will call or email with whether your category is open and which
+        plan fits.
       </p>
       <a
         href={phoneHref}
