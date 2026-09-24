@@ -32,6 +32,7 @@ import {
   artworkStatusOf,
   formatDate,
   today,
+  PLANS,
   type AdvertiserView,
 } from "@/lib/ads/roster";
 import { activeAgreement, isIntact, pendingAgreement, sourceOf, type Agreement } from "@/lib/ads/agreements";
@@ -123,6 +124,11 @@ function DealPanel({ view, venue }: { view: AdvertiserView; venue: Venue }) {
         <dl>
           <Row label="Package">
             {view.planName}
+            {PLANS[view.plan]?.promo && (
+              <span className="ml-2">
+                <Badge tone="ok" dot={false}>promo</Badge>
+              </span>
+            )}
             {view.isCustom && (
               <span className="ml-2">
                 <Badge tone="warn" dot={false}>custom</Badge>

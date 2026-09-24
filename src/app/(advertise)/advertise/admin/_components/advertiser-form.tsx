@@ -16,7 +16,7 @@
  * from the roster would drag Redis and node crypto into the browser bundle.
  */
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { saveAdvertiserAction, type AdvertiserFormState } from "../actions";
 import { SubmitButton } from "./submit-button";
 import type { LinkView } from "./types";
@@ -44,6 +44,8 @@ const ARTWORK_OPTIONS = [
 export type PlanOption = {
   id: string;
   label: string;
+  /** Sold as one figure for the whole term, so the natural way to pay is up front. */
+  oneTime?: boolean;
 };
 
 /** Only the fields the form reads back, so the server can pass a plain object. */
@@ -180,6 +182,17 @@ export function AdvertiserForm({
     saveAdvertiserAction,
     null,
   );
+
+  /**
+   * How they pay follows the package until somebody says otherwise: picking
+   * the one-time annual flips it to up front, because "$3,000 one time" then
+   * "invoiced monthly" is the contradiction the agreement would print.
+   */
+  const [paymentType, setPaymentType] = useState(editing?.paymentType ?? "monthly");
+  const onPlanChange = (planId: string) => {
+    const chosen = plans.find((p) => p.id === planId);
+    if (chosen?.oneTime) setPaymentType("prepaid");
+  };
 
   /** What each field starts as: the client being edited, the prospect, or the client being copied. */
   const start = editing ?? prefill ?? copy;
@@ -370,7 +383,8 @@ export function AdvertiserForm({
               <select
                 id="plan"
                 name="plan"
-                defaultValue={editing?.plan ?? "standard"}
+                defaultValue={editing?.plan ?? "promo6"}
+                onChange={(e) => onPlanChange(e.target.value)}
                 className={selectClass}
               >
                 {plans.map((plan) => (
@@ -379,6 +393,9 @@ export function AdvertiserForm({
                   </option>
                 ))}
               </select>
+              <p className="mt-1.5 text-xs text-white/30">
+                The promo packages are the prices on the advertise page. List is what they compare against.
+              </p>
             </div>
             <Field
               label="Start date"
@@ -394,7 +411,8 @@ export function AdvertiserForm({
               <select
                 id="paymentType"
                 name="paymentType"
-                defaultValue={editing?.paymentType ?? "monthly"}
+                value={paymentType}
+                onChange={(e) => setPaymentType(e.target.value)}
                 className={selectClass}
               >
                 <option value="monthly">Invoiced monthly</option>

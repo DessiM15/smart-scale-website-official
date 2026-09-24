@@ -20,7 +20,14 @@ import { localStamp } from "./scan-store";
 export const SELLABLE_SLOTS = 16;
 
 /** Terms are counted from the start date, in whole months. */
-export type PlanId = "short" | "standard" | "annual" | "starter";
+export type PlanId =
+  | "short"
+  | "standard"
+  | "annual"
+  | "starter"
+  | "promo3"
+  | "promo6"
+  | "promo12";
 
 export type Plan = {
   id: PlanId;
@@ -30,6 +37,15 @@ export type Plan = {
   setup: number;
   /** Rep-only seeding tool — never shown on the public page. */
   internalOnly?: boolean;
+  /**
+   * A promotional package: the same term as one of the list plans, sold for
+   * less. `listOf` names the plan it discounts, so the tracker can show what
+   * the promo gives away against list without anyone typing a custom deal.
+   */
+  promo?: boolean;
+  listOf?: PlanId;
+  /** Quoted as one figure for the whole term rather than a monthly rate. */
+  oneTime?: boolean;
 };
 
 /**
@@ -38,11 +54,44 @@ export type Plan = {
  * actually charged turns every revenue figure in this tracker into fiction.
  * A client who pays something else gets a custom rate on their own record
  * rather than a quiet edit to this table.
+ *
+ * The three promo packages (added 2026-09-24, from the Mex Taco flyer) are
+ * what the advertise page shows, struck through against the list price. They
+ * are real packages rather than custom deals so the dropdown offers them, the
+ * agreement names them, and the revenue figures add them up at the promo rate.
  */
 export const PLANS: Record<PlanId, Plan> = {
   short: { id: "short", name: "Short Term", months: 3, monthly: 350, setup: 99 },
   standard: { id: "standard", name: "Standard", months: 6, monthly: 325, setup: 0 },
-  annual: { id: "annual", name: "Annual", months: 12, monthly: 300, setup: 0 },
+  annual: { id: "annual", name: "Annual", months: 12, monthly: 300, setup: 0, oneTime: true },
+  promo3: {
+    id: "promo3",
+    name: "3 Month Promo",
+    months: 3,
+    monthly: 300,
+    setup: 99,
+    promo: true,
+    listOf: "short",
+  },
+  promo6: {
+    id: "promo6",
+    name: "6 Month Promo",
+    months: 6,
+    monthly: 275,
+    setup: 0,
+    promo: true,
+    listOf: "standard",
+  },
+  promo12: {
+    id: "promo12",
+    name: "12 Month Promo",
+    months: 12,
+    monthly: 250,
+    setup: 0,
+    promo: true,
+    listOf: "annual",
+    oneTime: true,
+  },
   starter: {
     id: "starter",
     name: "Free Starter",
@@ -54,6 +103,19 @@ export const PLANS: Record<PlanId, Plan> = {
 };
 
 export const PLAN_LIST = Object.values(PLANS);
+
+/** The packages the advertise page offers, in the order it shows them. */
+export const PUBLIC_PLANS: Plan[] = PLAN_LIST.filter((p) => p.promo);
+
+/** The list plan a package is priced against: itself, unless it is a promo. */
+export function listPlanOf(plan: Plan): Plan {
+  return (plan.listOf && PLANS[plan.listOf]) || plan;
+}
+
+/** Whole-term price at the package rate, setup included. */
+export function planTermValue(plan: Plan): number {
+  return plan.monthly * plan.months + plan.setup;
+}
 
 export type AdvertiserStatus = "active" | "pending" | "ended";
 
@@ -377,6 +439,10 @@ export type Terms = {
  */
 export function termsFor(a: Advertiser): Terms {
   const plan = PLANS[a.plan] ?? PLANS.standard;
+  // A promo package is measured against the list plan it discounts, so the
+  // give-away shows in the revenue figures without being flagged as a custom
+  // deal: the promo is the price list, not an exception to it.
+  const list = listPlanOf(plan);
 
   // A term of zero months would make the end date the start date, so a custom
   // length has to be at least one whole month.
@@ -396,17 +462,17 @@ export function termsFor(a: Advertiser): Terms {
     monthly,
     setup,
     months,
-    listMonthly: plan.monthly,
-    listSetup: plan.setup,
-    listMonths: plan.months,
+    listMonthly: list.monthly,
+    listSetup: list.setup,
+    listMonths: list.months,
     isCustom:
       total !== null ||
       monthly !== plan.monthly ||
       setup !== plan.setup ||
       months !== plan.months,
-    monthlyDiscount: plan.monthly - monthly,
+    monthlyDiscount: list.monthly - monthly,
     termValue,
-    listTermValue: plan.monthly * plan.months + plan.setup,
+    listTermValue: planTermValue(list),
     /** True when the term was sold as a single price rather than a rate. */
     soldAsTotal: total !== null,
   };
