@@ -1,20 +1,22 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getFeaturedProjects, projects, type Project } from "@/data/projects";
+import { REVIEWS } from "@/data/reviews";
 
 /**
- * The homepage work grid: the seven featured projects in Dessi's order,
- * two wide, three across, two wide. Andre Thomas Law and Gulf Coast Alloys
- * sit side by side at the same size, his call on 2026-09-21.
+ * The homepage work grid. Andre Thomas Law leads, with his Google review
+ * sitting beside the screenshot as the section's feature moment (Dessi's
+ * ask, 2026-09-25). The other six featured projects follow in his order,
+ * two to a row, so every card is the same size.
  */
-const SPANS = ["lg:col-span-6", "lg:col-span-6", "lg:col-span-4", "lg:col-span-4", "lg:col-span-4", "lg:col-span-6", "lg:col-span-6"];
+const FEATURE_SLUG = "andre-thomas-law";
 
-function Card({ project, span }: { project: Project; span: string }) {
+function Card({ project }: { project: Project }) {
   const live = Boolean(project.vercelUrl && !project.vercelUrl.includes("vercel.app")) || project.slug === "ascension-athlete-group";
   const concept = project.title.includes("Concept") || project.clientName.includes("Concept") || project.slug === "the-houston-barber";
   const city = project.city?.replace(/, TX$/, "");
   return (
-    <Link href={`/portfolio/${project.slug}`} className={`group block ${span}`}>
+    <Link href={`/portfolio/${project.slug}`} className="group block lg:col-span-6">
       <div className="relative aspect-[16/10] overflow-hidden rounded-[10px] border border-white/[0.09] bg-[#1A1816]">
         <Image
           src={project.thumbnailImage}
@@ -36,8 +38,53 @@ function Card({ project, span }: { project: Project; span: string }) {
   );
 }
 
+/**
+ * The client's own words next to the site they are about. Pulled from the
+ * same reviews data the marquee uses, so the text stays verbatim in one place.
+ */
+function FeatureReview({ project }: { project: Project }) {
+  const review = REVIEWS.find((r) => r.projectSlugs?.includes(project.slug));
+  if (!review) return null;
+  const city = project.city?.replace(/, TX$/, "");
+  return (
+    <aside
+      aria-labelledby="work-feature-review"
+      className="flex flex-col justify-between rounded-[10px] border border-white/[0.09] bg-[#131211] p-7 sm:p-9 lg:col-span-6"
+    >
+      <div>
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#DC2626]">Client review · Google</p>
+        <p className="mt-5">
+          <span aria-hidden="true" className="text-lg tracking-[2px] text-[#D9B26A]">
+            {"★".repeat(review.rating)}
+          </span>
+          <span className="sr-only">{review.rating} out of 5 stars</span>
+        </p>
+        <blockquote className="mt-6">
+          <p className="text-[clamp(22px,2.1vw,32px)] leading-[1.25] text-white">&ldquo;{review.text}&rdquo;</p>
+        </blockquote>
+      </div>
+      <div className="mt-8 flex items-end justify-between gap-4 border-t border-white/[0.09] pt-5">
+        <div>
+          <p id="work-feature-review" className="text-white">{review.author}</p>
+          <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.14em] text-white/60">
+            {project.title}{city ? ` · ${city}` : ""}
+          </p>
+        </div>
+        <Link
+          href={`/portfolio/${project.slug}`}
+          className="shrink-0 text-xs font-semibold uppercase tracking-[0.14em] text-white underline-offset-4 transition-colors hover:text-[#DC2626] hover:underline"
+        >
+          The case study <span aria-hidden="true">&rarr;</span>
+        </Link>
+      </div>
+    </aside>
+  );
+}
+
 export default function Work() {
-  const featured = getFeaturedProjects().slice(0, SPANS.length);
+  const featured = getFeaturedProjects().slice(0, 7);
+  const lead = featured.find((p) => p.slug === FEATURE_SLUG) ?? featured[0];
+  const rest = featured.filter((p) => p !== lead);
   return (
     <section id="work" className="bg-[#0C0B0A] px-4 sm:px-6 lg:px-8" data-theme="dark">
       <div className="mx-auto max-w-7xl">
@@ -53,8 +100,10 @@ export default function Work() {
           </p>
         </div>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
-          {featured.map((project, i) => (
-            <Card key={project.slug} project={project} span={SPANS[i]} />
+          {lead && <Card project={lead} />}
+          {lead && <FeatureReview project={lead} />}
+          {rest.map((project) => (
+            <Card key={project.slug} project={project} />
           ))}
         </div>
         <div className="pt-10">

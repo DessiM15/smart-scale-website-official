@@ -58,6 +58,14 @@ export interface ReviewLink {
 
 export const REVIEWS: Review[] = [
   {
+    author: "Andre Thomas",
+    rating: 5,
+    text: "The team at Smart Scale are amazing. They redesigned my website and I love it. They are very professional and knowledgeable about all things tech. It has been a joy working with them.",
+    date: "2026-09-22",
+    context: "Houston, TX",
+    projectSlugs: ["andre-thomas-law"],
+  },
+  {
     author: "Kiante Northington",
     rating: 5,
     date: "2026-09-13",
