@@ -22,6 +22,72 @@ export interface BlogPost {
  */
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: "ada-website-compliance-houston-business",
+    title: "Does Your Houston Business Website Need to Be ADA Compliant?",
+    excerpt:
+      "A business website is open to the public the way a front door is, and the same lawsuits that hit restaurants, law firms, and shops in other states reach Houston too. What the standard actually requires, the six things that fail most often, and a five-minute check you can do yourself.",
+    author: "Smart Scale",
+    date: "2026-09-25",
+    coverImage: "/assets/ada-website-compliance-houston",
+    coverImageAlt: "Dark cover reading Is your website ADA compliant, with the WCAG 2.2 Level AA standard and the 4.5 to 1 minimum text contrast",
+    category: "Compliance",
+    readTime: "5 min read",
+    metaDescription:
+      "Does a Houston business website have to be ADA compliant? What WCAG 2.2 AA actually requires, who gets sued and why, the six failures we see most on local sites, and a five-minute self-check.",
+    content: `
+If you own a restaurant, a law office, a salon, or a shop in the Houston area, your website is open to the public the same way your front door is. The Americans with Disabilities Act says places open to the public have to be usable by people with disabilities, and courts and the Department of Justice have treated business websites as part of that for years. This guide explains what that means, who actually gets sued, and how to check your own site in five minutes.
+
+This is not legal advice. It is what we have learned building and checking local business websites, written so you can decide what to do without hiring anyone first.
+
+## What "compliant" actually means
+
+The ADA does not mention websites, so there is no government checklist. Instead, courts and settlement agreements point to a technical standard called WCAG, the Web Content Accessibility Guidelines, published by the same group that maintains the rules of the web itself. It comes in three levels, and Level AA is the one that counts. The current version is WCAG 2.2.
+
+In practice, a site meets that standard when four things are true. A blind person using a screen reader can hear everything a sighted person can see, including what is in the pictures. Someone who cannot use a mouse can reach every link, button, and form field with the keyboard and can see where they are. Text is readable for people with low vision, which mostly means enough contrast between the text and its background. And nothing moves, flashes, or times out in a way the visitor cannot control.
+
+## Who gets sued, and why it is rarely personal
+
+A few thousand of these lawsuits are filed in federal court every year, plus many more demand letters that never become a public case. Most come from a small number of law firms that use automated scanners to find sites that fail the basics, then send the same letter to hundreds of businesses at a time. Restaurants, retail, hotels, and professional services are the most common targets, because they are open to the public and easy to find.
+
+Texas sees fewer of these than New York, California, or Florida, but the letters are not limited by state. The realistic risk for a small local business is not a courtroom. It is a letter demanding a settlement that costs less than fighting it. The way to avoid that is to not be the easy target.
+
+## The six things that fail most often
+
+We ran the same kind of scan those firms use against a set of Houston-area business websites this month. The same handful of problems came up every time.
+
+- **Text that is too faint.** Light gray on white, or dim gray on black, especially in footers, captions, and small labels. This is the single most common failure, and it is almost always a design choice that a slightly darker shade corrects.
+- **Buttons and links with no name.** A search icon, a slider arrow, or a social media logo with nothing behind it for a screen reader to read. The visitor hears "button" and nothing else.
+- **Invisible keyboard focus.** Many templates remove the outline that shows a keyboard user where they are on the page. Without it, the site cannot be used without a mouse.
+- **Pictures with no description.** Menu photos, product shots, and team portraits with no alt text, or alt text that is just the file name.
+- **Headings out of order.** Screen reader users skim a page by its headings the way sighted users skim by eye. A page with two titles, or with levels that skip, is a page they cannot skim.
+- **Things that move on their own.** Auto-playing video, scrolling promo bars, and slideshows with no pause button. Anything that moves for more than five seconds needs a way to stop it.
+
+## A five-minute check you can do yourself
+
+- **Put your mouse away.** Press Tab repeatedly on your home page. You should see a visible outline move from link to link, and you should be able to reach your menu, your contact form, and your order button. If the outline disappears, or you get stuck, that is a failure.
+- **Look at your footer and your smallest text.** If you have to squint, so does everyone else.
+- **Ask about your pictures.** Whoever built your site should be able to tell you whether every image has a written description behind it.
+- **Watch your home page for ten seconds without touching it.** If something is still moving, look for a pause button.
+- **Open the site on your phone and tap the small things.** Social icons, slider dots, close buttons. If you miss, the target is too small.
+
+If you fail two or more of these, a scanner will find more.
+
+## What about those accessibility widgets
+
+You have probably seen the small accessibility icon in the corner of some sites. Those overlay widgets promise compliance for a monthly fee and do not deliver it. They cannot fix missing image descriptions or unnamed buttons, screen reader users turn them off because they get in the way, and sites running them are named in lawsuits every month. The problems have to be fixed in the site itself.
+
+## What fixing it involves
+
+Less than most owners expect. On a well-built site it is a color pass to darken faint text, names for icon buttons, a visible focus style, descriptions on images, and a pause control for anything that moves. That is a day or two of careful work, not a rebuild. An older template site can take more, but even then the scan says exactly what to change. Either way you end up with a site that is easier for everyone to use.
+
+A short accessibility statement page, saying what standard you aim for and how to report a problem, is also worth adding. It costs nothing, and it shows good faith to anyone looking.
+
+## Find out where your site stands
+
+We will run the full scan on your site and send you a one-page summary of what fails and what it would take to fix. No cost and no obligation. [Send us your web address](/contact) and you will have it within a few days.
+`,
+  },
+  {
     slug: "how-much-does-a-website-cost-katy-houston",
     title: "How Much Does a Website Cost in Katy and Houston?",
     excerpt:
