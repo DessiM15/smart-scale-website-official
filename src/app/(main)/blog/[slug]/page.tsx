@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import Link from "next/link";
-import { BOOKING_URL } from "@/lib/business";
+import { BOOKING_URL, SITE_URL } from "@/lib/business";
 import { getBlogPost, getAllBlogPosts } from "@/lib/blog";
 import { Calendar, Clock, ArrowLeft } from "lucide-react";
 import SocialShareButtons from "@/components/SocialShareButtons";
@@ -146,19 +148,25 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     }
   };
 
+  // Cover images are stored without an extension (see BlogCoverImage), so
+  // resolve the real file at build time the way the sitemap does.
+  const coverExt = [".jpg", ".webp", ".png"].find((ext) =>
+    existsSync(join(process.cwd(), "public", `${post.coverImage}${ext}`)),
+  );
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     headline: post.title,
     description: post.metaDescription,
-    image: `https://smartscale.com/blog/${post.coverImage}`,
+    image: coverExt ? `${SITE_URL}${post.coverImage}${coverExt}` : undefined,
     datePublished: post.date,
     dateModified: post.date,
     author: { "@type": "Organization", name: post.author },
     publisher: {
       "@type": "Organization",
       name: "Smart Scale",
-      logo: { "@type": "ImageObject", url: "https://smartscale.com/assets/smart-scale-logo-official.png" },
+      logo: { "@type": "ImageObject", url: `${SITE_URL}/assets/smart-scale-logo-official.png` },
     },
   };
 
@@ -228,7 +236,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             <div className="mb-12">
               <SocialShareButtons
                 title={post.title}
-                url={`https://smartscale.com/blog/${post.slug}`}
+                url={`${SITE_URL}/blog/${post.slug}`}
               />
             </div>
 
