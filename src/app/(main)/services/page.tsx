@@ -65,7 +65,7 @@ export default function WhatWeDo() {
           <h1 className="text-5xl sm:text-6xl md:text-7xl mb-6 text-[#111111]" data-animate="word-reveal">
             Web Design &amp; Local SEO for Houston-Area Businesses
           </h1>
-          <p className="text-lg sm:text-xl text-black/50 max-w-3xl mx-auto mb-8 hero-subheadline">
+          <p className="text-lg sm:text-xl text-black/60 max-w-3xl mx-auto mb-8 hero-subheadline">
             Websites, local search, and custom tools for businesses in Katy,
             Cypress, Houston, Sugar Land, Richmond, and Fulshear.
           </p>
@@ -140,13 +140,13 @@ export default function WhatWeDo() {
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6" data-animate="scale-reveal">
             {processSteps.map((item, index) => (
               <GlowCard key={index} className="p-6">
-                <div className="text-sm font-medium text-white/30 mb-2">
+                <div className="text-sm font-medium text-white/50 mb-2">
                   0{index + 1}
                 </div>
                 <h3 className="text-xl mb-3 text-white">
                   {item.step}
                 </h3>
-                <p className="text-white/45 text-sm">{item.description}</p>
+                <p className="text-white/60 text-sm">{item.description}</p>
               </GlowCard>
             ))}
           </div>
@@ -161,7 +161,7 @@ export default function WhatWeDo() {
           <h2 className="text-4xl mb-6 text-[#111111]" data-animate="fade-up">
             Ready to Begin?
           </h2>
-          <p className="text-lg text-black/50 mb-8" data-animate="fade-up">
+          <p className="text-lg text-black/60 mb-8" data-animate="fade-up">
             Let&apos;s discuss how precision engineering can transform your
             business.
           </p>

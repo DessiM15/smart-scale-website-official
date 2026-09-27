@@ -48,7 +48,7 @@ export default function BlogPage() {
 
                   {/* Content */}
                   <div className="p-6">
-                    <div className="flex items-center gap-4 mb-3 text-sm text-white/40">
+                    <div className="flex items-center gap-4 mb-3 text-sm text-white/60">
                       <span className="px-3 py-1 bg-white/[0.06] rounded-full text-xs font-medium text-white/60 border border-white/[0.08]">
                         {post.category}
                       </span>
@@ -67,7 +67,7 @@ export default function BlogPage() {
                     </p>
 
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-sm text-white/40">
+                      <div className="flex items-center gap-2 text-sm text-white/60">
                         <Calendar className="w-4 h-4" />
                         <span>
                           {new Date(post.date).toLocaleDateString("en-US", {

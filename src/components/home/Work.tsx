@@ -28,7 +28,7 @@ function Card({ project }: { project: Project }) {
       </div>
       <div className="mt-4 flex items-baseline justify-between gap-4 border-t border-white/[0.09] pt-4">
         <h3 className="text-[clamp(20px,1.8vw,28px)] text-white">{project.title}</h3>
-        <span className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-white/40">
+        <span className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-white/50">
           {live && !concept && <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#DC2626] shadow-[0_0_0_4px_rgba(220,38,38,0.16)]" />}
           {city ? `${city} · ` : ""}{concept ? "Concept" : live ? "Live" : project.serviceType}
         </span>
@@ -52,7 +52,7 @@ function FeatureReview({ project }: { project: Project }) {
       className="flex flex-col justify-between rounded-[10px] border border-white/[0.09] bg-[#131211] p-7 sm:p-9 lg:col-span-6"
     >
       <div>
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#DC2626]">Client review · Google</p>
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#EF4444]">Client review · Google</p>
         <p className="mt-5">
           <span aria-hidden="true" className="text-lg tracking-[2px] text-[#D9B26A]">
             {"★".repeat(review.rating)}
@@ -72,7 +72,7 @@ function FeatureReview({ project }: { project: Project }) {
         </div>
         <Link
           href={`/portfolio/${project.slug}`}
-          className="shrink-0 text-xs font-semibold uppercase tracking-[0.14em] text-white underline-offset-4 transition-colors hover:text-[#DC2626] hover:underline"
+          className="shrink-0 text-xs font-semibold uppercase tracking-[0.14em] text-white underline-offset-4 transition-colors hover:text-[#EF4444] hover:underline"
         >
           The case study <span aria-hidden="true">&rarr;</span>
         </Link>
@@ -90,7 +90,7 @@ export default function Work() {
       <div className="mx-auto max-w-7xl">
         <div className="grid items-end gap-6 pb-10 pt-20 sm:pt-28 lg:grid-cols-[1fr_auto]">
           <div>
-            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#DC2626]">Work</p>
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#EF4444]">Work</p>
             <h2 className="mt-3 text-[clamp(36px,5vw,72px)] leading-[1.05] text-white">
               Websites we built in the <em className="italic text-[#DC2626]">Houston metro.</em>
             </h2>

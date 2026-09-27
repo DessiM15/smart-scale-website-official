@@ -186,13 +186,13 @@ export default function BookingWidget() {
             Join with Google Meet
           </a>
         )}
-        <p className="text-sm text-gray-500 mb-6">
+        <p className="text-sm text-gray-400 mb-6">
           Check your email for a confirmation with all the details.
         </p>
         <button
           type="button"
           onClick={handleReset}
-          className="text-sm text-[#DC2626] hover:underline"
+          className="text-sm text-[#EF4444] hover:underline"
         >
           Book Another Call
         </button>
@@ -225,12 +225,12 @@ export default function BookingWidget() {
         <div className="hidden md:flex flex-col p-6 border-r border-white/10">
           <div className="mb-6">
             <div className="w-10 h-10 rounded-lg bg-[#DC2626]/10 flex items-center justify-center mb-3">
-              <span className="text-[#DC2626] font-bold text-sm">SS</span>
+              <span className="text-[#EF4444] font-bold text-sm">SS</span>
             </div>
             <h3 className="text-white font-semibold text-base mb-1">
               Discovery Call
             </h3>
-            <p className="text-gray-500 text-xs">
+            <p className="text-gray-400 text-xs">
               Discuss your project with our team
             </p>
           </div>
@@ -248,7 +248,7 @@ export default function BookingWidget() {
 
           {/* Timezone picker */}
           <div className="mt-auto">
-            <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+            <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
               <Globe className="w-3.5 h-3.5" />
               <span>Timezone</span>
             </div>
@@ -274,7 +274,7 @@ export default function BookingWidget() {
         <div className="p-6 border-b md:border-b-0 md:border-r border-white/10">
           {/* Mobile timezone picker */}
           <div className="md:hidden flex items-center gap-2 mb-4">
-            <Globe className="w-3.5 h-3.5 text-gray-500" />
+            <Globe className="w-3.5 h-3.5 text-gray-400" />
             <select
               value={timezone}
               onChange={(e) => handleTimezoneChange(e.target.value)}

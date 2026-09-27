@@ -5,7 +5,7 @@ export default function Closing() {
   return (
     <section className="bg-[#0C0B0A] px-4 pb-16 pt-24 text-center sm:px-6 sm:pt-36 lg:px-8" data-theme="dark">
       <div className="mx-auto max-w-5xl">
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Start</p>
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/50">Start</p>
         <h2 className="mt-4 text-[clamp(42px,7vw,104px)] leading-[1] text-white">
           Let&apos;s build the site your customers <em className="italic text-[#DC2626]">find first.</em>
         </h2>

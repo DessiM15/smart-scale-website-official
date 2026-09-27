@@ -23,7 +23,7 @@ export default function ServiceCard({ title, description, icon, slug, theme = "d
         </div>
       )}
       <h3 className={`text-xl font-semibold mb-3 text-center ${isDark ? "text-white" : "text-[#111111]"}`}>{title}</h3>
-      <p className={`text-center ${isDark ? "text-white/50" : "text-black/50"}`}>{description}</p>
+      <p className={`text-center ${isDark ? "text-white/50" : "text-black/60"}`}>{description}</p>
     </>
   );
 

@@ -106,7 +106,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           listItem = listItem.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
             const safeText = escapeHtml(text);
             const safeUrl = escapeHtml(url);
-            return `<a href="${safeUrl}" class="text-[#DC2626] hover:underline font-semibold" target="_blank" rel="noopener noreferrer">${safeText}</a>`;
+            return `<a href="${safeUrl}" class="text-[#EF4444] hover:underline font-semibold" target="_blank" rel="noopener noreferrer">${safeText}</a>`;
           });
           const listParts = listItem.split(/(<[^>]+>)/);
           listItem = listParts.map(part => part.startsWith('<') ? part : escapeHtml(part)).join('');
@@ -132,7 +132,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         processedLine = processedLine.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
           const safeText = escapeHtml(text);
           const safeUrl = escapeHtml(url);
-          return `<a href="${safeUrl}" class="text-[#DC2626] hover:underline font-semibold" target="_blank" rel="noopener noreferrer">${safeText}</a>`;
+          return `<a href="${safeUrl}" class="text-[#EF4444] hover:underline font-semibold" target="_blank" rel="noopener noreferrer">${safeText}</a>`;
         });
         processedLine = processedLine.replace(/\*\*([^\*]+)\*\*/g, '<strong class="text-white font-semibold">$1</strong>');
         const lineParts = processedLine.split(/(<[^>]+>)/);

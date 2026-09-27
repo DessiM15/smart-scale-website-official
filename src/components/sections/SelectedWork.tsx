@@ -48,7 +48,7 @@ export default function SelectedWork() {
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-500" />
                 {/* Title on hover */}
                 <div className="absolute inset-0 flex flex-col justify-end p-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500 translate-y-4 group-hover:translate-y-0">
-                  <span className="text-xs uppercase tracking-widest text-[#DC2626] mb-2">
+                  <span className="text-xs uppercase tracking-widest text-[#EF4444] mb-2">
                     {project.serviceType}
                   </span>
                   <h3 className="text-2xl md:text-3xl text-white">

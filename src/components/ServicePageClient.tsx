@@ -51,7 +51,7 @@ export default function ServicePageClient({ slug }: ServicePageClientProps) {
             <h1 className="subpage-hero-title text-[#111111] mb-6 hero-headline">
               {service.title}
             </h1>
-            <p className="text-lg text-black/50 max-w-3xl mb-8 hero-subheadline">
+            <p className="text-lg text-black/60 max-w-3xl mb-8 hero-subheadline">
               {service.title} for businesses across Katy, Cypress, Houston, and the wider Houston metro.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
@@ -63,7 +63,7 @@ export default function ServicePageClient({ slug }: ServicePageClientProps) {
               </Link>
               <Link
                 href="/portfolio"
-                className="inline-flex items-center gap-3 px-8 py-3.5 border border-black/10 rounded-full text-sm uppercase tracking-widest text-black/50 hover:text-[#111111]/80 hover:border-black/20 transition-all duration-500"
+                className="inline-flex items-center gap-3 px-8 py-3.5 border border-black/10 rounded-full text-sm uppercase tracking-widest text-black/60 hover:text-[#111111]/80 hover:border-black/20 transition-all duration-500"
               >
                 View Our Work
               </Link>

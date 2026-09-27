@@ -109,7 +109,7 @@ function Avatar({ author }: { author: string }) {
   return (
     <span
       aria-hidden="true"
-      className="flex items-center justify-center w-9 h-9 rounded-full bg-[#DC2626]/15 text-[#DC2626] text-sm font-medium shrink-0"
+      className="flex items-center justify-center w-9 h-9 rounded-full bg-[#DC2626]/15 text-[#EF4444] text-sm font-medium shrink-0"
     >
       {author.trim().charAt(0).toUpperCase()}
     </span>
@@ -196,7 +196,7 @@ function ReviewCard({
           type="button"
           tabIndex={inert ? -1 : undefined}
           onClick={(e) => onOpen(review, e.currentTarget)}
-          className="mt-3 inline-flex items-center gap-1.5 self-start text-xs uppercase tracking-widest text-white/40 transition-colors duration-300 hover:text-white"
+          className="mt-3 inline-flex items-center gap-1.5 self-start text-xs uppercase tracking-widest text-white/50 transition-colors duration-300 hover:text-white"
         >
           See full review
           <span aria-hidden="true">&rarr;</span>
@@ -210,7 +210,7 @@ function ReviewCard({
           <span className="text-sm text-white/60">
             {review.author}
             {(when || review.context) && (
-              <span className="block text-xs text-white/30">
+              <span className="block text-xs text-white/50">
                 {[review.context, when].filter(Boolean).join(" · ")}
               </span>
             )}
@@ -280,7 +280,7 @@ function ReviewModal({
               type="button"
               onClick={onClose}
               aria-label="Close review"
-              className="-mr-1 -mt-1 rounded-full p-1.5 text-white/40 transition-colors duration-300 hover:bg-white/[0.06] hover:text-white"
+              className="-mr-1 -mt-1 rounded-full p-1.5 text-white/60 transition-colors duration-300 hover:bg-white/[0.06] hover:text-white"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -311,7 +311,7 @@ function ReviewModal({
             <span id="review-modal-author" className="text-sm text-white/70">
               {review.author}
               {(when || review.context) && (
-                <span className="block text-xs text-white/30">
+                <span className="block text-xs text-white/50">
                   {[review.context, when].filter(Boolean).join(" · ")}
                 </span>
               )}
@@ -320,7 +320,7 @@ function ReviewModal({
 
           {links.length > 0 && (
             <>
-              <p className="mt-6 text-xs uppercase tracking-widest text-white/30">
+              <p className="mt-6 text-xs uppercase tracking-widest text-white/50">
                 What we built
               </p>
               <ProjectLinks links={links} />
@@ -406,7 +406,7 @@ export default function Reviews() {
       aria-labelledby="reviews-heading"
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <p className="text-center text-white/40 text-sm uppercase tracking-widest mb-4">
+        <p className="text-center text-white/60 text-sm uppercase tracking-widest mb-4">
           Reviews on Google
         </p>
         <h2
@@ -489,7 +489,7 @@ export default function Reviews() {
             />
           </svg>
         </a>
-        <p className="mt-6 text-xs text-white/25">
+        <p className="mt-6 text-xs text-white/50">
           Worked with us?{" "}
           <Link href="/contact" className="underline underline-offset-4">
             Get in touch

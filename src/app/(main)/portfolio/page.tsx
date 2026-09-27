@@ -18,7 +18,7 @@ export default function PortfolioPage() {
           <h1 className="text-5xl sm:text-6xl md:text-7xl text-[#111111] mb-6 hero-headline">
             Websites We&apos;ve Built for Local Businesses
           </h1>
-          <p className="text-lg sm:text-xl text-black/50 max-w-2xl mx-auto hero-subheadline">
+          <p className="text-lg sm:text-xl text-black/60 max-w-2xl mx-auto hero-subheadline">
             Real websites for real businesses across the Houston metro:
             restaurants, barbershops, estheticians, and industrial suppliers.
           </p>

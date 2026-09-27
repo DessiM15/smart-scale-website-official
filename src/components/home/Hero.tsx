@@ -60,7 +60,7 @@ export default function Hero() {
       />
       <div className="relative mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[6.5fr_5.5fr] lg:gap-20">
         <div>
-          <p className="flex items-center gap-3.5 font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">
+          <p className="flex items-center gap-3.5 font-mono text-[11px] uppercase tracking-[0.18em] text-white/50">
             <span aria-hidden="true" className="inline-block h-px w-9 bg-[#DC2626]" />
             Web design &amp; local SEO · Katy, Cypress, Houston
           </p>
@@ -70,7 +70,7 @@ export default function Hero() {
           <p className="mt-7 max-w-[32em] text-[17px] leading-relaxed text-white/65 sm:text-lg">
             Websites for Katy, Cypress and Houston businesses that need the phone to ring. Fixed price after one call. Most sites live in two weeks. You own every line of it.
           </p>
-          <p className="mt-3 max-w-[36em] text-[15px] leading-relaxed text-white/40">
+          <p className="mt-3 max-w-[36em] text-[15px] leading-relaxed text-white/60">
             Based in Katy. Most of our clients are across the Houston metro; some are in California and Tennessee, because a good website doesn&apos;t care where you are.
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-3.5">
@@ -98,7 +98,7 @@ export default function Hero() {
                   <b className="font-semibold text-white">{rating} on Google</b> · {REVIEWS.length} reviews, unedited
                 </span>
               </a>
-              <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-white/40">
+              <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-white/50">
                 {projects.length} projects · {metro} in the Houston metro
               </span>
             </p>

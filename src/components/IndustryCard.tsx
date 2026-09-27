@@ -22,7 +22,7 @@ export default function IndustryCard({ name, description, icon, theme = "dark" }
       <h3 className={`text-lg font-semibold mb-2 transition-colors duration-300 ${isDark ? "text-white" : "text-[#111111]"}`}>
         {name}
       </h3>
-      <p className={`text-sm transition-colors duration-300 ${isDark ? "text-white/50" : "text-black/50"}`}>
+      <p className={`text-sm transition-colors duration-300 ${isDark ? "text-white/50" : "text-black/60"}`}>
         {description}
       </p>
     </div>
