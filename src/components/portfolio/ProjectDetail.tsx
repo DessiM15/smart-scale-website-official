@@ -84,9 +84,9 @@ export default function ProjectDetail({
 
               {/* Tech Stack */}
               <div className="mb-8">
-                <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wider mb-3">
+                <h2 className="text-sm font-semibold text-white/60 uppercase tracking-wider mb-3">
                   Tech Stack
-                </h3>
+                </h2>
                 <div className="flex flex-wrap gap-2">
                   {project.techStack.map((tech) => (
                     <span

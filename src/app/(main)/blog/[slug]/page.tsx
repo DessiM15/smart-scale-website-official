@@ -106,7 +106,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           listItem = listItem.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
             const safeText = escapeHtml(text);
             const safeUrl = escapeHtml(url);
-            return `<a href="${safeUrl}" class="text-[#EF4444] hover:underline font-semibold" target="_blank" rel="noopener noreferrer">${safeText}</a>`;
+            const external = /^https?:\/\//i.test(url);
+            return `<a href="${safeUrl}" class="text-[#EF4444] hover:underline font-semibold"${external ? ' target="_blank" rel="noopener noreferrer"' : ""}>${safeText}${external ? '<span class="sr-only"> (opens in new tab)</span>' : ""}</a>`;
           });
           const listParts = listItem.split(/(<[^>]+>)/);
           listItem = listParts.map(part => part.startsWith('<') ? part : escapeHtml(part)).join('');
@@ -132,7 +133,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         processedLine = processedLine.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
           const safeText = escapeHtml(text);
           const safeUrl = escapeHtml(url);
-          return `<a href="${safeUrl}" class="text-[#EF4444] hover:underline font-semibold" target="_blank" rel="noopener noreferrer">${safeText}</a>`;
+          const external = /^https?:\/\//i.test(url);
+            return `<a href="${safeUrl}" class="text-[#EF4444] hover:underline font-semibold"${external ? ' target="_blank" rel="noopener noreferrer"' : ""}>${safeText}${external ? '<span class="sr-only"> (opens in new tab)</span>' : ""}</a>`;
         });
         processedLine = processedLine.replace(/\*\*([^\*]+)\*\*/g, '<strong class="text-white font-semibold">$1</strong>');
         const lineParts = processedLine.split(/(<[^>]+>)/);
@@ -260,8 +262,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                 data-track="book_call"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-[#DC2626] text-white rounded-full font-semibold hover:bg-red-700 transition-colors"
               >
-                Book a call
-                <ArrowLeft className="w-4 h-4 rotate-180" />
+                Book a call<span className="sr-only"> (opens in new tab)</span>
+                <ArrowLeft className="w-4 h-4 rotate-180" aria-hidden="true" />
               </a>
             </div>
           </div>

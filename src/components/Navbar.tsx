@@ -53,6 +53,16 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [pathname]);
 
+  // Escape closes the open mobile menu, as a keyboard user expects.
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileMenuOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [mobileMenuOpen]);
+
   // Section-aware theme detection via ScrollTrigger
   useIsomorphicLayoutEffect(() => {
     const sections = document.querySelectorAll("[data-theme]");
@@ -158,7 +168,7 @@ export default function Navbar() {
               data-track="book_call"
               className="px-6 py-2.5 rounded-full bg-[#DC2626] text-white text-xs uppercase tracking-widest font-semibold transition-colors duration-300 hover:bg-[#B91C1C]"
             >
-              Book a call
+              Book a call<span className="sr-only"> (opens in new tab)</span>
             </a>
           </div>
         </div>
@@ -210,7 +220,7 @@ export default function Navbar() {
               data-track="book_call"
               className="px-6 py-2.5 rounded-full bg-[#DC2626] text-white text-xs uppercase tracking-widest font-semibold transition-colors duration-300 hover:bg-[#B91C1C]"
             >
-              Book a call
+              Book a call<span className="sr-only"> (opens in new tab)</span>
             </a>
           </div>
         </div>
@@ -224,7 +234,9 @@ export default function Navbar() {
           <button
             className="p-2"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-menu"
           >
             <svg
               className={`w-6 h-6 transition-colors duration-300 ${hamburgerColor}`}
@@ -247,6 +259,7 @@ export default function Navbar() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div
+            id="mobile-menu"
             className={`md:hidden pb-6 space-y-4 backdrop-blur-xl -mx-4 px-4 border-t ${
               isLight
                 ? "bg-white/95 border-black/[0.08]"
@@ -271,7 +284,7 @@ export default function Navbar() {
               className="block w-full px-6 py-2.5 rounded-full bg-[#DC2626] text-white text-xs uppercase tracking-widest font-semibold text-center transition-colors duration-300 hover:bg-[#B91C1C]"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Book a call
+              Book a call<span className="sr-only"> (opens in new tab)</span>
             </a>
           </div>
         )}
