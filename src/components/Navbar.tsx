@@ -139,8 +139,13 @@ export default function Navbar() {
       }`}
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* ===== UNSCROLLED STATE: logo left, links right ===== */}
+        {/* ===== UNSCROLLED STATE: logo left, links right =====
+            Both desktop layouts stay in the DOM and cross-fade. The one that
+            is faded out is also made inert, so a keyboard or screen-reader
+            user does not meet eight invisible duplicate links (found by the
+            scanner's keyboard walk, 2026-09-27). */}
         <div
+          inert={scrolled}
           className={`items-center justify-between h-24 transition-all duration-500 hidden md:flex ${
             scrolled
               ? "opacity-0 pointer-events-none absolute inset-x-0 px-4 sm:px-6 lg:px-8"
@@ -175,6 +180,7 @@ export default function Navbar() {
 
         {/* ===== SCROLLED STATE: links left | logo center | links right ===== */}
         <div
+          inert={!scrolled}
           className={`items-center justify-between h-20 transition-all duration-500 hidden md:flex ${
             scrolled
               ? "opacity-100"
