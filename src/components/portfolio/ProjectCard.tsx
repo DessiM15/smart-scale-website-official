@@ -6,9 +6,15 @@ import type { Project } from "@/data/projects";
 
 interface ProjectCardProps {
   project: Project;
+  /**
+   * The portfolio grid sits directly under the page's h1, so its cards are
+   * h2. Related work on a case study sits under an h2, so there they stay h3.
+   */
+  headingLevel?: "h2" | "h3";
 }
 
-export default function ProjectCard({ project }: ProjectCardProps) {
+export default function ProjectCard({ project, headingLevel = "h3" }: ProjectCardProps) {
+  const Heading = headingLevel;
   return (
     <Link
       href={`/portfolio/${project.slug}`}
@@ -33,9 +39,9 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           <span className="text-xs uppercase tracking-widest text-white/50 mb-2 block">
             {project.serviceType}
           </span>
-          <h3 className="text-lg font-medium text-white mb-1.5 group-hover:text-white/90 transition-colors duration-300">
+          <Heading className="text-lg font-medium text-white mb-1.5 group-hover:text-white/90 transition-colors duration-300">
             {project.title}
-          </h3>
+          </Heading>
           <p className="text-sm text-white/60 line-clamp-2">
             {project.shortDescription}
           </p>
