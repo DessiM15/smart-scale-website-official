@@ -15,7 +15,7 @@ export default function Badge({
     "default-light":
       "bg-black/[0.06] text-black/70 border border-black/[0.08]",
     accent:
-      "bg-[#DC2626]/10 text-[#DC2626] border border-[#DC2626]/20",
+      "bg-[#DC2626]/10 text-[#EF4444] border border-[#DC2626]/20",
     ai: "bg-purple-500/10 text-purple-400 border border-purple-500/20",
     botmakers:
       "bg-[#00FF88]/15 text-[#1B2A4A] border border-[#00FF88]/30 font-medium",

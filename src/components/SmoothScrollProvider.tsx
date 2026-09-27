@@ -26,6 +26,10 @@ export default function SmoothScrollProvider({
   useGSAPAnimations();
 
   useEffect(() => {
+    // Someone who has asked the OS for less motion gets the browser's own
+    // scrolling; Lenis's eased, hijacked scroll is exactly what they turned off.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),

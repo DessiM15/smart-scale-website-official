@@ -78,9 +78,9 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="text-xs uppercase tracking-widest font-medium mb-4 text-white/60">
+            <h3 className="text-xs uppercase tracking-widest font-medium mb-4 text-white/60">
               Navigation
-            </h4>
+            </h3>
             <ul className="space-y-3">
               {navLinks.map((link) => (
                 <li key={link.href}>
@@ -100,16 +100,24 @@ export default function Footer() {
                   data-track="book_call"
                   className="text-sm text-white/60 hover:text-white transition-colors duration-300"
                 >
-                  Book a call
+                  Book a call<span className="sr-only"> (opens in new tab)</span>
                 </a>
+              </li>
+              <li>
+                <Link
+                  href="/accessibility"
+                  className="text-sm text-white/60 hover:text-white transition-colors duration-300"
+                >
+                  Accessibility
+                </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h4 className="text-xs uppercase tracking-widest font-medium mb-4 text-white/60">
+            <h3 className="text-xs uppercase tracking-widest font-medium mb-4 text-white/60">
               Service Areas
-            </h4>
+            </h3>
             {/* Descriptive anchors into the city pages — these are the main
                 internal links pointing at the local landing pages. */}
             <ul className="space-y-3">

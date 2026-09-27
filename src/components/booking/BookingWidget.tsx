@@ -255,7 +255,7 @@ export default function BookingWidget() {
             <select
               value={timezone}
               onChange={(e) => handleTimezoneChange(e.target.value)}
-              className="w-full bg-white/5 border border-white/15 rounded-md px-2.5 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-[#DC2626]/60"
+              className="w-full bg-white/5 border border-white/15 rounded-md px-2.5 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/60"
             >
               {COMMON_TIMEZONES.map((tz) => (
                 <option
@@ -278,7 +278,7 @@ export default function BookingWidget() {
             <select
               value={timezone}
               onChange={(e) => handleTimezoneChange(e.target.value)}
-              className="flex-1 bg-white/5 border border-white/15 rounded-md px-2.5 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-[#DC2626]/60"
+              className="flex-1 bg-white/5 border border-white/15 rounded-md px-2.5 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/60"
             >
               {COMMON_TIMEZONES.map((tz) => (
                 <option

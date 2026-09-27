@@ -183,7 +183,7 @@ export default function BookingForm({
             name="name"
             required
             placeholder="John Smith"
-            className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/20 text-white text-sm placeholder:text-gray-400 focus:outline-none focus:border-[#DC2626]/60 transition-colors"
+            className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/20 text-white text-sm placeholder:text-gray-400 focus:outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/60 transition-colors"
           />
           {errors.name && (
             <p className="text-xs text-red-400 mt-1">{errors.name}</p>
@@ -203,7 +203,7 @@ export default function BookingForm({
             type="email"
             required
             placeholder="john@company.com"
-            className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/20 text-white text-sm placeholder:text-gray-400 focus:outline-none focus:border-[#DC2626]/60 transition-colors"
+            className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/20 text-white text-sm placeholder:text-gray-400 focus:outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/60 transition-colors"
           />
           {errors.email && (
             <p className="text-xs text-red-400 mt-1">{errors.email}</p>
@@ -223,7 +223,7 @@ export default function BookingForm({
               name="phone"
               type="tel"
               placeholder="+1 555-123-4567"
-              className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/20 text-white text-sm placeholder:text-gray-400 focus:outline-none focus:border-[#DC2626]/60 transition-colors"
+              className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/20 text-white text-sm placeholder:text-gray-400 focus:outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/60 transition-colors"
             />
           </div>
           <div>
@@ -237,7 +237,7 @@ export default function BookingForm({
               id="booking-company"
               name="company"
               placeholder="Acme Inc."
-              className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/20 text-white text-sm placeholder:text-gray-400 focus:outline-none focus:border-[#DC2626]/60 transition-colors"
+              className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/20 text-white text-sm placeholder:text-gray-400 focus:outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/60 transition-colors"
             />
           </div>
         </div>
@@ -254,7 +254,7 @@ export default function BookingForm({
             name="message"
             rows={3}
             placeholder="Tell us about your project..."
-            className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/20 text-white text-sm placeholder:text-gray-400 focus:outline-none focus:border-[#DC2626]/60 resize-none transition-colors"
+            className="w-full px-3 py-2.5 rounded-lg bg-white/5 border border-white/20 text-white text-sm placeholder:text-gray-400 focus:outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/60 resize-none transition-colors"
           />
         </div>
 
