@@ -26,7 +26,7 @@ export default function Contact() {
           <h1 className="text-5xl sm:text-6xl md:text-7xl mb-6 text-[#111111]" data-animate="word-reveal">
             Let&apos;s Talk About Your Website
           </h1>
-          <p className="text-lg sm:text-xl text-black/50 max-w-3xl mx-auto mb-8 hero-subheadline">
+          <p className="text-lg sm:text-xl text-black/60 max-w-3xl mx-auto mb-8 hero-subheadline">
             Tell us about your business and we&apos;ll show you exactly what
             we&apos;d do. No pressure, no jargon.
           </p>
@@ -60,7 +60,7 @@ export default function Contact() {
               </h2>
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-sm uppercase tracking-widest text-white/40 mb-2">
+                  <h3 className="text-sm uppercase tracking-widest text-white/60 mb-2">
                     Email
                   </h3>
                   <a
@@ -71,7 +71,7 @@ export default function Contact() {
                   </a>
                 </div>
                 <div>
-                  <h3 className="text-sm uppercase tracking-widest text-white/40 mb-2">
+                  <h3 className="text-sm uppercase tracking-widest text-white/60 mb-2">
                     Phone
                   </h3>
                   <div className="space-y-2">
@@ -93,7 +93,7 @@ export default function Contact() {
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-sm uppercase tracking-widest text-white/40 mb-2">
+                  <h3 className="text-sm uppercase tracking-widest text-white/60 mb-2">
                     Location
                   </h3>
                   <p className="text-white/50 text-lg">

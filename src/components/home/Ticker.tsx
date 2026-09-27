@@ -17,7 +17,7 @@ export default function Ticker() {
         {loop.map((r, i) => (
           <span key={`${r.name}-${i}`} className="border-r border-white/[0.09] px-8 font-[family-name:var(--font-playfair)] text-lg text-white/65">
             {r.name}
-            <i className="ml-3 align-middle font-mono text-[11px] not-italic uppercase tracking-[0.14em] text-[#DC2626]">{r.city}</i>
+            <i className="ml-3 align-middle font-mono text-[11px] not-italic uppercase tracking-[0.14em] text-[#EF4444]">{r.city}</i>
           </span>
         ))}
       </div>

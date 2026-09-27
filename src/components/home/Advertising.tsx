@@ -19,7 +19,7 @@ export default function Advertising() {
       <div className="mx-auto max-w-7xl">
         <div className="grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-[5fr_7fr] lg:gap-16">
           <div>
-            <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-white/40">Mex Taco House · Cypress, TX</p>
+            <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-white/50">Mex Taco House · Cypress, TX</p>
             <h2 className="mt-4 text-[clamp(36px,4.6vw,64px)] leading-[1.05] text-white">
               Restaurant <em className="italic text-[#DC2626]">Advertisements.</em>
             </h2>
@@ -60,7 +60,7 @@ export default function Advertising() {
 
         <div className="grid items-center gap-8 border-t border-white/[0.09] py-10 sm:py-14 lg:grid-cols-[7fr_5fr] lg:gap-16">
           <div>
-            <p className="font-mono text-[13px] uppercase tracking-[0.14em] text-[#DC2626]">Restaurant and venue owners</p>
+            <p className="font-mono text-[13px] uppercase tracking-[0.14em] text-[#EF4444]">Restaurant and venue owners</p>
             <h3 className="mt-3 text-[clamp(26px,2.8vw,40px)] leading-tight text-white">
               Your restaurant has a wall. <em className="italic text-[#DC2626]">We&apos;ll pay rent on it.</em>
             </h3>
@@ -84,7 +84,7 @@ export default function Advertising() {
             >
               Talk to us about your venue
             </Link>
-            <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-white/40">Mex Taco House was first. Yours could be next.</span>
+            <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-white/50">Mex Taco House was first. Yours could be next.</span>
           </div>
         </div>
       </div>

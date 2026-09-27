@@ -16,7 +16,7 @@ export default function BookCall() {
         <h2 className="text-3xl sm:text-4xl text-[#111111] mb-4">
           Book a call
         </h2>
-        <p className="text-lg text-black/50 mb-10 max-w-2xl">
+        <p className="text-lg text-black/60 mb-10 max-w-2xl">
           Pick a time that suits you. Thirty minutes, on the phone or on
           video. You leave with a scope and a price in writing, and no
           obligation.
@@ -30,7 +30,7 @@ export default function BookCall() {
             loading="lazy"
           />
         </div>
-        <p className="mt-6 text-black/50">
+        <p className="mt-6 text-black/60">
           Calendar not loading?{" "}
           <a
             href={BOOKING_URL}

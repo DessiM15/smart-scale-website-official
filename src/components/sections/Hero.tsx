@@ -138,7 +138,7 @@ export default function Hero() {
                 floating at the vertical centre of a two-line block. */}
             <p
               data-hero-item
-              className="opacity-0 text-[10px] tracking-[0.2em] uppercase text-white/45 sm:text-xs sm:tracking-[0.3em]"
+              className="opacity-0 text-[10px] tracking-[0.2em] uppercase text-white/50 sm:text-xs sm:tracking-[0.3em]"
             >
               <span
                 aria-hidden="true"
@@ -228,7 +228,7 @@ export default function Hero() {
                     </svg>
                   ))}
                 </span>
-                <span className="text-xs uppercase tracking-[0.18em] text-white/40 transition-colors duration-300 group-hover:text-white/70">
+                <span className="text-xs uppercase tracking-[0.18em] text-white/50 transition-colors duration-300 group-hover:text-white/70">
                   {avgRating.toFixed(1)} on Google &middot; {REVIEWS.length}{" "}
                   {REVIEWS.length === 1 ? "review" : "reviews"}
                 </span>
@@ -280,7 +280,7 @@ export default function Hero() {
                         <p className="text-sm text-white/60 transition-colors duration-300 group-hover:text-white">
                           {project.title}
                         </p>
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-white/25">
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-white/50">
                           {project.industry}
                         </p>
                       </div>

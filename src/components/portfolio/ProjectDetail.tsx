@@ -73,7 +73,7 @@ export default function ProjectDetail({
                   : project.title}
               </h1>
               {project.city && (
-                <p className="text-sm uppercase tracking-widest text-white/40 mb-4">
+                <p className="text-sm uppercase tracking-widest text-white/60 mb-4">
                   {project.industry} · {project.city}
                 </p>
               )}
@@ -84,7 +84,7 @@ export default function ProjectDetail({
 
               {/* Tech Stack */}
               <div className="mb-8">
-                <h3 className="text-sm font-semibold text-white/40 uppercase tracking-wider mb-3">
+                <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wider mb-3">
                   Tech Stack
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -140,7 +140,7 @@ export default function ProjectDetail({
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
                     <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-[#DC2626] mb-4" />
-                    <p className="text-white/40 text-sm">Loading preview...</p>
+                    <p className="text-white/60 text-sm">Loading preview...</p>
                   </div>
                 </div>
               )}
@@ -236,7 +236,7 @@ export default function ProjectDetail({
               >
                 <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                 <div>
-                  <p className="text-xs text-white/30 uppercase tracking-wider">
+                  <p className="text-xs text-white/50 uppercase tracking-wider">
                     Previous
                   </p>
                   <p className="text-sm font-medium">{prevProject.title}</p>
@@ -251,7 +251,7 @@ export default function ProjectDetail({
                 className="group flex items-center gap-3 text-white/50 hover:text-white transition-colors text-right"
               >
                 <div>
-                  <p className="text-xs text-white/30 uppercase tracking-wider">
+                  <p className="text-xs text-white/50 uppercase tracking-wider">
                     Next
                   </p>
                   <p className="text-sm font-medium">{nextProject.title}</p>

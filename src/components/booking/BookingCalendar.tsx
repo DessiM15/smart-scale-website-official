@@ -108,7 +108,7 @@ export default function BookingCalendar({
         {DAY_LABELS.map((d) => (
           <div
             key={d}
-            className="text-center text-[10px] font-medium text-gray-500 uppercase"
+            className="text-center text-[10px] font-medium text-gray-400 uppercase"
           >
             {d}
           </div>

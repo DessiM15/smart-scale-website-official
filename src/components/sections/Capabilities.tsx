@@ -109,7 +109,7 @@ export default function Capabilities() {
           What We Build
         </h2>
         <p
-          className="text-center text-black/50 text-lg mb-20 max-w-2xl mx-auto"
+          className="text-center text-black/60 text-lg mb-20 max-w-2xl mx-auto"
           data-animate="fade-up"
         >
           Everything a local business needs to get found, look credible, and

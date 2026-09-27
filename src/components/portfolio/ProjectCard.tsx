@@ -30,13 +30,13 @@ export default function ProjectCard({ project }: ProjectCardProps) {
 
         {/* Content */}
         <div className="p-5">
-          <span className="text-xs uppercase tracking-widest text-white/35 mb-2 block">
+          <span className="text-xs uppercase tracking-widest text-white/50 mb-2 block">
             {project.serviceType}
           </span>
           <h3 className="text-lg font-medium text-white mb-1.5 group-hover:text-white/90 transition-colors duration-300">
             {project.title}
           </h3>
-          <p className="text-sm text-white/40 line-clamp-2">
+          <p className="text-sm text-white/60 line-clamp-2">
             {project.shortDescription}
           </p>
         </div>

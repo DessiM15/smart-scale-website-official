@@ -25,7 +25,7 @@ export default function Footer() {
                 className="h-16 w-auto"
               />
             </Link>
-            <p className="text-sm text-white/40 max-w-md">
+            <p className="text-sm text-white/60 max-w-md">
               Websites, local SEO, and custom software for businesses across
               the Houston metro. Serving Katy, Cypress, Houston, Sugar Land,
               Richmond, and Fulshear, TX.
@@ -37,7 +37,7 @@ export default function Footer() {
               Google Business Profile; Google cross-references the two when
               deciding whether to trust the listing.
             */}
-            <address className="mt-8 not-italic text-sm text-white/40 space-y-2">
+            <address className="mt-8 not-italic text-sm text-white/60 space-y-2">
               <p className="text-white/60 font-medium">{BUSINESS.legalName}</p>
               <p>
                 <a
@@ -68,7 +68,7 @@ export default function Footer() {
                     href={social.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-white/40 hover:text-white transition-colors duration-300"
+                    className="text-sm text-white/60 hover:text-white transition-colors duration-300"
                   >
                     {social.name}
                   </a>
@@ -86,7 +86,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-white/40 hover:text-white transition-colors duration-300"
+                    className="text-sm text-white/60 hover:text-white transition-colors duration-300"
                   >
                     {link.label}
                   </Link>
@@ -98,7 +98,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   data-track="book_call"
-                  className="text-sm text-white/40 hover:text-white transition-colors duration-300"
+                  className="text-sm text-white/60 hover:text-white transition-colors duration-300"
                 >
                   Book a call
                 </a>
@@ -117,7 +117,7 @@ export default function Footer() {
                 <li key={city.slug}>
                   <Link
                     href={`/web-design/${city.slug}`}
-                    className="text-sm text-white/40 hover:text-white transition-colors duration-300"
+                    className="text-sm text-white/60 hover:text-white transition-colors duration-300"
                   >
                     Website Design in {city.name}, TX
                   </Link>
@@ -126,7 +126,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/contact"
-                  className="text-sm text-white/40 hover:text-white transition-colors duration-300"
+                  className="text-sm text-white/60 hover:text-white transition-colors duration-300"
                 >
                   Start a Conversation
                 </Link>
@@ -136,7 +136,7 @@ export default function Footer() {
         </div>
 
         <div className="pt-8 border-t border-white/[0.06]">
-          <p className="text-xs text-white/25 tracking-wide">
+          <p className="text-xs text-white/50 tracking-wide">
             &copy; {new Date().getFullYear()} {BUSINESS.legalName}. All rights
             reserved.
           </p>

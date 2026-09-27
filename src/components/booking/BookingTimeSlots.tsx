@@ -60,7 +60,7 @@ export default function BookingTimeSlots({
 }: BookingTimeSlotsProps) {
   if (!date) {
     return (
-      <div className="flex items-center justify-center h-full text-sm text-gray-500">
+      <div className="flex items-center justify-center h-full text-sm text-gray-400">
         Select a date to view available times
       </div>
     );
@@ -109,7 +109,7 @@ export default function BookingTimeSlots({
             />
           ))
         ) : slots.length === 0 ? (
-          <div className="text-sm text-gray-500 text-center py-8">
+          <div className="text-sm text-gray-400 text-center py-8">
             No available times for this date
           </div>
         ) : (

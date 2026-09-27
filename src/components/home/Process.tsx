@@ -32,7 +32,7 @@ export default function Process() {
             </div>
           ))}
         </div>
-        <p className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-[11px] uppercase tracking-[0.14em] text-white/40">
+        <p className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-[11px] uppercase tracking-[0.14em] text-white/50">
           <span>What we build</span>
           {SERVICES.map((s) => (
             <Link key={s.href} href={s.href} className="text-white/65 underline decoration-white/20 underline-offset-4 transition-colors hover:text-white hover:decoration-[#DC2626]">

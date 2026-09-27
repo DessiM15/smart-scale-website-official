@@ -63,14 +63,14 @@ export default function TextConsentForm({ onVerificationSent, theme = "dark" }: 
 
   const inputClasses = isLight
     ? "w-full px-4 py-3 bg-white border border-black/[0.12] rounded-xl text-[#111111] placeholder-black/30 focus:ring-2 focus:ring-[#DC2626] focus:border-[#DC2626] outline-none transition"
-    : "w-full px-4 py-3 bg-[#111111] border border-white/[0.08] rounded-xl text-white placeholder-white/30 focus:ring-2 focus:ring-[#DC2626] focus:border-[#DC2626] outline-none transition";
+    : "w-full px-4 py-3 bg-[#111111] border border-white/[0.08] rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-[#DC2626] focus:border-[#DC2626] outline-none transition";
 
   const labelClasses = isLight
     ? "block text-sm font-medium mb-2 text-[#111111]/70"
     : "block text-sm font-medium mb-2 text-white/70";
 
   const descriptionClasses = isLight
-    ? "text-sm text-black/50 mb-4"
+    ? "text-sm text-black/60 mb-4"
     : "text-sm text-white/50 mb-4";
 
   return (

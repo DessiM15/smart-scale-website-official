@@ -109,7 +109,7 @@ export default async function CityPage({
       >
         <div className="max-w-4xl mx-auto">
           <nav aria-label="Breadcrumb" className="mb-8">
-            <ol className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-widest text-black/40">
+            <ol className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-widest text-black/60">
               <li>
                 <Link href="/" className="hover:text-black transition-colors">
                   Home
@@ -144,7 +144,7 @@ export default async function CityPage({
             ))}
           </div>
 
-          <p className="mt-8 text-sm text-black/40">
+          <p className="mt-8 text-sm text-black/60">
             Neighborhoods and areas we work in around {city.name}:{" "}
             {city.landmarks.join(", ")}.
           </p>
@@ -277,7 +277,7 @@ export default async function CityPage({
 
           {/* Internal links to sibling city pages. */}
           <div className="mt-16 pt-8 border-t border-white/[0.08]">
-            <p className="text-xs uppercase tracking-widest text-white/40 mb-4">
+            <p className="text-xs uppercase tracking-widest text-white/50 mb-4">
               We also serve
             </p>
             <ul className="flex flex-wrap gap-x-6 gap-y-3">

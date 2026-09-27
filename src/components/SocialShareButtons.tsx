@@ -33,7 +33,7 @@ export default function SocialShareButtons({ title, url }: SocialShareButtonsPro
 
   return (
     <div className="flex items-center gap-4">
-      <span className="text-sm font-semibold text-[#6B7280]">Share:</span>
+      <span className="text-sm font-semibold text-[#9CA3AF]">Share:</span>
       <div className="flex items-center gap-2">
         <a
           href={shareLinks.twitter}
@@ -71,7 +71,7 @@ export default function SocialShareButtons({ title, url }: SocialShareButtonsPro
         </button>
       </div>
       {copied && (
-        <span className="text-sm text-[#DC2626] font-medium">Link copied!</span>
+        <span className="text-sm text-[#EF4444] font-medium">Link copied!</span>
       )}
     </div>
   );

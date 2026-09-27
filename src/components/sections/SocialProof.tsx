@@ -13,7 +13,7 @@ export default function SocialProof() {
     <section className="relative py-32 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A] noise-overlay" data-theme="dark">
       <div className="max-w-6xl mx-auto relative z-10">
         <p
-          className="text-center text-white/40 text-sm uppercase tracking-widest mb-16"
+          className="text-center text-white/60 text-sm uppercase tracking-widest mb-16"
           data-animate="fade-up"
         >
           Trusted by businesses across the Houston metro

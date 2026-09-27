@@ -14,7 +14,7 @@ export default function ContactCTA() {
           Ready to Get Found Online?
         </h2>
         <p
-          className="text-lg text-black/50 mb-12 max-w-xl mx-auto"
+          className="text-lg text-black/60 mb-12 max-w-xl mx-auto"
           data-animate="fade-up"
         >
           Tell us about your business and we&apos;ll show you exactly what

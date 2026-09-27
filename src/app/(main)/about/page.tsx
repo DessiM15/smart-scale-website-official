@@ -37,7 +37,7 @@ export default function Company() {
           <h1 className="text-5xl sm:text-6xl md:text-7xl leading-tight mb-6 text-[#111111]" data-animate="word-reveal">
             A Web Design Agency Built for Local Businesses
           </h1>
-          <p className="text-xl sm:text-2xl text-black/50 max-w-3xl mx-auto mb-8 hero-subheadline">
+          <p className="text-xl sm:text-2xl text-black/60 max-w-3xl mx-auto mb-8 hero-subheadline">
             A small team in Katy, TX. Every project gets founder-level
             attention. You talk to the people who build your site.
           </p>
@@ -61,7 +61,7 @@ export default function Company() {
             <h2 className="text-4xl sm:text-5xl mb-4 text-[#111111]">
               Our Values
             </h2>
-            <p className="text-lg text-black/50 max-w-2xl mx-auto">
+            <p className="text-lg text-black/60 max-w-2xl mx-auto">
               The principles that guide every engagement.
             </p>
           </div>
@@ -73,7 +73,7 @@ export default function Company() {
                   {value.icon}
                 </div>
                 <h3 className="text-xl mb-4 text-[#111111]">{value.title}</h3>
-                <p className="text-black/50 leading-relaxed">{value.description}</p>
+                <p className="text-black/60 leading-relaxed">{value.description}</p>
               </GlowCard>
             ))}
           </div>
