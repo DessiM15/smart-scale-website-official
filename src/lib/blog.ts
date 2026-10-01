@@ -10,6 +10,11 @@ export interface BlogPost {
   readTime: string;
   content: string;
   metaDescription: string;
+  /**
+   * The title tag, when it should differ from the headline. Used exactly as
+   * written, without the site-name suffix, so it can be held to 60 characters.
+   */
+  metaTitle?: string;
 }
 
 /**
@@ -21,6 +26,122 @@ export interface BlogPost {
  * and every claim about a client project must match its case study.
  */
 export const BLOG_POSTS: BlogPost[] = [
+  {
+    slug: "what-is-seo-katy-houston",
+    title: "What Is SEO? A Plain-English Guide for Katy & Houston Businesses",
+    metaTitle: "What Is SEO? A Plain-English Guide for Katy & Houston",
+    excerpt:
+      "SEO is everything you do to help Google pick your business when someone searches for what you offer. The three things Google looks at, how the map pack works for Katy and Houston businesses, and a quick checklist for your own site.",
+    author: "Smart Scale",
+    date: "2026-10-01",
+    coverImage: "/assets/what-is-seo-katy-houston",
+    coverImageAlt: "Dark cover reading Get into Google's top 3, part 1 of the SEO series, with a red map pin for the Google map pack",
+    category: "SEO",
+    readTime: "5 min read",
+    metaDescription:
+      "SEO explained in plain English: the 3 things Google uses to rank websites, plus how Katy and Houston businesses get into the Google map pack.",
+    content: `
+## What is SEO, really?
+
+SEO (search engine optimization) is everything you do to help Google pick your business when someone searches for what you offer. That's it.
+
+Think of Google as a librarian. Someone walks up and asks, "Who does roof repair near me?" The librarian has a split second to pick the best answer out of millions of websites. SEO is making sure your website is the one the librarian hands over.
+
+If you own a business in [Katy](/web-design/katy), [Cypress](/web-design/cypress), or [Houston](/web-design/houston), this matters more than most marketing you can pay for. People searching Google are already looking for what you sell. You just need to be the business they find.
+
+## The 3 things Google looks at
+
+There are hundreds of small ranking signals, but nearly all of them fall into three buckets. Miss any one, and you lose customers to the business that has it.
+
+### 1. Relevance: does your site answer the search?
+
+Google can only match you to a search if your website actually says the words people search for. If someone searches "wedding cakes in Houston" and your site never mentions wedding cakes or Houston, Google won't connect the two.
+
+What helps:
+
+- A main headline (H1) that says exactly what you do and where, like "Roof Repair in Katy, TX" instead of "Welcome to Our Website"
+- One page for each service you offer, not one page listing everything
+- Being known for something specific. "Custom wedding cakes in Houston" ranks. "Bakery" is too vague to win.
+
+### 2. Technical: can Google actually read your site?
+
+Even great content gets pushed down if the site behind it is slow, broken, or hard to use on a phone. Most local searches happen on mobile, so Google pays close attention to how your site performs there.
+
+What helps:
+
+- Pages that load fast on a phone
+- No broken links or error pages
+- Clean page titles and descriptions so Google knows what each page is about
+- A site that's accessible to everyone, including people using screen readers
+
+### 3. Authority: does anyone vouch for you?
+
+Google trusts businesses that other people trust. Reviews, links from other websites, and accurate listings in directories all act like references on a job application.
+
+What helps:
+
+- Steady Google reviews, ideally ones that mention the service and city ("they fixed our roof in Katy fast")
+- Links from local organizations, partners, or news sites
+- The same business name, address, and phone number everywhere you're listed
+
+## The Google map pack: the spot local businesses want most
+
+Search "coffee shop near me" and you'll see a map with three businesses under it. That's the map pack, and for a local business it's often worth more than the regular results below it.
+
+Google says local results are based on three factors: relevance, distance, and prominence. In plain terms, that's the same three things above, plus how close you are to the person searching. You can't move your building, but you can control the rest.
+
+To give yourself the best shot:
+
+- Claim and fully fill out your Google Business Profile
+- Pick the main category that matches what your homepage is about
+- Make sure your name, address, and phone number match your website exactly
+- Link your profile to your website, and post updates regularly
+- Keep reviews coming in and reply to them
+
+When your website and your Google profile tell the same story, Google trusts you more. That trust is what moves you into the top three.
+
+## Quick SEO checklist for your website
+
+- My homepage headline says what I do and what city I serve
+- Each service has its own page
+- My site loads fast and works well on a phone
+- My name, address, and phone match on my site and Google profile
+- My Google Business Profile links to my website
+- I'm getting new Google reviews every month
+
+Couldn't check every box? That's normal, and it's fixable.
+
+## Want someone to look at yours?
+
+At Smart Scale, we build websites for Katy, Cypress, and Houston businesses with local SEO built in from day one: page titles, city pages, schema, and your Google Business Profile matched to the site. It's part of the build, not an add-on. If budget is the question, start with [how much a website costs in Katy and Houston](/blog/how-much-does-a-website-cost-katy-houston).
+
+[Book a free call](https://calendar.app.google/b1gQXqqNLL9CsJjr6) and we'll walk through where your site stands and what would move the needle. Or call us at [832.790.5001](tel:+18327905001).
+
+This is part 1 of our SEO series for small business owners. Next up: how to set up your website and Google profile to land in the map pack.
+
+## Frequently asked questions
+
+### What does SEO stand for?
+
+SEO stands for search engine optimization. It's the work of making your website easy for Google to understand, trust, and show to the right people.
+
+### How long does SEO take to work?
+
+Most businesses start seeing movement in a few months, depending on competition in their area and how much needs fixing. Local SEO for a specific city usually moves faster than ranking nationally.
+
+### What is the Google map pack?
+
+It's the map and the top three local businesses Google shows for searches like "plumber near me." Google ranks those businesses on relevance, distance, and prominence.
+
+### Do I need a website if I have a Google Business Profile?
+
+Yes. Your profile and your website work together. The website gives Google the detail it needs to understand what you do, and a matching profile and site builds trust.
+
+### Can I do SEO myself?
+
+You can handle the basics, like the checklist above. The technical side and building authority take more time and know-how, which is where an agency helps.
+`,
+  },
   {
     slug: "ada-website-compliance-houston-business",
     title: "Does Your Houston Business Website Need to Be ADA Compliant?",
