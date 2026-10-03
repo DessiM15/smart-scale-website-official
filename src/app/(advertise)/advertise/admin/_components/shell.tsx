@@ -43,6 +43,8 @@ const PATHS: Record<string, string> = {
   down: '<path d="M6 9l6 6 6-6"/>',
   stripe: '<rect x="2" y="5" width="20" height="14"/><path d="M15 9.5c-.8-.6-1.9-.9-3-.9-1.9 0-3 .8-3 1.8 0 2.4 6 1.4 6 4 0 1.1-1.3 1.9-3.2 1.9-1.3 0-2.6-.4-3.6-1"/>',
   archive: '<path d="M3 6h6l2 2h10v12H3z"/><path d="M3 11h18"/>',
+  wbleads: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5M8 11l2 2 4-4"/>',
+  wbsettings: '<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
 };
 
 export function Icon({ name, size = 16, className = "" }: { name: string; size?: number; className?: string }) {
@@ -86,7 +88,9 @@ export type NavKey =
   | "vault"
   | "company"
   | "stripe"
-  | "archive";
+  | "archive"
+  | "wbleads"
+  | "wbsettings";
 
 export type NavCount = { value: number; hot?: boolean } | { soon: true };
 
@@ -116,6 +120,12 @@ export const NAV_BOOKS: { key: NavKey; label: string; href: string }[] = [
 ];
 
 export const BOOKS_KEYS: NavKey[] = NAV_BOOKS.map((n) => n.key);
+
+/** Website Business: leads from the free website check. Its own group in the sidebar. */
+export const NAV_WB: { key: NavKey; label: string; href: string }[] = [
+  { key: "wbleads", label: "Leads", href: `${ADMIN}/website-business` },
+  { key: "wbsettings", label: "Settings", href: `${ADMIN}/website-business/settings` },
+];
 
 export const NAV_SECONDARY: { key: NavKey; label: string; href: string }[] = [
   { key: "history", label: "History", href: `${ADMIN}/history` },
@@ -299,6 +309,10 @@ export function Sidebar({
         {NAV_BOOKS.map((item) => (
           <NavItem key={item.key} item={item} active={active} count={counts[item.key]} />
         ))}
+        <p className={`${bebas} text-[11px] tracking-[0.24em] text-white/30 px-3.5 pt-5 pb-1.5`}>Website Business</p>
+        {NAV_WB.map((item) => (
+          <NavItem key={item.key} item={item} active={active} count={counts[item.key]} />
+        ))}
       </nav>
 
       <div className="px-3 py-3 border-t border-white/[0.07] flex flex-col gap-0.5">
@@ -353,7 +367,7 @@ const MOBILE_TABS: { key: NavKey; label: string; href: string }[] = [
   { key: "more", label: "More", href: `${ADMIN}/more` },
 ];
 
-const MORE_KEYS: NavKey[] = ["artwork", "qr", "reports", "campaigns", "locations", "history", "setup", "more"];
+const MORE_KEYS: NavKey[] = ["artwork", "qr", "reports", "campaigns", "locations", "history", "setup", "more", "wbleads", "wbsettings"];
 
 /** The phone tab bar. Every Books page lights the Books tab. */
 export function MobileTabs({ active, counts }: { active: NavKey; counts: Partial<Record<NavKey, NavCount>> }) {

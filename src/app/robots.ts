@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
         // Advertiser tooling and QR redirects are private/transient — keeping
         // them out of the index avoids diluting the site's topical focus.
-        disallow: ["/api/", "/advertise/admin", "/review-requests", "/go/"],
+        disallow: ["/api/", "/advertise/admin", "/review-requests", "/go/", "/check/scan/", "/check/report/", "/check/fix/", "/check/unsubscribe", "/check/thanks"],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

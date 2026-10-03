@@ -7,7 +7,7 @@ import { MobileTabs, MobileTop, Sidebar, type NavKey } from "../_components/shel
 import { Banner, type BannerParams } from "../_components/banner";
 import { Note } from "../_components/ui";
 import { navCounts } from "./nav-counts";
-import { NAV, NAV_BOOKS, NAV_SECONDARY } from "../_components/shell";
+import { NAV, NAV_BOOKS, NAV_SECONDARY, NAV_WB } from "../_components/shell";
 
 function DatabaseWarning({ reachable }: { reachable: boolean }) {
   if (!isRedisConfigured()) {
@@ -40,7 +40,7 @@ function DatabaseWarning({ reachable }: { reachable: boolean }) {
 
 /** The path of a nav item, for the who-picker to come back to. */
 function pathFor(active: NavKey): string {
-  return [...NAV, ...NAV_BOOKS, ...NAV_SECONDARY].find((n) => n.key === active)?.href ?? "/advertise/admin";
+  return [...NAV, ...NAV_BOOKS, ...NAV_WB, ...NAV_SECONDARY].find((n) => n.key === active)?.href ?? "/advertise/admin";
 }
 
 /**

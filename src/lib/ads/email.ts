@@ -109,6 +109,8 @@ export async function sendEmail(message: {
   attachments?: Attachment[];
   /** Overrides the default reply-to for this one message. */
   replyTo?: string;
+  /** Extra mail headers, such as List-Unsubscribe. */
+  headers?: Record<string, string>;
 }): Promise<EmailResult> {
   const key = apiKey();
   if (!key) return { ok: false, error: "RESEND_API_KEY is not set" };
@@ -127,6 +129,7 @@ export async function sendEmail(message: {
         subject: message.subject,
         html: message.html,
         text: message.text,
+        ...(message.headers ? { headers: message.headers } : {}),
         ...(message.attachments?.length
           ? {
               attachments: message.attachments.map((a) => ({

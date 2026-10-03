@@ -18,6 +18,7 @@ import { exportCampaigns } from "./campaigns";
 import { redisPipeline, redisWrite } from "./redis";
 import { isBlobConfigured, putBlob } from "./blob";
 import { exportBooks } from "@/lib/books/export";
+import { exportWebsiteBusiness } from "@/lib/wb/store";
 
 /** Kept for a month — long enough to notice a bad edit, short enough to be free. */
 const KEEP_DAYS = 30;
@@ -55,7 +56,7 @@ export async function runBackup(): Promise<BackupResult> {
   }
 
   try {
-    const [roster, links, books, venues, campaigns] = await Promise.all([exportRoster(), listLinks(), exportBooks(), listVenues(), exportCampaigns()]);
+    const [roster, links, books, venues, campaigns, websiteBusiness] = await Promise.all([exportRoster(), listLinks(), exportBooks(), listVenues(), exportCampaigns(), exportWebsiteBusiness()]);
 
     // The QR logos are data URIs and would dominate the file; the codes and
     // destinations are what actually matter to restore.
@@ -79,6 +80,8 @@ export async function runBackup(): Promise<BackupResult> {
       books,
       venues,
       campaigns,
+      // Leads from the free website check, their timelines and the do-not-email list.
+      websiteBusiness,
     });
 
     const date = new Date().toISOString().slice(0, 10);
