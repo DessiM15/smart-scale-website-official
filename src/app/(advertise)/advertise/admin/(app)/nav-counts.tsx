@@ -31,6 +31,7 @@ import { overdueAcross } from "@/lib/ads/expected";
 import { artworkStatusOf, followUpsDue, isOpenProspect, summarize, today } from "@/lib/ads/roster";
 import { setupItems } from "@/lib/ads/setup";
 import { buildToday, candidateKeys, doneSet } from "@/lib/ads/tasks";
+import { cachedWbLeads } from "@/lib/wb/cached";
 import type { NavCount, NavKey } from "../_components/shell";
 
 /** Everything the Today page needs, assembled once and shared with the frame. */
@@ -93,6 +94,7 @@ export async function navCounts(): Promise<Partial<Record<NavKey, NavCount>>> {
   const setupTodo = setup.filter((i) => i.status !== "on").length;
   const late = data.overduePayments.length;
   const drafts = data.reports.filter((r) => r.status === "draft").length;
+  const hotLeads = (await cachedWbLeads()).filter((l) => l.status === "hot").length;
 
   return {
     today: { value: data.items.length, hot: data.items.some((i) => i.tone === "bad") },
@@ -106,5 +108,7 @@ export async function navCounts(): Promise<Partial<Record<NavKey, NavCount>>> {
     books: { value: data.books.length, hot: data.books.some((i) => i.tone === "bad") },
     receipts: { value: data.pendingReceipts.length, hot: data.pendingReceipts.length > 0 },
     setup: { value: setupTodo, hot: setup.some((i) => i.essential && i.status !== "on") },
+    // Hot leads nobody has called yet: the ones that cost money to leave.
+    wbleads: { value: hotLeads, hot: hotLeads > 0 },
   };
 }

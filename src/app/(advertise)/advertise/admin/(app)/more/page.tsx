@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { signOutAction } from "../../actions";
-import { Icon, NAV, NAV_BOOKS, NAV_SECONDARY, PageHeader } from "../../_components/shell";
+import { Icon, NAV, NAV_BOOKS, NAV_SECONDARY, NAV_WB, PageHeader } from "../../_components/shell";
 import { bebas, cardClass } from "../../_components/ui";
 import { Shell } from "../shell";
 
@@ -11,6 +11,7 @@ export default async function MorePage() {
   const items = [
     ...NAV.filter((n) => !["today", "pipeline", "advertisers", "payments"].includes(n.key)),
     ...NAV_BOOKS.filter((n) => n.key !== "books"),
+    ...NAV_WB.map((n) => ({ ...n, label: `Website ${n.label}` })),
     ...NAV_SECONDARY,
   ];
   return (

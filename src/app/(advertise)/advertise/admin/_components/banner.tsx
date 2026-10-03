@@ -127,6 +127,9 @@ const notices = (
   stripeSynced: detail ?? "Stripe is up to date.",
   receiptDetached: "Photo taken off that row. It's back on the waiting list, not in the bin.",
   stripeBroughtBack: `Back in the ledger${detail ? `: ${detail}` : ""}.`,
+  wbStatus: `Lead marked ${detail ?? "updated"}.`,
+  wbNote: "Note added.",
+  wbSettings: "Website Business settings saved.",
 });
 
 const errors = (clash?: string, detail?: string): Record<string, string> => ({
@@ -204,6 +207,7 @@ const errors = (clash?: string, detail?: string): Record<string, string> => ({
   filing: detail ?? "That filing didn't save.",
   stripe: detail ? `Stripe said: ${detail}` : "The Stripe pull didn't work.",
   stripemissing: "That Stripe transaction isn't on the list.",
+  wb: detail ?? "That didn't save.",
 });
 
 export type BannerParams = {
