@@ -8,6 +8,7 @@ import { BOOKING_URL } from "@/lib/business";
 import { fixFromScanAction } from "../actions";
 import { FixButton } from "./fix-button";
 import { buttonPrimary, buttonSecondary, eyebrow, lede, panel } from "./ui";
+import { WaitFacts } from "./wait-facts";
 
 type Status =
   | { state: "running"; step: string; stepIndex: number; stepCount: number }
@@ -73,7 +74,9 @@ export function CheckProgress({ scanId }: { scanId: string }) {
   }, [done, status]);
 
   if (status.state === "running") {
-    const percent = Math.round((Math.min(status.stepIndex, status.stepCount) / status.stepCount) * 100);
+    const current = Math.min(status.stepIndex, status.stepCount);
+    const percent = Math.round((current / status.stepCount) * 100);
+    const steps = Object.values(STEP_LABELS);
     return (
       <div>
         <p className={eyebrow}>Free website check</p>
@@ -81,7 +84,7 @@ export function CheckProgress({ scanId }: { scanId: string }) {
         <p className={`mt-6 ${lede}`}>This takes about a minute. You can close this page. We&apos;ll email the report.</p>
         <div className={`mt-10 ${panel}`}>
           <p role="status" className="text-lg text-white">
-            Step {Math.min(status.stepIndex, status.stepCount)} of {status.stepCount}: {STEP_LABELS[status.step] ?? "Working on it"}
+            Step {current} of {status.stepCount}: {STEP_LABELS[status.step] ?? "Working on it"}
           </p>
           <div
             role="progressbar"
@@ -91,9 +94,36 @@ export function CheckProgress({ scanId }: { scanId: string }) {
             aria-valuenow={percent}
             className="mt-5 h-2 w-full overflow-hidden rounded-full bg-white/[0.12]"
           >
-            <div className="h-full rounded-full bg-[#DC2626] transition-[width] duration-700 motion-reduce:transition-none" style={{ width: `${percent}%` }} />
+            {/* Glides toward the end of the current step, so it is never standing still. */}
+            <div
+              className="h-full rounded-full bg-[#DC2626] transition-[width] duration-[9000ms] ease-out motion-reduce:transition-none"
+              style={{ width: `${percent}%` }}
+            />
           </div>
+          {/* The same steps as a list to watch. The line above already says it to a screen reader. */}
+          {steps.length === status.stepCount && (
+            <ol aria-hidden="true" className="mt-6 space-y-3">
+              {steps.map((label, i) => {
+                const n = i + 1;
+                const isDone = n < current;
+                const isNow = n === current;
+                return (
+                  <li key={label} className={`flex items-center gap-3 ${isDone ? "text-white/65" : isNow ? "text-white" : "text-white/55"}`}>
+                    <span
+                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-semibold ${
+                        isDone ? "border-[#86EFAC] text-[#86EFAC]" : isNow ? "border-[#DC2626] bg-[#DC2626] text-white" : "border-white/25"
+                      }`}
+                    >
+                      {isDone ? "\u2713" : n}
+                    </span>
+                    <span className={isNow ? "font-semibold" : ""}>{label}</span>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
         </div>
+        <WaitFacts seed={scanId} />
       </div>
     );
   }

@@ -386,3 +386,8 @@ html.lenis, html.lenis body {
 .ticker-row { animation: ticker 52s linear infinite; }
 @keyframes ticker { to { transform: translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) { .ticker-row { animation: none; } }
+
+/* The facts under the website check's progress bar: each one fades in. */
+.wait-fact { animation: wait-fact-in 0.5s ease-out; }
+@keyframes wait-fact-in { from { opacity: 0; transform: translateY(6px); } }
+@media (prefers-reduced-motion: reduce) { .wait-fact { animation: none; } }
