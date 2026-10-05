@@ -156,6 +156,85 @@ ${textFooter(footer)}`,
   };
 }
 
+/* -------------------------------- follow-ups ------------------------------- */
+
+/** Day 3: the problems that matter most, again, and the call link. */
+export function followUpOneEmail(report: LeadReport, links: { report: string }, footer: Footer): Message {
+  const site = siteName(report);
+  const top = topFindings(report);
+  const line = countLine(report.totals);
+  const lead = top.length === 1 ? "The one thing" : `The ${top.length === 2 ? "two" : "three"} things`;
+  const subject = `${lead} to fix first on ${site}`;
+  const body = `
+  <p style="margin:0 0 18px;font-size:15px;line-height:1.65;">
+    A few days ago you ran our free check on ${esc(site)}. It came back with ${esc(line.toLowerCase())}. If you only have time for a few of them, start here.
+  </p>
+  ${card(
+    top
+      .map(
+        (f, i) =>
+          `<p style="margin:0 0 4px;font-size:15px;line-height:1.5;font-weight:600;">${i + 1}. ${esc(f.title)}</p><p style="margin:0 0 14px;font-size:14px;line-height:1.6;color:${MUTED};">${esc(f.plain)}</p>`,
+      )
+      .join(""),
+  )}
+  <p style="margin:0 0 18px;font-size:15px;line-height:1.65;">
+    We fix these for businesses like yours. It starts with a free call: we look at your site together and tell you what it would take.
+  </p>
+  <div style="margin-bottom:8px;">
+    ${button(BOOKING_URL, "Book a free call", true)}
+    ${button(links.report, "See the full report", false)}
+  </div>
+  <p style="margin:14px 0 0;font-size:13px;line-height:1.6;color:${MUTED};">Or reply to this email; it reaches us directly.</p>`;
+
+  const text = `SMART SCALE - FREE WEBSITE CHECK
+
+${lead} to fix first on ${site}.
+
+A few days ago you ran our free check on ${site}. It came back with ${line.toLowerCase()}. If you only have time for a few of them, start here.
+
+${top.map((f, i) => `${i + 1}. ${f.title}. ${f.plain}`).join("\n")}
+
+We fix these for businesses like yours. It starts with a free call: we look at your site together and tell you what it would take.
+
+Book a free call: ${BOOKING_URL}
+See the full report: ${links.report}
+Or reply to this email; it reaches us directly.
+
+${textFooter(footer)}`;
+
+  return { subject, html: frame("Free website check", esc(`${lead} to fix first.`), body, footer), text };
+}
+
+/** Day 10: a short last note. Nothing follows it. */
+export function followUpTwoEmail(report: LeadReport, links: { report: string }, footer: Footer): Message {
+  const site = siteName(report);
+  const body = `${card(
+    `<p style="margin:0 0 12px;font-size:15px;line-height:1.65;">This is the last email we will send about your website check for ${esc(site)}.</p>
+     <p style="margin:0;font-size:15px;line-height:1.65;">Your report is still there if you want to come back to it. If you would like a hand with any of it, pick a time and one of us will call you. The call is free.</p>`,
+  )}
+  <div style="margin-bottom:8px;">
+    ${button(BOOKING_URL, "Book a free call", true)}
+    ${button(links.report, "See the full report", false)}
+  </div>
+  <p style="margin:14px 0 0;font-size:13px;line-height:1.6;color:${MUTED};">Or reply to this email; it reaches us directly.</p>`;
+
+  return {
+    subject: `A last note about ${site}`,
+    html: frame("Free website check", "A last note about your website check.", body, footer),
+    text: `SMART SCALE - FREE WEBSITE CHECK
+
+This is the last email we will send about your website check for ${site}.
+
+Your report is still there if you want to come back to it. If you would like a hand with any of it, pick a time and one of us will call you. The call is free.
+
+Book a free call: ${BOOKING_URL}
+See the full report: ${links.report}
+Or reply to this email; it reaches us directly.
+
+${textFooter(footer)}`,
+  };
+}
+
 /* ------------------------------- no website ------------------------------- */
 
 export function noWebsiteEmail(name: string, footer: Footer): Message {
@@ -188,6 +267,9 @@ ${textFooter(footer)}`,
 
 /* --------------------------------- sending -------------------------------- */
 
+/** The messages an owner can get. The name is what the lead's timeline shows. */
+export type OwnerEmailKind = "report" | "could-not-scan" | "no-website" | "follow-up-1" | "follow-up-2";
+
 export type OwnerSend = { sent: boolean; reason?: "no-address" | "unsubscribed" | "held" | "already" | "failed"; error?: string };
 
 /**
@@ -197,7 +279,7 @@ export type OwnerSend = { sent: boolean; reason?: "no-address" | "unsubscribed" 
  */
 export async function sendToOwner(
   lead: Lead,
-  kind: "report" | "could-not-scan" | "no-website",
+  kind: OwnerEmailKind,
   build: (footer: Footer) => Message,
   scope = "",
 ): Promise<OwnerSend> {
