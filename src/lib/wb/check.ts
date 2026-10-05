@@ -20,7 +20,7 @@ import { ADMIN_LEAD_URL } from "./paths";
 import { BEST_TIMES, NEEDS, NOTICE_TEXT, NO_WEBSITE_NOTICE_TEXT } from "./notice";
 import { notifyTeam } from "@/lib/ads/notify";
 import { couldNotScanEmail, noWebsiteEmail, reportEmail, reportLinks, reportUrl, sendToOwner } from "./email";
-import { countLine, isLeadReport, siteName, topFindings, type LeadReport, type Rating } from "./report";
+import { RATING_LABEL, countLine, isLeadReport, siteName, topFindings, type LeadReport, type Rating } from "./report";
 import {
   DAILY_CEILING,
   addEvent,
@@ -151,9 +151,35 @@ async function completeScan(lead: Lead, scan: ScanRecord, report: LeadReport): P
     status: advance(l.status, "scanned"),
     scan: { scanId: scan.scanId, reportId, state: "completed", problems: report.totals.problems, serious: report.totals.serious },
   }));
-  await addEvent(lead.id, "scan_completed", scan.scanId, countLine(report.totals));
+  const first = await addEvent(lead.id, "scan_completed", scan.scanId, countLine(report.totals));
   const current = saved ?? lead;
-  await sendToOwner(current, "report", (footer) => reportEmail(report, reportLinks(current, reportId), footer), scan.scanId);
+  const owner = await sendToOwner(current, "report", (footer) => reportEmail(report, reportLinks(current, reportId), footer), scan.scanId);
+  if (!first) return;
+
+  // Every finished check goes to the team with its report, once per scan.
+  const ownerLine = owner.sent
+    ? "The report was emailed to them."
+    : owner.reason === "held"
+      ? "Their report email was held: no postal address is saved in Settings yet."
+      : owner.reason === "unsubscribed"
+        ? "They have unsubscribed, so no report email was sent."
+        : owner.reason === "already"
+          ? ""
+          : "Their report email was not sent. The lead's timeline says why.";
+  await notifyTeam({
+    subject: `Website check: ${current.businessName || siteName(report)}, ${countLine(report.totals).toLowerCase()}`,
+    lines: [
+      [current.businessName, siteName(report)].filter(Boolean).join(" · "),
+      current.email ?? "",
+      current.source ? `Came from: ${current.source}` : "",
+      ...report.sections.map((section) => `${section.title}: ${RATING_LABEL[section.rating]}`),
+      ...topFindings(report).map((finding, i) => `${i + 1}. ${finding.title}`),
+      `Report: ${reportUrl(reportId)}`,
+      ownerLine,
+    ].filter(Boolean),
+    href: ADMIN_LEAD_URL(lead.id),
+    cta: "Open the lead",
+  }).catch(() => {});
 }
 
 export async function startCheck(input: CheckInput, ip: string): Promise<CheckResult> {
