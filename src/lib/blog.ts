@@ -191,7 +191,7 @@ We ran the same kind of scan those firms use against a set of Houston-area busin
 - **Watch your home page for ten seconds without touching it.** If something is still moving, look for a pause button.
 - **Open the site on your phone and tap the small things.** Social icons, slider dots, close buttons. If you miss, the target is too small.
 
-If you fail two or more of these, a scanner will find more.
+If you fail two or more of these, a scanner will find more. Our [free website check](/check?source=ada-blog) runs one on your site in about a minute.
 
 ## What about those accessibility widgets
 
@@ -205,7 +205,9 @@ A short accessibility statement page, saying what standard you aim for and how t
 
 ## Find out where your site stands
 
-We will run the full scan on your site and send you a one-page summary of what fails and what it would take to fix. No cost and no obligation. [Send us your web address](/contact) and you will have it within a few days.
+Run the free check on your own site. It takes about a minute, and the report comes to your inbox in plain words: what gets in a visitor's way and what makes you harder to find on Google. No cost and no obligation.
+
+{{website-check}}
 `,
   },
   {

@@ -3,6 +3,7 @@ import Hero from "@/components/home/Hero";
 import Ticker from "@/components/home/Ticker";
 import Work from "@/components/home/Work";
 import Process from "@/components/home/Process";
+import WebsiteCheck from "@/components/home/WebsiteCheck";
 import Reviews from "@/components/sections/Reviews";
 import Advertising from "@/components/home/Advertising";
 import Closing from "@/components/home/Closing";
@@ -16,6 +17,7 @@ export default function Home() {
       <Ticker />
       <Work />
       <Process />
+      <WebsiteCheck />
       <Reviews />
       <Advertising />
       <Closing />

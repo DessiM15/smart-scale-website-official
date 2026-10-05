@@ -44,7 +44,7 @@ const capabilities: Capability[] = [
     title: "Local Visibility",
     description:
       "Google Business Profile management, local SEO, and monthly optimization so customers find you first.",
-    href: "/services",
+    href: "/services/local-seo-google-business-profile",
     image: "/assets/portfolio/gulf-coast-alloys/gulf-coast-alloys-industrial-website-design.webp",
     // Mex Taco House used to sit here, but the Local Advertising card below
     // is Mex Taco by definition, and two identical red lockups in one row
@@ -54,7 +54,7 @@ const capabilities: Capability[] = [
     alt: "Gulf Coast Alloys industrial website, built by Smart Scale in Houston",
   },
   {
-    title: "Custom Software & CRM",
+    title: "Custom Business CRM",
     description:
       "Tools built around how your business actually runs: scheduling, quoting, customer tracking.",
     href: "/services/enterprise-systems",
@@ -73,7 +73,7 @@ const capabilities: Capability[] = [
     alt: "Bloxify mobile app landing page with app store download links",
   },
   {
-    title: "Automation & AI",
+    title: "AI Automations",
     description:
       "Systems that handle the busywork: follow-ups, review requests, lead routing.",
     href: "/services/ai-enhancement-ai-workflows",

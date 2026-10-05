@@ -8,6 +8,7 @@ import {
   Globe,
   Building2,
   Brain,
+  MapPin,
 } from "lucide-react";
 import ServiceNavigation from "@/components/ServiceNavigation";
 import GlowCard from "@/components/ui/GlowCard";
@@ -19,6 +20,7 @@ const iconMap: Record<string, React.ReactNode> = {
   "web-development": <Globe className="w-12 h-12" />,
   "enterprise-systems": <Building2 className="w-12 h-12" />,
   "ai-enhancement-ai-workflows": <Brain className="w-12 h-12" />,
+  "local-seo-google-business-profile": <MapPin className="w-12 h-12" />,
 };
 
 interface ServicePageClientProps {
@@ -155,7 +157,7 @@ export default function ServicePageClient({ slug }: ServicePageClientProps) {
             Ready to Begin?
           </h2>
           <p className="text-lg text-white/50 mb-8">
-            Let&apos;s discuss how {service.title.toLowerCase()} can elevate your business.
+            Let&apos;s discuss how {service.inSentence} can elevate your business.
           </p>
           <Link
             href="/contact"

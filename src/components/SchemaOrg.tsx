@@ -45,11 +45,11 @@ export default function SchemaOrg() {
       "@type": "OfferCatalog",
       name: "Web Design & Local SEO Services",
       itemListElement: [
-        "Business Websites",
-        "Local SEO & Google Business Profile Management",
-        "Custom Software & CRM",
-        "Mobile Apps",
-        "Automation & AI",
+        "Website Design and Development",
+        "Mobile App Development",
+        "Local SEO and Google Business Profile Management",
+        "Custom Business CRM",
+        "AI Automations",
       ].map((name) => ({
         "@type": "Offer",
         itemOffered: { "@type": "Service", name },

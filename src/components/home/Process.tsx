@@ -15,8 +15,9 @@ const STEPS = [
 const SERVICES = [
   { href: "/services/web-development", label: "Websites" },
   { href: "/services/mobile-development", label: "Mobile apps" },
-  { href: "/services/ai-enhancement-ai-workflows", label: "Automation & AI" },
-  { href: "/services/enterprise-systems", label: "Custom software & CRM" },
+  { href: "/services/local-seo-google-business-profile", label: "Local SEO" },
+  { href: "/services/enterprise-systems", label: "Custom business CRM" },
+  { href: "/services/ai-enhancement-ai-workflows", label: "AI automations" },
 ];
 
 export default function Process() {

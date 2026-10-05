@@ -11,6 +11,10 @@ export const BRAND_COLORS = {
 export interface Service {
   slug: string;
   title: string;
+  /** The service as it reads in the middle of a sentence. */
+  inSentence: string;
+  /** Used in place of the title in the browser tab when the title runs long. */
+  metaTitle?: string;
   shortDescription: string;
   extendedDescription: string;
   keyFeatures: string[];
@@ -21,7 +25,8 @@ export interface Service {
 export const SERVICES: Service[] = [
   {
     slug: "web-development",
-    title: "Website Design & Development",
+    title: "Website Design and Development",
+    inSentence: "a new website",
     shortDescription:
       "Fast, mobile-first websites for local businesses, built to turn a Google search into a phone call.",
     extendedDescription:
@@ -56,6 +61,7 @@ export const SERVICES: Service[] = [
   {
     slug: "mobile-development",
     title: "Mobile App Development",
+    inSentence: "a mobile app",
     shortDescription:
       "iOS and Android apps for when a website isn't enough, built and shipped to the app stores.",
     extendedDescription:
@@ -88,42 +94,45 @@ export const SERVICES: Service[] = [
     ],
   },
   {
-    slug: "ai-enhancement-ai-workflows",
-    title: "Automation & AI",
+    slug: "local-seo-google-business-profile",
+    title: "Local SEO and Google Business Profile Management",
+    inSentence: "local SEO",
+    metaTitle: "Local SEO and Google Business Profile in Katy & Houston, TX",
     shortDescription:
-      "Systems that handle the busywork: follow-ups, review requests, lead routing, and answering the same questions again and again.",
+      "Show up when someone nearby searches for what you do, with a Google Business Profile that is complete, current, and looked after every month.",
     extendedDescription:
-      "The hours a small business loses are rarely to hard problems. They go to chasing reviews, re-typing the same reply, moving a lead from one inbox to another. We build automations that do that work, and where it earns its place, we add AI: a chat assistant that answers customer questions from your own material, a screener that qualifies a lead before you call, a summary that lands in your inbox instead of a raw form. Practical, scoped, and measured.",
+      "When someone in Katy or Cypress searches for a plumber, a salon, or a lawyer, Google shows a map and a short list of businesses before it shows any website. Who makes that list depends on your Google Business Profile, your reviews, and whether your website and your listings tell the same story. We set the profile up properly, keep it current every month, and tune the pages on your site that local searches land on. No one can promise a ranking, and we don't. We do the work Google says matters and show you the numbers every month.",
     keyFeatures: [
-      "Review requests sent automatically after a job, visit, or sale",
-      "Lead routing: the right inquiry to the right person, with the context attached",
-      "Chat assistants that answer from your own content and hand off to a human",
-      "Intake screening that qualifies a lead before it reaches you",
-      "Follow-up sequences by email and text",
-      "Connections between the tools you already use",
-      "Document and case analysis where the volume justifies it",
-      "Guardrails so an assistant never says something it shouldn't",
+      "Google Business Profile set up or cleaned up: categories, services, hours, service area, photos",
+      "Name, address, and phone matched everywhere they appear, starting with your website",
+      "Monthly posts, fresh photos, and answers to the questions people ask on your profile",
+      "A simple way to ask every customer for a review, and help replying to the ones you get",
+      "Service and city pages on your site written for the searches your customers type",
+      "Page titles, descriptions, and the structured data Google reads to understand a local business",
+      "Listings on the directories that matter for your trade, kept consistent",
+      "A plain monthly report: calls, direction requests, searches, and what we changed",
     ],
     benefits: [
-      "Get hours back every week without hiring",
-      "Reply to every lead in minutes, even after hours",
-      "More reviews, because asking becomes automatic",
-      "Fewer leads lost between inboxes",
-      "AI where it helps, skipped where it doesn't",
-      "Everything logged, so you can see what it did",
+      "Be on the map when someone nearby is ready to call",
+      "A profile that answers the question before the customer has to ask",
+      "More reviews, and a reply on every one",
+      "The same hours and phone number everywhere a customer looks",
+      "Someone watching your listing, so a wrong edit does not sit for months",
+      "Numbers you can read, every month",
     ],
     useCases: [
-      "A law firm that needs leads screened before the first call",
-      "A restaurant or salon asking every customer for a review",
-      "A service business routing quotes to the right crew",
-      "A bilingual assistant for customers who prefer Spanish",
-      "A case management platform with AI-assisted document review",
-      "An agency automating client onboarding and reporting",
+      "A new business that is not on Google Maps yet",
+      "A profile that was claimed years ago and never touched since",
+      "A business that moved, or changed its hours or phone number",
+      "A service business that travels to customers and needs its service area set correctly",
+      "A business with great customers and very few reviews",
+      "A second location that needs its own profile and its own page",
     ],
   },
   {
     slug: "enterprise-systems",
-    title: "Custom Software & CRM",
+    title: "Custom Business CRM",
+    inSentence: "a custom CRM",
     shortDescription:
       "Tools built around how your business actually runs: scheduling, quoting, customer tracking, and reporting.",
     extendedDescription:
@@ -153,6 +162,41 @@ export const SERVICES: Service[] = [
       "A scheduling and dispatch tool for a service business",
       "An advertising or inventory tracker with payments and reminders",
       "Replacing a spreadsheet the whole team depends on",
+    ],
+  },
+  {
+    slug: "ai-enhancement-ai-workflows",
+    title: "AI Automations",
+    inSentence: "AI automations",
+    shortDescription:
+      "Systems that handle the busywork: follow-ups, review requests, lead routing, and answering the same questions again and again.",
+    extendedDescription:
+      "The hours a small business loses are rarely to hard problems. They go to chasing reviews, re-typing the same reply, moving a lead from one inbox to another. We build automations that do that work, and where it earns its place, we add AI: a chat assistant that answers customer questions from your own material, a screener that qualifies a lead before you call, a summary that lands in your inbox instead of a raw form. Practical, scoped, and measured.",
+    keyFeatures: [
+      "Review requests sent automatically after a job, visit, or sale",
+      "Lead routing: the right inquiry to the right person, with the context attached",
+      "Chat assistants that answer from your own content and hand off to a human",
+      "Intake screening that qualifies a lead before it reaches you",
+      "Follow-up sequences by email and text",
+      "Connections between the tools you already use",
+      "Document and case analysis where the volume justifies it",
+      "Guardrails so an assistant never says something it shouldn't",
+    ],
+    benefits: [
+      "Get hours back every week without hiring",
+      "Reply to every lead in minutes, even after hours",
+      "More reviews, because asking becomes automatic",
+      "Fewer leads lost between inboxes",
+      "AI where it helps, skipped where it doesn't",
+      "Everything logged, so you can see what it did",
+    ],
+    useCases: [
+      "A law firm that needs leads screened before the first call",
+      "A restaurant or salon asking every customer for a review",
+      "A service business routing quotes to the right crew",
+      "A bilingual assistant for customers who prefer Spanish",
+      "A case management platform with AI-assisted document review",
+      "An agency automating client onboarding and reporting",
     ],
   },
 ];
