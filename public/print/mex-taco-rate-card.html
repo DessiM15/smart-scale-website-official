@@ -163,9 +163,12 @@
     display:flex; justify-content:space-between; align-items:center; gap:18pt;
   }
   .foot-hand{ font-family:var(--hand); font-size:13pt; color:var(--gold); line-height:1; }
-  .foot-cta{ font-family:var(--bebas); font-size:25pt; line-height:1; margin-top:4pt; }
-  .foot-fine{ font-size:6.3pt; line-height:1.45; color:rgba(255,255,255,0.5); margin-top:6pt; max-width:4.3in; }
-  .foot-right{ text-align:right; flex-shrink:0; }
+  .foot-cta{ font-family:var(--bebas); font-size:23pt; line-height:1; margin-top:4pt; }
+  .foot-fine{ font-size:6.3pt; line-height:1.45; color:rgba(255,255,255,0.5); margin-top:6pt; max-width:3.9in; }
+  .foot-right{ text-align:right; flex-shrink:0; margin-left:auto; }
+  /* The tracked flyer code (smartscaleagent.com/go/adflyer), for the printed copy. */
+  .foot-qr{ flex-shrink:0; text-align:center; }
+  .foot-qr img{ width:66pt; height:66pt; display:block; background:#fff; border-radius:5pt; }
   .foot-phone{ font-family:var(--bebas); font-size:17pt; line-height:1.15; letter-spacing:.02em; }
   .foot-phone span{ font-family:'Inter',sans-serif; font-size:7.5pt; font-weight:700; color:rgba(255,255,255,0.6); margin-right:4pt; letter-spacing:.08em; text-transform:uppercase; }
   .foot-site{ font-size:9.5pt; font-weight:800; color:var(--gold); margin-top:4pt; }
@@ -293,7 +296,7 @@
   <div class="foot pad">
     <div>
       <div class="foot-hand">Ready when you are</div>
-      <div class="foot-cta">Call or text to claim your category.</div>
+      <div class="foot-cta">Scan, call or text to claim your spot.</div>
       <div class="foot-fine">
         Billed monthly, or paid in full upfront. Your rate is locked for the full term. All ads subject to
         restaurant approval. Reach figures are estimates from the restaurant's reported guest counts.
@@ -303,6 +306,9 @@
       <div class="foot-phone"><span>Jay</span>832.407.0773</div>
       <div class="foot-phone"><span>Dessiah</span>832.790.5001</div>
       <div class="foot-site">smartscaleagent.com/advertise</div>
+    </div>
+    <div class="foot-qr">
+      <img src="qr-adflyer.png" alt="QR code: scan to claim your spot">
     </div>
   </div>
 
