@@ -4,16 +4,17 @@
 <meta charset="UTF-8">
 <title>Mex Taco House — Advertising Rate Card</title>
 <!--
-  Print source for ads-rate-card.pdf. Letter portrait, 8.5x11.
+  Print source for the rate card the lead reply email attaches
+  (RATE_CARD_URL in src/lib/ads/email.ts). Letter portrait, 8.5x11.
 
   To regenerate the PDF:
     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
       --headless --disable-gpu --no-pdf-header-footer \
-      --print-to-pdf=ads-rate-card.pdf \
+      --print-to-pdf=public/print/mex-taco-rate-card-oct-2026.pdf \
       public/print/mex-taco-rate-card.html
 
-  Prices here must match the plans array in
-  src/app/(advertise)/advertise/page.tsx. Change both together.
+  Prices here must match the current packages in PLANS in
+  src/lib/ads/roster.ts. Change both together.
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -127,10 +128,10 @@
     font-size:6pt; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
     color:var(--red); margin-top:3pt;
   }
-  .plan-term{ font-size:9pt; color:var(--muted); }
+  .plan-term{ font-size:8pt; color:var(--muted); margin-top:2pt; }
   .plan-price{ font-size:14pt; font-weight:800; line-height:1.15; }
   .plan-sub{ font-size:6.5pt; color:var(--faint); font-weight:600; margin-top:2pt; }
-  .plan-setup{ font-size:9pt; color:var(--muted); }
+  .plan-full{ font-size:11pt; font-weight:700; line-height:1.4; }
   tr.best td{ background:rgba(220,38,38,0.05); }
   tr.best .plan-price{ color:var(--red); }
 
@@ -198,14 +199,14 @@
     </div>
     <div class="top-right">
       <div class="rate-card-label">RATE CARD</div>
-      <div class="eyebrow">In-Restaurant Digital Ads · Effective August 2026</div>
+      <div class="eyebrow">In-Restaurant Digital Ads · Effective October 2026</div>
     </div>
   </div>
 
   <h1>Own your category.<br>Lock out the competition.</h1>
   <p class="lede">
     A <b>10-second ad</b> on the dining-room screens, rotating during every business
-    hour — in front of every guest, every visit.
+    hour, in front of every guest, every visit.
   </p>
 
   <div class="cols">
@@ -236,14 +237,14 @@
           <div class="excl-title">Category exclusivity included</div>
         </div>
         <div class="excl-body">
-          One advertiser per category. When you're in, no direct competitor can be —
+          One advertiser per category. When you're in, no direct competitor can be,
           for as long as you hold your spot.
         </div>
       </div>
 
       <div class="section-title">Included with every plan</div>
       <ul class="incl">
-        <li>Design &amp; production of your ad — no artwork needed</li>
+        <li>Design &amp; production of your ad, no artwork needed</li>
         <li>No direct competitor in the rotation</li>
         <li>One free creative refresh per quarter</li>
         <li>Quarterly report on display days &amp; rotation size</li>
@@ -256,45 +257,59 @@
 
       <div class="price-head">
         <div class="price-title">Pricing</div>
-        <div class="price-note">Design fee waived on most plans</div>
+        <div class="price-note">No setup fee on any plan</div>
       </div>
 
       <table>
         <thead>
           <tr>
             <th>Plan</th>
-            <th>Term</th>
             <th class="num">Monthly</th>
-            <th class="num">Setup</th>
+            <th class="num">Or paid in full</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td><div class="plan-name">Short Term</div></td>
-            <td><div class="plan-term">3 months</div></td>
-            <td class="num"><div class="plan-price">$350</div></td>
-            <td class="num"><div class="plan-setup">$99</div></td>
+            <td>
+              <div class="plan-name">3 Month Plan</div>
+              <div class="plan-term">Great for getting started</div>
+            </td>
+            <td class="num">
+              <div class="plan-price">$225</div>
+              <div class="plan-sub">was $300</div>
+            </td>
+            <td class="num">
+              <div class="plan-full">$575</div>
+              <div class="plan-sub">save $100</div>
+            </td>
           </tr>
           <tr>
             <td>
-              <div class="plan-name">Standard</div>
-              <div class="plan-tag">Most Popular</div>
+              <div class="plan-name">6 Month Plan</div>
+              <div class="plan-term">Better value, month for month</div>
             </td>
-            <td><div class="plan-term">6 months</div></td>
-            <td class="num"><div class="plan-price">$325</div></td>
-            <td class="num"><div class="plan-setup">Waived</div></td>
+            <td class="num">
+              <div class="plan-price">$200</div>
+              <div class="plan-sub">was $275</div>
+            </td>
+            <td class="num">
+              <div class="plan-full">$1,100</div>
+              <div class="plan-sub">save $100</div>
+            </td>
           </tr>
           <tr class="best">
             <td>
-              <div class="plan-name">Annual</div>
+              <div class="plan-name">12 Month Plan</div>
               <div class="plan-tag">Best Value</div>
             </td>
-            <td><div class="plan-term">12 months</div></td>
             <td class="num">
-              <div class="plan-price">$300</div>
-              <div class="plan-sub">$3,600 / year</div>
+              <div class="plan-price">$175</div>
+              <div class="plan-sub">was $250</div>
             </td>
-            <td class="num"><div class="plan-setup">Waived</div></td>
+            <td class="num">
+              <div class="plan-full">$2,000</div>
+              <div class="plan-sub">save $100</div>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -307,8 +322,9 @@
         <div class="addon"><span>Rush (48h)</span><b>$75</b></div>
       </div>
       <p class="fineprint">
-        Your rate is locked for the full term. Spots are limited and go first come,
-        first serve — once a category is claimed, it's gone until that advertiser lapses.
+        Pay your full term upfront and take $100 off any plan. Your rate is locked
+        for the full term. Spots are limited and go first come, first serve. Once a
+        category is claimed, it's gone until that advertiser lapses.
       </p>
 
       <div class="bundle">
@@ -334,7 +350,7 @@
       <div class="step-num">2</div>
       <div>
         <div class="step-title">We design your ad</div>
-        <div class="step-body">Our team builds your 10-second spot — no artwork needed on your end.</div>
+        <div class="step-body">Our team builds your 10-second spot. No artwork needed on your end.</div>
       </div>
     </div>
     <div class="step">
@@ -347,7 +363,7 @@
   </div>
 
   <p class="terms">
-    <b>Terms</b>&nbsp;&nbsp;Billed monthly to a card on file. Prices held for your term;
+    <b>Terms</b>&nbsp;&nbsp;Billed monthly to a card on file, or paid in full upfront. Prices held for your term;
     renewal at then-current rate with 30 days' notice. All creative subject to restaurant
     approval. Reach figures are the restaurant's reported guest counts, provided in good
     faith as an estimate.

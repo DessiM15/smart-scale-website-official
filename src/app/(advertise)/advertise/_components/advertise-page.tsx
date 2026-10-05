@@ -9,16 +9,16 @@
  * their category is still open, and every section below the fold exists to
  * answer a doubt about taking it.
  *
- * The offer used to be a free mockup. Design is now covered by the one-time
- * setup fee, so nothing on this page may promise it for nothing — a page that
- * gives away work the contract charges for is a page that argues with its own
- * invoice.
+ * The offer used to be a free mockup. Design now comes with every plan and
+ * there is no setup fee (2026-10-05), so the page says it is included rather
+ * than free: it is part of what they are paying for, not a giveaway.
  *
  * The live half comes from the tracker. How many slots are left is read from
  * the roster on the server, so the page cannot claim a slot is going after it
- * has been sold. The prices come from the same place: three promo packages,
- * shown against list the way the printed flyer shows them (2026-09-24), and
- * picking one carries the choice into the form so the lead arrives tagged.
+ * has been sold. The prices come from the same place: the three current
+ * packages, each shown against the price it replaced, with the saving for
+ * paying the term in full (2026-10-05). Picking one carries the choice into
+ * the form so the lead arrives tagged.
  */
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
@@ -34,14 +34,12 @@ export type PublicPlan = {
   name: string;
   months: number;
   monthly: number;
-  setup: number;
-  /** Quoted as one figure for the whole term rather than a monthly rate. */
-  oneTime: boolean;
-  /** Whole-term price at the promo rate, setup included. */
+  /** The monthly rate this one replaced, struck through. Null shows none. */
+  wasMonthly: number | null;
+  /** Whole-term price, invoiced monthly. */
   termValue: number;
-  /** The list price this promo is struck through against. */
-  listMonthly: number;
-  listTermValue: number;
+  /** Whole-term price when it is paid in full up front. */
+  paidInFullValue: number;
 };
 
 export type AdvertisePageProps = {
@@ -49,6 +47,8 @@ export type AdvertisePageProps = {
   phoneHref: string;
   /** The packages on offer, in the order they are shown. */
   plans: PublicPlan[];
+  /** What comes off any plan when the whole term is paid up front. */
+  paidInFullDiscount: number;
   /** Every slot the rotation sells, taken or not. */
   totalSlots: number;
   /** Live from the roster. Null when the database could not be reached. */
@@ -105,7 +105,7 @@ const BUDGETS = [
 const TICKER = [
   { text: "AD DESIGN DONE FOR YOU", gold: true },
   { text: "ONE BUSINESS PER CATEGORY", gold: false },
-  { text: "PROMO PRICING FOR A LIMITED TIME", gold: true },
+  { text: "NO SETUP FEE", gold: true },
   { text: "LIVE IN DAYS, NOT WEEKS", gold: false },
   { text: "10,000+ IMPRESSIONS A MONTH", gold: true },
 ];
@@ -115,12 +115,9 @@ const money = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
 
 /**
  * How a package reads in the form and in the lead that lands in the tracker:
- * "6 Month Promo, $275/mo". Human first, because Jay reads it off an email.
+ * "6 Month, $200/mo". Human first, because Jay reads it off an email.
  */
-const planLabel = (plan: PublicPlan) =>
-  plan.oneTime
-    ? `${plan.name}, ${money(plan.termValue)} one time`
-    : `${plan.name}, ${money(plan.monthly)}/mo`;
+const planLabel = (plan: PublicPlan) => `${plan.name}, ${money(plan.monthly)}/mo`;
 
 const INCLUDED = [
   "Your ad designed and built for you",
@@ -154,6 +151,7 @@ export default function AdvertisePage({
   phoneDisplay,
   phoneHref,
   plans,
+  paidInFullDiscount,
   totalSlots,
   slotsLeft,
   metaPixelId,
@@ -664,7 +662,7 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
 
       {/* ------------------------------- pricing ----------------------------- */}
       {/* The three packages, laid out the way the printed flyer lays them out:
-          list price struck through, promo price big, one line on who each is
+          old price struck through, new price big, one line on who each is
           for. Picking one drops the choice into the form above. */}
       <section id="pricing" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 scroll-mt-24">
         <div className="max-w-7xl mx-auto" data-animate="fade-up">
@@ -674,7 +672,7 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
                 className="text-2xl sm:text-[1.7rem] text-[#DC2626] leading-none mb-1"
                 style={{ fontFamily: "var(--font-shadows), cursive" }}
               >
-                Limited promo pricing
+                New lower prices
               </p>
               <h2
                 className="text-5xl sm:text-6xl lg:text-7xl leading-[0.88]"
@@ -703,9 +701,9 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
           </div>
 
           <p className="text-sm text-[#9a8b7d] mt-6">
-            Promo pricing for a limited time. Prices are locked for your full
-            term, and every plan includes your category held and the ad
-            designed for you.
+            Pay your full term upfront and take {money(paidInFullDiscount)} off
+            any plan. Prices are locked for your full term, and every plan
+            includes your category held and the ad designed for you.
           </p>
         </div>
       </section>
@@ -853,7 +851,7 @@ fbq('init','${metaPixelId}');fbq('track','PageView');`}
             </Step>
             <Step n="02" title="We design your ad" highlight>
               In your hands within 24 hours, with revisions until it is right.
-              The design is covered by your one-time setup fee.
+              The design is included with every plan.
             </Step>
             <Step n="03" title="Approve, and you are live">
               On the screens the next business day.
@@ -1152,16 +1150,19 @@ function PlanCard({
   onPick: (plan: PublicPlan) => void;
 }) {
   const bebas = { fontFamily: "var(--font-bebas), Impact, sans-serif" };
-  const was = plan.oneTime ? `${money(plan.listTermValue)} one time` : `${money(plan.listMonthly)}/mo`;
-  const now = plan.oneTime ? money(plan.termValue) : money(plan.monthly);
-  const unit = plan.oneTime ? "one time" : "/mo";
+  const was = plan.wasMonthly !== null && plan.wasMonthly > plan.monthly ? `${money(plan.wasMonthly)}/mo` : null;
+  const now = money(plan.monthly);
+  const unit = "/mo";
+  const saved = plan.termValue - plan.paidInFullValue;
 
   const lines = [
-    plan.oneTime ? `That is ${money(plan.monthly)} a month, paid once.` : null,
     plan.months === 3 ? "Great for getting started." : null,
     plan.months === 6 ? "Better value, month for month." : null,
     plan.months === 12 ? "Category locked all year." : null,
-    plan.setup > 0 ? `${money(plan.setup)} design and setup, one time.` : "Design fee waived.",
+    "No setup fee. Ad design included.",
+    saved > 0
+      ? `Pay in full and save ${money(saved)}: ${money(plan.paidInFullValue)} for all ${plan.months} months.`
+      : null,
   ].filter((line): line is string => Boolean(line));
 
   const ink = featured ? "text-white" : "text-[#1a1210]";
@@ -1198,9 +1199,11 @@ function PlanCard({
       </div>
 
       <div className="relative p-6 sm:p-7 flex flex-col gap-3 flex-1">
-        <p className={`text-lg leading-none line-through decoration-[#DC2626] decoration-2 ${featured ? "text-white/40" : "text-[#9a8b7d]"}`}>
-          {was}
-        </p>
+        {was && (
+          <p className={`text-lg leading-none line-through decoration-[#DC2626] decoration-2 ${featured ? "text-white/40" : "text-[#9a8b7d]"}`}>
+            {was}
+          </p>
+        )}
         <p className="flex items-baseline gap-1.5 flex-wrap">
           <span className="text-6xl sm:text-7xl leading-[0.84] text-[#DC2626]" style={bebas}>
             {now}

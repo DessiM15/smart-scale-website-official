@@ -13,10 +13,12 @@ import type { Metadata } from "next";
 import {
   atVenue,
   listAdvertisers,
-  listPlanOf,
+  planPaidInFullValue,
   planTermValue,
   summarize,
   DEFAULT_VENUE_ID,
+  PAID_IN_FULL_DISCOUNT,
+  PLANS,
   PUBLIC_PLANS,
 } from "@/lib/ads/roster";
 import { isRedisReachable } from "@/lib/ads/redis";
@@ -34,20 +36,18 @@ const PHONE_HREF = "tel:+18324070773";
  * cannot quote a rate the agreement then contradicts. Flattened to plain
  * numbers here because the client half must not import the roster.
  */
-const PLANS_SHOWN: PublicPlan[] = PUBLIC_PLANS.map((plan) => {
-  const list = listPlanOf(plan);
-  return {
-    id: plan.id,
-    name: plan.name,
-    months: plan.months,
-    monthly: plan.monthly,
-    setup: plan.setup,
-    oneTime: Boolean(plan.oneTime),
-    termValue: planTermValue(plan),
-    listMonthly: list.monthly,
-    listTermValue: planTermValue(list),
-  };
-});
+const PLANS_SHOWN: PublicPlan[] = PUBLIC_PLANS.map((plan) => ({
+  id: plan.id,
+  name: plan.name,
+  months: plan.months,
+  monthly: plan.monthly,
+  wasMonthly: plan.was ? PLANS[plan.was].monthly : null,
+  termValue: planTermValue(plan),
+  paidInFullValue: planPaidInFullValue(plan),
+}));
+
+/** The lowest monthly rate on the page, for the search snippet. */
+const FROM_MONTHLY = Math.min(...PUBLIC_PLANS.map((plan) => plan.monthly));
 
 /* -------------------------------- metadata -------------------------------- */
 
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/advertise" },
   title: "Advertise at Mex Taco House | In-Restaurant TV Advertising",
   description:
-    "Own your category on Mex Taco House's dining-room screens in Cypress, TX. 10,000+ impressions a month, one business per category, and we design your ad for you. Promo plans from $275 a month, or $3,000 for the year. Managed by Smart Scale.",
+`Own your category on Mex Taco House's dining-room screens in Cypress, TX. 10,000+ impressions a month, one business per category, and we design your ad for you. Plans from $${FROM_MONTHLY} a month with no setup fee, and $${PAID_IN_FULL_DISCOUNT} off when you pay your term in full. Managed by Smart Scale.`,
   openGraph: {
     title: "Advertise at Mex Taco House | In-Restaurant TV Advertising",
     description:
@@ -91,6 +91,7 @@ export default async function Page() {
       phoneDisplay={PHONE_DISPLAY}
       phoneHref={PHONE_HREF}
       plans={PLANS_SHOWN}
+      paidInFullDiscount={PAID_IN_FULL_DISCOUNT}
       totalSlots={house.sellable}
       slotsLeft={summary ? summary.openSlots : null}
       metaPixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID}

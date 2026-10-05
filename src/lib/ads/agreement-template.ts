@@ -58,6 +58,8 @@ export type AgreementTerms = {
   dealNote: string;
   /** Absent means monthly — the shape every plan in the price list takes. */
   paymentType?: PaymentType;
+  /** Taken off the term for paying it in full. Absent on older agreements. */
+  upfrontDiscount?: number;
   /**
    * The location, frozen with the rest. Absent on agreements prepared before
    * locations existed, which were all Mex Taco House and read exactly as they
@@ -88,7 +90,7 @@ const money = (n: number) => `$${n.toLocaleString("en-US")}`;
 
 /** Everything the advertiser pays across the whole term. */
 export function totalInvestment(terms: AgreementTerms): number {
-  return terms.monthly * terms.months + terms.setup;
+  return terms.monthly * terms.months + terms.setup - (terms.upfrontDiscount ?? 0);
 }
 
 function paymentTypeOf(terms: AgreementTerms): PaymentType {
@@ -125,6 +127,11 @@ export function agreementClauses(terms: AgreementTerms): Clause[] {
   const paymentBody = prepaid
     ? [
         `${money(total)} total for the full ${terms.months}-month term, paid one time and in full, due within three (3) days of signing. A Stripe payment link will be sent directly to Advertiser upon signing. No automatic renewal.`,
+        ...(terms.upfrontDiscount
+          ? [
+              `This total is the ${money(terms.monthly)} per month rate across ${terms.months} months, less a ${money(terms.upfrontDiscount)} discount for paying the term in full.`,
+            ]
+          : []),
         ...(terms.dealNote
           ? [
               `This is a one-time promotional rate: it applies to this term only and does not establish pricing for any renewal or future term. ${terms.dealNote}`,

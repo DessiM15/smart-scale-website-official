@@ -27,7 +27,10 @@ export type PlanId =
   | "starter"
   | "promo3"
   | "promo6"
-  | "promo12";
+  | "promo12"
+  | "term3"
+  | "term6"
+  | "term12";
 
 export type Plan = {
   id: PlanId;
@@ -46,7 +49,21 @@ export type Plan = {
   listOf?: PlanId;
   /** Quoted as one figure for the whole term rather than a monthly rate. */
   oneTime?: boolean;
+  /**
+   * On the current price list: what the advertise page sells and what a new
+   * client is signed to. Everything else is kept so the clients already on it
+   * go on being billed what they agreed to.
+   */
+  current?: boolean;
+  /** The retired package whose price the advertise page strikes through. */
+  was?: PlanId;
 };
+
+/**
+ * What comes off the whole term when a client on a current package pays it in
+ * full up front (Dessi, 2026-10-05). One flat figure, whatever the term.
+ */
+export const PAID_IN_FULL_DISCOUNT = 100;
 
 /**
  * The public price list. These are the numbers on /advertise and on the printed
@@ -55,10 +72,12 @@ export type Plan = {
  * A client who pays something else gets a custom rate on their own record
  * rather than a quiet edit to this table.
  *
- * The three promo packages (added 2026-09-24, from the Mex Taco flyer) are
- * what the advertise page shows, struck through against the list price. They
- * are real packages rather than custom deals so the dropdown offers them, the
- * agreement names them, and the revenue figures add them up at the promo rate.
+ * The three current packages (2026-10-05) are what the advertise page shows:
+ * $225, $200 and $175 a month, no setup fee, each struck through against the
+ * promo it replaced, and $100 off the term when it is paid in full. They are
+ * new packages rather than new numbers on the old ones because a client who
+ * signed at $275 is still owed $275 invoices: the earlier list and promo
+ * packages stay in the table, retired, for the clients already on them.
  */
 export const PLANS: Record<PlanId, Plan> = {
   short: { id: "short", name: "Short Term", months: 3, monthly: 350, setup: 99 },
@@ -92,6 +111,33 @@ export const PLANS: Record<PlanId, Plan> = {
     listOf: "annual",
     oneTime: true,
   },
+  term3: {
+    id: "term3",
+    name: "3 Month",
+    months: 3,
+    monthly: 225,
+    setup: 0,
+    current: true,
+    was: "promo3",
+  },
+  term6: {
+    id: "term6",
+    name: "6 Month",
+    months: 6,
+    monthly: 200,
+    setup: 0,
+    current: true,
+    was: "promo6",
+  },
+  term12: {
+    id: "term12",
+    name: "12 Month",
+    months: 12,
+    monthly: 175,
+    setup: 0,
+    current: true,
+    was: "promo12",
+  },
   starter: {
     id: "starter",
     name: "Free Starter",
@@ -105,7 +151,7 @@ export const PLANS: Record<PlanId, Plan> = {
 export const PLAN_LIST = Object.values(PLANS);
 
 /** The packages the advertise page offers, in the order it shows them. */
-export const PUBLIC_PLANS: Plan[] = PLAN_LIST.filter((p) => p.promo);
+export const PUBLIC_PLANS: Plan[] = PLAN_LIST.filter((p) => p.current);
 
 /** The list plan a package is priced against: itself, unless it is a promo. */
 export function listPlanOf(plan: Plan): Plan {
@@ -115,6 +161,11 @@ export function listPlanOf(plan: Plan): Plan {
 /** Whole-term price at the package rate, setup included. */
 export function planTermValue(plan: Plan): number {
   return plan.monthly * plan.months + plan.setup;
+}
+
+/** What the whole term costs when a current package is paid in full up front. */
+export function planPaidInFullValue(plan: Plan): number {
+  return planTermValue(plan) - (plan.current ? PAID_IN_FULL_DISCOUNT : 0);
 }
 
 export type AdvertiserStatus = "active" | "pending" | "ended";
@@ -427,6 +478,8 @@ export type Terms = {
   monthlyDiscount: number;
   /** Whole-term value at the rate they actually pay, setup included. */
   termValue: number;
+  /** Taken off the term for paying it in full up front. Zero otherwise. */
+  upfrontDiscount: number;
   /** Whole-term value at list price, for comparison. */
   listTermValue: number;
   /** The term was priced as one figure, not a monthly rate. */
@@ -456,7 +509,16 @@ export function termsFor(a: Advertiser): Terms {
   // exists only so a roster of mixed deals still adds up to a run-rate.
   const monthly = total !== null ? total / months : (override(a.customMonthly) ?? plan.monthly);
   const setup = total !== null ? 0 : (override(a.customSetup) ?? plan.setup);
-  const termValue = total !== null ? total : monthly * months + setup;
+  const isCustom =
+    total !== null ||
+    monthly !== plan.monthly ||
+    setup !== plan.setup ||
+    months !== plan.months;
+  // Paying the term in full takes a flat amount off a current package. A rate
+  // struck with the client is already its own deal, so the two do not stack.
+  const upfrontDiscount =
+    plan.current && a.paymentType === "prepaid" && !isCustom ? PAID_IN_FULL_DISCOUNT : 0;
+  const termValue = total !== null ? total : monthly * months + setup - upfrontDiscount;
 
   return {
     monthly,
@@ -465,13 +527,10 @@ export function termsFor(a: Advertiser): Terms {
     listMonthly: list.monthly,
     listSetup: list.setup,
     listMonths: list.months,
-    isCustom:
-      total !== null ||
-      monthly !== plan.monthly ||
-      setup !== plan.setup ||
-      months !== plan.months,
+    isCustom,
     monthlyDiscount: list.monthly - monthly,
     termValue,
+    upfrontDiscount,
     listTermValue: planTermValue(list),
     /** True when the term was sold as a single price rather than a rate. */
     soldAsTotal: total !== null,

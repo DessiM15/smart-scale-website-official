@@ -193,6 +193,7 @@ export function termsFromAdvertiser(advertiser: Advertiser, venue?: Venue): Agre
     endDate: view.endDate,
     dealNote: view.isCustom ? view.dealNote || "" : "",
     paymentType: advertiser.paymentType ?? "monthly",
+    ...(view.upfrontDiscount ? { upfrontDiscount: view.upfrontDiscount } : {}),
   };
 }
 

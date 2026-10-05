@@ -3,7 +3,6 @@ import { verifyRenewalToken } from "@/lib/ads/links";
 import {
   formatDate,
   getAdvertiser,
-  planTermValue,
   toView,
   PUBLIC_PLANS,
   type AdvertiserView,
@@ -161,9 +160,9 @@ export default async function RenewPage({
           ? `ends tomorrow`
           : `ends in ${daysLeft} days, on ${formatDate(view.endDate)}`;
 
-  // The packages on the advertise page, which since 2026-09-24 are the promo
-  // three. Listing list and promo side by side would show a renewing client
-  // two prices for the same term and invite the wrong question.
+  // The packages on the advertise page: the current price list. Listing the
+  // retired ones beside them would show a renewing client two prices for the
+  // same term and invite the wrong question.
   const sellable = PUBLIC_PLANS;
 
   return (
@@ -261,7 +260,7 @@ export default async function RenewPage({
             >
               {sellable.map((plan) => (
                 <option key={plan.id} value={plan.id}>
-                  {plan.name}, {plan.months} months{plan.oneTime ? ` for $${planTermValue(plan).toLocaleString("en-US")} one time` : ` at $${plan.monthly}/mo`}
+                  {plan.name}, {plan.months} months at ${plan.monthly}/mo
                 </option>
               ))}
             </select>
