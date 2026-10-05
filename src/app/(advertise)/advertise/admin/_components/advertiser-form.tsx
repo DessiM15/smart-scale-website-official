@@ -185,7 +185,7 @@ export function AdvertiserForm({
 
   /**
    * How they pay follows the package until somebody says otherwise: picking
-   * the one-time annual flips it to up front, because "$3,000 one time" then
+   * a retired one-time annual flips it to up front, because "$3,000 one time" then
    * "invoiced monthly" is the contradiction the agreement would print.
    */
   const [paymentType, setPaymentType] = useState(editing?.paymentType ?? "monthly");
@@ -383,7 +383,7 @@ export function AdvertiserForm({
               <select
                 id="plan"
                 name="plan"
-                defaultValue={editing?.plan ?? "promo6"}
+                defaultValue={editing?.plan ?? "term6"}
                 onChange={(e) => onPlanChange(e.target.value)}
                 className={selectClass}
               >
@@ -394,7 +394,7 @@ export function AdvertiserForm({
                 ))}
               </select>
               <p className="mt-1.5 text-xs text-white/30">
-                The promo packages are the prices on the advertise page. List is what they compare against.
+                The first three are the prices on the advertise page. Paid up front, the pay-in-full discount comes off the term for you. Retired packages are for clients already on them.
               </p>
             </div>
             <Field

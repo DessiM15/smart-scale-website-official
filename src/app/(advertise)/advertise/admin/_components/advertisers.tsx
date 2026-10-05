@@ -165,9 +165,10 @@ function RosterCard({ view, extras, open }: { view: AdvertiserView; extras: RowE
 /* ---------------------------------- form ----------------------------------- */
 
 /**
- * The dropdown, promos first because they are what the advertise page is
- * selling and so what a new client will have asked for. A one-time package
- * says its whole-term figure, since that is the number on the flyer.
+ * The dropdown, current packages first because they are what the advertise
+ * page is selling and so what a new client will have asked for. The retired
+ * ones stay below for the clients already on them. A one-time package says
+ * its whole-term figure, since that is the number its flyer carried.
  */
 function planOptions() {
   const rate = (plan: (typeof PLAN_LIST)[number]) =>
@@ -176,10 +177,10 @@ function planOptions() {
       : plan.oneTime
         ? `${money(planTermValue(plan))} one time`
         : `${money(plan.monthly)}/mo${plan.setup ? ` + ${money(plan.setup)} setup` : ""}`;
-  const ordered = [...PLAN_LIST.filter((p) => p.promo), ...PLAN_LIST.filter((p) => !p.promo)];
+  const ordered = [...PLAN_LIST.filter((p) => p.current), ...PLAN_LIST.filter((p) => !p.current)];
   return ordered.map((plan) => ({
     id: plan.id,
-    label: `${plan.name} · ${plan.months} mo · ${rate(plan)}${plan.promo ? " (advertise page)" : plan.internalOnly ? " (internal)" : " (list)"}`,
+    label: `${plan.name} · ${plan.months} mo · ${rate(plan)}${plan.current ? " (advertise page)" : plan.internalOnly ? " (internal)" : plan.promo ? " (retired promo)" : " (retired list)"}`,
     oneTime: Boolean(plan.oneTime),
   }));
 }
