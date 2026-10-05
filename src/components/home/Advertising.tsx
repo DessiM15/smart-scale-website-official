@@ -49,10 +49,10 @@ export default function Advertising() {
             )}
           </div>
           <Image
-            src="/images/screens-wall.jpg"
-            alt="Mex Taco House dining room in Cypress with an Andre Thomas Law ad on the wall TVs"
+            src="/images/screens-wall-full-house.jpg"
+            alt="A full dining room at Mex Taco House in Cypress, with a Bloxify ad playing on the middle of three wall TVs"
             width={2000}
-            height={1500}
+            height={946}
             sizes="(max-width: 1024px) 100vw, 58vw"
             className="w-full rounded-[10px] border border-white/[0.16]"
           />
