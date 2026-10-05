@@ -7,6 +7,15 @@ import { getBlogPost, getAllBlogPosts } from "@/lib/blog";
 import { Calendar, Clock, ArrowLeft } from "lucide-react";
 import SocialShareButtons from "@/components/SocialShareButtons";
 import BlogCoverImage from "@/components/BlogCoverImage";
+import WebsiteCheckForm from "@/components/check/WebsiteCheckForm";
+
+/**
+ * A post's content is a markdown string turned into HTML by hand, so it
+ * cannot hold a component. A line with this marker is where the free
+ * website check form goes: the content is split there and the form is
+ * rendered between the two halves.
+ */
+const CHECK_MARKER = "{{website-check}}";
 
 export async function generateStaticParams() {
   const posts = getAllBlogPosts();
@@ -242,10 +251,17 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               />
             </div>
 
-            <div
-              className="prose prose-lg prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: formatContent(post.content || "") }}
-            />
+            {/* Trimmed only when a form splits the post, so the blank lines around the marker do not become extra gaps. */}
+            {(post.content || "").split(CHECK_MARKER).map((part, i, parts) => (
+              <div key={i}>
+                {i > 0 && (
+                  <div className="my-8 rounded-2xl border border-white/[0.09] bg-[#131211] p-6 sm:p-8">
+                    <WebsiteCheckForm source="ada-blog" id={`post-check-${i}`} />
+                  </div>
+                )}
+                <div className="prose prose-lg prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: formatContent(parts.length > 1 ? part.trim() : part) }} />
+              </div>
+            ))}
 
             {/* CTA */}
             <div className="mt-16 p-8 rounded-3xl bg-[#161616] border border-white/[0.08] border-l-4 border-l-[#DC2626]">

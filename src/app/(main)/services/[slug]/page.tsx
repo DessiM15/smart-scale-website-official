@@ -24,7 +24,7 @@ export async function generateMetadata({
 
   // Local intent in the title — "in Katy & Houston, TX" is what people
   // actually type, and it distinguishes these from generic service pages.
-  const title = `${service.title} in Katy & Houston, TX`;
+  const title = service.metaTitle ?? `${service.title} in Katy & Houston, TX`;
 
   return {
     title,

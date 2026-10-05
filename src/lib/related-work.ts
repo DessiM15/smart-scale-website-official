@@ -78,6 +78,11 @@ export function projectsForService(serviceSlug: string): Project[] {
     switch (serviceSlug) {
       case "ai-enhancement-ai-workflows":
         return Boolean(p.isAIPowered);
+      // Local search work has no project type of its own. The proof is the
+      // websites built for local businesses, each with its local SEO
+      // foundation and Business Profile matched to it.
+      case "local-seo-google-business-profile":
+        return p.serviceType === "Website";
       default:
         return serviceSlugForProject(p) === serviceSlug;
     }

@@ -30,6 +30,9 @@ const rightLinks = [
 
 const allLinks = [...leftLinks, ...rightLinks];
 
+/** The free website check. `source=nav` ends up on the lead. */
+const CHECK_HREF = "/check?source=nav";
+
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -124,6 +127,14 @@ export default function Navbar() {
   const scrolledBg = isLight ? "bg-white/80" : "bg-black/80";
   const scrolledBorder = isLight ? "border-black/[0.08]" : "border-white/[0.08]";
   const hamburgerColor = isLight ? "text-[#111111]" : "text-white";
+  // The outlined partner of the red "Book a call" pill. On a desktop it
+  // shows from 1280px up, where the bar has room for it; narrower screens
+  // have it in the footer and, on a phone, in the menu.
+  const checkButton = `rounded-full border text-xs uppercase tracking-widest font-semibold whitespace-nowrap transition-colors duration-300 ${
+    isLight
+      ? "border-black/25 text-[#111111]/80 hover:border-black/50 hover:text-[#111111]"
+      : "border-white/30 text-white/80 hover:border-white hover:text-white"
+  }`;
 
   // Two logo files, not a mask: the mark is red and the wordmark is white
   // or black depending on the band behind it. The "Light w/ Red" file goes
@@ -166,6 +177,9 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            <Link href={CHECK_HREF} data-track="check_cta" className={`hidden xl:inline-flex px-6 py-2.5 ${checkButton}`}>
+              Free Website Check
+            </Link>
             <a
               href={BOOKING_URL}
               target="_blank"
@@ -198,6 +212,10 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            {/* On the left so the logo stays centred: the right side already carries "Book a call". */}
+            <Link href={CHECK_HREF} data-track="check_cta" className={`hidden xl:inline-flex px-6 py-2.5 ${checkButton}`}>
+              Free Website Check
+            </Link>
           </div>
 
           {/* Center logo */}
@@ -282,6 +300,14 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            <Link
+              href={CHECK_HREF}
+              data-track="check_cta"
+              className={`block w-full px-6 py-2.5 text-center ${checkButton}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Free Website Check
+            </Link>
             <a
               href={BOOKING_URL}
               target="_blank"

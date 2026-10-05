@@ -105,10 +105,27 @@ export default function Footer() {
               </li>
               <li>
                 <Link
+                  href="/check?source=footer"
+                  data-track="check_cta"
+                  className="text-sm text-white/60 hover:text-white transition-colors duration-300"
+                >
+                  Free Website Check
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/accessibility"
                   className="text-sm text-white/60 hover:text-white transition-colors duration-300"
                 >
                   Accessibility
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/privacy"
+                  className="text-sm text-white/60 hover:text-white transition-colors duration-300"
+                >
+                  Privacy
                 </Link>
               </li>
             </ul>

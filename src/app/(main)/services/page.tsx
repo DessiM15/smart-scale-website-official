@@ -7,6 +7,7 @@ import {
   Globe,
   Brain,
   Building2,
+  MapPin,
 } from "lucide-react";
 import GlowCard from "@/components/ui/GlowCard";
 import RedSeparator from "@/components/ui/RedSeparator";
@@ -14,7 +15,7 @@ import RedSeparator from "@/components/ui/RedSeparator";
 const capabilities = [
   {
     slug: "web-development",
-    title: "Website Design & Development",
+    title: "Website Design and Development",
     description: "Fast, mobile-first websites that turn a Google search into a phone call.",
     icon: <Globe className="w-8 h-8" />,
   },
@@ -25,16 +26,22 @@ const capabilities = [
     icon: <Smartphone className="w-8 h-8" />,
   },
   {
-    slug: "ai-enhancement-ai-workflows",
-    title: "Automation & AI",
-    description: "Review requests, lead routing, follow-ups, and assistants that answer from your own content.",
-    icon: <Brain className="w-8 h-8" />,
+    slug: "local-seo-google-business-profile",
+    title: "Local SEO and Google Business Profile Management",
+    description: "A complete, current Google Business Profile and a site tuned for the searches people nearby type.",
+    icon: <MapPin className="w-8 h-8" />,
   },
   {
     slug: "enterprise-systems",
-    title: "Custom Software & CRM",
+    title: "Custom Business CRM",
     description: "Scheduling, quoting, and customer tracking built around how your business actually runs.",
     icon: <Building2 className="w-8 h-8" />,
+  },
+  {
+    slug: "ai-enhancement-ai-workflows",
+    title: "AI Automations",
+    description: "Review requests, lead routing, follow-ups, and assistants that answer from your own content.",
+    icon: <Brain className="w-8 h-8" />,
   },
 ];
 

@@ -46,9 +46,8 @@ export function useTurnstile() {
       });
     };
 
-    if (window.turnstile) {
-      render();
-    } else {
+    const load = () => {
+      if (window.turnstile) return render();
       let script = document.querySelector<HTMLScriptElement>(`script[src="${SCRIPT}"]`);
       if (!script) {
         script = document.createElement("script");
@@ -57,9 +56,28 @@ export function useTurnstile() {
         document.head.appendChild(script);
       }
       script.addEventListener("load", render);
+    };
+
+    // The form also sits far down the homepage and a blog post. Cloudflare's
+    // script is fetched once the form is near the screen, not on every visit.
+    if (!("IntersectionObserver" in window)) {
+      load();
+      return () => {
+        cancelled = true;
+      };
     }
+    const seen = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        seen.disconnect();
+        load();
+      },
+      { rootMargin: "600px" },
+    );
+    seen.observe(holder.current);
     return () => {
       cancelled = true;
+      seen.disconnect();
     };
   }, []);
 
