@@ -56,7 +56,7 @@ export default function Footer() {
                 </a>
               </p>
               <p>
-                {BUSINESS.locality}, {BUSINESS.region} &mdash; serving{" "}
+                {BUSINESS.locality}, {BUSINESS.region}. Serving{" "}
                 {SERVICE_AREAS.map((c) => c.name).join(", ")}
               </p>
             </address>
