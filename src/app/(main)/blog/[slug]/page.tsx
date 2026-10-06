@@ -138,6 +138,13 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
         if (inList) { html += "</ul>"; inList = false; }
 
+        // A line that is only ![alt](/path) is a photo in the body.
+        const image = trimmed.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+        if (image) {
+          html += `<img src="${escapeHtml(image[2])}" alt="${escapeHtml(image[1])}" loading="lazy" class="w-full rounded-2xl border border-white/[0.08] my-6" />`;
+          continue;
+        }
+
         let processedLine = trimmed;
         processedLine = processedLine.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
           const safeText = escapeHtml(text);
@@ -266,21 +273,32 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             {/* CTA */}
             <div className="mt-16 p-8 rounded-3xl bg-[#161616] border border-white/[0.08] border-l-4 border-l-[#DC2626]">
               <h3 className="text-2xl font-bold mb-4 text-white">
-                Want a number for your project?
+                {post.cta?.heading ?? "Want a number for your project?"}
               </h3>
               <p className="text-white/60 mb-6 text-lg">
-                One call, about thirty minutes. You leave with a scope and a price in writing, and no obligation. Most sites go live within two weeks.
+                {post.cta?.body ??
+                  "One call, about thirty minutes. You leave with a scope and a price in writing, and no obligation. Most sites go live within two weeks."}
               </p>
-              <a
-                href={BOOKING_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                data-track="book_call"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#DC2626] text-white rounded-full font-semibold hover:bg-red-700 transition-colors"
-              >
-                Book a call<span className="sr-only"> (opens in new tab)</span>
-                <ArrowLeft className="w-4 h-4 rotate-180" aria-hidden="true" />
-              </a>
+              {post.cta ? (
+                <Link
+                  href={post.cta.href}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#DC2626] text-white rounded-full font-semibold hover:bg-red-700 transition-colors"
+                >
+                  {post.cta.label}
+                  <ArrowLeft className="w-4 h-4 rotate-180" aria-hidden="true" />
+                </Link>
+              ) : (
+                <a
+                  href={BOOKING_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-track="book_call"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#DC2626] text-white rounded-full font-semibold hover:bg-red-700 transition-colors"
+                >
+                  Book a call<span className="sr-only"> (opens in new tab)</span>
+                  <ArrowLeft className="w-4 h-4 rotate-180" aria-hidden="true" />
+                </a>
+              )}
             </div>
           </div>
         </article>

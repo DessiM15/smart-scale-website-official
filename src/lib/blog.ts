@@ -15,6 +15,11 @@ export interface BlogPost {
    * written, without the site-name suffix, so it can be held to 60 characters.
    */
   metaTitle?: string;
+  /**
+   * Replaces the closing "Book a call" box, for a post that is selling
+   * something other than a website. The link is a path on this site.
+   */
+  cta?: { heading: string; body: string; label: string; href: string };
 }
 
 /**
@@ -24,8 +29,68 @@ export interface BlogPost {
  *
  * House rules: no prices in copy (Dessi's call, 2026-09-21), no em dashes,
  * and every claim about a client project must match its case study.
+ *
+ * The one exception on prices is the Mex Taco House ad rates post, which
+ * Dessi asked for on 2026-10-05. Its numbers are a copy of PLANS in
+ * src/lib/ads/roster.ts and have to change with them.
  */
 export const BLOG_POSTS: BlogPost[] = [
+  {
+    slug: "mex-taco-house-advertising-rates",
+    title: "NEW Ad Rates at Mex Taco House: Now From $175 a Month!",
+    metaTitle: "New Mex Taco House Ad Rates: From $175 a Month",
+    excerpt:
+      "We updated our prices! Put your business on the screens at Mex Taco House in Cypress from $175 a month, with no setup fee and $100 off when you pay in full. Here are the new rates and why restaurant ads work.",
+    author: "Smart Scale",
+    date: "2026-10-05",
+    coverImage: "/assets/mex-taco-house-advertising-rates",
+    coverImageAlt: "A full dining room at Mex Taco House in Cypress, TX, with a client's ad playing on the wall screens",
+    category: "Advertising",
+    readTime: "2 min read",
+    metaDescription:
+      "New advertising rates at Mex Taco House in Cypress, TX: $175 a month on 12 months, $200 on 6, $225 on 3. No setup fee, and $100 off when you pay in full.",
+    cta: {
+      heading: "Want your business on the screens?",
+      body: "Tell us about your business and we will send you a free mockup of your ad within 24 hours. No obligation.",
+      label: "See the ad packages",
+      href: "/advertise",
+    },
+    content: `
+Big news from the taco line: **we updated our prices!** Putting your business on the screens at Mex Taco House in Cypress just got a whole lot easier on the budget.
+
+And no, this is not a flash sale. These are the new everyday rates.
+
+## The new rates
+
+- **12 months: $175 a month** (was $250). Best value!
+- **6 months: $200 a month** (was $275)
+- **3 months: $225 a month** (was $300)
+
+**No setup fee on any plan.** Want to save even more? Pay your full package upfront and take **$100 off**.
+
+Every plan gets the same screens and the same perks. The longer you run, the less you pay each month, and your rate is locked in for your whole term.
+
+[See the packages and claim your spot](/advertise)
+
+![An event venue's ad playing on a screen at Mex Taco House in Cypress](/images/screen-events.jpg)
+
+## Why restaurant ads work
+
+- **Nobody can scroll past you.** People waiting on tacos look up. On a busy Saturday the wait can run up to 45 minutes, and your ad is on the wall the whole time.
+- **Your ad plays 20 times an hour.** Every three minutes, every day the restaurant is open. That adds up to 10,000+ impressions a month.
+- **These are your neighbors.** The room is full of Cypress locals, the people most likely to walk through your door next.
+- **You are the only one in your category.** One business per category. Take the spot and your competitor can't have it.
+- **We design the ad for you.** No designer, no stress. Send us your details and we make it look good.
+
+![A packed dining room at Mex Taco House with the ad screens on the far wall](/images/dining-room.jpg)
+
+## Spots are limited
+
+There are only so many spots in the rotation, and it is first come, first serve. Once your category is taken, it's taken.
+
+Ready to see your business up there? [Check out the ad packages](/advertise) and we will send you a free mockup of your ad within 24 hours.
+`,
+  },
   {
     slug: "what-is-seo-katy-houston",
     title: "What Is SEO? A Plain-English Guide for Katy & Houston Businesses",
