@@ -25,6 +25,12 @@ export interface Project {
    * vercel.app address only for concepts, mocks, and private apps.
    */
   vercelUrl?: string;
+  /**
+   * Set when the site sends X-Frame-Options or a frame-ancestors policy.
+   * The browser refuses to render it inside our Live Preview, so the detail
+   * page skips the preview and leaves the screenshot and Visit Site button.
+   */
+  blocksEmbedding?: boolean;
   secondaryVercelUrl?: string;
   githubUrl: string;
   isAIPowered?: boolean;
@@ -83,6 +89,7 @@ export const projects: Project[] = [
     shortDescription: "Bilingual personal injury firm site with a lead-screening chat assistant.",
     thumbnailImage: "/assets/portfolio/andre-thomas-law/andre-thomas-law-houston-personal-injury-attorney-website-design.webp",
     vercelUrl: "https://www.andrethomaslaw.com",
+    blocksEmbedding: true,
     githubUrl: "https://github.com/DessiM15/andre-thomas-law",
     featured: true,
     featuredOrder: 1,
@@ -522,6 +529,7 @@ export const projects: Project[] = [
     shortDescription: "AI-powered repossession dispute management platform.",
     thumbnailImage: "/assets/portfolio/repo911/repo911-case-management-platform.webp",
     vercelUrl: "https://repo-911.vercel.app",
+    blocksEmbedding: true,
     githubUrl: "https://github.com/DessiM15/repo911",
     isAIPowered: true,
     featured: true,
