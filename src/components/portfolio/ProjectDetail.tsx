@@ -26,7 +26,10 @@ export default function ProjectDetail({
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [iframeError, setIframeError] = useState(false);
 
-  const showIframe = project.vercelUrl && project.serviceType !== "Mobile App";
+  const showIframe =
+    project.vercelUrl &&
+    !project.blocksEmbedding &&
+    project.serviceType !== "Mobile App";
 
   return (
     <div className="min-h-screen bg-[#0A0A0A]">
