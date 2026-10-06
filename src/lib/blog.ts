@@ -283,7 +283,7 @@ Run the free check on your own site. It takes about a minute, and the report com
     author: "Smart Scale",
     date: "2026-09-21",
     coverImage: "/assets/website-cost-katy-houston",
-    coverImageAlt: "Dining room at Mex Taco House in Cypress, TX, with a client's ad playing on the wall TVs",
+    coverImageAlt: "Andre Thomas Law website homepage, built by Smart Scale",
     category: "Pricing",
     readTime: "7 min read",
     metaDescription:
